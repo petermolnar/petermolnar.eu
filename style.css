@@ -71,21 +71,55 @@ table {
 	border-spacing: 0;
 }
 
-dt {
-	margin-top:1em;
-	font-weight:bold;
-}
+	dl dt {
+		clear:both;
+		line-height:1.5em;
+		font-size:130%;
+		letter-spacing:0.1em;
+		margin-top:2em;
+		font-weight:normal;
+		margin-bottom:0.3em;
+	}
 
-dd {
-	margin-left:2em;
-}
-
-
+	dl dd {
+		font-weight:normal;
+		margin-left:7em;
+	}
 
 /**
  *   the theme itself
  *
 */
+
+
+.grid25,
+.grid50,
+.grid33,
+.grid66,
+.grid75 {
+	float:left;
+	/*display: inline;*/
+	display:block;
+	text-align:left;
+	margin:0 1% 0 1%;
+	clear:none;
+}
+
+.grid25 {
+	width:23%;
+}
+.grid33 {
+	width:31.3%;
+}
+.grid50 {
+	width:48%;
+}
+.grid66 {
+	width:63%;
+}
+.grid75 {
+	width:73%;
+}
 
 body {
 	background-color:#424747;
@@ -146,7 +180,9 @@ label {
 	margin-top: 5px;
 }
 
-code,
+code {
+	font-family: monospace;
+}
 pre {
 	margin-top:10px;
 	margin-bottom:10px;
@@ -639,3 +675,71 @@ div.photoblog-navigation {
 		font-size:110%;
 		letter-spacing:0.1em;
 	}
+
+
+.opacity50 {
+	opacity: 0.5;
+	-moz-opacity: 0.5;
+	-khtml-opacity: 0.5;
+	-webkit-opacity: 0.5;
+	filter:alpha(opacity=50);
+}
+
+	a.opacity50:hover {
+		opacity: 0.99;
+		-moz-opacity: 0.99;
+		-khtml-opacity: 0.99;
+		-webkit-opacity: 0.99;
+		filter:alpha(opacity=99);
+	}
+
+.icon-share {
+	display:block;
+	float:left;
+	overflow:hidden;
+	width:32px;
+	height:32px;
+	text-indent:-999px;
+	background-position:center center;
+	background-repeat:no-repeat;
+	margin-left:1em;
+}
+
+	.icon-facebook {
+		background-image:url('share/facebook.png');
+	}
+
+	.icon-twitter {
+		background-image:url('share/twitter.png');
+	}
+
+	.icon-feed {
+		background-image:url('share/rss.png');
+	}
+
+	.icon-iwiw {
+		background-image:url('share/iwiw.png');
+	}
+
+	.icon-tumblr {
+		background-image:url('share/tumblr.png');
+	}
+
+	.icon-likebutton {
+		clear:both;
+		width:288px;
+		height:36px;
+		margin-top:0.5em;
+	}
+
+	ul.icon li {
+		display:inline;
+		margin:0;
+		padding:0;
+	}
+
+div#share {
+	padding-top:1em;
+	clear:both;
+	display:block;
+}

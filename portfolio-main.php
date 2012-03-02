@@ -1,4 +1,12 @@
+<?php
+/*
+Template Name: portfolio-main
+*/
+?>
 <?php get_header(); ?>
+
+	<?php wp_reset_query(); ?>
+	<?php query_posts( 'page=292' ); ?>
 
 		<div id="page-content">
 

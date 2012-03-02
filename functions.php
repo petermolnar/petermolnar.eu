@@ -3,8 +3,12 @@
 /**
  * register widget function
  */
-	if ( function_exists('register_sidebar') )
-	{
+function petermolnar_init () {
+
+	register_nav_menus( array(
+		'header' => 'főmenü',
+		'portfolio' => 'portfolio',
+	) );
 
 		register_sidebar(array(
 			'name' => 'sidebar',
@@ -23,7 +27,7 @@
 		));
 
 
-	}
+}
 
 /**
  * Returns unordered list of current category's posts
@@ -57,4 +61,49 @@ function lightbox_filter ($content) {
 
 	return preg_replace($pattern, $replacement, $content);
 }
+
+function wp_share ( $link , $title , $class='opacity50 icon-share' ) {
+	$share = array (
+
+		'facebook'=>array (
+			'url'=>'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title,
+			'name'=>'Facebook',
+			'title'=>'megosztás a Facebook-on'
+		),
+
+		'twitter'=>array (
+			'url'=>'http://twitter.com/home?status=' .$title . ' - ' . $link,
+			'name'=>'Twitter',
+			'title'=>'megosztás a Twitteren'
+		),
+
+		'iwiw'=>array (
+			'url'=>'http://iwiw.hu/like.jsp?u=' . $link . '&title=' . $title,
+			'name'=>'iWiW',
+			'title'=>'megosztás az iWiWen'
+		),
+
+		//'tumblr'=>array (
+		//	'url'=>'http://www.tumblr.com/share?v=3&u=' . $link . '&t=' . $title,
+		//	'name'=>'tumblr',
+		//	'title'=>'megosztás az Tumblrön'
+		//),
+
+		//'digg'=>array (
+		//	'url'=>'',
+		//	'name'=>'Digg',
+		//	'title'=>'megosztás a Diggel'
+		//),
+
+	);
+
+	echo '<ul class="menu icon">';
+	foreach ($share as $site=>$details)
+		echo '<li><a class="' . $class . ' icon-' . $site . '" href="' . $details['url'] . '" title="' . $details['title'] . '">' . $details['title'] . '</a></li>';
+	echo '</ul>';
+
+	//echo '<iframe src="http://www.facebook.com/plugins/like.php?href=' . $link . '&layout=standard&show_faces=true&width=288&height=36&action=like&font=verdana&colorscheme=light" scrolling="no" class="' . $class . ' icon-likebutton"></iframe>';
+}
+
+petermolnar_init();
 ?>

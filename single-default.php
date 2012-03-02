@@ -7,8 +7,11 @@
 			<div class="single-entry-footer">
 				<span class="published"><abbr class="published-time" title="<?php the_time( get_option('date_format') .' - '. get_option('time_format') ); ?>"><?php the_time( get_option('date_format') ); ?></abbr></span>
 			</div>
+
+			<div id="share">
+				<?php wp_share ( get_permalink() , wp_title( '', false ) ); ?>
+			</div>
 			<div class="clear">&nbsp;</div>
-			<?php if ( apply_filters('facebook_comments', false)) { return; } ?>
 			<?php comments_template( ); ?>
 
 		</div>

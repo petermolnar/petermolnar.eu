@@ -13,7 +13,7 @@
 	<div id="container">
 		<div id="header">
 			<div id="menu" role="navigation">
-				<?php wp_nav_menu( array( 'container' => '' , 'menu' => 'header' ) ); ?>
+				<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
 			</div>
 			<div id="logo">
 					<a href="<?php bloginfo( 'url' ); ?>"><?php bloginfo( 'name' ) ?></a>
