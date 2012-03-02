@@ -1,3 +1,9 @@
+/*
+    part of petermolnar.eu WordPress Theme
+    Copyright 2010-2012 Peter Molnar  (email : hello@petermolnar.eu )
+*/
+
+/* HMTL */
 html {
 	background-color:#424747;
 }
@@ -66,7 +72,7 @@ label {
 	margin-top:5px;
 }
 
-code, pre, tt {
+code, pre, tt, .codecolorer {
 	font-family: monospace;
 }
 
@@ -159,12 +165,8 @@ section {
 	top:4px;
 	right:4px;
 	z-index:9;
-}
-
-.content-logo a {
-	display:block;
 	width:180px;
-	height:30px;
+	height:34px;
 	overflow:hidden;
 }
 
@@ -238,7 +240,7 @@ section {
 	display: inline-block;
 }
 
-/* portfolio page */
+/* portfoliopage */
 
 /* portfolio menu */
 .portfolio-description,
@@ -418,6 +420,19 @@ section {
 	padding-right:2em;
 }
 
+.photoblog-comment {
+	float:right;
+	display:inline-block;
+	text-align:right;
+	margin-bottom: 4em;
+}
+
+/*.first-post {
+	clear: both;
+	width:100%;
+	font-size:130%;
+}
+*/
 /* single arcticle */
 .single-arcticle, .article-list {
 	padding:2em;
@@ -428,6 +443,7 @@ section {
 	float:left;
 	width:8em;
 	height:8em;
+	padding-top:1em;
 }
 
 .article-thumbnail img {
@@ -450,8 +466,21 @@ section {
 	color:#666;
 }
 
-.arcticle-content-link {
+.article-list-tags a {
+	font-size:90%;
+	color:#666;
+}
+
+.arcticle-content-link, .arcticle-opensource-link {
 	text-align:right;
+}
+
+.arcticle-opensource-link {
+	display:block;
+	width:50%;
+	margin-top:-1.4em;
+	height:1em;
+	float:right;
 }
 
 .arcticle-body p {
@@ -499,14 +528,14 @@ section {
 	width:24px;
 	height:24px;
 	overflow:hidden;
-	background-position:center center;
-	background-repeat:no-repeat;
 }
 
 .icons li a {
+	text-decoration:none;
 	display:block;
 	width:100%;
-	text-indent:999px;
+	background-position:top left;
+	background-repeat:no-repeat;
 }
 
 	.icon-facebook {
@@ -529,10 +558,13 @@ section {
 		background-image:url('share/tumblr.png');
 	}
 
+	.icon-comment {
+		background-image:url('share/glyphicons_309_comments.png');
+	}
 
 
 /* sidebar */
-.category-postlist, .sidebar {
+.category-postlist, .sidebar, .footer-sidebar {
 	display:inline-block;
 	clear:none;
 	vertical-align:top;
@@ -540,6 +572,10 @@ section {
 
 .category-postlist {
 	width: 66%;
+}
+
+.footer-sidebar {
+	font-size: 80%;
 }
 
 .sidebar {

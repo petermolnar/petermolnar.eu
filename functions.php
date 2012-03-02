@@ -4,12 +4,25 @@
  * register widget function
  */
 function petermolnar_init () {
-	/*
-	 HTML5 fix for the brilliant IE
-	*/
-	/*wp_enqueue_script( 'html5.js' , 'http://html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );*/
-	wp_enqueue_script( 'html5.js' , get_bloginfo("stylesheet_directory") . '/html5.js' , array('jquery') );
+	if (!is_admin()) :
 
+		$theme_url = get_bloginfo("stylesheet_directory");
+		/*
+		 HTML5 fix for the brilliant IE
+		*/
+		wp_enqueue_script( 'html5.js' , 'http://html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
+		/*wp_enqueue_script( 'html5.js' ,  . '/html5.js' , array('jquery') );*/
+
+		/* CSS */
+		//$handle, $src, $deps, $ver, $media
+		wp_enqueue_style( 'reset.css', $theme_url .'/reset.css', false, false );
+		wp_enqueue_style( 'common.css', $theme_url .'/common.css', array('reset.css'), false );
+		wp_enqueue_style( 'style.css', $theme_url .'/style.css', array('reset.css', 'common.css'), false);
+		wp_enqueue_style( 'mobile.css', $theme_url .'/mobile.css', array('reset.css', 'common.css', 'style.css'), false, 'handheld');
+
+	endif;
+
+	/* theme supports */
 	add_theme_support( 'post-thumbnails' );
 	add_theme_support( 'menus' );
 	add_theme_support( 'post-formats', array( 'gallery', 'image' ) );
@@ -42,10 +55,29 @@ function petermolnar_init () {
 	}
 
 	//add_shortcode('skillmeter', 'shortcode_skillmeter');
-	add_shortcode('readme', 'shortcode_readme');
+	add_shortcode('plugin_readme_file', 'shortcode_readme');
+
+	/* remove css & js versioning */
+	add_filter( 'script_loader_src', 'remove_src_version' );
+	add_filter( 'style_loader_src', 'remove_src_version' );
 
 }
 
+/**
+ * removes versioning from css & js
+ *
+ */
+function remove_src_version ( $src ) {
+	global $wp_version;
+
+	$version_str = '?ver='.$wp_version;
+	$version_str_offset = strlen( $src ) - strlen( $version_str );
+
+	if( substr( $src, $version_str_offset ) == $version_str )
+		return substr( $src, 0, $version_str_offset );
+	else
+		return $src;
+}
 
 /**
  * Returns unordered list of current category's posts
@@ -104,21 +136,25 @@ function wp_list_posts( $limit=-1 , $from=false ) {
 
 }
 
-function wp_share ( $link , $title ) {
+function wp_share ( $link , $title, $comment=false ) {
+	global $post;
 	$class='opacity75 icon-share';
+	$theme_uri = get_bloginfo('stylesheet_directory');
 
 	$share = array (
 
 		'facebook'=>array (
 			'url'=>'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title,
 			'name'=>'Facebook',
-			'title'=>'megosztás a Facebook-on'
+			'title'=>'share on Facebook',
+			'icon'=>$theme_uri.'/share/glyphicons_320_facebook.png',
 		),
 
 		'twitter'=>array (
 			'url'=>'http://twitter.com/home?status=' .$title . ' - ' . $link,
 			'name'=>'Twitter',
-			'title'=>'megosztás a Twitteren'
+			'title'=>'share with Twitter',
+			'icon'=>$theme_uri.'/share/glyphicons_322_twitter.png',
 		),
 
 		//'iwiw'=>array (
@@ -141,14 +177,21 @@ function wp_share ( $link , $title ) {
 
 	);
 
+	if ($comment)
+		$share['comment'] = array (
+			'url'=>get_permalink( $post->ID ),
+			'name'=>'comment',
+			'title'=>'Leave comment',
+			'icon'=>$theme_uri.'/share/glyphicons_309_comments.png',
+		);
+
 	foreach ($share as $site=>$details)
 		$out .= '
 			<li>
-				<a class="' . $class . ' icon-' . $site . '" href="' . $details['url'] . '" title="' . $details['title'] . '">
-					' . $details['title'] . '
+				<a class="' . $class . '" href="' . $details['url'] . '" title="' . $details['title'] . '">
+					<img src="'. $details['icon'] .'" alt="' . $details['title'] . '" />
 				</a>
 			</li>';
-
 
 	$out = '
 	<nav class="share">
@@ -195,12 +238,12 @@ function shortcode_readme ( $atts ,  $content = null ) {
 		$readme = file_get_contents($readme);
 		$readme = make_clickable(nl2br(wp_specialchars($readme)));
 		$readme = preg_replace('/`(.*?)`/', '<tt>\\1</tt>', $readme);
-		$readme = preg_replace('/[\040]\*\*(.*?)\*\*/', ' <strong>\\1</strong>', $readme);
-		$readme = preg_replace('/[\040]\*(.*?)\*/', ' <em>\\1</em>', $readme);
+		$readme = preg_replace('/\*\*(.*?)\*\*/', ' <strong>\\1</strong>', $readme);
+		$readme = preg_replace('/\*(.*?)\*/', ' <em>\\1</em>', $readme);
 		$readme = preg_replace('/=== (.*?) ===/', '<h2>\\1</h2>', $readme);
 		$readme = preg_replace('/== (.*?) ==/', '<h3>\\1</h3>', $readme);
 		$readme = preg_replace('/= (.*?) =/', '<h4>\\1</h4>', $readme);
-		return $readme;
+		return '<div class="readme">'. $readme .'</div>';
 	}
 
 	return false;

@@ -1,4 +1,5 @@
 <?php
+	global $post_counter;
 	the_post();
 
 	$format = get_post_format();
@@ -46,7 +47,8 @@
 			<?php the_content(); ?>
 
 			<footer class="article-footer">
-				<?php wp_share ( get_permalink() , wp_title( '', false ) ); ?>
+				<?php $comment = (is_single()) ? false : true; ?>
+				<?php wp_share ( get_permalink() , wp_title( '', false ), $comment ); ?>
 			</footer>
 		</article>
 
@@ -109,10 +111,10 @@
 			</footer>
 		</arcticle>
 
+		<?php /*
 		<aside class="adsense aligncenter">
 			<script type="text/javascript"><!--
 				google_ad_client = "ca-pub-4708327409285010";
-				/* petermolnar tech */
 				google_ad_slot = "6064647749";
 				google_ad_width = 728;
 				google_ad_height = 90;
@@ -120,52 +122,135 @@
 			</script>
 			<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
 		</aside>
+		*/ ?>
 
 		<?php
 		/**
 		* lister
 		*/
 		else:
-		?>
-		<arcticle id="post-<?php the_ID(); ?>" class="article-list">
+			global $post_counter;
+			$first_post = ($post_counter === 0) ? ' first-post' : '';
+			global $cat_template;
+			switch ( $cat_template ):
+			case '3col':
+				?>
+				<arcticle id="post-<?php the_ID(); ?>" class="article-list grid33">
 
-			<header class="article-meta">
-				<hgroup>
-					<h2>
-						<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
-							<?php the_title(); ?>
-						</a>
-					</h2>
-				</hgroup>
-				<time pubdate="<?php the_time( 'r' ); ?>">
-					<?php the_time( get_option('date_format') ); ?>
-				</time>
-			</header>
+					<header class="article-meta">
+							<h2>
+								<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
+									<?php the_title(); ?>
+								</a>
+							</h2>
+					</header>
 
-			<summary class="arcticle-body">
-				<?php if ( has_post_thumbnail () ) : ?>
-					<figure class="article-thumbnail">
-						<a href="<?php the_permalink() ?>">
+					<div class="arcticle-body">
+						<?php if ( has_post_thumbnail () ) : ?>
+							<figure class="article-thumbnail">
+								<a href="<?php the_permalink() ?>">
+								<?php
+									the_post_thumbnail('thumbnail', array(
+										'alt'	=> trim(strip_tags( $post->post_title )),
+										'title'	=> trim(strip_tags( $post->post_title )),
+									));
+								?>
+								</a>
+							</figure>
+						<?php endif; ?>
+						<?php the_excerpt(); ?>
+					</div>
+				</arcticle>
+				<?php
+				break;
+			case 'opensource':
+				?>
+				<arcticle id="post-<?php the_ID(); ?>" class="article-list grid50">
+
+					<header class="article-meta">
+							<h2 class="opensource">
+								<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
+									<?php the_title(); ?>
+								</a>
+							</h2>
+					</header>
+
+					<nav class="arcticle-opensource-link">
 						<?php
-							the_post_thumbnail('thumbnail', array(
-								'alt'	=> trim(strip_tags( $post->post_title )),
-								'title'	=> trim(strip_tags( $post->post_title )),
-							));
-						?>
+						$outgoing = get_post_meta ( $post->ID, 'opensource-url' , true );
+						if ( $outgoing ) : ?>
+						<a href="<?php echo $outgoing ?>" rel="bookmark" title="<?php the_title(); ?>">
+							Own site of addon &raquo;
 						</a>
-					</figure>
-				<?php endif; ?>
-				<?php the_excerpt(); ?>
-			</summary>
+						<?php else : ?>
+						&nbsp;
+						<?php endif; ?>
+					</nav>
 
-			<nav class="arcticle-content-link">
-				<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
-					more <span class="meta-nav">&rarr;</span>
-				</a>
-			</nav>
-		</arcticle>
+					<div class="arcticle-body">
+						<?php if ( has_post_thumbnail () ) : ?>
+							<figure class="article-thumbnail">
+								<a href="<?php the_permalink() ?>">
+								<?php
+									the_post_thumbnail('thumbnail', array(
+										'alt'	=> trim(strip_tags( $post->post_title )),
+										'title'	=> trim(strip_tags( $post->post_title )),
+									));
+								?>
+								</a>
+							</figure>
+						<?php endif; ?>
+						<?php the_excerpt(); ?>
+					</div>
+				</arcticle>
+				<?php
+				break;
+			default:
+				?>
+				<arcticle id="post-<?php the_ID(); ?>" class="article-list<?php echo $first_post; ?>">
 
-	<?php
+					<header class="article-meta">
+						<hgroup>
+							<h2>
+								<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
+									<?php the_title(); ?>
+								</a>
+							</h2>
+						</hgroup>
+						<time pubdate="<?php the_time( 'r' ); ?>">
+							<?php the_time( get_option('date_format') ); ?>
+						</time>
+					</header>
+
+					<div class="arcticle-body">
+						<?php if ( has_post_thumbnail () ) : ?>
+							<figure class="article-thumbnail">
+								<a href="<?php the_permalink() ?>">
+								<?php
+									the_post_thumbnail('thumbnail', array(
+										'alt'	=> trim(strip_tags( $post->post_title )),
+										'title'	=> trim(strip_tags( $post->post_title )),
+									));
+								?>
+								</a>
+							</figure>
+						<?php endif; ?>
+						<?php the_excerpt(); ?>
+					</div>
+					<nav class="arcticle-content-link grid33 right">
+							<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
+								more <span class="meta-nav">&rarr;</span>
+							</a>
+					</nav>
+					<footer>
+						<nav class="article-list-tags">
+							<?php the_tags( '', ', ', '' ); ?>
+						</nav>
+					</footer>
+				</arcticle>
+				<?php
+				break;
+			endswitch;
 		endif;
 	endif;
 
