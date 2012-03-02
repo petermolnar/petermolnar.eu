@@ -1,16 +1,23 @@
+	</div>
 
-
-		<div id="footer">
-			<div class="footer-supports">
-			</div>
-			<div id="footer-widget">
-				<?php if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar('footer-widget') ) : ?><?php endif; ?>
-			</div>
-			<div class="footer-supports opacity50">
-				<a href="http://flattr.com/thing/299342/Peter-Molnar-Photography-Portfolio" target="_blank">
-					<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" />
-				</a>
-			</div>
+	<?php if ((is_single() || is_page() ) && comments_open()) : ?>
+	<div id="comments-content" class="container">
+		<div class="padded">
+			<?php do_action('fbc_display_login_button'); ?>
+			<?php comments_template( ); ?>
 		</div>
 	</div>
+	<?php endif; ?>
+
+	<div id="footer" class="container">
+		<div class="footer-supports"></div>
+
+		<div class="footer-widget">
+			<?php if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar('footer-widget') ) : ?><?php endif; ?>
+		</div>
+
+		<div class="footer-supports opacity50">
+		</div>
+	</div>
+
 </body>

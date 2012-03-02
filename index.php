@@ -44,4 +44,5 @@
 		</div>
 
 <?php get_sidebar(); ?>
+	<div class="clear">&nbsp;</div>
 <?php get_footer(); ?>

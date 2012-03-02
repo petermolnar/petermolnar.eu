@@ -1,10 +1,10 @@
 /*
-Theme Name: petermolnar
+Theme Name: petermolnar.eu
 Theme URI: http://petermolnar.eu/
 Description: Peter Molnar photography template for Wordpress
 Author: Peter Molnar
 Author URI: http://webportfolio.hu/
-Version: 0.1
+Version: 0.2
 */
 
 /**
@@ -90,8 +90,6 @@ table {
  *   the theme itself
  *
 */
-
-
 .grid25,
 .grid50,
 .grid33,
@@ -227,6 +225,8 @@ h5,
 h6 {
 	line-height:200%;
 	margin-top:1em;
+	clear:both;
+	color:#bbb;
 }
 
 h1 {
@@ -275,73 +275,54 @@ h2.entry-title a {
 	display:block;
 }
 
-div#container {
+/*.round {*/
+/*	border-radius: 8px;*/
+/*	-moz-border-radius: 8px;*/
+/*	-khtml-border-radius: 8px;*/
+/*	-webkit-border-radius: 8px;*/
+/*	-o-border-radius: 8px;*/
+/*}*/
+
+div.container {
 	width: 960px;
 	margin-left: auto;
 	margin-right:auto;
-	border-bottom: 1px solid #444;
-	border-right: 1px solid #444;
-	border-top: 1px solid #666;
-	border-left: 1px solid #666;
-	background-color:#26272A;
-
-
-	box-shadow: 3px 3px 10px rgba(10,10,10,0.4);
-	-moz-box-shadow: 3px 3px 10px rgba(10,10,10,0.4);
-	-khtml-box-shadow: 3px 3px 10px rgba(10,10,10,0.4);
-	-webkit-box-shadow: 3px 3px 10px rgba(10,10,10,0.4);
-	filter: progid:DXImageTransform.Microsoft.Shadow(color='#646464', Direction=135, Strength=3);
 	position:relative;
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	-khtml-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-o-border-radius: 8px;
 }
 
 div#header,
 div#footer {
-	height:40px;
+	height:3em;
 	position:relative;
-
-	background-repeat:repeat-x;
-	background-position: bottom;
-	background-color: #16171a;
 }
 
-div#header {
-	background-image:url('images/headerbg.png');
-}
 
-div#footer {
-	clear:both;
-	background-image:url('images/footerbg.png');
-}
-
-	div#footer a {
-		color:#444;
+	div.footer-widget {
+		padding-top:0.6em;
+		font-size:80%;
+		color:#777;
+		line-height:120%;
+		display:block;
+		text-align:center;
+		width:33%;
+		float:left;
 	}
 
-	div#footer a:hover {
-		text-decoration:underline;
+	div.footer-supports {
+		padding-top:1em;
+		font-size:80%;
+		color:#333;
+		line-height:120%;
+		display:block;
+		text-align:right;
+		width:33%;
+		float:left;
 	}
-
-div#footer-widget {
-	padding-top:0.6em;
-	font-size:80%;
-	color:#333;
-	line-height:120%;
-	display:block;
-	text-align:center;
-	width:33%;
-	float:left;
-}
-
-div.footer-supports {
-	padding-top:1em;
-	font-size:80%;
-	color:#333;
-	line-height:120%;
-	display:block;
-	text-align:right;
-	width:33%;
-	float:left;
-}
 
 div#logo {
 	position:absolute;
@@ -354,8 +335,8 @@ div#logo {
 
 	div#logo a {
 		display:block;
-		width:216px;
-		height:36px;
+		width:180px;
+		height:30px;
 		overflow:hidden;
 		text-indent:-999px;
 	}
@@ -376,30 +357,67 @@ div#menu {
 
 	div#menu ul li {
 		float:left;
-		margin-left:8px;
+		margin-right:0.4em;
 		font-weight: bold;
-		padding-left:14px;
-		padding-right:14px;
 	}
 
 	div#menu ul li a {
 		display:block;
 		text-align:center;
 		text-decoration:none;
-		height: 20px;
-		padding-top: 12px;
-		color:#666;
+		padding:0.6em;
+		color:#888;
+		padding-left: 2em;
+		padding-right:2em;
+		/*width:9.8em;*/
+
+		border-radius: 8px;
+		-moz-border-radius: 8px;
+		-khtml-border-radius: 8px;
+		-webkit-border-radius: 8px;
+		-o-border-radius: 8px;
+
 	}
 
 	div#menu ul li a:hover {
-		color:#eee;
+		color:#ddd;
+		/*background: #141516;*/
+		/*-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#35363A', endColorstr='#222426')";*/
+		/*filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#35363A', endColorstr='#222426');*/
+		/*background: -webkit-gradient(linear, left top, left bottom, from(#35363A), to(#222426));*/
+		/*background: -moz-linear-gradient(top,  #35363A,  #222426);*/
+
 	}
 
 	div#menu ul li.current-menu-item a,
 	div#menu ul li.current-page-ancestor a,
 	div#menu ul li.current-post-ancestor a {
 		color:#f90;
+		background: #141516;
+		-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#26272A', endColorstr='#141516')";
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#26272A', endColorstr='#141516');
+		background: -webkit-gradient(linear, left top, left bottom, from(#26272A), to(#141516));
+		background: -moz-linear-gradient(top,  #26272A,  #141516);
 	}
+
+div.content {
+	background-color:#26272A;
+	border: 1px solid #666;
+}
+
+div#comments-content {
+	margin-top:0.6em;
+	background-color:#383D3D;
+	border: 1px solid #666;
+}
+
+div.padded {
+	padding:1em;
+}
+
+div#comments-content textarea {
+	width:100%;
+}
 
 /* end of common part */
 
@@ -628,36 +646,74 @@ div#posts-of-current-category {
 
 
 /** comments part */
-h3#comments {
-	padding-top:2em;
-	margin-top:2em;
+	#comments-form,
+	#comments-content h2 {
+		margin-top:3em;
+	}
+
+	#comments-form legend {
+		font-size:120%;
+		font-weight:bold;
+	}
+
+	ol#trackbacks,
+	ol#comments {
+		margin-left:3em;
+	}
+
+	li.odd {
+
+	}
+
+	li.even {
+
+	}
+
+	ol#trackbacks a,
+	ol#comments a {
+		display:block;
+		width:100%;
+		padding:0;
+		margin:0;
+		border:0;
+	}
+
+
+/*
+ol#comments,
+ol#trackbacks,
+ol#comments li,
+ol#trackbacks li {
+	display:block;
+	clear:both;
 }
 
-ol.commentlist li.comment {
-	padding-bottom:2em;
-	border-bottom:1px solid #16171a;
-	margin-bottom:2em;
-	padding-left:2%;
-}
-
-ol.commentlist div.comment-body {
-	border:1px dotted #16171a;
-	padding-left:2%;
-	padding-right:2%;
-	padding-bottom:1em;
-}
-
-ol.commentlist div.comment-meta {
-	font-size:80%;
-	color:#555;
-
-}
-
-ol.commentlist div.comment-meta a,
-ol.commentlist div.reply a {
-	text-decoration:none;
-	color:#555;
-}
+/*ol.commentlist {*/
+/*	padding-left:2em;*/
+/*}*/
+/**/
+/*ol.commentlist li.comment {*/
+/*	padding-bottom:2em;*/
+/*	border-bottom:1px solid #16171a;*/
+/*	margin-bottom:2em;*/
+/*}*/
+/**/
+/*ol.commentlist div.comment-body {*/
+/*	border:1px dotted #16171a;*/
+/*	padding-bottom:1em;*/
+/*}*/
+/**/
+/*ol.commentlist div.comment-meta {*/
+/*	font-size:80%;*/
+/*	color:#555;*/
+/**/
+/*}*/
+/**/
+/*ol.commentlist div.comment-meta a,*/
+/*ol.commentlist div.reply a {*/
+/*	text-decoration:none;*/
+/*	color:#555;*/
+/*}*/
 
 
 /** photoblog part */
@@ -669,24 +725,18 @@ div#post-photoblog-content img {
 
 
 div.photoblog-navigation {
-	margin-top: 30px;
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	margin: 30px 5% 30px 5%;
-	height:90px;
+
+	padding-top:0.3em;
+	padding-bottom:0.6em;
+	color:#444;
+	font-size:90%;
 }
 
-	div.photoblog-navigation div.link {
-		width: 30%;
-		padding-left:10%;
-		padding-right:10%;
-		margin-top:36px;
-	}
-
 	div.photoblog-navigation div.link a {
+		width:30%;
 		text-decoration:none;
 		font-size:110%;
-		letter-spacing:0.1em;
+		letter-spacing:0.05em;
 	}
 
 
@@ -708,14 +758,15 @@ div.photoblog-navigation {
 
 .icon-share {
 	display:block;
-	float:left;
+	float:right;
 	overflow:hidden;
-	width:32px;
-	height:32px;
+	width:24px;
+	height:24px;
 	text-indent:-999px;
 	background-position:center center;
 	background-repeat:no-repeat;
 	margin-left:1em;
+	margin-bottom:1em;
 }
 
 	.icon-facebook {
@@ -755,4 +806,87 @@ div#share {
 	padding-top:1em;
 	clear:both;
 	display:block;
+}
+
+
+div.vcard {
+	display:block;
+	background-color:#141516;
+	border:1px dashed #4A4D51;
+	padding-top:1em;
+	padding-bottom:1em;
+}
+
+img.photo {
+	padding:0;
+	margin:0;
+}
+
+div.vcard p {
+	padding-left:10%;
+}
+
+div.vcard dl,
+div.vcard dl dt,
+div.vcard dl dd {
+	padding:0;
+	margin:0;
+	margin-left:1em;
+}
+
+div.vcard dl dt {
+	display:none;
+	visibility:hidden;
+}
+
+a.url {
+	display:block;
+	width:37%;
+	float:left;
+	border:1px dotted #2E3033;
+	padding-left:10%;
+	padding-top:1.6em;
+	padding-bottom:1.6em;
+	background-position:5% 50%;
+	background-repeat:no-repeat;
+	margin-bottom:2%;
+	margin-right:2%;
+	text-decoration:none;
+}
+
+a.fn {
+	width:95%;
+	padding-left:5%;
+	font-size:130%;
+	text-decoration:none;
+	font-weight:bold;
+	border:none;
+	padding-top:1em;
+	padding-bottom:1em;
+}
+
+a.email {
+	background-image:url('images/mail_generic.png');
+}
+
+a.skype {
+	background-image:url('images/skype_32.png');
+}
+a.facebook {
+	background-image:url('images/facebook.png');
+}
+a.twitter {
+	background-image:url('images/twitter_32.png');
+}
+a.flickr {
+	background-image:url('images/flickr_32.png');
+}
+a.linkedin {
+	background-image:url('images/linkedin.png');
+}
+a.cv {
+	background-image:url('images/application_pdf.png');
+}
+a.deviantart {
+	background-image:url('images/deviantart.png');
 }

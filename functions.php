@@ -62,7 +62,9 @@ function lightbox_filter ($content) {
 	return preg_replace($pattern, $replacement, $content);
 }
 
-function wp_share ( $link , $title , $class='opacity50 icon-share' ) {
+function wp_share ( $link , $title , $post_id='' ) {
+	$class='opacity50 icon-share';
+
 	$share = array (
 
 		'facebook'=>array (
@@ -102,8 +104,9 @@ function wp_share ( $link , $title , $class='opacity50 icon-share' ) {
 		echo '<li><a class="' . $class . ' icon-' . $site . '" href="' . $details['url'] . '" title="' . $details['title'] . '">' . $details['title'] . '</a></li>';
 	echo '</ul>';
 
-	//echo '<iframe src="http://www.facebook.com/plugins/like.php?href=' . $link . '&layout=standard&show_faces=true&width=288&height=36&action=like&font=verdana&colorscheme=light" scrolling="no" class="' . $class . ' icon-likebutton"></iframe>';
 }
 
 petermolnar_init();
+
+
 ?>

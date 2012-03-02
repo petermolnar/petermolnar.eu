@@ -10,12 +10,14 @@
 
 
 <body>
-	<div id="container">
-		<div id="header">
-			<div id="menu" role="navigation">
-				<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
-			</div>
-			<div id="logo">
-					<a href="<?php bloginfo( 'url' ); ?>"><?php bloginfo( 'name' ) ?></a>
-			</div>
+
+	<div id="header" class="container">
+		<div id="menu" role="navigation">
+			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
 		</div>
+		<div id="logo">
+				<a href="<?php bloginfo( 'url' ); ?>"><?php bloginfo( 'name' ) ?></a>
+		</div>
+	</div>
+
+	<div class="content container">

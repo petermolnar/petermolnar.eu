@@ -1,3 +1,8 @@
+<?php
+/*
+Template Name: portfolio-page
+*/
+?>
 <?php get_header(); ?>
 
 		<div id="page-content">

@@ -13,7 +13,6 @@ Template Name: text-page
 					<?php the_content(); ?>
 				</div>
 				<div class="clear">&nbsp;</div>
-				<?php comments_template(); ?>
 			<?php endwhile; ?>
 		<?php endif; ?>
 		</div>
