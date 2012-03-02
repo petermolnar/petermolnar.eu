@@ -328,6 +328,19 @@ div#footer-widget {
 	line-height:120%;
 	display:block;
 	text-align:center;
+	width:33%;
+	float:left;
+}
+
+div.footer-supports {
+	padding-top:1em;
+	font-size:80%;
+	color:#333;
+	line-height:120%;
+	display:block;
+	text-align:right;
+	width:33%;
+	float:left;
 }
 
 div#logo {

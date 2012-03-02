@@ -12,6 +12,7 @@
 				<?php wp_share ( get_permalink() , wp_title( '', false ) ); ?>
 			</div>
 			<div class="clear">&nbsp;</div>
+			<?php do_action('fbc_display_login_button') ?>
 			<?php comments_template( ); ?>
 
 		</div>
