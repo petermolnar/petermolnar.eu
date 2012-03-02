@@ -1,0 +1,165 @@
+/*
+    part of petermolnar.eu WordPress Theme
+    Copyright 2010-2011 Peter Molnar  (email : hello@petermolnar.eu )
+*/
+
+/* grid system */
+.grid25,
+.grid50,
+.grid33,
+.grid66,
+.grid75 {
+	display:inline-block;
+	text-align:left;
+	margin:0 1% 0 1%;
+	clear:none;
+	vertical-align:top;
+}
+
+.grid25 {
+	width:23%;
+}
+
+.grid33 {
+	width:31%;
+}
+.grid50 {
+	width:47.6%;
+}
+.grid66 {
+	width:63%;
+}
+.grid75 {
+	width:73%;
+}
+
+/* alignment */
+img.alignleft,
+img.alignright,
+img.right,
+img.left {
+	margin-bottom:1em;
+}
+
+img.alignright,
+img.right {
+	float:right;
+	margin-left: 1em;
+}
+
+img.alignleft,
+img.left {
+	float:left;
+	margin-right: 1em;
+}
+
+.center,
+.aligncenter {
+	text-align:center;
+}
+
+.right,
+.alignright {
+	text-align: right;
+}
+
+.left,
+.alignleft {
+	text-align: left;
+}
+
+.alignjustify {
+	text-align:justify;
+}
+
+.right {
+	float: right;
+}
+
+.left {
+	float:left;
+}
+
+.clear {
+	clear:both;
+	height: 0px;
+	font-size:0px;
+	line-height:0;
+	display:block;
+}
+
+/* rounded corners */
+.round {
+	border-radius: 0.5em;
+	-moz-border-radius: 0.5em;
+	-khtml-border-radius: 0.5em;
+	-webkit-border-radius: 0.5em;
+	-o-border-radius: 0.5em;
+}
+
+.roundbottom {
+	border-bottom-right-radius: 0.5em;
+	-moz-border-radius-bottomright: 0.5em;
+	-webkit-border-bottom-right-radius: 0.5em;
+	border-bottom-left-radius: 0.5em;
+	-moz-border-radius-bottomleft: 0.5em;
+	-webkit-border-bottom-left-radius: 0.5em;
+}
+
+.roundtop {
+	border-top-right-radius: 0.5em;
+	-moz-border-radius-topright: 0.5em;
+	-webkit-border-top-right-radius: 0.5em;
+	border-top-left-radius: 0.5em;
+	-moz-border-radius-topleft: 0.5em;
+	-webkit-border-top-left-radius: 0.5em;
+}
+
+/* opacity */
+.opacity25 {
+	opacity: 0.25;
+	-moz-opacity: 0.25;
+	-khtml-opacity: 0.25;
+	-webkit-opacity: 0.25;
+	filter:alpha(opacity=25);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=25)";
+}
+
+.opacity50 {
+	opacity: 0.5;
+	-moz-opacity: 0.5;
+	-khtml-opacity: 0.5;
+	-webkit-opacity: 0.5;
+	filter:alpha(opacity=50);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+}
+
+.opacity75 {
+	opacity: 0.75;
+	-moz-opacity: 0.75;
+	-khtml-opacity: 0.75;
+	-webkit-opacity: 0.75;
+	filter:alpha(opacity=75);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=75)";
+}
+
+	.opacity25:hover,
+	.opacity50:hover,
+	.opacity75:hover {
+		opacity: 0.99;
+		-moz-opacity: 0.99;
+		-khtml-opacity: 0.99;
+		-webkit-opacity: 0.99;
+		filter:alpha(opacity=99);
+		-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=99)";
+	}
+
+/* lists */
+.bullet-list,
+ul.standard {
+	list-style:circle;
+}
+
+ol.standard {
+	list-style:decimal;
+}

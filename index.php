@@ -1,48 +1,70 @@
-<?php get_header(); ?>
-	<div class="content-padder">
-		<div class="post-content">
-		<?php if ( have_posts() ) : ?>
-			<?php while ( have_posts() ) : the_post(); ?>
+<?php
+	define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
+	$_query_string = $query_string;
 
-			<div id="post-<?php the_ID(); ?>" class="entry">
-				<h2 class="entry-title"><a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
-				<div class="entry-header">
-					<span class="published"><abbr class="published-time" title="<?php the_time( get_option('date_format') .' - '. get_option('time_format') ); ?>"><?php the_time( get_option('date_format') ); ?></abbr></span>
-				</div>
+	if ( is_home() || is_front_page() )
+	{
+		wp_redirect( REDIRECT_TO_PORTFOLIO );
+		exit;
+	}
 
+	$cat = get_query_var('cat');
+	if ( !empty( $cat ) ) :
+		$show_pagination = false;
+		$show_sidebar = false;
+		//$posts_per_page = get_option('posts_per_page ');
+		$posts_per_page = 10;
+		$category = get_category( $cat );
+		$orderby = 'date';
+		$order = 'DESC';
+		switch ($category->slug) :
+			case 'portfolio':
+					wp_redirect( REDIRECT_TO_PORTFOLIO );
+					exit;
+				break;
+			case 'photoblog':
+				$posts_per_page = 4;
+				$show_pagination = true;
+				break;
+			case 'wordpress':
+				$orderby = 'modified';
+				$show_sidebar = true;
+				break;
+			default:
+				$show_sidebar = true;
+				break;
+		endswitch;
+		$_query_string = $query_string . '&posts_per_page=' . $posts_per_page . '&order=' . $order . '&orderby=' . $orderby;
+	endif;
 
-				<?php if ( is_archive() || is_search() ) : ?>
-					<div class="entry-summary">
-						<?php the_excerpt(); ?>
-						<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>" class="single-entry-link">more <span class="meta-nav">&rarr;</span></a>
-					</div>
-				<?php else : ?>
-					<div class="entry-content">
-					<?php the_content( 'Continue reading <span class="meta-nav">&rarr;</span>' ); ?>
-					<?php comments_template(); ?>
-					</div>
-				<?php endif; ?>
+	get_header();
+	query_posts( $_query_string );
 
-			</div>
-			<?php endwhile; ?>
-			<?php if(function_exists('wp_paginate')) {
-				wp_paginate();
-			} ?>
+	if ( $show_sidebar ) :
+	?>
+		<section class="category-postlist">
+	<?php
+	endif;
 
-		<?php else : ?>
+	if ( have_posts() ) :
+		while ( have_posts() ) :
+			get_template_part('singles');
+		endwhile;
+	endif;
 
-			<div id="post-not-found" class="entry">
-				<h2 class="entry-title">Not Found</h2>
-				<div class="entry-content">
-					<p>Sorry, but you are looking for something that isn't here.</p>
-					<?php //get_search_form();
-						?>
-				</div>
-			</div>
+	if ( $show_sidebar ) :
+	?>
+		</section>
+		<section class="sidebar">
+	<?php
+		echo wp_list_posts( -1, $posts_per_page );
+	?>
+		</section>
+	<?php
+	endif;
 
-		<?php endif; ?>
-		</div>
-	</div>
+	if( function_exists('wp_paginate') && $show_pagination )
+		wp_paginate();
 
-<?php get_sidebar(); ?>
-<?php get_footer(); ?>
+	get_footer();
+?>

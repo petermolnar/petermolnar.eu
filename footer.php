@@ -1,27 +1,22 @@
 	<div class="clear">&nbsp;</div>
-	</div>
+	</section>
 
 	<?php if ((is_single() || is_page() ) && comments_open()) : ?>
-	<div class="comments-content container">
-		<div class="content-padder">
-			<?php do_action('fbc_display_login_button'); ?>
-			<?php comments_template( ); ?>
-		</div>
-	</div>
+		<?php comments_template( ); ?>
 	<?php endif; ?>
 
-	<div id="footer" class="container">
-		<div class="footer-supports"></div>
-
-		<div class="footer-widget">
-			Molnár Péter © 1999-<?php echo date('Y'); ?> <br />
-			All rights reserved.
-
-		</div>
-
-		<div class="footer-supports opacity50">
-		</div>
-	</div>
+	<footer class="content-footer">
+		<?php wp_footer(); ?>
+		<section class="grid33">&nbsp;</section>
+		<section class="grid33 aligncenter">
+				Molnár Péter © 1999-<?php echo date('Y'); ?> <br />All rights reserved.
+		</section>
+		<section class="grid33 opacity50 alignright">
+			<figure class="donation-link">
+				<?php if(function_exists('the_flattr_permalink')) the_flattr_permalink(); ?>
+			</figure>
+		</section>
+	</footer>
 
 </body>
 </html>

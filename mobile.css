@@ -1,0 +1,43 @@
+body {
+	font-size:12px;
+}
+
+/* portfolio menu */
+.portfolio-description,
+.portfolio-menu {
+	position:relative;
+	clear:both;
+	top: 0;
+	left:0;
+	right:40%;
+	width:40%;
+	margin:0 10% 0 10%;
+}
+
+/* galleriffic */
+.controls {
+	position:relative;
+	clear:both;
+	top: 560px;
+	left:60%;
+	right:0%;
+	width:20%;
+	margin:0 10% 0 10%;
+}
+
+/* sidebar */
+.category-postlist, .sidebar {
+	display:block;
+	clear:both;
+	vertical-align:top;
+}
+
+.category-postlist {
+	width: 100%;
+}
+
+.sidebar {
+	width:96%;
+	margin:0 2% 0 2%;
+	font-size:90%;
+}

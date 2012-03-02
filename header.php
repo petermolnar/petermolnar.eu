@@ -1,23 +1,29 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes() ?> xmlns:fb="http://www.facebook.com/2008/fbml">
+<!DOCTYPE html>
+<html>
 <head>
-	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php bloginfo('charset'); ?>" />
-	<meta name="verify-v1" content="SnWboc4r4qG/Nvp4SpjDxQ8GLJ3rCB1VNSe2y2+NENs=" />
-	<link rel="stylesheet" href="<?php bloginfo('stylesheet_url'); ?>" type="text/css" media="screen,projection" />
+	<meta charset="<?php bloginfo('charset'); ?>" />
+	<link rel="stylesheet" href="<?php bloginfo('stylesheet_url'); ?>" />
 	<title><?php wp_title( ); ?></title>
 	<?php wp_head(); ?>
+	<meta name="google-site-verification" content="8cMr_dHrPJe84VNp4jCsIp0VEGUfpfmanyKmpbTh7oM" />
 </head>
 
 
 <body>
+	<?php
+		if ( strstr( ABSPATH , 'disk' ))
+			echo '<h1 style="background-color:#0ff; position:absolute; top:0; right:0; text-align:right; font-size: 70%; z-index:200">running from localhost</h1>';
+	?>
 
-	<div id="header" class="container">
-		<div id="menu">
+	<header class="content-header">
+		<nav class="content-navigation">
 			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
-		</div>
-		<div id="logo">
-				<a href="<?php bloginfo( 'url' ); ?>"><?php bloginfo( 'name' ) ?></a>
-		</div>
-	</div>
+		</nav>
+		<figure class="content-logo">
+			<a href="<?php bloginfo( 'url' ); ?>">
+				<img src="<?php bloginfo("stylesheet_directory"); ?>/images/logo.png" title="<?php bloginfo( 'name' ) ?>" alt="<?php bloginfo( 'name' ) ?>" />
+			</a>
+		</figure>
+	</header>
 
-	<div class="content container">
+	<section class="content-body round">
