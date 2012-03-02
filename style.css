@@ -467,6 +467,10 @@ section {
 	padding:2em;
 }
 
+.article-list {
+	margin-bottom: 2em;
+}
+
 .article-thumbnail {
 	display:block;
 	float:left;
@@ -476,7 +480,7 @@ section {
 }
 
 .article-thumbnail img {
-	border: 1px solid #666;
+	border: 0px solid #666;
 }
 
 .article-meta {

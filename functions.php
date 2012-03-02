@@ -10,8 +10,8 @@ function petermolnar_init () {
 		/*
 		 HTML5 fix for the brilliant IE
 		*/
-		wp_enqueue_script( 'html5.js' , 'http://html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
-		/*wp_enqueue_script( 'html5.js' ,  . '/html5.js' , array('jquery') );*/
+		//wp_enqueue_script( 'html5.js' , 'http://html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
+		wp_enqueue_script( 'html5.js' , $theme_url . '/html5.js' , array('jquery') );
 
 		/* CSS */
 		//$handle, $src, $deps, $ver, $media
