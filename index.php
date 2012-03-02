@@ -1,6 +1,6 @@
 <?php get_header(); ?>
-
-		<div id="post-content">
+	<div class="content-padder">
+		<div class="post-content">
 		<?php if ( have_posts() ) : ?>
 			<?php while ( have_posts() ) : the_post(); ?>
 
@@ -42,7 +42,7 @@
 
 		<?php endif; ?>
 		</div>
+	</div>
 
 <?php get_sidebar(); ?>
-	<div class="clear">&nbsp;</div>
 <?php get_footer(); ?>

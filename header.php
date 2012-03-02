@@ -12,7 +12,7 @@
 <body>
 
 	<div id="header" class="container">
-		<div id="menu" role="navigation">
+		<div id="menu">
 			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
 		</div>
 		<div id="logo">

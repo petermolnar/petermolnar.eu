@@ -1,12 +1,11 @@
 <?php get_header(); ?>
 
-	<?php
+<?php
+
+	the_post();
 
 	$category = array_pop( get_the_category() );
 	$template = TEMPLATEPATH . '/single-' . $category->slug . '.php';
-	$default = TEMPLATEPATH . '/single-default.php';
-
-	the_post();
 
 	if (file_exists( $template ))
 	{
@@ -14,9 +13,9 @@
 	}
 	else
 	{
-	?>
+?>
 
-		<div id="post-single-content">
+		<div class="content-padder">
 			<?php add_filter('the_content', 'lightbox_filter'); ?>
 			<h1><a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>"><?php the_title(); ?></a></h1>
 			<?php the_content(); ?>

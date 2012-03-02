@@ -247,8 +247,14 @@ h2.entry-title a {
 	text-decoration:none;
 }
 
+img.alignleft,
 .left {
 	float:left;
+}
+
+img.alignleft {
+	margin-bottom:1em;
+	margin-right:1em;
 }
 
 .right {
@@ -275,13 +281,13 @@ h2.entry-title a {
 	display:block;
 }
 
-/*.round {*/
-/*	border-radius: 8px;*/
-/*	-moz-border-radius: 8px;*/
-/*	-khtml-border-radius: 8px;*/
-/*	-webkit-border-radius: 8px;*/
-/*	-o-border-radius: 8px;*/
-/*}*/
+.round {*/
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	-khtml-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-o-border-radius: 8px;
+}
 
 div.container {
 	width: 960px;
@@ -403,42 +409,35 @@ div#menu {
 div.content {
 	background-color:#26272A;
 	border: 1px solid #666;
+	margin-bottom:0.3em;
+	margin-top:0.3em;
 }
 
-div#comments-content {
-	margin-top:0.6em;
+div.comments-content {
+	margin-bottom:0.3em;
+	margin-top:0.3em;
 	background-color:#383D3D;
 	border: 1px solid #666;
 }
 
-div.padded {
-	padding:1em;
-}
-
-div#comments-content textarea {
+div.comments-content textarea {
 	width:100%;
 }
 
-/* end of common part */
-
-/* page part */
-div#page-content {
-}
-
-div#page-sidebar {
+div.sidebar {
 	float:right;
 	margin-right:1%;
 	width:23%;
 }
 
-div#page-menu {
+div#portfolio-menu {
 	width: 90%;
 	margin-left:auto;
 	margin-right:auto;
 	margin-top:100px;
 }
 
-div#page-description {
+div#portfolio-description {
 	width: 88%;
 	color:#555;
 	margin-left:auto;
@@ -448,18 +447,18 @@ div#page-description {
 	display:none;
 }
 
-	div#page-menu ul {
+	div#portfolio-menu ul {
 		padding: 0;
 		margin: 0;
 		list-style: none;
 	}
 
-	div#page-menu ul li {
+	div#portfolio-menu ul li {
 		display:block;
 		margin-bottom:10px;
 	}
 
-	div#page-menu ul li a {
+	div#portfolio-menu ul li a {
 		display:block;
 		text-align:center;
 		text-decoration:none;
@@ -470,11 +469,11 @@ div#page-description {
 		padding-bottom:4px;
 	}
 
-	div#page-menu ul li a:hover {
+	div#portfolio-menu ul li a:hover {
 		color:#eee;
 	}
 
-	div#page-menu ul li.current-menu-item a {
+	div#portfolio-menu ul li.current-menu-item a {
 		color:#f90;
 		border-bottom: 1px solid #16171a;
 	}
@@ -555,38 +554,21 @@ div#controls {
 
 
 /* post  part */
-div#post-content {
+div.post-content {
 	padding-top: 4px;
 	padding-bottom: 4px;
 	padding-left:1%;
 	padding-right:1%;
-	width:65%;
+	width:60%;
 	float:left;
 }
 
-div#post-single-content, div#post-photoblog-content {
-	padding-top: 4px;
-	padding-bottom: 4px;
+div.content-padder {
+	padding-top: 0.4em;
+	padding-bottom: 0.4em;
 	padding-left:3%;
 	padding-right:3%;
 }
-
-div#post-sidebar {
-	float:right;
-	width:30%;
-}
-
-	div#post-sidebar ul {
-		list-style-type: square;
-	}
-
-	div#post-sidebar ul li {
-		font-size:80%;
-		line-height:120%;
-		margin-top:1em;
-		display:block;
-	}
-
 
 div.entry {
 	margin-bottom:2em;
@@ -616,17 +598,27 @@ span.published {
 	font-size:80%;
 }
 
+div.post-list {
+	width:30%;
+}
+
 div#posts-of-current-category {
-	padding-right:1%;
+	font-size:90%;
 }
 
 	div#posts-of-current-category ul {
+		list-style:none;
+		padding:0;
+		margin:0;
 		color:#666;
+		line-height:1.2em;
 	}
 
 	div#posts-of-current-category ul li {
-		margin-bottom:6px;
-		padding-left:4px;
+		padding-bottom:0.6em;
+		padding-left:0.3em;
+		margin-top:0.6em;
+		border-bottom:1px solid #222;
 	}
 
 	div#posts-of-current-category ul li a {
@@ -679,50 +671,10 @@ div#posts-of-current-category {
 	}
 
 
-/*
-ol#comments,
-ol#trackbacks,
-ol#comments li,
-ol#trackbacks li {
-	display:block;
-	clear:both;
-}
-
-/*ol.commentlist {*/
-/*	padding-left:2em;*/
-/*}*/
-/**/
-/*ol.commentlist li.comment {*/
-/*	padding-bottom:2em;*/
-/*	border-bottom:1px solid #16171a;*/
-/*	margin-bottom:2em;*/
-/*}*/
-/**/
-/*ol.commentlist div.comment-body {*/
-/*	border:1px dotted #16171a;*/
-/*	padding-bottom:1em;*/
-/*}*/
-/**/
-/*ol.commentlist div.comment-meta {*/
-/*	font-size:80%;*/
-/*	color:#555;*/
-/**/
-/*}*/
-/**/
-/*ol.commentlist div.comment-meta a,*/
-/*ol.commentlist div.reply a {*/
-/*	text-decoration:none;*/
-/*	color:#555;*/
-/*}*/
-
-
 /** photoblog part */
 div#post-photoblog-content img {
 	border: 1px solid #777;
 }
-
-
-
 
 div.photoblog-navigation {
 
@@ -812,9 +764,7 @@ div#share {
 div.vcard {
 	display:block;
 	background-color:#141516;
-	border:1px dashed #4A4D51;
-	padding-top:1em;
-	padding-bottom:1em;
+	padding:1em;
 }
 
 img.photo {
@@ -841,8 +791,8 @@ div.vcard dl dt {
 
 a.url {
 	display:block;
-	width:37%;
 	float:left;
+	width:37%;
 	border:1px dotted #2E3033;
 	padding-left:10%;
 	padding-top:1.6em;
@@ -852,6 +802,13 @@ a.url {
 	margin-bottom:2%;
 	margin-right:2%;
 	text-decoration:none;
+}
+a.url:hover {
+	color:#f90;
+}
+
+dl.contact {
+	clear:both;
 }
 
 a.fn {
@@ -889,4 +846,10 @@ a.cv {
 }
 a.deviantart {
 	background-image:url('images/deviantart.png');
+}
+a.stackexchange {
+	background-image:url('images/stackexchange_32.png');
+}
+a.stackoverflow-careers {
+	background-image:url('images/stackoverflow_careers.png');
 }
