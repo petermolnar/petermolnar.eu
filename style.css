@@ -13,6 +13,7 @@ html {
 }
 
 body {
+	min-width:480px;
 	max-width:960px;
 	width:100%;
 	margin-left:auto;
@@ -580,18 +581,6 @@ section {
 		background-image:url('share/glyphicons_322_twitter.png');
 	}
 
-	.icon-feed {
-		background-image:url('share/rss.png');
-	}
-
-	.icon-iwiw {
-		background-image:url('share/iwiw.png');
-	}
-
-	.icon-tumblr {
-		background-image:url('share/tumblr.png');
-	}
-
 	.icon-comment {
 		background-image:url('share/glyphicons_309_comments.png');
 	}
@@ -748,16 +737,8 @@ section {
 	background-image:url('images/skype_32.png');
 }
 
-.vcard .facebook {
-	background-image:url('images/facebook.png');
-}
-
 .vcard .twitter {
 	background-image:url('images/twitter_32.png');
-}
-
-.vcard .flickr {
-	background-image:url('images/flickr_32.png');
 }
 
 .vcard .linkedin {
@@ -772,17 +753,6 @@ section {
 	background-image:url('images/application_pdf.png');
 }
 
-.vcard .deviantart {
-	background-image:url('images/deviantart.png');
-}
-
-.vcard .stackexchange {
-	background-image:url('images/stackexchange_32.png');
-}
-
-.vcard .stackoverflow-careers {
-	background-image:url('images/stackoverflow_careers.png');
-}
 
 /* comments */
 

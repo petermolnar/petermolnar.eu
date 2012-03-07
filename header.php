@@ -40,7 +40,7 @@
 			}
 
 			if ( empty( $logo_img ) )
-				$logo_img = get_bloginfo("stylesheet_directory") . '/images/logo.png';
+				$logo_img = get_bloginfo("stylesheet_directory") . '/images/petermolnar_logo.png';
 
 		?>
 		<figure class="content-logo">

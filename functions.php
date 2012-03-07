@@ -18,7 +18,7 @@ function petermolnar_init () {
 		wp_enqueue_style( 'reset.css', $theme_url .'/reset.css', false, false );
 		wp_enqueue_style( 'common.css', $theme_url .'/common.css', array('reset.css'), false );
 		wp_enqueue_style( 'style.css', $theme_url .'/style.css', array('reset.css', 'common.css'), false);
-		wp_enqueue_style( 'mobile.css', $theme_url .'/mobile.css', array('reset.css', 'common.css', 'style.css'), false, 'handheld');
+		wp_enqueue_style( 'mobile.css', $theme_url .'/mobile.css', array('reset.css', 'common.css', 'style.css'), false, 'handheld, screen and (max-width:800px), screen and (max-device-width : 800px)');
 
 	endif;
 
