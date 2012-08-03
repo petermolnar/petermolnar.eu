@@ -74,12 +74,13 @@ if ($numComments != 0) :
 					<?php echo get_avatar( $comment->comment_author_email, 48 ); ?>
 				</span>
 				<span class="comment-author">
-					<?php comment_author_link() ?>
+					<?php comment_author_link(); ?>
 				</span>
-				<time pubtime="<?php comment_date('r') ?>" class="comment-date">
-					<?php comment_date() ?>
+				<time pubtime="<?php comment_date('r'); ?>" class="comment-date">
+					<?php comment_date(); ?>
 				</time>
 				<?php comment_text(); ?>
+				<?php comment_reply_link( array('reply_text' => 'Reply this comment') ); ?>
 			</li>
 		<?php
 				endif;
@@ -129,7 +130,7 @@ if ($numComments != 0) :
 				<input type="url" name="url" id="url" />
 			</p>
 
-			<?php do_action( 'social_connect_form' ); ?>
+			<?php /*do_action( 'social_connect_form' );*/ ?>
 		<?php endif; ?>
 
 		<p>
@@ -140,6 +141,7 @@ if ($numComments != 0) :
 			<input name="submit" type="submit" id="submit" value="Submit" class="submit" />
 			<input type="hidden" name="comment_post_ID" value="<?php echo $id; ?>">
 		</p>
+
 		<?php do_action('comment_form', $post->ID); ?>
 	</form>
 	</fieldset>

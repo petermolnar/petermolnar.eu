@@ -17,6 +17,7 @@ function petermolnar_init () {
 		//$handle, $src, $deps, $ver, $media
 		wp_enqueue_style( 'reset.css', $theme_url .'/reset.css', false, false );
 		wp_enqueue_style( 'common.css', $theme_url .'/common.css', array('reset.css'), false );
+		//wp_enqueue_style( 'googlefonts.css', 'http://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext', array('reset.css', 'common.css'), false);
 		wp_enqueue_style( 'style.css', $theme_url .'/style.css', array('reset.css', 'common.css'), false);
 		wp_enqueue_style( 'mobile.css', $theme_url .'/mobile.css', array('reset.css', 'common.css', 'style.css'), false, 'handheld, screen and (max-width:800px), screen and (max-device-width : 800px)');
 
@@ -146,16 +147,25 @@ function wp_share ( $link , $title, $comment=false ) {
 		'facebook'=>array (
 			'url'=>'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title,
 			'name'=>'Facebook',
-			'title'=>'share on Facebook',
+			'title'=>'Share',
 			'icon'=>$theme_uri.'/share/glyphicons_320_facebook.png',
 		),
 
 		'twitter'=>array (
 			'url'=>'http://twitter.com/home?status=' .$title . ' - ' . $link,
 			'name'=>'Twitter',
-			'title'=>'share with Twitter',
+			'title'=>'Tweet',
 			'icon'=>$theme_uri.'/share/glyphicons_322_twitter.png',
 		),
+
+		'googleplus'=>array (
+			'url'=>'https://plusone.google.com/_/+1/confirm?hl=en&url=' . $link,
+			'name'=>'GooglePlus',
+			'title'=>'+1',
+			'icon'=>$theme_uri.'/share/glyphicons_346_google_plus.png',
+		),
+
+
 
 		//'iwiw'=>array (
 		//	'url'=>'http://iwiw.hu/like.jsp?u=' . $link . '&title=' . $title,
@@ -248,6 +258,23 @@ function shortcode_readme ( $atts ,  $content = null ) {
 
 	return false;
 }
+
+
+/* extend comment forms with TinyMCE */
+//add_filter( 'comment_form', 'custom_comment_form' );
+//function custom_comment_form( $args ) {
+//	ob_start();
+//	wp_editor( '', 'comment', array(
+//		'media_buttons' => false,
+//		'teeny' => true,
+//		'textarea_rows' => '7',
+//		'tinymce' => array( 'plugins' => 'inlinepopups, fullscreen, wordpress, wplink, wpdialogs' )
+//	) );
+//	$args['comment'] = ob_get_clean();
+//	ret*/urn $args;
+//}
+
+
 
 petermolnar_init();
 

@@ -1,5 +1,6 @@
 <?php
 	define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
+	define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
 	global $post_counter;
 		$post_counter = 0;
 	global $cat_template;
@@ -8,7 +9,7 @@
 
 	if ( is_home() || is_front_page() )
 	{
-		wp_redirect( REDIRECT_TO_PORTFOLIO );
+		wp_redirect( REDIRECT_TO_MAIN );
 		exit;
 	}
 

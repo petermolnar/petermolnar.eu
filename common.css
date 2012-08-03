@@ -153,13 +153,3 @@ img.left {
 		filter:alpha(opacity=99);
 		-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=99)";
 	}
-
-/* lists */
-.bullet-list,
-ul.standard {
-	list-style:circle;
-}
-
-ol.standard {
-	list-style:decimal;
-}

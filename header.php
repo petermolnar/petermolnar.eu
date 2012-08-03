@@ -3,6 +3,7 @@
 <head>
 	<meta charset="<?php bloginfo('charset'); ?>" />
 	<title><?php wp_title( ); ?></title>
+	<link rel="author" href="https://plus.google.com/117393351799968573179/posts" />
 	<?php wp_head(); ?>
 </head>
 
@@ -13,7 +14,9 @@
 			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
 		</nav>
 		<?php
+			$logo_img = get_bloginfo("stylesheet_directory") . '/images/petermolnar_logo.png';
 
+/*
 			$logo_url = get_bloginfo( 'url' );
 			$logo_img = parse_url($_SERVER['REQUEST_URI']);
 			$logo_img = explode( '/' , $logo_img['path']);
@@ -41,6 +44,7 @@
 
 			if ( empty( $logo_img ) )
 				$logo_img = get_bloginfo("stylesheet_directory") . '/images/petermolnar_logo.png';
+*/
 
 		?>
 		<figure class="content-logo">
