@@ -269,6 +269,20 @@ section {
 	background:-moz-linear-gradient(top, #E58900, #D67C00);
 }
 
+.wordpress-button {
+	display:block;
+	width:162px;
+	height:21px;
+	margin:0;
+	color:#eee;
+	border:0px solid #000;
+	background-color:transparent;
+	text-shadow:none;
+	text-indent:-999px;
+	background-image:url('images/wordpress-logo-textonly.png');
+	background-repeat:no-repeat;
+}
+
 /* portfoliopage */
 
 /* portfolio menu */

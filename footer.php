@@ -7,7 +7,7 @@
 
 	<footer class="content-footer">
 		<?php wp_footer(); ?>
-		<div class="grid33">&nbsp;</div>
+		<div class="grid33 alignleft">&nbsp;</div>
 		<div class="grid33 aligncenter">
 				Molnár Péter © 1999-<?php echo date('Y'); ?> <br />All rights reserved.
 		</div>
