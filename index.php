@@ -72,7 +72,10 @@
 		$post_counter = 0;
 		$post_template = false;
 		while ( have_posts() ) :
-			get_template_part('singles');
+			if ( is_user_logged_in() )
+				get_template_part('singles');
+			else
+				get_template_part('singles');
 			$post_counter++;
 		endwhile;
 	endif;

@@ -10,16 +10,18 @@ function petermolnar_init () {
 		/*
 		 HTML5 fix for the brilliant IE
 		*/
-		//wp_enqueue_script( 'html5.js' , 'http://html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
-		wp_enqueue_script( 'html5.js' , $theme_url . '/html5.js' , array('jquery') );
+		
+		$scheme = empty($_SERVER['HTTPS'])? 'http://' : 'https://';
+		wp_enqueue_script( 'html5.js' , $scheme. 'html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
+		//wp_enqueue_script( 'html5.js' , $theme_url . '/html5.js' , array('jquery') );
 
 		/* CSS */
 		//$handle, $src, $deps, $ver, $media
-		wp_enqueue_style( 'reset.css', $theme_url .'/reset.css', false, false );
-		wp_enqueue_style( 'common.css', $theme_url .'/common.css', array('reset.css'), false );
-		//wp_enqueue_style( 'googlefonts.css', 'http://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext', array('reset.css', 'common.css'), false);
-		wp_enqueue_style( 'style.css', $theme_url .'/style.css', array('reset.css', 'common.css'), false);
-		wp_enqueue_style( 'mobile.css', $theme_url .'/mobile.css', array('reset.css', 'common.css', 'style.css'), false, 'handheld, screen and (max-width:800px), screen and (max-device-width : 800px)');
+		wp_enqueue_style( 'reset', $theme_url .'/reset.css', false, false );
+		wp_enqueue_style( 'common', $theme_url .'/common.css', array('reset'), false );
+		wp_enqueue_style( 'googlefonts', $scheme. 'fonts.googleapis.com/css?family=Droid+Sans:400,700', array('reset', 'common'), false);
+		wp_enqueue_style( 'style', $theme_url .'/style.css', array('reset', 'common'), false);
+		wp_enqueue_style( 'mobile', $theme_url .'/mobile.css', array('reset', 'common', 'style'), false, 'handheld, screen and (max-width:800px), screen and (max-device-width : 800px)');
 
 	endif;
 
@@ -148,43 +150,22 @@ function wp_share ( $link , $title, $comment=false ) {
 			'url'=>'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title,
 			'name'=>'Facebook',
 			'title'=>'Share',
-			'icon'=>$theme_uri.'/share/glyphicons_320_facebook.png',
+			'icon'=>'f',
 		),
 
 		'twitter'=>array (
 			'url'=>'http://twitter.com/home?status=' .$title . ' - ' . $link,
 			'name'=>'Twitter',
 			'title'=>'Tweet',
-			'icon'=>$theme_uri.'/share/glyphicons_322_twitter.png',
+			'icon'=>'t',
 		),
 
 		'googleplus'=>array (
 			'url'=>'https://plusone.google.com/_/+1/confirm?hl=en&url=' . $link,
 			'name'=>'GooglePlus',
 			'title'=>'+1',
-			'icon'=>$theme_uri.'/share/glyphicons_346_google_plus.png',
+			'icon'=>'g',
 		),
-
-
-
-		//'iwiw'=>array (
-		//	'url'=>'http://iwiw.hu/like.jsp?u=' . $link . '&title=' . $title,
-		//	'name'=>'iWiW',
-		//	'title'=>'megosztás az iWiWen'
-		//),
-		//
-		//'tumblr'=>array (
-		//	'url'=>'http://www.tumblr.com/share?v=3&u=' . $link . '&t=' . $title,
-		//	'name'=>'tumblr',
-		//	'title'=>'megosztás az Tumblrön'
-		//),
-		//
-		//'digg'=>array (
-		//	'url'=>'',
-		//	'name'=>'Digg',
-		//	'title'=>'megosztás a Diggel'
-		//),
-
 	);
 
 	if ($comment)
@@ -192,20 +173,20 @@ function wp_share ( $link , $title, $comment=false ) {
 			'url'=>get_permalink( $post->ID ),
 			'name'=>'comment',
 			'title'=>'Leave comment',
-			'icon'=>$theme_uri.'/share/glyphicons_309_comments.png',
+			'icon'=>'c',
 		);
 
 	foreach ($share as $site=>$details)
 		$out .= '
-			<li>
-				<a class="' . $class . '" href="' . $details['url'] . '" title="' . $details['title'] . '">
-					<img src="'. $details['icon'] .'" alt="' . $details['title'] . '" />
+			<li class="icon-element">
+				<a class="icon" href="' . $details['url'] . '" title="' . $details['title'] . '">
+					'. $details['icon'] .'
 				</a>
 			</li>';
 
 	$out = '
 	<nav class="share">
-		<ul class="icons">
+		<ul class="icons-list">
 			'. $out .'
 		</ul>
 	</nav>';

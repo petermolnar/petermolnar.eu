@@ -17,23 +17,27 @@ body {
 	width:100%;
 }
 
-/* content header */
-.content-header {
-	height:6em;
-	position:relative;
+/* logo */
+.content-logo {
+        display:none;
+        visibility:hidden;
 }
 
 /* navigation */
+.content-navigation {
+    width:100%;
+}
+
+
 .content-navigation ul li {
 	display:inline-block;
 	width:48%;
-	margin-left: 1%;
-	margin-bottom: 0.4em;
 }
 
 
 .content-navigation ul li a {
-        padding:0.3em 0.6em 0.3em 0.6em;
+    line-height:3em;
+    margin-bottom:0.2em;
 	text-align:left;
 	background:#343536;
 	-ms-filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr='#46474A', endColorstr='#343536')";
@@ -46,6 +50,11 @@ body {
 	-webkit-border-radius: 0.5em;
 	-o-border-radius: 0.5em;
 }
+
+.content-body {
+    position:relative;
+}
+
 
 
 /* portfolio menu */
