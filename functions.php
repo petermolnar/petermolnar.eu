@@ -12,14 +12,15 @@ function petermolnar_init () {
 		*/
 		
 		$scheme = empty($_SERVER['HTTPS'])? 'http://' : 'https://';
-		wp_enqueue_script( 'html5.js' , $scheme. 'html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
+		//wp_enqueue_script( 'html5.js' , $scheme. 'html5shim.googlecode.com/svn/trunk/html5.js' , array('jquery') );
 		//wp_enqueue_script( 'html5.js' , $theme_url . '/html5.js' , array('jquery') );
+		wp_enqueue_script( 'modernizr' , $theme_url . '/modernizr.custom.47490.js' , array('jquery') );
 
 		/* CSS */
 		//$handle, $src, $deps, $ver, $media
 		wp_enqueue_style( 'reset', $theme_url .'/reset.css', false, false );
 		wp_enqueue_style( 'common', $theme_url .'/common.css', array('reset'), false );
-		wp_enqueue_style( 'googlefonts', $scheme. 'fonts.googleapis.com/css?family=Droid+Sans:400,700', array('reset', 'common'), false);
+		/*wp_enqueue_style( 'googlefonts', $scheme. 'fonts.googleapis.com/css?family=Droid+Sans:400,700', array('reset', 'common'), false);*/
 		wp_enqueue_style( 'style', $theme_url .'/style.css', array('reset', 'common'), false);
 		wp_enqueue_style( 'mobile', $theme_url .'/mobile.css', array('reset', 'common', 'style'), false, 'handheld, screen and (max-width:800px), screen and (max-device-width : 800px)');
 

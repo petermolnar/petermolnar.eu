@@ -1,6 +1,6 @@
 /*
-    part of petermolnar.eu WordPress Theme
-    Copyright 2010-2012 Peter Molnar  (email : hello@petermolnar.eu )
+	part of petermolnar.eu WordPress Theme
+	Copyright 2010-2012 Peter Molnar  (email : hello@petermolnar.eu )
 */
 
 body {
@@ -19,13 +19,13 @@ body {
 
 /* logo */
 .content-logo {
-        display:none;
-        visibility:hidden;
+		display:none;
+		visibility:hidden;
 }
 
 /* navigation */
 .content-navigation {
-    width:100%;
+	width:100%;
 }
 
 
@@ -36,8 +36,10 @@ body {
 
 
 .content-navigation ul li a {
-    line-height:3em;
-    margin-bottom:0.2em;
+	letter-spacing:0;
+	font-size:80%;
+	line-height:2em;
+	margin-bottom:0.2em;
 	text-align:left;
 	background:#343536;
 	-ms-filter:"progid:DXImageTransform.Microsoft.gradient(startColorstr='#46474A', endColorstr='#343536')";
@@ -52,7 +54,7 @@ body {
 }
 
 .content-body {
-    position:relative;
+	position:relative;
 }
 
 
@@ -89,6 +91,12 @@ body {
 
 .category-postlist {
 	width: 100%;
+}
+
+/* arcticle */
+/*.article-footer .arcticle-more*/.article-more-text {
+	display: none;
+	visibility: hidden;
 }
 
 

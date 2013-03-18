@@ -15,7 +15,7 @@
 		<nav class="content-navigation">
 			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
 		</nav><figure class="content-logo">
-			<a href="<?php echo $logo_url; ?>">
+			<a href="<?php bloginfo( 'url' ) ?>">
 				<img src="<?php echo $logo_img; ?>" title="<?php bloginfo( 'name' ) ?>" alt="<?php bloginfo( 'name' ) ?>" />
 			</a>
 		</figure>

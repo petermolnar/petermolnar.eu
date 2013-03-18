@@ -114,14 +114,14 @@
 						<?php the_title(); ?>
 					</a>
 				</h2>
-				
+
 				<?php if ( $category_additions['time'] ): ?>
 					<time pubdate="<?php the_time( 'r' ); ?>">
 						<?php the_time( get_option('date_format') ); ?>
 					</time>
 				<?php endif; ?>
 			</header>
-			
+
 			<div class="arcticle-body">
 				<?php
 				if ( $is_single ):
@@ -139,13 +139,20 @@
 						</a>
 					</figure>
 					<?php endif;
-					
+
 					the_excerpt();
 				endif;
 				?>
 			</div>
 				<footer class="article-footer">
 						<nav class="arcticle-tags">
+							<?php if ( $category_additions['more'] && !$is_single ) : ?>
+							<span class="article-more-text">
+								<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
+									<?php echo comments_number( 'No responses', '1 response', '% responses' ); ?>
+								</a>
+							</span><br />
+							<?php endif; ?>
 							<?php if ( $category_additions['tags'] ): ?>
 								<?php the_tags( '', ', ', '' ); ?>
 							<?php endif; ?>
@@ -153,7 +160,7 @@
 						<nav class="arcticle-more">
 							<?php if ( $category_additions['more'] && !$is_single ) : ?>
 								<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
-									more <span class="meta-nav">&rarr;</span>
+									<span class="article-more-text">more </span><span class="article-more-icon">&rarr;</span>
 								</a>
 							<?php endif; ?>
 						</nav>
@@ -161,7 +168,7 @@
 						<?php wp_share ( get_permalink() , wp_title( '', false ), $post->ID ); ?>
 					<?php endif ?>
 				</footer>
-			
+
 		</arcticle>
 	<?php
 	endif;

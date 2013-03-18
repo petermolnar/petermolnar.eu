@@ -1,27 +1,27 @@
 <?php
-	define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
-	define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
+	//define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
+	//define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
 	global $post_counter;
 		$post_counter = 0;
 	global $cat_template;
 		$cat_template = false;
 	$_query_string = $query_string;
 
-	if ( is_home() || is_front_page() )
-	{
-		wp_redirect( REDIRECT_TO_MAIN );
-		exit;
-	}
+	//if ( is_home() || is_front_page() )
+	//{
+	//	wp_redirect( REDIRECT_TO_MAIN );
+	//	exit;
+	//}
 
 	$cat = get_query_var('cat');
 	if ( !empty( $cat ) ) :
 		$category = get_category( $cat );
 
-		if ($category->slug == 'portfolio')
-		{
-			wp_redirect( REDIRECT_TO_PORTFOLIO );
-			exit;
-		}
+		//if ($category->slug == 'portfolio')
+		//{
+		//	wp_redirect( REDIRECT_TO_PORTFOLIO );
+		//	exit;
+		//}
 
 		/* meta of category */
 		$category_meta = get_metadata ( 'taxonomy' , $category->term_id, '');
