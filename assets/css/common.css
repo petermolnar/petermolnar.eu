@@ -3,36 +3,6 @@
     Copyright 2010-2011 Peter Molnar  (email : hello@petermolnar.eu )
 */
 
-/* grid system */
-.grid25,
-.grid50,
-.grid33,
-.grid66,
-.grid75 {
-	display:inline-block;
-	text-align:left;
-	margin:0 1% 0 1%;
-	clear:none;
-	vertical-align:top;
-}
-
-.grid25 {
-	width:23%;
-}
-
-.grid33 {
-	width:31%;
-}
-.grid50 {
-	width:47.6%;
-}
-.grid66 {
-	width:63%;
-}
-.grid75 {
-	width:73%;
-}
-
 /* alignment */
 img.alignleft,
 img.alignright,

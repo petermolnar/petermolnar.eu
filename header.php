@@ -5,10 +5,16 @@
 	<title><?php wp_title( ); ?></title>
 	<link rel="author" href="https://plus.google.com/117393351799968573179/posts" />
 	<?php wp_head(); ?>
+	<?php global $petermolnareu_theme; ?>
+	<!--[if lt IE 9]>
+		<link rel="stylesheet" type="text/css" href="<?php echo $petermolnareu_theme->css_dir ?>ie.css" />
+		<script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+		<script src="<?php echo $petermolnareu_theme->js_dir ?>modernizr.custom.47490.js" /></script>
+	<![endif]-->
 </head>
 
 
-<?php $logo_img = get_bloginfo("stylesheet_directory") . '/peter_molnar_logo.svg'; ?>
+<?php $logo_img = $petermolnareu_theme->image_dir . 'peter_molnar_logo.svg'; ?>
 
 <body>
 	<header class="content-header">
@@ -21,4 +27,4 @@
 		</figure>
 	</header>
 
-	<section class="content-body round">
+	<section class="content-body">

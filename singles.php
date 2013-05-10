@@ -59,11 +59,11 @@
 	?>
 		<article class="portfolio" id="portfolio-<?php the_ID(); ?>">
 				<?php the_content(); ?>
-			<aside>
+<!--			<aside>
 				<nav class="portfolio-menu">
 					<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'portfolio'  ) ); ?>
 				</nav>
-			</aside>
+			</aside>-->
 			<!--
 			<section class="portfolio-description">
 				<?php $description = get_post_custom_values('description'); ?>
@@ -78,32 +78,32 @@
 	* default template for posts
 	*/
 	else:
-		global $cat_template;
-		$category_additions = array();
-			$category_additions['class'] = '';
-			$category_additions['time'] = true;
-			$category_additions['more'] = true;
-			$category_additions['share'] = true;
-			$category_additions['tags'] = true;
-
-		switch ($cat_template)
-		{
-			case '3col':
-				$category_additions['class'] = ' grid33';
-				$category_additions['time'] = false;
-				$category_additions['more'] = false;
-				$category_additions['share'] = false;
-				$category_additions['tags'] = false;
-				break;
-			case 'opensource':
-				$category_additions['class'] = ' grid50';
-				$category_additions['time'] = false;
-				$category_additions['more'] = false;
-				$category_additions['share'] = false;
-				$category_additions['tags'] = false;
-			default:
-				break;
-		}
+		//global $cat_template;
+		//$category_additions = array();
+		//	$category_additions['class'] = '';
+		//	$category_additions['time'] = true;
+		//	$category_additions['more'] = true;
+		//	$category_additions['share'] = true;
+		//	$category_additions['tags'] = true;
+		//
+		//switch ($cat_template)
+		//{
+		//	case '3col':
+		//		$category_additions['class'] = ' grid33';
+		//		$category_additions['time'] = false;
+		//		$category_additions['more'] = false;
+		//		$category_additions['share'] = false;
+		//		$category_additions['tags'] = false;
+		//		break;
+		//	case 'opensource':
+		//		$category_additions['class'] = ' grid50';
+		//		$category_additions['time'] = false;
+		//		$category_additions['more'] = false;
+		//		$category_additions['share'] = false;
+		//		$category_additions['tags'] = false;
+		//	default:
+		//		break;
+		//}
 
 		$is_single = is_single();
 		?>
