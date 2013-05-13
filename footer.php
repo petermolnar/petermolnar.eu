@@ -7,17 +7,9 @@
 		<?php comments_template( ); ?>
 	<?php endif; */ ?>
 
-	<footer class="content-footer">
+	<footer class="content-footer aligncenter">
+		Molnár Péter © 1999-<?php echo date('Y'); ?> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_GB" title="All photographies licenced under Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License"><img alt="All photographies licenced under Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-sa/3.0/80x15.png" /></a>
 		<?php wp_footer(); ?>
-		<div class="grid33 alignleft">&nbsp;</div>
-		<div class="grid33 aligncenter">
-				Molnár Péter © 1999-<?php echo date('Y'); ?> <br />All rights reserved.
-		</div>
-		<div class="grid33 alignright">
-			<!--<p class="donation-link opacity50 aligncenter">
-				<a class="donate-button round" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=8LZ66LGFLMKJW&lc=HU&item_name=Peter%20Molnar%20photographer%2fdeveloper&item_number=petermolnar%2dpaypal%2ddonation&currency_code=USD&bn=PP%2dDonationsBF%3acredit%2epng%3aNonHosted">donate</a>
-			</p>-->
-		</div>
 	</footer>
 
 </body>
