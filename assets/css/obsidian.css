@@ -7,25 +7,23 @@
  * @author Dan Stewart <dan@stewshack.com>
  * @version 1.0
  */
+
+pre, code {
+	font-family: monospace;
+	text-shadow: none;
+}
+
 pre {
-	font-family: 'LiberationMonoRegular', monospace;
 	background: #22282A;
 	word-wrap: break-word;
 	margin: 0px;
-	padding: 10px;
-	color: #F1F2F3;
-	font-size: 14px;
-	margin-bottom: 20px;
-	text-shadow: none;
-}
-
-pre, code {
-	font-family: 'LiberationMonoRegular', monospace;
-	text-shadow: none;
+	padding: 0.6em;
+	color: #999;
+	margin-bottom: 1em;
 }
 
 pre .comment {
-	color: #66747B;
+	color: #666;
 }
 
 pre .constant {
@@ -36,21 +34,37 @@ pre .storage {
 	color: #EC7600;
 }
 
-pre .string, pre .comment.docstring {
+pre .string {
 	color: #EC7600;
 }
 
-pre .string.regexp, pre .support.tag.script, pre .support.tag.style {
+pre .comment.docstring {
+	color: #EC7600;
+}
+
+pre .string.regexp {
 	color: #fff;
 }
 
+pre .support.tag.script {
+	color: #fff;
+}
 
-pre .keyword, pre .selector {
+pre .support.tag.style {
+	color: #fff;
+}
+
+pre .keyword {
+	color: #46BA50;
+	font-weight: bold;
+}
+
+pre .selector {
 	color: #93C763;
 }
 
 pre .inherited-class {
-	font-family: 'LiberationMonoItalic', monospace;
+	font-family: monospace;
 	font-style: italic;
 }
 
@@ -62,12 +76,25 @@ pre .integer {
 	color: #FFCD22;
 }
 
-pre .support, *[data-language="csharp"] .function.call {
+pre .support {
 	color: #FACD22;
 }
 
-pre .variable.global, pre .variable.class, pre .variable.instance {
+pre .function.call {
+	color: #FACD22;
+}
+
+
+pre .variable.global {
 	color: #CCC;
+}
+
+pre .variable.instance {
+	color: #ddd;
+}
+
+pre .variable.class {
+	color: #eee;
 }
 
 /* C# specific rule */
