@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		3.0
+Version:		3.1
 */
 
 /** {*/
@@ -16,37 +16,38 @@ Version:		3.0
 * FONTS *
 *********/
 @font-face {
-	font-family: 'WebSymbolsRegular';
-	src: url('assets/font/websymbols-regular-webfont.eot');
-	src: url('assets/font/websymbols-regular-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/websymbols-regular-webfont.woff') format('woff'),
-		 url('assets/font/websymbols-regular-webfont.ttf') format('truetype'),
-		 url('assets/font/websymbols-regular-webfont.svg#WebSymbolsRegular') format('svg');
+	font-family: 'Web Symbols';
+	src: url('assets/font/websymbols/websymbols-regular-webfont.eot');
+	src: url('assets/font/websymbols/websymbols-regular-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/websymbols/websymbols-regular-webfont.woff') format('woff'),
+		 url('assets/font/websymbols/websymbols-regular-webfont.ttf') format('truetype'),
+		 url('assets/font/websymbols/websymbols-regular-webfont.svg#Web Symbols') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
 
-/*@font-face {*/
-/*	font-family: 'LiberationMonoRegular';*/
-/*	src: url('assets/font/liberationmono-regular-webfont.eot');*/
-/*	src: url('assets/font/liberationmono-regular-webfont.eot?#iefix') format('embedded-opentype'),*/
-/*		 url('assets/font/liberationmono-regular-webfont.woff') format('woff'),*/
-/*		 url('assets/font/liberationmono-regular-webfont.ttf') format('truetype'),*/
-/*		 url('assets/font/liberationmono-regular-webfont.svg#LiberationMonoRegular') format('svg');*/
-/*	font-weight: normal;*/
-/*	font-style: normal;*/
-/*}*/
-/**/
-/*@font-face {*/
-/*	font-family: 'LiberationMonoItalic';*/
-/*	src: url('assets/font/liberationmono-italic-webfont.eot');*/
-/*	src: url('assets/font/liberationmono-italic-webfont.eot?#iefix') format('embedded-opentype'),*/
-/*		 url('assets/font/liberationmono-italic-webfont.woff') format('woff'),*/
-/*		 url('assets/font/liberationmono-italic-webfont.ttf') format('truetype'),*/
-/*		 url('assets/font/liberationmono-italic-webfont.svg#LiberationMonoItalic') format('svg');*/
-/*	font-weight: normal;*/
-/*	font-style: normal;*/
-/*}*/
+@font-face {
+	font-family: 'Liberation Sans';
+	src: url('assets/font/liberation-sans/LiberationSans-Regular-webfont.eot');
+	src: url('assets/font/liberation-sans/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.woff') format('woff'),
+		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.ttf') format('truetype'),
+		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.svg#LiberationSansRegular') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+
+@font-face {
+	font-family: 'Liberation Mono';
+	src: url('assets/font/liberation-mono/liberationmono-regular-webfont.eot');
+	src: url('assets/font/liberation-mono/liberationmono-regular-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/liberation-mono/liberationmono-regular-webfont.woff') format('woff'),
+		 url('assets/font/liberation-mono/liberationmono-regular-webfont.ttf') format('truetype'),
+		 url('assets/font/liberation-mono/liberationmono-regular-webfont.svg#LiberationMonoRegular') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
 
 /*************
 * ALIGNMENTS *
@@ -148,7 +149,7 @@ body {
 	margin-top:0.3em;
 	margin-bottom:0.3em;
 	line-height:1.4em;
-	font-family: sans-serif;
+	font-family: 'Liberation Sans', sans-serif;
 	font-size:14px;
 	color:#999;
 	letter-spacing:0.03em;
@@ -260,7 +261,7 @@ pre {
 .content-logo {
 	display: none;
 	visibility: hidden;
-	line-height:3.2em;
+	line-height:2.2em;
 	text-align:right;
 	width:20%;
 }
@@ -643,7 +644,7 @@ pre {
 
 	.adaptgal-slideshow a:link,
 	.adaptgal-slideshow a:visited {
-		font-family: 'WebSymbolsRegular';
+		font-family: 'Web Symbols';
 		font-weight: normal;
 		font-size: 3em;
 		opacity: 0.2;
@@ -799,7 +800,7 @@ photogal
 	}
 
 		.share ul li a:before {
-			font-family: "WebSymbolsRegular";
+			font-family: "Web Symbols";
 			font-size: 1.4em;
 			line-height: 1.2em;
 			margin-right: 0.4em;
@@ -920,7 +921,7 @@ photogal
 		}
 
 		.content-body .vcard a:before {
-			font-family: "WebSymbolsRegular";
+			font-family: "Web Symbols";
 			font-size: 150%;
 			display: inline-block;
 			text-align: center;
@@ -1127,7 +1128,7 @@ photogal
 		}
 
 		.sidebar-postlist ul li a:before {
-			font-family: "WebSymbolsRegular";
+			font-family: "Web Symbols";
 			content: ")";
 		}
 

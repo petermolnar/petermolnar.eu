@@ -16,6 +16,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		public $image_dir = '';
 		public $theme_url = '';
 		public $image_sizes = array();
+		public $info = array();
 
 		public function __construct () {
 			$this->theme_url = $this->replace_if_ssl( get_bloginfo("stylesheet_directory") );
@@ -23,6 +24,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			$this->css_dir = $this->theme_url . '/assets/css/';
 			$this->font_dir = $this->theme_url . '/assets/font/';
 			$this->image_dir = $this->theme_url . '/assets/image/';
+			$this->info = wp_get_theme( );
 
 			$this->image_sizes = array (
 				460 => array (
@@ -46,25 +48,28 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			if (!is_admin()) {
 
 				/* JS */
-				//wp_register_script('webpjs', $this->js_dir . 'webpjs-0.0.2.min.js', false);
-				wp_register_script('jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array( 'jquery' ) );
-				wp_register_script('jquery.adaptgal', $this->js_dir . 'adaptgal.js', array( 'jquery' ) );
+				//wp_register_style( $handle, $src, $deps, $ver, $media )
+				//wp_register_script( $handle, $src, $deps, $ver, $in_footer );
 
+				wp_register_script('jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array( 'jquery' ), '1.6.3' );
 				wp_enqueue_script( 'jquery' );
 				wp_enqueue_script( 'jquery.touchSwipe' );
 
 				/* CSS */
-				wp_register_style( 'reset',	$this->css_dir . 'reset.css', false );
-				//wp_register_style( 'googlefonts',	'http://fonts.googleapis.com/css?family=PT+Sans:400,700' , array ( 'reset' ) );
-				wp_register_style( 'style',	$this->theme_url . '/style.css' , array('reset' ) );
+				wp_register_style( 'reset',	$this->css_dir . 'reset.css', false, '1.0' );
+				wp_register_style( 'googlefonts', 'http://fonts.googleapis.com/css?family=Open+Sans' , array('reset' ), '1.0' );
+				wp_register_style( 'style',	$this->theme_url . '/style.css' , array('reset', 'googlefonts' ), '3.0' );
 
 				wp_enqueue_style( 'reset' );
 				wp_enqueue_style( 'googlefonts' );
 				wp_enqueue_style( 'style' );
 
 				/* syntax highlighter */
-				wp_register_script( 'rainbow' , $this->js_dir . 'rainbow-custom.min.js', false );
-				wp_register_style( 'rainbow-obsidian',	$this->css_dir . 'obsidian.css', false );
+				wp_register_script( 'rainbow' , $this->js_dir . 'rainbow-custom.min.js', false, '1.2' );
+				wp_register_style( 'rainbow-obsidian',	$this->css_dir . 'obsidian.css', false, '1.0' );
+
+				/* adaptgal */
+				wp_register_script('jquery.adaptgal', $this->js_dir . 'adaptgal.js', array( 'jquery' ), '1.0' );
 			}
 
 			/* set theme supports */
@@ -82,11 +87,12 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
 			/* modify css & js versioning */
-			add_filter( 'script_loader_src', array( &$this, 'modify_asset_version' ) );
-			add_filter( 'style_loader_src', array ( &$this, 'modify_asset_version' ) );
+			//add_filter( 'script_loader_src', array( &$this, 'modify_asset_version' ) );
+			//add_filter( 'style_loader_src', array ( &$this, 'modify_asset_version' ) );
 
 			/* add syntax highlighting */
 			add_shortcode('code', array ( &$this, 'syntax_highlight' ) );
+			add_shortcode('cc', array ( &$this, 'syntax_highlight' ) );
 
 			/* adaptgal */
 			add_shortcode('adaptgal', array ( &$this, 'adaptgal' ) );
@@ -114,15 +120,22 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		 *
 		 */
 		public function modify_asset_version ( $src ) {
-			global $wp_version;
+			/*
+			//global $wp_version;
 
-			$version_str = '?ver='.$wp_version;
+			$version = $this->info->Version;
+			$version_str = '?ver='.$version;
 			$version_str_offset = strlen( $src ) - strlen( $version_str );
 
 			if( substr( $src, $version_str_offset ) == $version_str )
 				return substr( $src, 0, $version_str_offset );
 			else
 				return $src;
+			*/
+			//
+			//$qm = substr( $src, '?' );
+			//$base = ($qm == false ) ? $src : substr( $src, 0, $qm );
+			//return $base . '?' . $this->info->Version;
 		}
 
 		/**
