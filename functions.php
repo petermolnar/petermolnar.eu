@@ -44,33 +44,13 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 				)
 			);
 
+			/* theme init */
+			add_action( 'init', array( &$this, 'init'));
 			/* set up CSS, JS and fonts */
-			if (!is_admin()) {
+			add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+		}
 
-				/* JS */
-				//wp_register_style( $handle, $src, $deps, $ver, $media )
-				//wp_register_script( $handle, $src, $deps, $ver, $in_footer );
-
-				wp_register_script('jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array( 'jquery' ), '1.6.3' );
-				wp_enqueue_script( 'jquery' );
-				wp_enqueue_script( 'jquery.touchSwipe' );
-
-				/* CSS */
-				wp_register_style( 'reset',	$this->css_dir . 'reset.css', false, '1.0' );
-				wp_register_style( 'googlefonts', 'http://fonts.googleapis.com/css?family=Open+Sans' , array('reset' ), '1.0' );
-				wp_register_style( 'style',	$this->theme_url . '/style.css' , array('reset', 'googlefonts' ), '3.0' );
-
-				wp_enqueue_style( 'reset' );
-				wp_enqueue_style( 'googlefonts' );
-				wp_enqueue_style( 'style' );
-
-				/* syntax highlighter */
-				wp_register_script( 'rainbow' , $this->js_dir . 'rainbow-custom.min.js', false, '1.2' );
-				wp_register_style( 'rainbow-obsidian',	$this->css_dir . 'obsidian.css', false, '1.0' );
-
-				/* adaptgal */
-				wp_register_script('jquery.adaptgal', $this->js_dir . 'adaptgal.js', array( 'jquery' ), '1.0' );
-			}
+		public function init () {
 
 			/* set theme supports */
 			add_theme_support( 'post-thumbnails' );
@@ -103,6 +83,8 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 
 			/* unautop please */
 			remove_filter( 'the_content', 'wpautop' );
+			add_filter ('the_content', array( &$this, 'legacy' ), 1);
+			add_filter ('the_content', array( &$this, 'lightbox' ), 2);
 			add_filter( 'the_content', 'wpautop', 20 );
 			add_filter( 'the_content', 'shortcode_unautop', 100 );
 
@@ -112,7 +94,31 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 				add_image_size( self::lthumb_prefix . $resolution, $sizes[ self::lthumb_prefix ], $sizes[ self::lthumb_prefix ], true);
 				add_image_size( self::std_prefix . $resolution, $sizes[ self::std_prefix ], $sizes[ self::std_prefix ], false);
 			}
+		}
 
+
+		public function register_css_js () {
+			/* register styles */
+			wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
+			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+			wp_register_style( 'lightbox', $this->css_dir . 'jquery.lightbox-0.5.css', false, null );
+			wp_register_style( 'obsidian', $this->css_dir . 'obsidian.css', false, null );
+
+			/* CDN jquery */
+			wp_deregister_script( 'jquery' );
+			wp_register_script( 'jquery', $this->replace_if_ssl( 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js' ), false, null, true );
+
+			/* pre-register scripts */
+			wp_register_script( 'jquery.lightbox',	$this->js_dir . 'jquery.lightbox-0.5.min.js', array( 'jquery' ), null, true );
+			wp_register_script( 'jquery.lightbox.images', $this->js_dir . 'jquery.lightbox.images.js', array( 'jquery', 'jquery.lightbox' ), null, true );
+			wp_register_script( 'rainbow' , $this->js_dir . 'rainbow-custom.min.js', false, null, true );
+			wp_register_script( 'rainbow.linenumbers' , $this->js_dir . 'rainbow.linenumbers.min.js', array('rainbow'), null, true );
+			wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
+			wp_register_script( 'jquery.adaptgal', $this->js_dir . 'adaptgal.js', array('jquery', 'jquery.touchSwipe'), null, true );
+
+			/* enqueue CSS */
+			wp_enqueue_style( 'reset' );
+			wp_enqueue_style( 'style' );
 		}
 
 		/**
@@ -201,6 +207,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 				);
 			}
 
+			$out = '';
 			foreach ($share as $site=>$details) {
 				$out .= '<li><a class="'. $site .'" href="' . $details['url'] . '" title="' . $details['title'] . '">'. $details['title'] .'</a></li>';
 			}
@@ -251,9 +258,8 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 					$i++;
 				}
 
-				$out .= '
+				$out = '
 				<nav class="sidebar-postlist">
-					<h3 class="postlist-title">'. $title .'</h3>
 					<ul class="postlist">
 					'. $list .'
 					</ul>
@@ -269,6 +275,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		 */
 		public function related_posts ( $_post ) {
 			$tags = wp_get_post_tags($_post->ID);
+			$list = '';
 
 			if ($tags) {
 				$tag_ids = array();
@@ -282,7 +289,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 					'tag__in' => $tag_ids,
 					'post__not_in' => array($_post->ID),
 					'posts_per_page'=>12,
-					'caller_get_posts'=>1
+					'ignore_sticky_posts'=>1
 				);
 
 				$_query = new wp_query( $args );
@@ -291,17 +298,18 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 					$_query->the_post();
 
 					$post_title = htmlspecialchars( stripslashes( get_the_title() ) );
+
 					$list .= '
 							<li>
 								<a href="' . get_permalink() . '" title="'. $post_title .'" >
 									' . $post_title . '
 								</a>
 							</li>';
+					wp_reset_postdata();
 				}
 			}
 
-
-			$out .= '
+			$out = '
 			<section class="sidebar">
 				<nav class="sidebar-postlist">
 					<h3 class="postlist-title">'. __( "Related posts" ) . '</h3>
@@ -310,7 +318,6 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 					</ul>
 				</nav>
 			</section>';
-			//wp_reset_query();
 
 			return $out;
 		}
@@ -321,7 +328,8 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		 */
 		public function syntax_highlight ( $atts ,  $content = null ) {
 			wp_enqueue_script( 'rainbow' );
-			wp_enqueue_style( 'rainbow-obsidian' );
+			wp_enqueue_script( 'rainbow.linenumbers' );
+			wp_enqueue_style( 'obsidian' );
 
 			extract( shortcode_atts(array(
 				'lang' => 'generic'
@@ -331,7 +339,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 				$return = false;
 			}
 			else {
-				$return = '<pre><code data-language="' . $lang . '">' . $content . '</code></pre>';
+				$return = '<pre><code data-language="' . $lang . '">' . trim(str_replace( "\t", "  ", $content ) ) . '</code></pre>';
 			}
 
 			return $return;
@@ -365,10 +373,10 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 					$_post = get_post($aid);
 
 					/* set the titles and alternate texts */
-					$img['title'] = strip_tags ( attribute_escape($_post->post_title) );
+					$img['title'] = esc_attr($_post->post_title);
 					$img['alttext'] = strip_tags ( get_post_meta($_post->id, '_wp_attachment_image_alt', true) );
-					$img['caption'] = strip_tags ( attribute_escape($_post->post_excerpt) );
-					$img['description'] = strip_tags ( attribute_escape($_post->post_content) );
+					$img['caption'] = esc_attr($_post->post_excerpt);
+					$img['description'] = esc_attr($_post->post_content);
 					$images[ $aid ] = $img;
 				}
 			}
@@ -424,6 +432,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 
 			$cntr = 0;
 			$resolutions = array_keys( $this->image_sizes );
+			$mediaqueries = '';
 			foreach ( $bgimages[ $th ] as $resolution => $backgrounds ) {
 				$eq = "\n" . join( "\n", $bgimages[ $th ][ $resolution ] ) . "\n" . join( "\n", $bgimages[ self::std_prefix ][ $resolution ] );
 
@@ -469,7 +478,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 				$std = wp_get_attachment_image_src( $aid, 'medium' );
 				$thumbid = $galtype . '-' . self::thumb_prefix . $aid;
 				$previewid = $galtype . '-' . self::std_prefix . $aid;
-				if (!empty($img['description'])) $description = '<span class="thumb-description">'. $img['description'] .'</span>';
+				$description = (!empty($img['description'])) ? '<span class="thumb-description">'. $img['description'] .'</span>' : '';
 
 				$elements[ self::thumb_prefix ][ $aid] = '
 				<li>
@@ -497,10 +506,12 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 					</nav>
 				</section>
 				<nav class="adaptgal-links">'. wp_nav_menu( array( 'container' => '' , 'theme_location' => self::menu_portfolio, 'echo' => false  ) ) .'</nav>
-				<br class="clear" />
+				<div class="clear">&nbsp;</div>
 			</section>';
 
-			wp_enqueue_script ( 'jquery.adaptgal' );
+			wp_enqueue_script( 'jquery' );
+			wp_enqueue_script( 'jquery.touchSwipe' );
+			wp_enqueue_script( 'jquery.adaptgal' );
 
 			return $output;
 		}
@@ -536,7 +547,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 				$std = wp_get_attachment_image_src( $aid, 'medium' );
 				$thumbid = $galtype . '-' . self::lthumb_prefix . $aid;
 				$previewid = $galtype . '-' . self::std_prefix . $aid;
-				if (!empty($img['description'])) $description = '<span class="thumb-description">'. $img['description'] .'</span>';
+				$description = (!empty($img['description'])) ? '<span class="thumb-description">'. $img['description'] .'</span>' : '';
 
 				$elements[ $aid] = '
 				<li>
@@ -562,11 +573,53 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			return $output;
 		}
 
+		/**
+		 * replacing legacy code & formatting with newer ones
+		 *
+		 */
+		public function legacy ( $src ) {
+			/* old syntax highlight, seach for <code> tags */
+			$matches = array();
+			preg_match_all ( "'<code>(.*?)</code>'si", $src , $matches, PREG_SET_ORDER );
+
+			foreach ($matches as $match ) {
+				$shortcode = '[code]'.trim($match[1]).'[/code]';
+				$src = str_replace ( $match[0], $shortcode, $src );
+			}
+
+			/* replace strings within `` to monotype string */
+			$matches = array();
+			preg_match_all ( "'`(.*?)`'si", $src , $matches, PREG_SET_ORDER );
+
+			foreach ($matches as $match ) {
+				$shortcode = '<code>'.$match[1].'</code>';
+				$src = str_replace ( $match[0], $shortcode, $src );
+			}
+
+
+			return $src;
+		}
+
+
+		public function lightbox ( $src ) {
+
+			$matches = array();
+			preg_match_all('!http://[a-z0-9\-\.\/]+\.(?:jpe?g|png)!Ui' , $src , $matches);
+			if ( !empty ( $matches ) ) {
+				wp_enqueue_style( 'lightbox' );
+				wp_enqueue_script( 'jquery' );
+				wp_enqueue_script( 'jquery.lightbox' );
+				wp_enqueue_script( 'jquery.lightbox.images' );
+			}
+
+			return $src;
+		}
 
 	}
+
 }
 
-if ( !$petermolnareu_theme ) {
+if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {
 	$petermolnareu_theme = new petermolnareu();
 }
 

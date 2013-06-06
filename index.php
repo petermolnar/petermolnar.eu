@@ -11,6 +11,7 @@
 
 	$cat = get_query_var('cat');
 	$category_meta = array();
+	$category_template = false;
 	if ( !empty( $cat ) ) {
 		/* get category */
 		$category = get_category( $cat );
@@ -43,6 +44,8 @@
 		/* order by */
 		$category_meta['order-by'] = empty ( $category_meta['order-by'] ) ? 'date' : $category_meta['order-by'];
 		//$category_meta['order-by'] = 'date';
+
+		$category_meta['custom-template'] = '';
 
 		$_query_string = $query_string . '&posts_per_page=' . $posts_per_page . '&order=DESC&orderby=' . $category_meta['order-by'];
 
@@ -89,6 +92,7 @@
 						'tags' => false
 					);
 
+					if ( !isset( $category_meta['custom-template'] ) ) $category_meta['custom-template'] = '';
 					switch ( $category_meta['custom-template'] ) {
 						case '3col':
 							$category_additions['class'] = ' grid33';
@@ -106,6 +110,7 @@
 							);
 							break;
 					}
+
 					$is_single = is_single();
 					if ( is_single() && $category_template == false )
 						get_template_part('template', 'arcticle');

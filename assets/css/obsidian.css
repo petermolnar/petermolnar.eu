@@ -11,15 +11,22 @@
 pre, code {
 	font-family: monospace;
 	text-shadow: none;
+	font-size: 1em;
+	line-height: 1.2em;
 }
 
 pre {
 	background: #22282A;
-	word-wrap: break-word;
+	/*word-wrap: break-word;*/
 	margin: 0px;
 	padding: 0.6em;
-	color: #999;
+	color: #262C2E;
 	margin-bottom: 1em;
+	border-color: #242A2C;
+}
+
+code {
+	color: #999;
 }
 
 pre .comment {

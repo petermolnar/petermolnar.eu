@@ -17,8 +17,9 @@ Version:		3.1
 *********/
 @font-face {
 	font-family: 'Web Symbols';
-	src: url('assets/font/websymbols/websymbols-regular-webfont.eot');
-	src: url('assets/font/websymbols/websymbols-regular-webfont.eot?#iefix') format('embedded-opentype'),
+	/*src: url('assets/font/websymbols/websymbols-regular-webfont.eot');*/
+	src: local('Web Symbols'),
+		 url('assets/font/websymbols/websymbols-regular-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/websymbols/websymbols-regular-webfont.woff') format('woff'),
 		 url('assets/font/websymbols/websymbols-regular-webfont.ttf') format('truetype'),
 		 url('assets/font/websymbols/websymbols-regular-webfont.svg#Web Symbols') format('svg');
@@ -28,8 +29,9 @@ Version:		3.1
 
 @font-face {
 	font-family: 'Liberation Sans';
-	src: url('assets/font/liberation-sans/LiberationSans-Regular-webfont.eot');
-	src: url('assets/font/liberation-sans/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+	/*src: url('assets/font/liberation-sans/LiberationSans-Regular-webfont.eot');*/
+	src: local('Liberation Sans'),
+		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.woff') format('woff'),
 		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.ttf') format('truetype'),
 		 url('assets/font/liberation-sans/LiberationSans-Regular-webfont.svg#LiberationSansRegular') format('svg');
@@ -37,17 +39,16 @@ Version:		3.1
 	font-style: normal;
 }
 
-
-@font-face {
-	font-family: 'Liberation Mono';
-	src: url('assets/font/liberation-mono/liberationmono-regular-webfont.eot');
-	src: url('assets/font/liberation-mono/liberationmono-regular-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/liberation-mono/liberationmono-regular-webfont.woff') format('woff'),
-		 url('assets/font/liberation-mono/liberationmono-regular-webfont.ttf') format('truetype'),
-		 url('assets/font/liberation-mono/liberationmono-regular-webfont.svg#LiberationMonoRegular') format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
+/*@font-face {*/
+/*	font-family: 'Liberation Mono';*/
+/*	src: url('assets/font/liberation-mono/liberationmono-regular-webfont.eot');*/
+/*	src: url('assets/font/liberation-mono/liberationmono-regular-webfont.eot?#iefix') format('embedded-opentype'),*/
+/*		 url('assets/font/liberation-mono/liberationmono-regular-webfont.woff') format('woff'),*/
+/*		 url('assets/font/liberation-mono/liberationmono-regular-webfont.ttf') format('truetype'),*/
+/*		 url('assets/font/liberation-mono/liberationmono-regular-webfont.svg#LiberationMonoRegular') format('svg');*/
+/*	font-weight: normal;*/
+/*	font-style: normal;*/
+/*}*/
 
 /*************
 * ALIGNMENTS *
@@ -110,7 +111,7 @@ img.left {
 
 /**********
 * COLUMNS *
-***********/
+***********
 @media	( orientation: landscape ) and ( min-width: 1600px ) {
 	.column-2,
 	.column-3 {
@@ -148,12 +149,12 @@ body {
 	margin-right:auto;
 	margin-top:0.3em;
 	margin-bottom:0.3em;
-	line-height:1.4em;
+	line-height:1.8em;
 	font-family: 'Liberation Sans', sans-serif;
 	font-size:14px;
 	color:#999;
 	letter-spacing:0.03em;
-	text-shadow:1px 1px #111;
+	/*text-shadow:1px 1px #111;*/
 	font-weight: normal;
 }
 
@@ -217,9 +218,11 @@ ul, ol {
 h1, h2, h3, h4, h5, h6 {
 	font-weight:bold;
 	margin-top:1em;
+	margin-bottom:1em;
 	clear:both;
 	color:#bbb;
 	line-height: 120%;
+	text-shadow: 1px 1px #111;
 }
 
 h1 {
@@ -237,6 +240,7 @@ dt {
 	letter-spacing:0.1em;
 	margin-top:2em;
 	margin-bottom:0.3em;
+	text-shadow: 1px 1px #111;
 }
 
 dd {
@@ -311,6 +315,7 @@ pre {
 				background:-webkit-gradient(linear, left top, left bottom, from(#46484C), to(#2E3033));
 				background:linear-gradient(top, #46484C, #2E3033);
 				border-radius: 0.5em;
+				text-shadow: 1px 1px #111;
 			}
 
 				.content-navigation ul li a:hover,
@@ -580,8 +585,8 @@ pre {
 		overflow:hidden;
 		text-indent: -9999px;
 		opacity: 0;
-		-webkit-transition: opacity 0.3s ease-in-out;
-		transition: opacity 0.3s ease-in-out;
+		-webkit-transition: opacity 0.5s ease-in-out;
+		transition: opacity 0.5s ease-in-out;
 		background-size: contain;
 		background-position: center center;
 		background-repeat: no-repeat;
