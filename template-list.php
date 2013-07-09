@@ -23,10 +23,11 @@
 		<?php if ( has_post_thumbnail () ) { ?>
 			<a href="<?php the_permalink() ?>">
 			<?php
-				the_post_thumbnail('thumbnail', array(
+				$thumb = get_the_post_thumbnail( $post->ID, 'thumbnail', array(
 					'alt'	=> trim(strip_tags( $post->post_title )),
 					'title'	=> trim(strip_tags( $post->post_title )),
 				));
+				echo $petermolnareu_theme->replace_if_ssl ( $thumb );
 			?>
 			</a>
 		<?php } ?>

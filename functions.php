@@ -17,6 +17,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		public $theme_url = '';
 		public $image_sizes = array();
 		public $info = array();
+		private $urlfilters = array ();
 
 		public function __construct () {
 			$this->theme_url = $this->replace_if_ssl( get_bloginfo("stylesheet_directory") );
@@ -25,6 +26,56 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			$this->font_dir = $this->theme_url . '/assets/font/';
 			$this->image_dir = $this->theme_url . '/assets/image/';
 			$this->info = wp_get_theme( );
+
+			$this->urlfilters = array(
+				'post_link', // Normal post link
+				'post_type_link', // Custom post type link
+				'page_link', // Page link
+				'attachment_link', // Attachment link
+				//'get_shortlink', // Shortlink
+				'post_type_archive_link', // Post type archive link
+				'get_pagenum_link', // Paginated link
+				'get_comments_pagenum_link', // Paginated comment link
+				'term_link', // Term link, including category, tag
+				'search_link', // Search link
+				'day_link', // Date archive link
+				'month_link',
+				'year_link',
+
+				// site location
+				'option_siteurl',
+				'blog_option_siteurl',
+				'option_home',
+				'admin_url',
+				'home_url',
+				'includes_url',
+				'site_url',
+				'site_option_siteurl',
+				//'network_home_url',
+				//'network_site_url',
+
+				// debug only filters
+				'get_the_author_url',
+				'get_comment_link',
+				'wp_get_attachment_image_src',
+				'wp_get_attachment_thumb_url',
+				'wp_get_attachment_url',
+				'wp_login_url',
+				'wp_logout_url',
+				'wp_lostpassword_url',
+				//'get_stylesheet_uri',
+				// 'get_stylesheet_directory_uri',
+				// 'plugins_url',
+				// 'plugin_dir_url',
+				// 'stylesheet_directory_uri',
+				// 'get_template_directory_uri',
+				// 'template_directory_uri',
+				//'get_locale_stylesheet_uri',
+				//'script_loader_src', // plugin scripts url
+				//'style_loader_src', // plugin styles url
+				//'get_theme_root_uri'
+				// 'home_url'
+			);
 
 			$this->image_sizes = array (
 				460 => array (
@@ -83,16 +134,23 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 
 			/* unautop please */
 			remove_filter( 'the_content', 'wpautop' );
-			add_filter ('the_content', array( &$this, 'legacy' ), 1);
-			add_filter ('the_content', array( &$this, 'lightbox' ), 2);
+			add_filter( 'the_content', array( &$this, 'legacy' ), 1);
+			add_filter( 'the_content', array( &$this, 'lightbox' ), 2);
 			add_filter( 'the_content', 'wpautop', 20 );
 			add_filter( 'the_content', 'shortcode_unautop', 100 );
+			add_filter( 'the_content', array( &$this, 'fix_urls'), 100);
 
 			/* set & register image sizes for adaptgal */
 			foreach ( $this->image_sizes as $resolution => $sizes ) {
 				add_image_size( self::thumb_prefix . $resolution, $sizes[ self::thumb_prefix ], $sizes[ self::thumb_prefix ], true);
 				add_image_size( self::lthumb_prefix . $resolution, $sizes[ self::lthumb_prefix ], $sizes[ self::lthumb_prefix ], true);
 				add_image_size( self::std_prefix . $resolution, $sizes[ self::std_prefix ], $sizes[ self::std_prefix ], false);
+			}
+
+			if ( ! is_feed()  && ! get_query_var( 'sitemap' ) ) {
+				foreach ( $this->urlfilters as $filter ) {
+					add_filter( $filter, 'wp_make_link_relative' );
+				}
 			}
 		}
 
@@ -102,7 +160,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
 			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
 			wp_register_style( 'lightbox', $this->css_dir . 'jquery.lightbox-0.5.css', false, null );
-			wp_register_style( 'obsidian', $this->css_dir . 'obsidian.css', false, null );
+			wp_register_style( 'prism', $this->css_dir . 'prism.css', false, null );
 
 			/* CDN jquery */
 			wp_deregister_script( 'jquery' );
@@ -111,8 +169,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			/* pre-register scripts */
 			wp_register_script( 'jquery.lightbox',	$this->js_dir . 'jquery.lightbox-0.5.min.js', array( 'jquery' ), null, true );
 			wp_register_script( 'jquery.lightbox.images', $this->js_dir . 'jquery.lightbox.images.js', array( 'jquery', 'jquery.lightbox' ), null, true );
-			wp_register_script( 'rainbow' , $this->js_dir . 'rainbow-custom.min.js', false, null, true );
-			wp_register_script( 'rainbow.linenumbers' , $this->js_dir . 'rainbow.linenumbers.min.js', array('rainbow'), null, true );
+			wp_register_script( 'prism' , $this->js_dir . 'prism.js', false, null, true );
 			wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
 			wp_register_script( 'jquery.adaptgal', $this->js_dir . 'adaptgal.js', array('jquery', 'jquery.touchSwipe'), null, true );
 
@@ -152,7 +209,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		 * @return string URL with correct protocol
 		 *
 		 */
-		private function replace_if_ssl ( $url ) {
+		public function replace_if_ssl ( $url ) {
 			if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
 				$_SERVER['HTTPS'] = 'on';
 
@@ -327,19 +384,21 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		 *
 		 */
 		public function syntax_highlight ( $atts ,  $content = null ) {
-			wp_enqueue_script( 'rainbow' );
-			wp_enqueue_script( 'rainbow.linenumbers' );
-			wp_enqueue_style( 'obsidian' );
+			wp_enqueue_script( 'prism' );
+			wp_enqueue_style( 'prism' );
 
 			extract( shortcode_atts(array(
-				'lang' => 'generic'
+				'lang' => 'none'
 			), $atts));
 
 			if ( empty( $content ) ) {
 				$return = false;
 			}
 			else {
-				$return = '<pre><code data-language="' . $lang . '">' . trim(str_replace( "\t", "  ", $content ) ) . '</code></pre>';
+				$search = array( '<', '>' );
+				$replace = array( '&lt;', '&gt;' );
+				$content = str_replace ( $search, $replace, $content );
+				$return = '<pre class="line-numbers"><code class="language-' . $lang . '">' . trim(str_replace( "\t", "  ", $content ) ) . '</code></pre>';
 			}
 
 			return $return;
@@ -420,10 +479,13 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 
 			foreach ($images as $aid => $img ) {
 				foreach ( $this->image_sizes as $resolution => $sizes ) {
+					//$thumbnail = $this->replace_if_ssl( wp_get_attachment_image_src( $aid, $th . $resolution ) );
 					$thumbnail = wp_get_attachment_image_src( $aid, $th . $resolution );
 					if ( $thumbnail[3] != true ) {
+						//$thumbnail = $this->replace_if_ssl( wp_get_attachment_image_src( $aid, 'thumbnail' ) );
 						$thumbnail = wp_get_attachment_image_src( $aid, 'thumbnail' );
 					}
+					//$preview = $this->replace_if_ssl( wp_get_attachment_image_src( $aid, self::std_prefix . $resolution ) );
 					$preview = wp_get_attachment_image_src( $aid, self::std_prefix . $resolution );
 					$bgimages[ $th ][ $resolution ][ $aid ] = '#'. $galtype . '-' . $th . $aid .' { background-image: url('. $thumbnail[0] .'); }';
 					$bgimages[ self::std_prefix ][ $resolution ][ $aid ] = '#'. $galtype . '-' . self::std_prefix . $aid .' { background-image: url('. $preview[0] .'); }';
@@ -475,6 +537,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			$elements = array();
 
 			foreach ($images as $aid => $img ) {
+				//$std = $this->replace_if_ssl( wp_get_attachment_image_src( $aid, 'medium' ) );
 				$std = wp_get_attachment_image_src( $aid, 'medium' );
 				$thumbid = $galtype . '-' . self::thumb_prefix . $aid;
 				$previewid = $galtype . '-' . self::std_prefix . $aid;
@@ -544,6 +607,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			}
 
 			foreach ($images as $aid => $img ) {
+				//$std = $this->replace_if_ssl( wp_get_attachment_image_src( $aid, 'medium' ) );
 				$std = wp_get_attachment_image_src( $aid, 'medium' );
 				$thumbid = $galtype . '-' . self::lthumb_prefix . $aid;
 				$previewid = $galtype . '-' . self::std_prefix . $aid;
@@ -600,7 +664,25 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			return $src;
 		}
 
+		/**
+		 * replaces all non secure absolute url to relative, therefore making it secure
+		 */
+		public function fix_urls ( $src ) {
+			if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
+				$_SERVER['HTTPS'] = 'on';
 
+			if ( isset($_SERVER['HTTPS']) && (( strtolower($_SERVER['HTTPS']) == 'on' )  || ( $_SERVER['HTTPS'] == '1' ) )) {
+				$nonsecurl = str_replace ( 'https://', 'http://',  get_bloginfo('url') );
+				$securl = str_replace ( 'http://', 'https://',  get_bloginfo('url') );
+				$src = str_replace ( $nonsecurl, '', $src  );
+			}
+
+			return $src;
+		}
+
+		/**
+		 * auto-lightbox
+		 */
 		public function lightbox ( $src ) {
 
 			$matches = array();

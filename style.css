@@ -16,6 +16,17 @@ Version:		3.1
 * FONTS *
 *********/
 @font-face {
+	font-family: 'petermolnar';
+	src: local('petermolnar'),
+		 url('assets/font/petermolnar/petermolnar.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/petermolnar/petermolnar.woff') format('woff'),
+		 url('assets/font/petermolnar/petermolnar.ttf') format('truetype'),
+		 url('assets/font/petermolnar/petermolnar.svg#petermolnar') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
 	font-family: 'Web Symbols';
 	/*src: url('assets/font/websymbols/websymbols-regular-webfont.eot');*/
 	src: local('Web Symbols'),
@@ -158,6 +169,12 @@ body {
 	font-weight: normal;
 }
 
+blockquote {
+	margin-left: 1em;
+	padding-left: 0.6em;
+	border-left: 2px solid #666;
+}
+
 @media	(-webkit-min-device-pixel-ratio: 1.5) and ( orientation: landscape ),
 		( min-resolution: 220dpi ) and ( orientation: landscape ) {
 
@@ -179,11 +196,14 @@ body {
 a {
 	color:#ccc;
 	text-decoration:none;
+	transition: all 0.5s ease;
+	-webkit-transition: all 0.5s ease;
 }
 
 	a:hover {
 		text-decoration:none;
 		color:#fff;
+		text-shadow: #999 0px 0px 2px;
 	}
 
 b, strong {
@@ -805,23 +825,28 @@ photogal
 	}
 
 		.share ul li a:before {
-			font-family: "Web Symbols";
+			font-family: "petermolnar";
 			font-size: 1.4em;
 			line-height: 1.2em;
 			margin-right: 0.4em;
 		}
 
 		.share ul li a.facebook:before {
-			content:  'f';
+			/*content:  'f';*/
+			content:  '\e806';
 		}
 		.share ul li a.twitter:before {
-			content:  't';
+			/*content:  't';*/
+			content:  '\e807';
 		}
 		.share ul li a.googleplus:before {
-			content:  'g';
+			/*content:  'g';*/
+			content:  '\e804';
 		}
 		.share ul li a.comment:before {
-			content:  'c';
+			/*content:  'c';*/
+			content:  '\e80d';
+			
 		}
 
 /* pagination  ol */
@@ -903,14 +928,15 @@ photogal
 		width:80%;
 		border:1px dotted #2E3033;
 		margin-left: 1%;
-		text-align:left;
 		line-height:3.6em;
+		text-align:left;
 		margin-bottom: 0.6em;
 		text-overflow: ellipsis;
 		overflow: hidden;
 		color: #666;
 		-webkit-transition: all 0.3s ease-in-out;
 		transition: all 0.3s ease-in-out;
+		vertical-align:middle;
 	}
 
 		@media	( orientation:landscape ) and ( min-width : 720px ) {
@@ -926,7 +952,7 @@ photogal
 		}
 
 		.content-body .vcard a:before {
-			font-family: "Web Symbols";
+			font-family: "petermolnar";
 			font-size: 150%;
 			display: inline-block;
 			text-align: center;
@@ -934,14 +960,36 @@ photogal
 			pointer-events: none;
 			text-overflow: ellipsis;
 			overflow: hidden;
+			vertical-align:middle;
 		}
 
+        /*
 		.content-body .vcard .url:before { content: "H"; }
 		.content-body .vcard .email:before { content: "@"; }
 		.content-body .vcard .tel:before { content: "u"; }
 		.content-body .vcard .x-linkedin:before { content: "l"; }
 		.content-body .vcard .x-twitter:before { content: "t"; }
 		.content-body .vcard .x-cv:before { content: "a"; }
+        */
+        
+		.content-body .vcard .url:before { content: '\e810'; }
+		.content-body .vcard .email:before { content: '\e80f'; }
+		.content-body .vcard .tel:before { content: '\e808'; }
+		.content-body .vcard .x-linkedin:before { content: '\e805'; }
+		.content-body .vcard .x-twitter:before { content: '\e807'; }
+		.content-body .vcard .x-cv:before { content: '\e809'; }
+		.content-body .vcard .x-resumup:before { content: '\e80b'; }
+		.content-body .vcard .x-github:before { content: '\e803'; }
+		.content-body .vcard .x-googleplus:before { content: '\e804'; }
+
+/*
+.icon-left-hand:before { content: '\e80e'; }
+.icon-right-hand:before { content: '\e80c'; }
+.icon-mobile:before { content: '\e801'; }
+.icon-code:before { content: '\e80a'; }
+.icon-globe:before { content: '\e802'; }
+.icon-link:before { content: '\e800'; }
+*/
 
 
 /**
