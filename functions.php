@@ -17,7 +17,7 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		public $theme_url = '';
 		public $image_sizes = array();
 		public $info = array();
-		private $urlfilters = array ();
+		public $urlfilters = array ();
 
 		public function __construct () {
 			$this->theme_url = $this->replace_if_ssl( get_bloginfo("stylesheet_directory") );

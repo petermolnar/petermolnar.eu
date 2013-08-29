@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		3.1
+Version:		3.1.1
 */
 
 /** {*/
@@ -918,7 +918,7 @@ photogal
 		width: 17%;
 		margin-left: 1%;
 		margin-right: 1%;
-		margin-bottom: 6em;
+		/*margin-bottom: 6em;*/
 		height: auto;
 	}
 
