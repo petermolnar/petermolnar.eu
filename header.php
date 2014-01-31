@@ -4,6 +4,7 @@
 	<meta charset="<?php bloginfo('charset'); ?>" />
 	<title><?php wp_title( ); ?></title>
 	<link rel="author" href="https://plus.google.com/117393351799968573179/posts" />
+	<link rel="publisher" href="https://plus.google.com/117393351799968573179/posts" />
 	<?php wp_head(); ?>
 	<?php global $petermolnareu_theme; ?>
 </head>

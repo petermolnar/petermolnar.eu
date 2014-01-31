@@ -11,11 +11,9 @@
 				<?php the_title(); ?>
 			</a>
 		</h2>
-		<?php if ( $category_additions['time'] ): ?>
-			<time pubdate="<?php the_time( 'r' ); ?>">
-				<?php the_time( get_option('date_format') ); ?>
-			</time>
-		<?php endif; ?>
+        <?php if ( $category_additions['time'] ): ?>
+            <time pubdate="<?php the_time( 'r' ); ?>"><?php the_time( "Y. M d." ); ?></time>
+        <?php endif; ?>
 	</header>
 
 	<div class="arcticle-body">

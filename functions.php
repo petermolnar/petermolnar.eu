@@ -4,12 +4,9 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 
 	class petermolnareu {
 		const theme_constant = 'petermolnareu';
-		const std_prefix = 'src';
-		const thumb_prefix = 'thumb';
-		const lthumb_prefix = 'lthumb';
 		const menu_header = 'header';
-		const menu_portfolio = 'portfolio';
 
+		public $base_url = '';
 		public $js_dir = '';
 		public $css_dir = '';
 		public $font_dir = '';
@@ -18,8 +15,11 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 		public $image_sizes = array();
 		public $info = array();
 		public $urlfilters = array ();
+		private $cleanup = null;
+		private $adaptive_galleries = null;
 
 		public function __construct () {
+			$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
 			$this->theme_url = $this->replace_if_ssl( get_bloginfo("stylesheet_directory") );
 			$this->js_dir = $this->theme_url . '/assets/js/';
 			$this->css_dir = $this->theme_url . '/assets/css/';
@@ -27,82 +27,22 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			$this->image_dir = $this->theme_url . '/assets/image/';
 			$this->info = wp_get_theme( );
 
-			$this->urlfilters = array(
-				'post_link', // Normal post link
-				'post_type_link', // Custom post type link
-				'page_link', // Page link
-				'attachment_link', // Attachment link
-				//'get_shortlink', // Shortlink
-				'post_type_archive_link', // Post type archive link
-				'get_pagenum_link', // Paginated link
-				'get_comments_pagenum_link', // Paginated comment link
-				'term_link', // Term link, including category, tag
-				'search_link', // Search link
-				'day_link', // Date archive link
-				'month_link',
-				'year_link',
+			/* cleanup class */
+			$this->cleanup = new theme_cleaup();
 
-				// site location
-				'option_siteurl',
-				'blog_option_siteurl',
-				'option_home',
-				'admin_url',
-				'home_url',
-				'includes_url',
-				'site_url',
-				'site_option_siteurl',
-				//'network_home_url',
-				//'network_site_url',
-
-				// debug only filters
-				'get_the_author_url',
-				'get_comment_link',
-				'wp_get_attachment_image_src',
-				'wp_get_attachment_thumb_url',
-				'wp_get_attachment_url',
-				'wp_login_url',
-				'wp_logout_url',
-				'wp_lostpassword_url',
-				//'get_stylesheet_uri',
-				// 'get_stylesheet_directory_uri',
-				// 'plugins_url',
-				// 'plugin_dir_url',
-				// 'stylesheet_directory_uri',
-				// 'get_template_directory_uri',
-				// 'template_directory_uri',
-				//'get_locale_stylesheet_uri',
-				//'script_loader_src', // plugin scripts url
-				//'style_loader_src', // plugin styles url
-				//'get_theme_root_uri'
-				// 'home_url'
-			);
-
-			$this->image_sizes = array (
-				460 => array (
-					self::thumb_prefix => 60,
-					self::lthumb_prefix => 120,
-					self::std_prefix => 640,
-				),
-				720 => array (
-					self::thumb_prefix =>120,
-					self::lthumb_prefix => 240,
-					self::std_prefix => 1024,
-				),
-				1600 => array (
-					self::thumb_prefix => 180,
-					self::lthumb_prefix => 320,
-					self::std_prefix => 1200,
-				)
-			);
+			/* adaptive galleries class */
+			$this->adaptive_galleries = new adaptive_galleries();
 
 			/* theme init */
 			add_action( 'init', array( &$this, 'init'));
+			add_action( 'init', array( &$this->cleanup, 'filters'));
+			add_action( 'init', array( &$this->adaptive_galleries, 'init'));
+
 			/* set up CSS, JS and fonts */
 			add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
 		}
 
 		public function init () {
-
 			/* set theme supports */
 			add_theme_support( 'post-thumbnails' );
 			add_theme_support( 'menus' );
@@ -111,94 +51,51 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			/* add main menus */
 			register_nav_menus( array(
 				self::menu_header => __( self::menu_header , self::theme_constant ),
-				self::menu_portfolio => __( self::menu_portfolio, self::theme_constant ),
+				adaptive_galleries::menu_portfolio => __( adaptive_galleries::menu_portfolio, self::theme_constant )
 			) );
 
 			/* enable SVG uploads */
 			add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
-			/* modify css & js versioning */
-			//add_filter( 'script_loader_src', array( &$this, 'modify_asset_version' ) );
-			//add_filter( 'style_loader_src', array ( &$this, 'modify_asset_version' ) );
-
 			/* add syntax highlighting */
 			add_shortcode('code', array ( &$this, 'syntax_highlight' ) );
 			add_shortcode('cc', array ( &$this, 'syntax_highlight' ) );
 
-			/* adaptgal */
-			add_shortcode('adaptgal', array ( &$this, 'adaptgal' ) );
-			//add_shortcode('wp-galleriffic', array ( &$this, 'adaptgal' ) );
-
-			/* photogal */
-			add_shortcode('photogal', array ( &$this, 'photogal' ) );
-
-			/* unautop please */
-			remove_filter( 'the_content', 'wpautop' );
+			/* legacy shortcode handler */
 			add_filter( 'the_content', array( &$this, 'legacy' ), 1);
+
+			/* lightbox all the things! */
 			add_filter( 'the_content', array( &$this, 'lightbox' ), 2);
-			add_filter( 'the_content', 'wpautop', 20 );
-			add_filter( 'the_content', 'shortcode_unautop', 100 );
-			add_filter( 'the_content', array( &$this, 'fix_urls'), 100);
 
-			/* set & register image sizes for adaptgal */
-			foreach ( $this->image_sizes as $resolution => $sizes ) {
-				add_image_size( self::thumb_prefix . $resolution, $sizes[ self::thumb_prefix ], $sizes[ self::thumb_prefix ], true);
-				add_image_size( self::lthumb_prefix . $resolution, $sizes[ self::lthumb_prefix ], $sizes[ self::lthumb_prefix ], true);
-				add_image_size( self::std_prefix . $resolution, $sizes[ self::std_prefix ], $sizes[ self::std_prefix ], false);
-			}
-
-			if ( ! is_feed()  && ! get_query_var( 'sitemap' ) ) {
-				foreach ( $this->urlfilters as $filter ) {
-					add_filter( $filter, 'wp_make_link_relative' );
-				}
-			}
 		}
 
-
 		public function register_css_js () {
-			/* register styles */
+			/* enqueue CSS */
 			wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
+			wp_enqueue_style( 'reset' );
 			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+			wp_enqueue_style( 'style' );
+
+			/* register styles for later optional use */
 			wp_register_style( 'lightbox', $this->css_dir . 'jquery.lightbox-0.5.css', false, null );
 			wp_register_style( 'prism', $this->css_dir . 'prism.css', false, null );
 
-			/* CDN jquery */
+			/* CDN scripts */
 			wp_deregister_script( 'jquery' );
 			wp_register_script( 'jquery', $this->replace_if_ssl( 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js' ), false, null, true );
 
-			/* pre-register scripts */
+			wp_register_script('conditionizr', 'https://cdnjs.cloudflare.com/ajax/libs/conditionizr.js/4.0.0/conditionizr.js', array(), '4.0.0'); // Conditionizr
+			wp_enqueue_script('conditionizr'); // Enqueue it!
+
+			wp_register_script('modernizr', 'https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js', array(), '2.6.2'); // Modernizr
+			wp_enqueue_script('modernizr'); // Enqueue it!
+
+			/* pre-register scripts for later, conditional use */
 			wp_register_script( 'jquery.lightbox',	$this->js_dir . 'jquery.lightbox-0.5.min.js', array( 'jquery' ), null, true );
 			wp_register_script( 'jquery.lightbox.images', $this->js_dir . 'jquery.lightbox.images.js', array( 'jquery', 'jquery.lightbox' ), null, true );
 			wp_register_script( 'prism' , $this->js_dir . 'prism.js', false, null, true );
 			wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
 			wp_register_script( 'jquery.adaptgal', $this->js_dir . 'adaptgal.js', array('jquery', 'jquery.touchSwipe'), null, true );
-
-			/* enqueue CSS */
-			wp_enqueue_style( 'reset' );
-			wp_enqueue_style( 'style' );
-		}
-
-		/**
-		 *
-		 *
-		 */
-		public function modify_asset_version ( $src ) {
-			/*
-			//global $wp_version;
-
-			$version = $this->info->Version;
-			$version_str = '?ver='.$version;
-			$version_str_offset = strlen( $src ) - strlen( $version_str );
-
-			if( substr( $src, $version_str_offset ) == $version_str )
-				return substr( $src, 0, $version_str_offset );
-			else
-				return $src;
-			*/
-			//
-			//$qm = substr( $src, '?' );
-			//$base = ($qm == false ) ? $src : substr( $src, 0, $qm );
-			//return $base . '?' . $this->info->Version;
 		}
 
 		/**
@@ -403,6 +300,212 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 
 			return $return;
 
+		}
+
+		/**
+		 * replacing legacy code & formatting with newer ones
+		 *
+		 */
+		public function legacy ( $src ) {
+			/* old syntax highlight, seach for <code> tags */
+			$matches = array();
+			preg_match_all ( "'<code>(.*?)</code>'si", $src , $matches, PREG_SET_ORDER );
+
+			foreach ($matches as $match ) {
+				$shortcode = '[code]'.trim($match[1]).'[/code]';
+				$src = str_replace ( $match[0], $shortcode, $src );
+			}
+
+			/* replace strings within `` to monotype string *
+			$matches = array();
+			preg_match_all ( "'`(.*?)`'si", $src , $matches, PREG_SET_ORDER );
+
+			foreach ($matches as $match ) {
+				$shortcode = '<code>'.$match[1].'</code>';
+				$src = str_replace ( $match[0], $shortcode, $src );
+			}
+			 */
+
+			return $src;
+		}
+
+		/**
+		 * auto-lightbox
+		 */
+		public function lightbox ( $src ) {
+
+			$matches = array();
+			preg_match_all('!http://[a-z0-9\-\.\/]+\.(?:jpe?g|png)!Ui' , $src , $matches);
+			if ( !empty ( $matches ) ) {
+				wp_enqueue_style( 'lightbox' );
+				wp_enqueue_script( 'jquery' );
+				wp_enqueue_script( 'jquery.lightbox' );
+				wp_enqueue_script( 'jquery.lightbox.images' );
+			}
+
+			return $src;
+		}
+
+	}
+
+}
+
+if ( ! class_exists( 'theme_cleaup' ) ) {
+
+	class theme_cleaup {
+		public $urlfilters = array ();
+
+		public function __construct () {
+
+			$this->urlfilters = array(
+				'post_link', // Normal post link
+				'post_type_link', // Custom post type link
+				'page_link', // Page link
+				'attachment_link', // Attachment link
+
+				'post_type_archive_link', // Post type archive link
+				'get_pagenum_link', // Paginated link
+				'get_comments_pagenum_link', // Paginated comment link
+				'term_link', // Term link, including category, tag
+				'search_link', // Search link
+				'day_link', // Date archive link
+				'month_link',
+				'year_link',
+				'get_comment_link',
+				'wp_get_attachment_image_src',
+				'wp_get_attachment_thumb_url',
+				'wp_get_attachment_url',
+				//'wp_login_url',
+				//'wp_logout_url',
+				//'wp_lostpassword_url',
+				// site location
+				//'option_siteurl',
+				//'blog_option_siteurl',
+				//'option_home',
+				//'admin_url',
+				//'home_url',
+				//'includes_url',
+				//'site_url',
+				//'site_option_siteurl',
+				//'network_home_url',
+				//'network_site_url',
+				//'get_shortlink', // Shortlink
+				//'get_the_author_url',
+			);
+
+			//remove_action('wp_head', 'feed_links_extra', 3); // Display the links to the extra feeds such as category feeds
+			//remove_action('wp_head', 'feed_links', 2); // Display the links to the general feeds: Post and Comment Feed
+			remove_action('wp_head', 'rsd_link'); // Display the link to the Really Simple Discovery service endpoint, EditURI link
+			remove_action('wp_head', 'wlwmanifest_link'); // Display the link to the Windows Live Writer manifest file.
+			remove_action('wp_head', 'index_rel_link'); // Index link
+			remove_action('wp_head', 'parent_post_rel_link', 10, 0); // Prev link
+			remove_action('wp_head', 'start_post_rel_link', 10, 0); // Start link
+			remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0); // Display relational links for the posts adjacent to the current post.
+			remove_action('wp_head', 'wp_generator'); // Display the XHTML generator that is generated on the wp_head hook, WP version
+			remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
+			remove_action('wp_head', 'rel_canonical');
+			//remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
+
+			//add_action('init', array ( &$this, 'flush_rules'), 99);
+
+
+		}
+
+		public function filters() {
+			/* relative urls */
+			add_filter( 'the_content', array( &$this, 'fix_urls'), 100);
+
+/*			if ( ! is_feed()  && ! get_query_var( 'sitemap' ) ) {
+				foreach ( $this->urlfilters as $filter ) {
+					add_filter( $filter, 'wp_make_link_relative' );
+				}
+			}
+*/
+			/* reorder autop */
+			remove_filter( 'the_content', 'wpautop' );
+			add_filter( 'the_content', 'wpautop', 20 );
+			add_filter( 'the_content', 'shortcode_unautop', 100 );
+
+			/**/
+			add_filter( 'wp_title', array(&$this, 'nice_title') );
+
+		}
+
+		public function nice_title ( $title ) {
+			return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
+		}
+
+		/**
+		 * replaces all non secure absolute url to relative, therefore making it secure
+		 */
+		public function fix_urls ( $src ) {
+			if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
+				$_SERVER['HTTPS'] = 'on';
+
+			if ( isset($_SERVER['HTTPS']) && (( strtolower($_SERVER['HTTPS']) == 'on' )  || ( $_SERVER['HTTPS'] == '1' ) )) {
+				$nonsecurl = str_replace ( 'https://', 'http://',  get_bloginfo('url') );
+				$securl = str_replace ( 'http://', 'https://',  get_bloginfo('url') );
+				$src = str_replace ( $nonsecurl, '', $src  );
+			}
+
+			return $src;
+		}
+
+		// HTML5 Blank: Remove 'text/css' from our enqueued stylesheet
+		public function style_remove($tag) {
+			return preg_replace('~\s+type=["\'][^"\']++["\']~', '', $tag);
+		}
+
+		// HTML5 Blank: Remove thumbnail width and height dimensions that prevent fluid images in the_thumbnail
+		public function remove_thumbnail_dimensions( $html ) {
+			$html = preg_replace('/(width|height)=\"\d*\"\s/', "", $html);
+			return $html;
+		}
+
+	}
+}
+
+if ( ! class_exists( 'adaptive_galleries' ) ) {
+	class adaptive_galleries {
+		const std_prefix = 'src';
+		const thumb_prefix = 'thumb';
+		const lthumb_prefix = 'lthumb';
+		const menu_portfolio = 'portfolio';
+
+		public function __construct () {
+			$this->image_sizes = array (
+				460 => array (
+					self::thumb_prefix => 60,
+					self::lthumb_prefix => 120,
+					self::std_prefix => 640,
+				),
+				720 => array (
+					self::thumb_prefix =>120,
+					self::lthumb_prefix => 240,
+					self::std_prefix => 1024,
+				),
+				1600 => array (
+					self::thumb_prefix => 180,
+					self::lthumb_prefix => 320,
+					self::std_prefix => 1200,
+				)
+			);
+		}
+
+		public function init () {
+			/* adaptgal */
+			add_shortcode('adaptgal', array ( &$this, 'adaptgal' ) );
+			add_shortcode('wp-galleriffic', array ( &$this, 'adaptgal' ) );
+
+			/* photogal */
+			add_shortcode('photogal', array ( &$this, 'photogal' ) );
+
+			/* set & register image sizes for adaptgal */
+			foreach ( $this->image_sizes as $resolution => $sizes ) {
+				add_image_size( self::thumb_prefix . $resolution, $sizes[ self::thumb_prefix ], $sizes[ self::thumb_prefix ], true);
+				add_image_size( self::lthumb_prefix . $resolution, $sizes[ self::lthumb_prefix ], $sizes[ self::lthumb_prefix ], true);
+				add_image_size( self::std_prefix . $resolution, $sizes[ self::std_prefix ], $sizes[ self::std_prefix ], false);
+			}
 		}
 
 		/**
@@ -637,70 +740,11 @@ if ( ! class_exists( 'petermolnareu' ) ) {
 			return $output;
 		}
 
-		/**
-		 * replacing legacy code & formatting with newer ones
-		 *
-		 */
-		public function legacy ( $src ) {
-			/* old syntax highlight, seach for <code> tags */
-			$matches = array();
-			preg_match_all ( "'<code>(.*?)</code>'si", $src , $matches, PREG_SET_ORDER );
-
-			foreach ($matches as $match ) {
-				$shortcode = '[code]'.trim($match[1]).'[/code]';
-				$src = str_replace ( $match[0], $shortcode, $src );
-			}
-
-			/* replace strings within `` to monotype string */
-			$matches = array();
-			preg_match_all ( "'`(.*?)`'si", $src , $matches, PREG_SET_ORDER );
-
-			foreach ($matches as $match ) {
-				$shortcode = '<code>'.$match[1].'</code>';
-				$src = str_replace ( $match[0], $shortcode, $src );
-			}
-
-
-			return $src;
-		}
-
-		/**
-		 * replaces all non secure absolute url to relative, therefore making it secure
-		 */
-		public function fix_urls ( $src ) {
-			if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
-				$_SERVER['HTTPS'] = 'on';
-
-			if ( isset($_SERVER['HTTPS']) && (( strtolower($_SERVER['HTTPS']) == 'on' )  || ( $_SERVER['HTTPS'] == '1' ) )) {
-				$nonsecurl = str_replace ( 'https://', 'http://',  get_bloginfo('url') );
-				$securl = str_replace ( 'http://', 'https://',  get_bloginfo('url') );
-				$src = str_replace ( $nonsecurl, '', $src  );
-			}
-
-			return $src;
-		}
-
-		/**
-		 * auto-lightbox
-		 */
-		public function lightbox ( $src ) {
-
-			$matches = array();
-			preg_match_all('!http://[a-z0-9\-\.\/]+\.(?:jpe?g|png)!Ui' , $src , $matches);
-			if ( !empty ( $matches ) ) {
-				wp_enqueue_style( 'lightbox' );
-				wp_enqueue_script( 'jquery' );
-				wp_enqueue_script( 'jquery.lightbox' );
-				wp_enqueue_script( 'jquery.lightbox.images' );
-			}
-
-			return $src;
-		}
-
 	}
-
 }
 
+
+/**** END OF FUNCTIONS *****/
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {
 	$petermolnareu_theme = new petermolnareu();
 }
