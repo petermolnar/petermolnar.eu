@@ -175,6 +175,7 @@ blockquote {
 	border-left: 2px solid #666;
 }
 
+
 @media	(-webkit-min-device-pixel-ratio: 1.5) and ( orientation: landscape ),
 		( min-resolution: 220dpi ) and ( orientation: landscape ) {
 
