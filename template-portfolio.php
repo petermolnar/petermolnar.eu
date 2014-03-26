@@ -3,7 +3,8 @@
 	global $petermolnareu_theme;
 
 	$content = get_the_content();
-	$content = str_replace('[wp-galleriffic]', '', $content);
+	$to_clear = array ('[wp-galleriffic]','[photogal]','[adaptgal]');
+	$content = str_replace($to_clear, '', $content);
 
 ?>
 

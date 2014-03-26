@@ -7,13 +7,17 @@
 <arcticle id="post-<?php the_ID(); ?>" class="arcticle-list-element <?php echo $category_additions['class']; ?>">
 	<header class="article-header">
 		<h2>
+		<?php if ( $category_additions['time'] ): ?>
+			<time class="arcticle-pubdate" pubdate="<?php the_time( 'r' ); ?>">
+				<span class="year"><?php the_time( 'Y' ); ?></span>
+				<span class="month"><?php the_time( 'M' ); ?></span>
+				<span class="day"><?php the_time( 'd' ); ?></span>
+			</time>
+		<?php endif; ?>
 			<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
 				<?php the_title(); ?>
 			</a>
 		</h2>
-        <?php if ( $category_additions['time'] ): ?>
-            <time pubdate="<?php the_time( 'r' ); ?>"><?php the_time( "Y. M d." ); ?></time>
-        <?php endif; ?>
 	</header>
 
 	<div class="arcticle-body">
@@ -33,6 +37,9 @@
 		<?php the_excerpt(); ?>
 	</div>
 
+		<?php
+		/*
+
 	<footer class="article-footer">
 		<nav class="arcticle-tags">
 			<?php if ( $category_additions['tags'] ) { ?>
@@ -45,7 +52,9 @@
 			</a>
 		</nav>
 
+
 	</footer>
+		*/ ?>
 
 	<br class="clear" />
 </arcticle>

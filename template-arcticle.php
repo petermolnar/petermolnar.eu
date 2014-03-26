@@ -7,17 +7,18 @@
 	<arcticle id="post-<?php the_ID(); ?>" class="arcticle-single <?php echo $category_additions['class']; ?>">
 		<header class="article-header">
 			<h2>
+			<?php if ( $category_additions['time'] ): ?>
+				<time class="arcticle-pubdate" pubdate="<?php the_time( 'r' ); ?>">
+					<span class="year"><?php the_time( 'Y' ); ?></span>
+					<span class="month"><?php the_time( 'M' ); ?></span>
+					<span class="day"><?php the_time( 'd' ); ?></span>
+				</time>
+			<?php endif; ?>
 				<a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
 					<?php the_title(); ?>
 				</a>
 			</h2>
-			<?php if ( $category_additions['time'] ): ?>
-				<time pubdate="<?php the_time( 'r' ); ?>">
-					<?php
-						the_time( get_option('date_format') );
-					?>
-				</time>
-			<?php endif; ?>
+
 		</header>
 
 		<div class="arcticle-body column-2">
@@ -30,10 +31,7 @@
 ?>
 
 <footer class="article-single-footer">
-	<nav class="arcticle-tags">
-		<?php	the_tags( '', ', ', '' ); ?>
-	</nav>
 	<?php if ( $category_additions['share'] ) {
-		$petermolnareu_theme->share ( get_permalink() , wp_title( '', false ), $post->ID );
+		echo $petermolnareu_theme->share ( get_permalink() , wp_title( '', false ) );
 	} ?>
 </footer>
