@@ -23,7 +23,7 @@ b, u, i, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
-arcticle, aside, canvas, details, figcaption, figure,
+article, aside, canvas, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section, summary,
 time, mark, audio, video {
 	margin: 0;
@@ -35,7 +35,7 @@ time, mark, audio, video {
 }
 
 html, body, div, hr, blockquote, pre, fieldset, table, p,
-arcticle, aside, audio, details, figcaption,figure, footer, header, hgroup,
+article, aside, audio, details, figcaption,figure, footer, header, hgroup,
 menu, nav, section {
 	display:block;
 }

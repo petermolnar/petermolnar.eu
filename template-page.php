@@ -3,6 +3,6 @@
 	global $petermolnareu_theme;
 ?>
 
-<arcticle id="page-<?php the_ID(); ?>" class="single-arcticle">
+<article id="page-<?php the_ID(); ?>" class="single-article">
 	<?php the_content(); ?>
-</arcticle>
+</article>

@@ -1,7 +1,6 @@
 <?php
 	global $post;
 	global $petermolnareu_theme;
-	global $category_additions;
 
 	$official_url = get_post_meta( $post->ID, 'opensource-url', true);
 	$project_name = get_post_meta( $post->ID, 'opensource-project-name', true);
@@ -10,7 +9,7 @@
 
 ?>
 
-<arcticle id="post-<?php the_ID(); ?>" class="article-list-element arcticle-opensource">
+<article id="post-<?php the_ID(); ?>" class="article-list-element article-opensource">
 	<?php if ( !empty ( $github_link ) ) { ?>
 
 	<?php } ?>
@@ -19,8 +18,8 @@
 		<h2><a href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 	</header>
 
-	<div class="arcticle-body">
-		<div class="arcticle-excerpt">
+	<div class="article-body">
+		<div class="article-excerpt">
 			<?php the_excerpt(); ?>
 		</div>
 		<dl class="opensource-data">
@@ -43,4 +42,4 @@
 	</div>
 
 	<br class="clear" />
-</arcticle>
+</article>

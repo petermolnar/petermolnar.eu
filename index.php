@@ -4,6 +4,8 @@
 
 	global $petermolnareu_theme;
 	global $query_string;
+	global $post_format;
+	global $category_meta;
 	$_query_string = $query_string;
 	//$posts_per_page = 10;
 
@@ -44,9 +46,6 @@
 			$category_meta[ $key ] = $val;
 
 		}
-		echo "<!-- ";
-		print_r ( $category_meta );
-		echo "-->";
 
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
 
@@ -69,32 +68,37 @@
 		while ( have_posts() ) {
 			the_post();
 
-			$format = get_post_format();
-			if ( $format === false )
-				$format = get_post_type();
+			$post_format = get_post_format();
+			if ( $post_format === false )
+				$post_format = get_post_type();
 
-			$is_single = is_single();
-
-			switch ( $format ) {
-				case 'page':
-					get_template_part('template', 'page');
-					break;
-				case 'gallery':
-					get_template_part('template', 'portfolio');
-					break;
-				case 'image':
-					get_template_part('template', 'photoblog');
-					break;
-				default:
-					if ( is_single() )
-						get_template_part('template', 'arcticle');
-					elseif ( !empty($category_meta['custom-template']) && $category_meta['custom-template'] != 'default'  )
-						get_template_part('template', $category_meta['custom-template'] );
-					else
-						get_template_part('template', 'list');
-					break;
+			$is_single = is_singular();
+			if ( $is_single ) {
+					echo "<!-- SINGLE -->";
+					switch ( $post_format ) {
+						case 'page':
+						case 'aside':
+							get_template_part('template', 'page');
+							break;
+						case 'gallery':
+							get_template_part('template', 'portfolio');
+							break;
+						case 'image':
+							get_template_part('template', 'photoblog');
+							break;
+						default:
+							get_template_part('template', 'article');
+				}
 			}
-
+			elseif ( !empty($category_meta['custom-template']) && $category_meta['custom-template'] != 'default'  ) {
+					get_template_part('template', $category_meta['custom-template'] );
+			}
+			else {
+				if ( $post_format == 'image' )
+					get_template_part('template', 'photoblog');
+				else
+					get_template_part('template', 'list');
+			}
 		}
 	}
 

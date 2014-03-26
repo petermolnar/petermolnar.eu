@@ -50,7 +50,7 @@ class petermolnareu {
 		/* set theme supports */
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
-		add_theme_support( 'post-formats', array( 'gallery', 'image', 'link', 'chat', 'quote', 'aside', 'status' ) );
+		add_theme_support( 'post-formats', array( 'gallery', 'image', 'status', 'aside' ) );
 
 		/* add main menus */
 		register_nav_menus( array(
@@ -96,6 +96,7 @@ class petermolnareu {
 		/* CDN scripts */
 		wp_deregister_script( 'jquery' );
 		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js' ), false, null, true );
+		wp_enqueue_script( 'jquery' );
 
 		wp_register_script( 'prism' , $this->js_dir . 'prism.js', false, null, true );
 		wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
@@ -180,7 +181,7 @@ class petermolnareu {
 
 		if ($comment) {
 			$share['comment'] = array (
-				'url'=>get_permalink( $post->ID ),
+				'url'=>get_permalink( $post->ID ) . "#comments",
 				'title'=>__('comment', self::theme_constant),
 			);
 		}

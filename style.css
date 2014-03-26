@@ -84,7 +84,7 @@ body {
   max-width: 100em;
   width: 98%;
   margin: 0.3em auto 0.3em auto;
-  line-height: 1.8em;
+  line-height: 1.4em;
   font-family: 'Liberation Sans', sans-serif;
   font-size: 14px;
   color: #999999;
@@ -105,14 +105,13 @@ a {
 a:hover {
   text-decoration: none;
   color: #ffffff;
-  text-shadow: #999999 0px 0px 2px;
 }
 b,
 strong {
   font-weight: bold;
 }
 p {
-  margin: 1em 0 1em 0;
+  margin: 0.6em 0 0.6em 0;
 }
 table {
   border-collapse: separate;
@@ -134,20 +133,27 @@ h4,
 h5,
 h6 {
   font-weight: bold;
-  margin: 1em 0 0.6em 0;
   clear: both;
   color: #b3b3b3;
   text-shadow: 1px 1px #111111;
 }
 h1 {
   font-size: 1.4em;
+  margin: 1em 0 0.6em 0;
 }
 h2 {
   font-size: 1.2em;
 }
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 1.4em 0 1em 0;
+}
 dt {
   clear: both;
-  line-height: 1.4em;
+  line-height: 1.2em;
   font-size: 1em;
   margin-top: 1em 0 0.3em 0;
   text-shadow: 1px 1px #111111;
@@ -185,6 +191,10 @@ pre {
 .icon-blank:before {
   content: '\e817';
 }
+.icon-link-ext:before {
+  content: '\e821';
+}
+/* '' */
 .icon-download:before {
   content: '\e811';
 }
@@ -197,6 +207,10 @@ pre {
 .icon-code:before {
   content: '\e80e';
 }
+.icon-export:before {
+  content: '\e820';
+}
+/* '' */
 .icon-comment:before {
   content: '\e812';
 }
@@ -447,6 +461,9 @@ pre {
   padding: 0 0.6em 0 0.6em;
 }
 /* ARCTICLE */
+.article-list-element {
+  margin: 0 0 0.6em 0;
+}
 .article-header {
   position: relative;
   clear: both;
@@ -457,49 +474,66 @@ pre {
   line-height: 1.4em;
   display: inline-block;
 }
-.arcticle-pubdate {
+.article-pubdate {
   display: inline-block;
   position: relative;
   height: 2.8em;
-  width: 5.04em;
+  width: 4em;
   font-weight: normal;
+  color: #8c8c8c;
 }
-.arcticle-pubdate .day,
-.arcticle-pubdate .month,
-.arcticle-pubdate .year,
-.arcticle-pubdate .hour {
+.article-pubdate .day,
+.article-pubdate .month,
+.article-pubdate .year,
+.article-pubdate .hour {
   position: absolute;
 }
-.arcticle-pubdate .day {
+.article-pubdate .day,
+.article-pubdate .hour {
   font-size: 1.4em;
   top: 1.2em;
-  left: 1.4em;
 }
-.arcticle-pubdate .month {
+.article-pubdate .day {
+  left: 1.26em;
+}
+.article-pubdate .month {
   top: 0.3em;
-  left: 1.4em;
-  font-size: 1.4em;
+  left: 1.2em;
+  font-size: 1.2em;
 }
-.arcticle-pubdate .year {
+.article-pubdate .year {
   top: 1em;
-  left: 0;
+  left: -0.6em;
   font-size: 1em;
   rotation: -90deg !important;
   -webkit-transform: rotate(-90deg);
   -moz-transform: rotate(-90deg);
+  color: #666666;
 }
-.article-thumbnail {
+.article-pubdate .hour {
+  left: 3.08em;
+}
+.article-thumbnail,
+.article-thumbnail-small {
   display: block;
   float: left;
-  margin: 0 0.6em 0.6em 0;
-  width: 8%;
-  max-width: 90px;
+  margin: 0.3em 0.6em 0.6em 0;
 }
-.article-thumbnail img {
+.article-thumbnail img,
+.article-thumbnail-small img {
   width: 100%;
   height: auto;
   width: auto\9;
   /* ie8 fix */
+}
+.article-thumbnail {
+  width: 8%;
+  max-width: 90px;
+}
+.article-thumbnail-small {
+  margin: 0.6em 0.6em 0.3em 0;
+  width: 6%;
+  max-width: 70px;
 }
 /* ADAPTGAL */
 .adaptgal {
@@ -647,7 +681,6 @@ pre {
 }
 /* SIDEBAR */
 .sidebar {
-  font-size: 0.8em;
   list-style-type: none;
   padding: 0;
   margin: 0;
@@ -658,7 +691,7 @@ pre {
   margin: 0;
 }
 .sidebar li {
-  margin: 0 0 0.3em 0;
+  margin: 0 0 1em 0;
   padding: 0 0 0.3em 0;
   border-bottom: 1px dotted #3e4045;
 }
@@ -666,6 +699,7 @@ pre {
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
+  color: #8c8c8c;
 }
 .sidebar li a:before {
   font-family: "petermolnar";
@@ -681,7 +715,10 @@ pre {
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
-  content: "\e80e";
+  content: "\e821";
+}
+.sidebar li a:hover {
+  color: #e6e6e6;
 }
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi) {
@@ -885,7 +922,7 @@ pre {
 }
 .forkongithub a,
 .forkongithub-line a {
-  font-size: 0.8em;
+  font-size: 0.9em;
   background: #000000;
   text-align: center;
   font-weight: bold;
@@ -912,13 +949,6 @@ pre {
 .forkongithub-line a:hover,
 .forkongithub a:hover {
   opacity: 0.99;
-}
-.arcticle-opensource {
-  clear: both;
-  position: relative;
-}
-.arcticle-opensource .arcticle-body {
-  padding: 0 0 0 2.8em;
 }
 /* TEMP */
 .adaptgal-links {

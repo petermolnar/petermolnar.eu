@@ -5,6 +5,7 @@
 
 	<?php
 		if ( is_single() && comments_open()) {
+			?><a id="comments" /><?php
 			comments_template( );
 		}
 	?>
