@@ -6,6 +6,7 @@
 	global $query_string;
 	global $post_format;
 	global $category_meta;
+	global $category;
 	$_query_string = $query_string;
 	//$posts_per_page = 10;
 
@@ -47,6 +48,9 @@
 
 		}
 
+		if ( $category->slug == 'photoblog' && is_user_logged_in() )
+			$category_meta['posts-per-page'] = 9;
+
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
 
 	}
@@ -74,17 +78,14 @@
 
 			$is_single = is_singular();
 			if ( $is_single ) {
-					echo "<!-- SINGLE -->";
+					//echo "<!-- SINGLE -->";
 					switch ( $post_format ) {
 						case 'page':
 						case 'aside':
 							get_template_part('template', 'page');
 							break;
 						case 'gallery':
-							get_template_part('template', 'portfolio');
-							break;
-						case 'image':
-							get_template_part('template', 'photoblog');
+							get_template_part('template', 'gallery');
 							break;
 						default:
 							get_template_part('template', 'article');
@@ -94,10 +95,7 @@
 					get_template_part('template', $category_meta['custom-template'] );
 			}
 			else {
-				if ( $post_format == 'image' )
-					get_template_part('template', 'photoblog');
-				else
-					get_template_part('template', 'list');
+				get_template_part('template', 'list');
 			}
 		}
 	}

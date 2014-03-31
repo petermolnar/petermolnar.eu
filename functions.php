@@ -19,6 +19,7 @@ class petermolnareu {
 	private $cleanup = null;
 	//private $adaptive_galleries = null;
 	private $adaptive_images = null;
+	//public $imgprefixes = array();
 
 	public function __construct () {
 		$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
@@ -35,6 +36,7 @@ class petermolnareu {
 		/* adaptive galleries class */
 		//$this->adaptive_galleries = new adaptive_galleries();
 		$this->adaptive_images = new adaptive_images( $this );
+		//$this->imgprefixes = $this->adaptive_images->prefixes;
 
 		/* theme init */
 		add_action( 'init', array( &$this, 'init'));
@@ -69,9 +71,8 @@ class petermolnareu {
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
 
 		/* lightbox all the things! */
-		add_filter( 'the_content', array( &$this, 'lightbox' ), 2);
+		//add_filter( 'the_content', array( &$this, 'lightbox' ), 2);
 
-		add_shortcode('adaptgal', array ( &$this->adaptive_images, 'adaptgal' ) );
 		add_shortcode('photogal', array ( &$this->adaptive_images, 'adaptgal' ) );
 		add_shortcode('wp-galleriffic', array ( &$this->adaptive_images, 'adaptgal' ) );
 
@@ -83,22 +84,21 @@ class petermolnareu {
 		wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
 		wp_enqueue_style( 'reset' );
 
-		//if ( is_user_logged_in() ) wp_register_style( 'style', $this->theme_url . '/style-beta.css' , array('reset'), $this->info->version );
-		//else
 		wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
-
 		wp_enqueue_style( 'style' );
 
 		/* register styles for later optional use */
-		wp_register_style( 'lightbox', $this->css_dir . 'jquery.lightbox-0.5.css', false, null );
+		//wp_register_style( 'lightbox', $this->css_dir . 'jquery.lightbox-0.5.css', false, null );
+
+		/* syntax highlight */
 		wp_register_style( 'prism', $this->css_dir . 'prism.css', false, null );
+		wp_register_script( 'prism' , $this->js_dir . 'prism.js', false, null, true );
 
 		/* CDN scripts */
 		wp_deregister_script( 'jquery' );
 		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js' ), false, null, true );
 		wp_enqueue_script( 'jquery' );
 
-		wp_register_script( 'prism' , $this->js_dir . 'prism.js', false, null, true );
 		wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
 		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery', 'jquery.touchSwipe'), null, true );
 

@@ -27,5 +27,10 @@
 
 	<?php the_content(); ?>
 
+	<footer class="article-footer small">
+		<?php echo $petermolnareu_theme->share ( get_permalink() , substr( get_the_excerpt(), 0, 80 ) ); ?>
+	</footer>
+
+
 	<br class="clear" />
 </article>
