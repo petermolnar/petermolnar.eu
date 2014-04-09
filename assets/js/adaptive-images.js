@@ -5,11 +5,36 @@ jQuery(document).ready(function($) {
 	var $previews = $('.adaptgal-previews figure');
 	var internalclick = false;
 	var $active = false;
+	var $ae = false;
 	var h = 0.9;
 
-	//$(window).bind('resize', function() {
-	//	$adaptgal.height( $(document).height() * h );
-	//});
+/*	var keyCode = {
+		DOWN: 40,
+		END: 35,
+		HOME: 36,
+		LEFT: 37,
+		PAGE_DOWN: 34,
+		PAGE_UP: 33,
+		RIGHT: 39,
+		UP: 38  
+	}
+*/
+
+	$(document).keydown(function(event){
+		var key = event.keyCode || event.which;
+
+		// right
+		if ( key === 39 ) {
+			next ( $active );
+			return false;
+		}
+		// left
+		else if ( key === 37 ) {
+			prev ( $active );
+			return false;
+		}
+
+	});
 
 	function next ( e ) {
 		$test = $('a[href="#' + $(e).attr('id') +'"]').parent().next().children();
@@ -34,6 +59,7 @@ jQuery(document).ready(function($) {
 	}
 
 	$thumbs.click( function (event) {
+		$ae = $(this);
 		$active = $( $(this).attr('href') );
 		$thumbs.removeClass('adaptgal-active');
 		$(this).addClass('adaptgal-active');

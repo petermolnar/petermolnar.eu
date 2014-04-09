@@ -112,7 +112,7 @@
 		</section>
 	<?php }
 
-	if( function_exists('wp_paginate') && $category_meta['show-pagination'] == 1 )
+	if( function_exists('wp_paginate') && !empty( $category_meta['show-pagination'] ) && $category_meta['show-pagination'] == 1 )
 		wp_paginate();
 
 	get_footer();

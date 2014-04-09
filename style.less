@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		4.17
+Version:		4.21
 */
 
 // Grays
@@ -28,6 +28,7 @@ Version:		4.17
 @padding-normal: 0.3em;
 @padding-large: 0.6em;
 @padding-xlarge: 1em;
+@padding-sxlarge: 2em;
 @padding-small: 0.2em;
 @padding-xsmall: 0.1em;
 
@@ -263,7 +264,7 @@ b, strong {
 }
 
 p {
-	margin: @padding-large 0 @padding-large 0;
+	margin: @padding-sxlarge 0 0 0;
 }
 
 table {
@@ -324,40 +325,46 @@ pre {
 	.iconstyle()
 }
 
-.vcard .email:before, .icon-mail:before { content: '\e80d'; }
-.icon-blank:before { content: '\e817'; }
-.icon-link-ext:before { content: '\e821'; } /* '' */
-.icon-download:before { content: '\e811'; }
-.icon-quote-left:before { content: '\e80f'; }
-.icon-quote-right:before { content: '\e810'; }
-.icon-code:before { content: '\e80e'; }
-.icon-view:before, .icon-export:before { content: '\e820'; } /* '' */
-.icon-comment:before { content: '\e812'; }
-.icon-rss:before { content: '\e80b'; }
-.vcard .tel:before, .icon-phone:before { content: '\e800'; }
-.icon-menu:before { content: '\e81b'; }
-.icon-angle-double-left:before { content: '\e81d'; }
-.icon-angle-double-right:before { content: '\e81c'; }
-.icon-angle-double-up:before { content: '\e81f'; }
-.icon-angle-double-down:before { content: '\e81e'; }
-.icon-play:before { content: '\e818'; }
-.icon-stop:before { content: '\e819'; }
-.vcard .url:before, .icon-home:before { content: '\e814'; }
-.icon-globe:before { content: '\e80c'; }
-.icon-qrcode:before { content: '\e813'; }
-.icon-bitbucket:before { content: '\e815'; }
-.icon-facebook:before { content: '\e808'; }
-.icon-flickr:before { content: '\e809'; }
-.icon-github:before { content: '\e802'; }
-.vcard .x-googleplus:before, .icon-googleplus:before { content: '\e801'; }
-.icon-instagramm:before { content: '\e816'; }
-.vcard .x-linkedin:before, .icon-linkedin:before { content: '\e807'; }
-.icon-pinterest:before { content: '\e805'; }
-.icon-tumblr:before { content: '\e803'; }
-.vcard .x-twitter:before, .icon-twitter:before { content: '\e804'; }
-.icon-vimeo:before { content: '\e80a'; }
-.icon-youtube:before { content: '\e806'; }
-.icon-pause:before { content: '\e81a'; }
+.icon-blank:before { content: '\e817'; } /* '' */
+.vcard .url:before, .icon-home:before { content: '\e814'; } /* '' */
+.icon-link-ext-alt:before { content: '\e821'; } /* '' */
+.icon-thumbs-up:before { content: '\e822'; } /* '' */
+.icon-thumbs-down:before { content: '\e826'; } /* '' */
+.icon-download:before { content: '\e811'; } /* '' */
+.icon-quote-left:before { content: '\e80f'; } /* '' */
+.icon-quote-right:before { content: '\e810'; } /* '' */
+.icon-code:before { content: '\e80e'; } /* '' */
+.icon-export-alt:before { content: '\e820'; } /* '' */
+.icon-comment:before { content: '\e812'; } /* '' */
+.icon-rss:before { content: '\e80b'; } /* '' */
+.vcard .tel:before, .icon-phone:before { content: '\e800'; } /* '' */
+.icon-menu:before { content: '\e81b'; } /* '' */
+.icon-angle-double-left:before { content: '\e81d'; } /* '' */
+.icon-angle-double-right:before { content: '\e81c'; } /* '' */
+.icon-angle-double-up:before { content: '\e81f'; } /* '' */
+.icon-mail:before { content: '\e80d'; } /* '' */
+.icon-play:before { content: '\e818'; } /* '' */
+.icon-stop:before { content: '\e819'; } /* '' */
+.icon-pause:before { content: '\e81a'; } /* '' */
+.icon-globe:before { content: '\e80c'; } /* '' */
+.icon-qrcode:before { content: '\e813'; } /* '' */
+.icon-bitbucket:before { content: '\e815'; } /* '' */
+.icon-facebook:before { content: '\e808'; } /* '' */
+.icon-flickr:before { content: '\e809'; } /* '' */
+.icon-github:before { content: '\e802'; } /* '' */
+.vcard .x-googleplus:before, .icon-googleplus:before, .icon-gplus:before { content: '\e801'; } /* '' */
+.icon-instagramm:before { content: '\e816'; } /* '' */
+.vcard .x-linkedin:before, .icon-linkedin:before { content: '\e807'; } /* '' */
+.icon-pinterest:before { content: '\e805'; } /* '' */
+.icon-tumblr:before { content: '\e803'; } /* '' */
+.vcard .x-twitter:before, .icon-twitter:before { content: '\e804'; } /* '' */
+.icon-vimeo:before { content: '\e80a'; } /* '' */
+.icon-youtube:before { content: '\e806'; } /* '' */
+.icon-angle-double-down:before { content: '\e81e'; } /* '' */
+.icon-smile:before { content: '\e825'; } /* '' */
+.icon-frown:before { content: '\e824'; } /* '' */
+.icon-meh:before { content: '\e823'; } /* '' */
+
 
 /* PANEL */
 .content-header {
@@ -531,6 +538,10 @@ pre {
 	//box-shadow: 0.1em 0.1em 0.1em darken(@color-contentbg,1%);
 	margin: 0 0 @padding-large 0;
 	//border-radius: @padding-normal;
+
+	p {
+		margin: @padding-large 0 @padding-large 0;
+	}
 }
 
 
@@ -601,6 +612,12 @@ pre {
 			height:auto;
 			width: auto\9; /* ie8 fix */
 		}
+}
+
+.article-image {
+	display:block;
+	float:left;
+	margin: @padding-normal @padding-large @padding-large 0;
 }
 
 .article-thumbnail {

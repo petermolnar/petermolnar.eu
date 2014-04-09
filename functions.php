@@ -100,8 +100,8 @@ class petermolnareu {
 		wp_enqueue_script( 'jquery' );
 
 		wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
-		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery', 'jquery.touchSwipe'), null, true );
 
+		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery','jquery.touchSwipe'), null, true );
 	}
 
 	/**
