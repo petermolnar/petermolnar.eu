@@ -46,6 +46,10 @@ class petermolnareu {
 
 		/* set up CSS, JS and fonts */
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+
+		/* excerpt letter counter */
+		add_action( 'admin_head-post.php',  array(&$this, 'excerpt_count_js'));
+		add_action( 'admin_head-post-new.php',  array(&$this, 'excerpt_count_js' ));
 	}
 
 	public function init () {
@@ -372,6 +376,23 @@ class petermolnareu {
 		}
 
 		return $src;
+	}
+
+	public function excerpt_count_js(){
+		echo '<script>jQuery(document).ready(function(){
+				jQuery("#postexcerpt .handlediv").after("<input type=\'text\' value=\'0\' maxlength=\'3\' size=\'3\' id=\'excerpt_counter\' readonly=\'\' style=\'background:#fff; position:absolute;top:0.2em;right:2em; color:#666;\'>");
+				jQuery("#excerpt_counter").val(jQuery("#excerpt").val().length);
+				jQuery("#excerpt").keyup( function() {
+					jQuery("#excerpt_counter").val(jQuery("#excerpt").val().length);
+				});
+
+				jQuery("#wp-word-count").after("<td id=\'wp-character-count\'>Character count: <span class=\'character-count\'>0</span></td>");
+				jQuery("#wp-character-count .character-count").html(jQuery("#wp-content-wrap .wp-editor-area").val().length);
+				jQuery("#wp-content-wrap .wp-editor-area").keyup( function() {
+					jQuery("#wp-character-count .character-count").html(jQuery("#wp-content-wrap .wp-editor-area").val().length);
+				});
+
+		});</script>';
 	}
 
 }
