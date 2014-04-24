@@ -15,14 +15,14 @@
 
 <body>
 	<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
-	<header class="content-header">
+	<header class="content-header"><div class="inner">
 		<figure class="content-logo">
 			<a href="<?php bloginfo( 'url' ) ?>">
 				<img src="<?php echo $logo_img; ?>" title="<?php bloginfo( 'name' ) ?>" alt="<?php bloginfo( 'name' ) ?>" />
 			</a>
 		</figure><nav class="content-navigation">
 			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
-		</nav>
-	</header>
+		</nav><nav class="breadcrumbs"><?php $petermolnareu_theme->dimox_breadcrumbs(); ?></nav>
+	</div></header>
 
-	<section class="content-body">
+	<section class="content-body"><div class="inner">

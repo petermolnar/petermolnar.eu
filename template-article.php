@@ -24,13 +24,14 @@
 			<?php the_content(); ?>
 		</div>
 	</article>
-</section>
-<?php echo $petermolnareu_theme->related_posts( $post ); ?>
-<?php //wp_reset_query();
-?>
 
 <footer class="article-single-footer">
 	<?php
 		echo $petermolnareu_theme->share ( get_permalink() , wp_title( '', false ), true );
 	?>
 </footer>
+
+</section>
+<?php echo $petermolnareu_theme->related_posts( $post ); ?>
+<?php //wp_reset_query();
+?>

@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		4.22
+Version:		4.35
 */
 
 // Grays
@@ -244,7 +244,26 @@ body {
 blockquote {
 	margin-left: @padding-xlarge;
 	padding-left: @padding-large;
-	border-left: @thickborder solid darken(@color-text,20%);
+	font-style: italic;
+	//border-left: @thickborder solid darken(@color-text,20%);
+
+	&:before,
+	&:after {
+		.iconstyle();
+		font-size: @font-large;
+	}
+
+	&:before {
+		float:left;
+		content: '\e80f';
+		padding: 0 @padding-normal 0 0;
+	}
+
+	&:after {
+		float:right;
+		content: '\e810';
+		padding: 0 0 @padding-normal 0;
+	}
 }
 
 a {
@@ -265,6 +284,10 @@ b, strong {
 
 p {
 	margin: @padding-sxlarge 0 0 0;
+
+	a {
+		color: @color-menu;
+	}
 }
 
 table {
@@ -368,19 +391,20 @@ pre {
 
 /* PANEL */
 .content-header {
-	background: @color-contentbg;
+	background: darken(@color-contentbg,5%);
 	position: fixed;
 	width: @panel-width;
-	height: 98%;
-	top: 1%;
+	height: 99%;
+	top: 0.5%;
 	z-index: 99;
 	left: -( @panel-width );
+	padding: 0 0 0 2em;
 	.animate();
 	.double-border();
 }
 
 .content-header.open {
-	left: 0;
+	left: -1em;
 	padding-right: 0;
 }
 
@@ -390,8 +414,8 @@ pre {
 	font-family: 'petermolnar';
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	position: relative;
-	top:@padding-normal;
+	position: absolute;
+	margin: @padding-normal 0 0 @padding-small;
 	z-index: 99;
 	.animate();
 
@@ -420,7 +444,6 @@ pre {
 .content-body {
 	position: relative;
 	padding: @padding-large;
-	font-size: @font-large;
 	background: @color-contentbg;
 	.double-border();
 	z-index: 2;
@@ -434,19 +457,23 @@ pre {
 		li {
 
 			li {
-				margin: 0 0 0 @padding-xlarge;
+
+				a {
+					padding:  @padding-normal  @padding-xlarge  @padding-normal @padding-xlarge;
+				}
 			}
 
 			a {
 				display:block;
 				line-height: 2.4em;
-				padding: 0 @padding-normal 0 @padding-normal;
-				margin:  @padding-normal 0 @padding-normal 0;
+				padding: @padding-normal;
+				/*margin:  @padding-normal 0 @padding-normal 0;*/
 				font-weight: bold;
 				color:@color-link;
 				text-shadow: @shadow-dark;
 
 				&:hover {
+					background-color: darken(@color-contentbg, 10%);
 					color:lighten(@color-link, 20%);
 					.animate();
 				}
@@ -469,7 +496,6 @@ pre {
 /* SHARE */
 .share {
 	display: block;
-	text-align:right;
 
 	ul {
 	.flatul();
@@ -623,6 +649,15 @@ pre {
 .article-thumbnail {
 	width: 8%;
 	max-width: 90px;
+}
+
+.article-single-footer {
+	margin: @padding-xlarge 0 0 0;
+	text-align: left;
+}
+
+.article-status-footer {
+	text-align: right;
 }
 
 /* ASIDE, for status updates */
@@ -927,7 +962,11 @@ pre {
 		}
 	}
 
-/* Styles */
+}
+
+.breadcrumbs {
+	display: block;
+	margin-top: 3em;
 }
 
 /* DESKTOP */
@@ -936,10 +975,6 @@ pre {
 
 .content-logo {
 	margin:  0;
-	}
-
-	.content-body {
-		margin: 2.2em 0 0 0;
 	}
 
 	.adaptgal {
@@ -963,6 +998,7 @@ pre {
 		border: 0px solid @color-bg;
 		box-shadow: 0 0 0 @color-bg;
 		border-radius: @padding-large;
+		padding: 0 0 0 0;
 	}
 
 
@@ -1078,6 +1114,23 @@ pre {
 		width: 36%;
 		float: right;
 	}
+
+	.breadcrumbs {
+		margin: 0.6em 0 0 0.5em;
+		padding: 0;
+
+		ul {
+			.flatul();
+
+			li.single {
+				&:before {
+					content: '»';
+					padding: 0 @padding-normal 0 @padding-normal;
+				}
+			}
+		}
+	}
+
 }
 
 /* COMMENTS */
@@ -1119,6 +1172,19 @@ pre {
 	ul {
 		.flatul();
 	}
+}
+
+/* OPENSOURCE */
+.article-opensource {
+	display: inline-block;
+	width: 48%;
+	padding: 0 1% 0 1%;
+	vertical-align: top;
+	margin:0 0 2em 0;
+}
+
+.inactive {
+	opacity: 0.6;
 }
 
 /* GITHUB */

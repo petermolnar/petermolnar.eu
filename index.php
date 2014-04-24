@@ -1,5 +1,6 @@
 <?php
-	define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
+
+	//define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
 	define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
 
 	global $petermolnareu_theme;
@@ -25,11 +26,11 @@
 		/* get category */
 		$category = get_category( $cat );
 
-		/* portfolio should not be accessed directly, go to first page */
-		if ($category->slug == 'portfolio' ) {
-			wp_redirect( REDIRECT_TO_PORTFOLIO );
-			exit;
-		}
+		///* portfolio should not be accessed directly, go to first page */
+		//if ($category->slug == 'portfolio' ) {
+		//	wp_redirect( REDIRECT_TO_PORTFOLIO );
+		//	exit;
+		//}
 
 		foreach ( $meta_keys as $key=>$default ) {
 			unset ($val);
@@ -47,9 +48,6 @@
 			$category_meta[ $key ] = $val;
 
 		}
-
-		if ( $category->slug == 'photoblog' && is_user_logged_in() )
-			$category_meta['posts-per-page'] = 9;
 
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
 
@@ -78,6 +76,7 @@
 
 			$is_single = is_singular();
 			if ( $is_single ) {
+
 					//echo "<!-- SINGLE -->";
 					switch ( $post_format ) {
 						case 'page':

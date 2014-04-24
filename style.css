@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		4.22
+Version:		4.35
 */
 /********
 * FONTS *
@@ -97,7 +97,34 @@ body {
 blockquote {
   margin-left: 1em;
   padding-left: 0.6em;
-  border-left: 2px solid #666666;
+  font-style: italic;
+}
+blockquote:before,
+blockquote:after {
+  font-family: "petermolnar";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  text-align: center;
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+  font-size: 1.2em;
+}
+blockquote:before {
+  float: left;
+  content: '\e80f';
+  padding: 0 0.3em 0 0;
+}
+blockquote:after {
+  float: right;
+  content: '\e810';
+  padding: 0 0 0.3em 0;
 }
 a {
   color: #cccccc;
@@ -115,6 +142,9 @@ strong {
 }
 p {
   margin: 2em 0 0 0;
+}
+p a {
+  color: #ff9900;
 }
 table {
   border-collapse: separate;
@@ -352,13 +382,14 @@ pre {
 /* '' */
 /* PANEL */
 .content-header {
-  background: #26272a;
+  background: #1a1b1d;
   position: fixed;
   width: 22em;
-  height: 98%;
-  top: 1%;
+  height: 99%;
+  top: 0.5%;
   z-index: 99;
   left: -22em;
+  padding: 0 0 0 2em;
   transition: all 0.5s ease;
   -webkit-transition: all 0.5s ease;
   border: 1px solid #666666;
@@ -366,7 +397,7 @@ pre {
   border-radius: 0.6em;
 }
 .content-header.open {
-  left: 0;
+  left: -1em;
   padding-right: 0;
 }
 .nav-toggle-button {
@@ -375,8 +406,8 @@ pre {
   font-family: 'petermolnar';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
-  top: 0.3em;
+  position: absolute;
+  margin: 0.3em 0 0 0.2em;
   z-index: 99;
   transition: all 0.5s ease;
   -webkit-transition: all 0.5s ease;
@@ -400,7 +431,6 @@ pre {
 .content-body {
   position: relative;
   padding: 0.6em;
-  font-size: 1.2em;
   background: #26272a;
   border: 1px solid #666666;
   box-shadow: 0 0 2px #000000;
@@ -417,19 +447,20 @@ pre {
   padding: 0;
   margin: 0;
 }
-.content-navigation ul li li {
-  margin: 0 0 0 1em;
+.content-navigation ul li li a {
+  padding: 0.3em 1em 0.3em 1em;
 }
 .content-navigation ul li a {
   display: block;
   line-height: 2.4em;
-  padding: 0 0.3em 0 0.3em;
-  margin: 0.3em 0 0.3em 0;
+  padding: 0.3em;
+  /*margin:  @padding-normal 0 @padding-normal 0;*/
   font-weight: bold;
   color: #cccccc;
   text-shadow: 1px 1px #111111;
 }
 .content-navigation ul li a:hover {
+  background-color: #0e0e0f;
   color: #ffffff;
   transition: all 0.5s ease;
   -webkit-transition: all 0.5s ease;
@@ -444,7 +475,6 @@ pre {
 /* SHARE */
 .share {
   display: block;
-  text-align: right;
 }
 .share ul {
   list-style-type: none;
@@ -594,6 +624,13 @@ pre {
 .article-thumbnail {
   width: 8%;
   max-width: 90px;
+}
+.article-single-footer {
+  margin: 1em 0 0 0;
+  text-align: left;
+}
+.article-status-footer {
+  text-align: right;
 }
 /* ASIDE, for status updates */
 .article-thumbnail-small {
@@ -876,15 +913,15 @@ pre {
   .adaptgal .adaptgal-previews {
     width: 88%;
   }
-  /* Styles */
+}
+.breadcrumbs {
+  display: block;
+  margin-top: 3em;
 }
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi) {
   .content-logo {
     margin: 0;
-  }
-  .content-body {
-    margin: 2.2em 0 0 0;
   }
   .adaptgal .adaptgal-thumbs {
     width: 11%;
@@ -903,6 +940,7 @@ pre {
     border: 0px solid #424747;
     box-shadow: 0 0 0 #424747;
     border-radius: 0.6em;
+    padding: 0 0 0 0;
   }
   .nav-toggle-button {
     display: none;
@@ -998,6 +1036,24 @@ pre {
     width: 36%;
     float: right;
   }
+  .breadcrumbs {
+    margin: 0.6em 0 0 0.5em;
+    padding: 0;
+  }
+  .breadcrumbs ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .breadcrumbs ul li {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+  }
+  .breadcrumbs ul li.single:before {
+    content: '»';
+    padding: 0 0.3em 0 0.3em;
+  }
 }
 /* COMMENTS */
 #disqus_thread,
@@ -1072,6 +1128,17 @@ pre {
   display: inline-block;
   padding: 0;
   margin: 0;
+}
+/* OPENSOURCE */
+.article-opensource {
+  display: inline-block;
+  width: 48%;
+  padding: 0 1% 0 1%;
+  vertical-align: top;
+  margin: 0 0 2em 0;
+}
+.inactive {
+  opacity: 0.6;
 }
 /* GITHUB */
 /**

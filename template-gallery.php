@@ -3,10 +3,10 @@
 	global $petermolnareu_theme;
 	global $category;
 
-	$content = get_the_content();
+	//$content = get_the_content();
 	$photoblog = false;
-	$to_clear = array ('[wp-galleriffic]','[photogal]','[adaptgal]');
-	$content = str_replace($to_clear, '', $content);
+	//$to_clear = array ('[wp-galleriffic]','[photogal]','[adaptgal]');
+	//$content = str_replace($to_clear, '', $content);
 
 	if ( empty ( $category )) {
 		$category = array_shift( get_the_category( $post->ID ) );
@@ -15,7 +15,7 @@
 	$template = $category->slug;
 ?>
 
-	<?php if ( $template == 'photoblog' && !is_singular() ):  ?><article class="photoblog-preview" id="photoblog-<?php the_ID(); ?>" ><a href="<?php the_permalink(); ?>">
+	<?php if ( !is_singular() ):  ?><article class="photoblog-preview" id="photoblog-<?php the_ID(); ?>" ><a href="<?php the_permalink(); ?>">
 
 	<?php $aid = get_post_thumbnail_id( );
 
@@ -46,17 +46,15 @@
 	</header>
 
 	<div class="photoblog-content">
-		<?php echo $content; ?>
+		<?php the_content(); ?>
 	</div>
 
-	<?php echo do_shortcode( '[adaptgal]' ); ?>
 	<br class="clear" />
 </article><?php else: ?>
 
 	<!-- <h1 class="portfolio-title"><a href="<?php echo $petermolnareu_theme->base_url . '/' . $category->slug ?>"><?php echo $category->name ?></a> &raquo; <?php the_title() ?></h1> -->
 <article class="portfolio" id="portfolio-<?php the_ID(); ?>">
-	<?php echo $content; ?>
-	<?php echo do_shortcode('[adaptgal]'); ?>
+	<?php the_content(); ?>
 </article>
 
 

@@ -65,7 +65,7 @@ class adaptive_images {
 		*/
 		foreach ( $this->image_sizes as $resolution => $sizes ) {
 			foreach ( $sizes as $prefix => $size ) {
-				$crop = ( $prefix == self::a_hd )? false : true;
+				$crop = ( $prefix == self::a_hd ) ? false : true;
 				add_image_size (
 					$prefix . $resolution, // name
 					$sizes[ $prefix ], // width
@@ -101,6 +101,8 @@ class adaptive_images {
 
 		extract( shortcode_atts(array(
 			'postid' => false,
+			'ids' => false,
+			'columns' => false
 		), $atts));
 
 		if ( $postid == false )
@@ -108,14 +110,19 @@ class adaptive_images {
 		else
 			$post = get_post( $postid );
 
-		return $post;
+		if ( !empty( $ids ))
+			$ids = explode ( ',' , $ids );
+
+		return array ( 'post' => $post, 'imgids' => $ids, 'columns' => $columns );
 	}
 
 	/* adaptive gallery shortcode function */
 	public function adaptgal( $atts , $content = null ) {
 
-
-		$post = $this->_init ( $atts );
+		$atts = $this->_init ( $atts );
+		$post = $atts['post'];
+		$imgids = $atts['imgids'];
+		$colums = $atts['columns'];
 
 		$cached = ( self::cache == 1 ) ? wp_cache_get( $post->ID, self::cache_group ) : false;
 
@@ -125,7 +132,14 @@ class adaptive_images {
 			$css = $cached['css'];
 		}
 		else {
-			$images = $this->image_attachments ( $post );
+			if ( $imgids == false ) {
+				$images = $this->image_attachments_by_post ( $post );
+			}
+			else {
+
+				$images = $this->image_attachments_by_ids ( $imgids );
+			}
+
 			$bgdata = $this->bgdata ( array_keys( $images ) );
 			$css = $this->build_css ( $bgdata, $images );
 
@@ -138,13 +152,17 @@ class adaptive_images {
 			wp_cache_set( $post->ID, $cache, self::cache_group, self::cache_time );
 		}
 
-		$single = ( sizeof( $images ) <= 10 ) ? ' single' : '';
+		if ($colums == 1 || sizeof( $images ) <= 10 )
+			$single = ' single';
+		else
+		$single = '';
 
 		foreach ($images as $imgid => $img ) {
 			$th_id = $img['slug'] . "-" . self::a_thumb;
 			$src_id = $img['slug'];
 
-			$src_src = $bgdata[ array_shift( array_keys($this->image_sizes) ) ][ $imgid ][ self::a_hd ];
+			$keys = array_keys($this->image_sizes);
+			$src_src = $bgdata[ array_shift( $keys ) ][ $imgid ][ self::a_hd ];
 
 			$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
 
@@ -171,7 +189,6 @@ class adaptive_images {
 
 		return $output;
 	}
-
 
 	/* adaptive image shortcode function */
 	public function adaptimg( $atts , $content = null ) {
@@ -249,7 +266,7 @@ class adaptive_images {
 	 *
 	 * @return array of images, key is attachment id
 	*/
-	private function image_attachments ( &$post ) {
+	private function image_attachments_by_post ( &$post ) {
 		$images = array();
 
 		/* get image type attachments for the post by ID */
@@ -265,6 +282,28 @@ class adaptive_images {
 			foreach ( $attachments as $imgid => $attachment ) {
 				$images[ $imgid ] = $this->get_imagemeta( $imgid );
 			}
+		}
+
+		return $images;
+	}
+
+	/* get all image attachments for a post
+	 *
+	 * @param $post WordPress post object
+	 *
+	 * @return array of images, key is attachment id
+	*/
+	private function image_attachments_by_ids ( &$ids ) {
+		if ( empty ( $ids ) )
+			return false;
+
+		if ( !is_array ( $ids) )
+			$ids = array ( $ids );
+
+		$images = array();
+
+		foreach ( $ids as $imgid ) {
+			$images[ $imgid ] = $this->get_imagemeta( $imgid );
 		}
 
 		return $images;
@@ -368,7 +407,7 @@ class adaptive_images {
 		$src = urlencode($imgsrc);
 		$title = urlencode($title);
 		$postlink = urlencode( $postlink );
-		$description = urlencode($desciption);
+		$description = urlencode($description);
 
 		$share = array (
 
@@ -397,7 +436,7 @@ class adaptive_images {
 				'title'=>__('Pin on Pinterest'),
 			),
 
-			'view' => array (
+			'download' => array (
 				'url'=>$imgsrc,
 				'title'=>__('View large image'),
 			)
