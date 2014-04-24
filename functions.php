@@ -94,7 +94,10 @@ class petermolnareu {
 		wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
 		wp_enqueue_style( 'reset' );
 
-		wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+		//if ( is_user_logged_in() )
+		//	wp_register_style( 'style', $this->theme_url . '/style-new.css' , array('reset'), $this->info->version );
+		//else
+			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
 		wp_enqueue_style( 'style' );
 
 		/* register styles for later optional use */
@@ -473,11 +476,11 @@ class petermolnareu {
 
 		if (is_home() || is_front_page()) {
 
-			if ($show_on_home == 1) echo '<nav class="breadcrumbs"><a href="' . $home_link . '">' . $text['home'] . '</a></nav>';
+			if ($show_on_home == 1) echo '<nav class="breadcrumbs"><div class="inner"><a href="' . $home_link . '">' . $text['home'] . '</a></div></nav>';
 
 		} else {
 
-			echo '<nav class="breadcrumbs" xmlns:v="http://rdf.data-vocabulary.org/#">';
+			echo '<nav class="breadcrumbs" xmlns:v="http://rdf.data-vocabulary.org/#"><div class="inner">';
 			if ($show_home_link == 1) {
 				echo '<a href="' . $home_link . '" rel="v:url" property="v:title">' . $text['home'] . '</a>';
 				if ($frontpage_id == 0 || $parent_id != $frontpage_id) echo $delimiter;
@@ -589,10 +592,31 @@ class petermolnareu {
 				if ( is_category() || is_day() || is_month() || is_year() || is_search() || is_tag() || is_author() ) echo ')';
 			}
 
-			echo '</nav><!-- .breadcrumbs -->';
+			echo '</div></nav><!-- .breadcrumbs -->';
 
 		}
 	} // end dimox_breadcrumbs()
+
+
+	public function article_time () {
+		global $post;
+		/*
+		?>
+			<time class="article-pubdate" pubdate="<?php the_time( 'r' ); ?>">
+				<span class="year"><?php the_time( 'Y' ); ?></span>
+				<span class="month"><?php the_time( 'M' ); ?></span>
+				<span class="day"><?php the_time( 'd' ); ?></span>
+				<span class="hour"><?php the_time( 'H:i' ); ?></span>
+			</time>
+		<?php
+		*/
+		?>
+			<time class="article-pubdate" pubdate="<?php the_time( 'r' ); ?>">
+				<span class="date"><?php the_time( get_option('date_format') ); ?></span>
+				<span class="time"><?php the_time( get_option('time_format') ); ?></span>
+			</time>
+		<?php
+	}
 }
 
 

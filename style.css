@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		4.35
+Version:		5.3
 */
 /********
 * FONTS *
@@ -32,7 +32,7 @@ img.alignright,
 img.right,
 img.left {
   margin-bottom: 1em;
-  border: 1px solid #16171a;
+  border: 1px solid #cccccc;
 }
 img.alignright,
 img.right {
@@ -79,20 +79,23 @@ img.left {
 * GENERAL *
 ***********/
 html {
-  background-color: #424747;
+  background: url('assets/image/bg-noise.png') repeat scroll left top #2d333a;
 }
 body {
   position: relative;
   overflow: auto;
-  max-width: 100em;
-  width: 98%;
   margin: 0.3em auto 0.3em auto;
   line-height: 1.4em;
   font-family: 'Liberation Sans', sans-serif;
-  font-size: 14px;
-  color: #999999;
+  font-size: 16px;
+  color: #aaaaaa;
   letter-spacing: 0.06em;
   font-weight: normal;
+}
+.inner {
+  max-width: 100em;
+  width: 98%;
+  margin: 0 auto 0 auto;
 }
 blockquote {
   margin-left: 1em;
@@ -114,7 +117,7 @@ blockquote:after {
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 blockquote:before {
   float: left;
@@ -129,8 +132,6 @@ blockquote:after {
 a {
   color: #cccccc;
   text-decoration: none;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
 }
 a:hover {
   text-decoration: none;
@@ -143,16 +144,13 @@ strong {
 p {
   margin: 2em 0 0 0;
 }
-p a {
-  color: #ff9900;
-}
 table {
   border-collapse: separate;
   border-spacing: 0.3em;
 }
 td,
 th {
-  border: 1px solid #16171a;
+  border: 1px solid #cccccc;
   padding: 0.3em;
 }
 ul,
@@ -167,29 +165,26 @@ h5,
 h6 {
   font-weight: bold;
   clear: both;
-  color: #b3b3b3;
-  text-shadow: 1px 1px #111111;
+  color: #c3c3c3;
 }
 h1 {
-  font-size: 1.4em;
-  margin: 1em 0 0.6em 0;
+  font-size: 1.2em;
 }
 h2 {
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 h2,
 h3,
 h4,
 h5,
 h6 {
-  margin: 1.4em 0 1em 0;
+  margin: 1.2em 0 1em 0;
 }
 dt {
   clear: both;
   line-height: 1.2em;
   font-size: 1em;
   margin-top: 1em 0 0.3em 0;
-  text-shadow: 1px 1px #111111;
 }
 dd {
   margin-left: 1em;
@@ -197,7 +192,7 @@ dd {
 pre {
   margin: 0.3em 0 0.3em 0;
   padding: 0.3em;
-  border: 1px solid #16171a;
+  border: 1px solid #cccccc;
   overflow: auto;
 }
 /* FONT ICONS */
@@ -382,19 +377,16 @@ pre {
 /* '' */
 /* PANEL */
 .content-header {
-  background: #1a1b1d;
   position: fixed;
   width: 22em;
-  height: 99%;
-  top: 0.5%;
+  height: 100%;
+  top: 0;
   z-index: 99;
   left: -22em;
   padding: 0 0 0 2em;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
-  border: 1px solid #666666;
-  box-shadow: 0 0 2px #000000;
-  border-radius: 0.6em;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  background: url('assets/image/bg-noise.png') repeat scroll left top #121518;
 }
 .content-header.open {
   left: -1em;
@@ -409,8 +401,8 @@ pre {
   position: absolute;
   margin: 0.3em 0 0 0.2em;
   z-index: 99;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
 }
 .nav-toggle-button:hover {
   text-decoration: none;
@@ -419,23 +411,30 @@ pre {
   content: "\e81b";
 }
 #showContentHeader {
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
 }
 #showContentHeader.active {
-  left: 7.43333333em;
+  left: 5.7em;
+  z-index: 999;
+  color: #aaaaaa;
 }
 .content-logo {
   margin: 1em;
 }
+.breadcrumbs {
+  color: #888888;
+  text-shadow: 1px 1px #111111;
+  padding: 0.6em 0 0.6em 0;
+}
 .content-body {
   position: relative;
   padding: 0.6em;
-  background: #26272a;
-  border: 1px solid #666666;
-  box-shadow: 0 0 2px #000000;
-  border-radius: 0.6em;
   z-index: 2;
+  background-color: #171a1d;
+}
+.content-footer {
+  padding: 1em 0 1em 0;
 }
 .content-navigation ul {
   list-style-type: none;
@@ -456,20 +455,19 @@ pre {
   padding: 0.3em;
   /*margin:  @padding-normal 0 @padding-normal 0;*/
   font-weight: bold;
-  color: #cccccc;
+  color: #aaaaaa;
   text-shadow: 1px 1px #111111;
 }
 .content-navigation ul li a:hover {
-  background-color: #0e0e0f;
-  color: #ffffff;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  color: #f6f6f6;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
 }
 .content-navigation ul .current-menu-item a,
 .content-navigation ul .current-page-ancestor > a,
 .content-navigation ul .current-post-ancestor > a,
 .content-navigation ul .current-category-ancestor > a {
-  color: #ff9900;
+  color: #ffffff;
   opacity: 0.99;
 }
 /* SHARE */
@@ -501,14 +499,14 @@ pre {
 .vcard {
   display: block;
   vertical-align: top;
-  background-color: #0e0e0f;
   padding: 1em;
   border-radius: 0.6em;
   margin: -0.6em;
+  font-size: 1.2em;
 }
 .vcard img {
   float: left;
-  border: 1px solid #999999;
+  border: 1px solid #aaaaaa;
   width: 17%;
   margin: 0 1% 0 1%;
   height: auto;
@@ -516,7 +514,6 @@ pre {
 .vcard a {
   float: right;
   width: 80%;
-  border: 1px dotted #3e4045;
   margin: 0 0 0 1%;
   line-height: 3.6em;
   text-align: left;
@@ -525,10 +522,6 @@ pre {
   overflow: hidden;
   color: #999999;
   vertical-align: middle;
-}
-.vcard a:hover {
-  color: #cccccc;
-  border: 1px dotted #6f727a;
 }
 .vcard a:before {
   font-family: "petermolnar";
@@ -544,7 +537,7 @@ pre {
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
-  font-size: 1.2em;
+  font-size: 1.1em;
   padding: 0 0.6em 0 0.6em;
 }
 /* ARCTICLE */
@@ -554,6 +547,13 @@ pre {
 .article-list-element p {
   margin: 0.6em 0 0.6em 0;
 }
+/* STATUS */
+.article-status {
+  margin: 0 0 5.6em 0;
+}
+.article-status p {
+  margin: 0.6em 0 0.6em 0;
+}
 .article-header {
   position: relative;
   clear: both;
@@ -561,47 +561,15 @@ pre {
 .article-header h2 {
   margin: 0;
   padding: 0;
-  line-height: 1.4em;
+  line-height: 1.2em;
   display: inline-block;
 }
 .article-pubdate {
-  display: inline-block;
-  position: relative;
-  height: 2.8em;
-  width: 4em;
+  display: block;
+  font-size: 0.9em;
   font-weight: normal;
-  color: #8c8c8c;
-}
-.article-pubdate .day,
-.article-pubdate .month,
-.article-pubdate .year,
-.article-pubdate .hour {
-  position: absolute;
-}
-.article-pubdate .day,
-.article-pubdate .hour {
-  font-size: 1.4em;
-  top: 1.2em;
-}
-.article-pubdate .day {
-  left: 1.26em;
-}
-.article-pubdate .month {
-  top: 0.3em;
-  left: 1.2em;
-  font-size: 1.2em;
-}
-.article-pubdate .year {
-  top: 1em;
-  left: -0.6em;
-  font-size: 1em;
-  rotation: -89.99999999deg !important;
-  -webkit-transform: rotate(-90deg);
-  -moz-transform: rotate(-90deg);
-  color: #666666;
-}
-.article-pubdate .hour {
-  left: 3.08em;
+  color: #777777;
+  font-family: monospace;
 }
 .article-thumbnail,
 .article-thumbnail-small {
@@ -641,8 +609,8 @@ pre {
 /* PHOTOBLOG */
 .photoblog-preview {
   display: inline-block;
-  width: 32%;
-  padding-bottom: 32%;
+  width: 50%;
+  padding-bottom: 50%;
   position: relative;
 }
 .photoblog-preview a figure {
@@ -653,28 +621,31 @@ pre {
   bottom: 0.1em;
   overflow: hidden;
   opacity: 0.7;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
-  text-indent: -9999px;
-}
-.photoblog-preview a figure:hover {
-  opacity: 0.99;
+  text-indent: -9998.99999999px;
 }
 .photoblog-preview a figure figcaption {
   position: absolute;
   overflow: hidden;
-  bottom: 25%;
+  bottom: 33%;
   left: 25%;
   right: 25%;
   text-align: center;
   padding: 0.2em 1% 0.2em 1%;
-  background-color: #0e0e0f;
   opacity: 0.8;
   text-indent: 0;
   border-radius: 0.6em;
+  font-size: 1.2em;
+  line-height: 1.1em;
+  text-shadow: 0px 0px 1px #ffffff;
+  color: #000;
+}
+.photoblog-preview a figure:hover {
+  opacity: 0.99;
 }
 .photoblog-navigation {
   display: block;
@@ -724,8 +695,8 @@ pre {
   vertical-align: top;
   overflow: hidden;
   text-indent: -9999px;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
@@ -736,8 +707,8 @@ pre {
   position: absolute;
   bottom: 0;
   left: -10em;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
 }
 .adaptgal .adaptgal-previews figure figcaption .share ul {
   list-style-type: none;
@@ -751,6 +722,12 @@ pre {
 }
 .adaptgal .adaptgal-previews figure figcaption .share ul li {
   display: block;
+}
+.adaptgal .adaptgal-previews figure figcaption .share ul li a {
+  color: #aaaaaa;
+}
+.adaptgal .adaptgal-previews figure figcaption .share ul li a:hover {
+  color: #ffffff;
 }
 .adaptgal .adaptgal-previews figure:target {
   opacity: 0.99;
@@ -788,11 +765,10 @@ pre {
   top: 0.1em;
   bottom: 0.1em;
   border: 1px solid #666;
-  box-shadow: 0 0 4px #111;
   overflow: hidden;
   opacity: 0.5;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
@@ -818,7 +794,7 @@ pre {
   display: block;
   margin: 0.6em 0 0.6em 0;
   text-align: center;
-  font-size: 1.2em;
+  font-size: 1.1em;
   padding: 0;
 }
 .wp-paginate li {
@@ -828,33 +804,28 @@ pre {
 .wp-paginate .title {
   display: none;
 }
-.wp-paginate a,
 .wp-paginate .current {
   padding: 0.3em 0.6em 0.3em 0.6em;
-  color: #999999;
-  border: 1px solid #26272a;
+  opacity: 0.5;
 }
-.wp-paginate a:hover,
-.wp-paginate .current:hover {
+.wp-paginate a {
+  padding: 0.3em 0.6em 0.3em 0.6em;
+}
+.wp-paginate a:hover {
   color: #cccccc;
-  border: 1px dotted #6f727a;
-}
-.wp-paginate .current {
-  background: #0e0e0f;
-  border: 1px dotted #3e4045;
 }
 /* PORTFOLIO */
 .portfolio-title {
   font-size: 1em;
   font-weight: normal;
-  color: #ff9900;
+  color: #aaaaaa;
   padding: 0;
   margin: 0;
   opacity: 0.9;
 }
 /* SIDEBAR */
 .sidebar {
-  padding: 1.2em 0 0 0;
+  padding: 1.1em 0 0 0;
 }
 .sidebar ul {
   list-style-type: none;
@@ -869,13 +840,12 @@ pre {
 .sidebar ul li {
   margin: 0 0 1em 0;
   padding: 0 0 0.3em 0;
-  border-bottom: 1px dotted #3e4045;
 }
 .sidebar ul li a {
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
-  color: #8c8c8c;
+  color: #9d9d9d;
 }
 .sidebar ul li a:before {
   font-family: "petermolnar";
@@ -914,10 +884,6 @@ pre {
     width: 88%;
   }
 }
-.breadcrumbs {
-  display: block;
-  margin-top: 3em;
-}
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi) {
   .content-logo {
@@ -937,8 +903,6 @@ pre {
     left: 0;
     width: 100%;
     height: auto;
-    border: 0px solid #424747;
-    box-shadow: 0 0 0 #424747;
     border-radius: 0.6em;
     padding: 0 0 0 0;
   }
@@ -949,9 +913,14 @@ pre {
   .content-logo {
     float: right;
     display: inline-block;
+    margin: 0.6em 0 0 0;
+  }
+  .content-logo a img {
+    width: 14em;
   }
   .content-navigation {
     display: inline-block;
+    margin: 0.2em 0 0.2em 0;
   }
   .content-navigation ul {
     list-style-type: none;
@@ -963,70 +932,24 @@ pre {
     padding: 0;
     margin: 0;
   }
-  .content-navigation ul li a {
-    border-radius: 0.6em;
-    display: block;
-    padding: 0 0.6em 0 0.6em;
-    font-weight: bold;
-    color: #999999;
-    text-shadow: 1px 1px #111111;
-    letter-spacing: 0.16em;
-    transition: all 0.5s ease;
-    -webkit-transition: all 0.5s ease;
-  }
-  .content-navigation ul li a:hover {
-    color: #ffffff;
-    background-color: #292d2d;
+  .content-navigation ul li {
+    margin-right: 1em;
   }
   .content-navigation ul li ul {
     position: absolute;
     top: -10em;
     opacity: 0;
-    background-color: #292d2d;
     border-radius: 0.3em;
     margin: -0.6em 0 0 0;
     display: none;
     visibility: hidden;
     z-index: 1;
-    transition: all 0.5s ease;
-    -webkit-transition: all 0.5s ease;
+    transition: all 0.3s ease;
+    -webkit-transition: all 0.3s ease;
     padding: 0 1em 0 0;
   }
   .content-navigation ul li ul a {
     padding: 0 0.2em 0 0.2em;
-  }
-  .content-navigation ul li:hover a {
-    transition: all 0.5s ease;
-    -webkit-transition: all 0.5s ease;
-    background-color: #111212;
-  }
-  .content-navigation ul li:hover ul {
-    background-color: #111212;
-    display: block;
-    visibility: visible;
-    left: 0;
-    top: auto;
-    opacity: 0.99;
-  }
-  .content-navigation ul li:hover ul a {
-    background-color: transparent;
-  }
-  .content-navigation ul .current-menu-item > a,
-  .content-navigation ul .current-page-ancestor > a,
-  .content-navigation ul .current-post-ancestor > a,
-  .content-navigation ul .current-category-ancestor > a {
-    color: #ff9900;
-    background-color: #292d2d;
-  }
-  .content-navigation ul .current-menu-item ul,
-  .content-navigation ul .current-page-ancestor ul,
-  .content-navigation ul .current-post-ancestor ul,
-  .content-navigation ul .current-category-ancestor ul {
-    display: block;
-    visibility: visible;
-    left: 0;
-    top: auto;
-    opacity: 0.99;
   }
   .category-postlist {
     width: 60%;
@@ -1036,23 +959,9 @@ pre {
     width: 36%;
     float: right;
   }
-  .breadcrumbs {
-    margin: 0.6em 0 0 0.5em;
-    padding: 0;
-  }
-  .breadcrumbs ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  .breadcrumbs ul li {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-  }
-  .breadcrumbs ul li.single:before {
-    content: '»';
-    padding: 0 0.3em 0 0.3em;
+  .photoblog-preview {
+    width: 33.33%;
+    padding-bottom: 33%;
   }
 }
 /* COMMENTS */
@@ -1065,10 +974,6 @@ pre {
   margin: 0;
   padding: 0.6em;
   margin: 0.3em 0 0.3em 0;
-  background-color: #323337;
-  border: 1px solid #666666;
-  box-shadow: 0 0 2px #000000;
-  border-radius: 0.6em;
 }
 #disqus_thread li,
 .comments-content li,
@@ -1105,7 +1010,6 @@ pre {
 #respond .comment {
   margin: 1em 0 0 0;
   padding: 0 0 0 0.6em;
-  border-left: 1px dotted #6f727a;
 }
 #disqus_thread .says,
 .comments-content .says,
@@ -1156,13 +1060,12 @@ pre {
 .forkongithub a,
 .forkongithub-line a {
   font-size: 0.9em;
-  background: #000000;
   text-align: center;
   font-weight: bold;
   box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
   opacity: 0.4;
-  transition: all 0.5s ease;
-  -webkit-transition: all 0.5s ease;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
   border-top: 1px solid #666;
   border-bottom: 1px solid #666;
 }

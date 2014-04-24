@@ -10,11 +10,11 @@
 	<?php global $petermolnareu_theme; ?>
 </head>
 
-
 <?php $logo_img = $petermolnareu_theme->image_dir . 'peter_molnar_logo.svg'; ?>
 
 <body>
 	<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
+
 	<header class="content-header"><div class="inner">
 		<figure class="content-logo">
 			<a href="<?php bloginfo( 'url' ) ?>">
@@ -22,7 +22,7 @@
 			</a>
 		</figure><nav class="content-navigation">
 			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
-		</nav><nav class="breadcrumbs"><?php $petermolnareu_theme->dimox_breadcrumbs(); ?></nav>
+		</nav>
 	</div></header>
 
 	<section class="content-body"><div class="inner">

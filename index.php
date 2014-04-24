@@ -1,6 +1,5 @@
 <?php
 
-	//define ('REDIRECT_TO_PORTFOLIO', get_option ('siteurl') . '/portfolio/through-a-lupe/' );
 	define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
 
 	global $petermolnareu_theme;
@@ -9,7 +8,6 @@
 	global $category_meta;
 	global $category;
 	$_query_string = $query_string;
-	//$posts_per_page = 10;
 
 	$cat = get_query_var('cat');
 	$category_meta = array();
@@ -25,12 +23,6 @@
 	if ( !empty( $cat ) ) {
 		/* get category */
 		$category = get_category( $cat );
-
-		///* portfolio should not be accessed directly, go to first page */
-		//if ($category->slug == 'portfolio' ) {
-		//	wp_redirect( REDIRECT_TO_PORTFOLIO );
-		//	exit;
-		//}
 
 		foreach ( $meta_keys as $key=>$default ) {
 			unset ($val);
@@ -58,58 +50,72 @@
 		$_query_string = $query_string . '&posts_per_page=-1';
 	}
 
-	get_header();
 	query_posts( $_query_string );
 
-	if ( $category_meta['show-sidebar'] == 1 ) { ?>
-		<section class="category-postlist">
-	<?php }
 
-	if ( have_posts() ) {
 
-		while ( have_posts() ) {
-			the_post();
+	$is_single = is_singular();
 
-			$post_format = get_post_format();
-			if ( $post_format === false )
-				$post_format = get_post_type();
+	get_header();
 
-			$is_single = is_singular();
-			if ( $is_single ) {
+	if ( $is_single ) {
+		the_post();
+		$post_format = get_post_format();
+		if ( $post_format === false )
+			$post_format = get_post_type();
 
-					//echo "<!-- SINGLE -->";
-					switch ( $post_format ) {
-						case 'page':
-						case 'aside':
-							get_template_part('template', 'page');
-							break;
-						case 'gallery':
-							get_template_part('template', 'gallery');
-							break;
-						default:
-							get_template_part('template', 'article');
+		switch ( $post_format ) {
+			case 'page':
+			case 'aside':
+				get_template_part('template', 'page');
+				break;
+			case 'gallery':
+				get_template_part('template', 'gallery');
+				break;
+			case 'status':
+				get_template_part('template', 'status');
+				break;
+			default:
+				get_template_part('template', 'article');
+				break;
+		}
+
+	}
+	/* not singular */
+	else {
+		if ( $category_meta['show-sidebar'] == 1 ) { ?>
+			<section class="category-postlist">
+		<?php }
+
+			if ( have_posts() ) {
+				while ( have_posts() ) {
+					the_post();
+
+					$post_format = get_post_format();
+					if ( $post_format === false )
+						$post_format = get_post_type();
+
+					if ( !empty($category_meta['custom-template']) && $category_meta['custom-template'] != 'default'  )
+						get_template_part('template', $category_meta['custom-template'] );
+					else
+						get_template_part('template', 'list');
 				}
 			}
-			elseif ( !empty($category_meta['custom-template']) && $category_meta['custom-template'] != 'default'  ) {
-					get_template_part('template', $category_meta['custom-template'] );
-			}
-			else {
-				get_template_part('template', 'list');
-			}
-		}
+
+		if ( $category_meta['show-sidebar'] == 1 ) { ?>
+			</section>
+			<section class="sidebar">
+				<?php
+					$page = get_query_var('paged');
+
+					if ( empty ( $page ) ) $page = 1;
+					$pstart = $page * $category_meta['posts-per-page'];
+					echo $petermolnareu_theme->list_posts( $category, $category_meta['sidebar-entries'], $pstart ); ?>
+			</section>
+		<?php }
+
 	}
 
-	if ( $category_meta['show-sidebar'] == 1 ) {?>
-		</section>
-		<section class="sidebar">
-			<?php
-				$page = get_query_var('paged');
-
-				if ( empty ( $page ) ) $page = 1;
-				$pstart = $page * $category_meta['posts-per-page'];
-				echo $petermolnareu_theme->list_posts( $category, $category_meta['sidebar-entries'], $pstart ); ?>
-		</section>
-	<?php }
 
 	if( function_exists('wp_paginate') && !empty( $category_meta['show-pagination'] ) && $category_meta['show-pagination'] == 1 )
 		wp_paginate();

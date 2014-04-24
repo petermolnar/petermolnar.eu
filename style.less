@@ -4,26 +4,25 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		4.35
+Version:		5.3
 */
 
 // Grays
-@color-bg: #424747;
-@color-text: #999;
+@color-bg-dark: #2D333A;
+@color-bg-light: darken(@color-bg-dark,10%);
+@color-text: #aaa;
 @color-link: #ccc;
-@color-menu: #f90;
-@color-contentbg: #26272A;
+@color-menu: #aaa;
+@color-activemenu: #fff;
+@color-header: #888;
+@color-table: #ccc;
 
-@color-table: #16171a;
 
 @thickborder: 2px;
 @thinborder: 1px;
 
 @border-thin: @thinborder solid @color-table;
 @border-thick: @thickborder solid @color-table;
-
-@border-dotted-dark: @thinborder dotted lighten(@color-contentbg,10%);
-@border-dotted-light: @thinborder dotted lighten(@color-contentbg,30%);
 
 @padding-normal: 0.3em;
 @padding-large: 0.6em;
@@ -32,12 +31,13 @@ Version:		4.35
 @padding-small: 0.2em;
 @padding-xsmall: 0.1em;
 
-@shadow-light: #999 0px 0px 2px;
-@shadow-dark: 1px 1px #111;
+@textshadow-outset: 1px 1px #111;
+@textshadow-reverse: 0px 0px 1px #fff;
+@textshadow-inset: -1px -1px #111;
 
 @font-enormous: 2.8em;
-@font-xlarge: 1.4em;
-@font-large: 1.2em;
+@font-xlarge: 1.2em;
+@font-large: 1.1em;
 @font-normal: 1em;
 @font-small: 0.9em;
 @font-xsmall: 0.7em;
@@ -48,20 +48,7 @@ Version:		4.35
 
 @panel-width: 22em;
 @toggle-size: 3em;
-
-.gradient-light() {
-	background:#2E3033;
-	background:-webkit-gradient(linear, left top, left bottom, from(#46484C), to(#2E3033));
-	background:linear-gradient(top, #46484C, #2E3033);
-	opacity: 0.6;
-}
-
-.gradient-dark() {
-	background:#141516;
-	background:-webkit-gradient(linear, left top, left bottom, from(#26272A), to(#141516));
-	background:linear-gradient(top, #26272A, #141516);
-	opacity: 0.99;
-}
+@toggle-active: 5.7em;
 
 .flatul() {
 		list-style-type: none;
@@ -88,14 +75,8 @@ Version:		4.35
 }
 
 .animate() {
-	transition: all 0.5s ease;
-	-webkit-transition: all 0.5s ease;
-}
-
-.double-border() {
-	border: 1px solid darken(@color-text,20%);
-	box-shadow: 0 0 2px darken(@color-contentbg,20%);
-	border-radius: @padding-large;
+	transition: all 0.3s ease;
+	-webkit-transition: all 0.3s ease;
 }
 
 .iconstyle() {
@@ -106,7 +87,6 @@ Version:		4.35
 	display: inline-block;
 	text-decoration: inherit;
 	width: 1em;
-	//margin: 0 @padding-normal 0 @padding-normal;
 	text-align: center;
 
 	/* For safety - reset parent styles, that can break glyph codes*/
@@ -217,28 +197,32 @@ img.left {
 }
 
 .small {
-	font-size:  @font-xsmall;
+	font-size: @font-xsmall;
 }
 
 /**********
 * GENERAL *
 ***********/
 html {
-	background-color:@color-bg;
+	background: url('assets/image/bg-noise.png') repeat scroll left top @color-bg-dark;
 }
 
 body {
 	position:relative;
 	overflow:auto;
-	max-width:100em;
-	width:98%;
 	margin: @padding-normal auto @padding-normal auto;
 	line-height: @line-height;
 	font-family: 'Liberation Sans', sans-serif;
-	font-size:14px;
+	font-size:16px;
 	color:@color-text;
 	letter-spacing:0.06em;
 	font-weight: normal;
+}
+
+.inner {
+	max-width:100em;
+	width:98%;
+	margin:0 auto 0 auto;
 }
 
 blockquote {
@@ -269,7 +253,6 @@ blockquote {
 a {
 	color:@color-link;
 	text-decoration:none;
-	.animate();
 
 	&:hover {
 		text-decoration:none;
@@ -284,10 +267,6 @@ b, strong {
 
 p {
 	margin: @padding-sxlarge 0 0 0;
-
-	a {
-		color: @color-menu;
-	}
 }
 
 table {
@@ -308,12 +287,10 @@ h1, h2, h3, h4, h5, h6 {
 	font-weight:bold;
 	clear:both;
 	color:lighten(@color-text,10%);
-	text-shadow: @shadow-dark;
 }
 
 h1 {
 	font-size: @font-xlarge;
-	margin: @padding-xlarge 0 @padding-large 0;
 }
 
 h2 {
@@ -329,7 +306,7 @@ dt {
 	line-height:@line-height-small;
 	font-size:@font-normal;
 	margin-top:@padding-xlarge 0 @padding-normal 0;
-	text-shadow: @shadow-dark;
+
 }
 
 dd {
@@ -391,16 +368,15 @@ pre {
 
 /* PANEL */
 .content-header {
-	background: darken(@color-contentbg,5%);
 	position: fixed;
 	width: @panel-width;
-	height: 99%;
-	top: 0.5%;
+	height: 100%;
+	top:0;
 	z-index: 99;
 	left: -( @panel-width );
 	padding: 0 0 0 2em;
 	.animate();
-	.double-border();
+	background: url('assets/image/bg-noise.png') repeat scroll left top darken(@color-bg-dark,12%);
 }
 
 .content-header.open {
@@ -433,20 +409,34 @@ pre {
 }
 
 #showContentHeader.active {
-	left: (@padding-normal+@panel-width)/@toggle-size;
+	left: @toggle-active;
+	z-index: 999;
+	color: @color-menu;
 }
 
 .content-logo {
 	margin:  @padding-xlarge;
 }
 
+.breadcrumbs {
+	color: @color-header;
+	text-shadow: @textshadow-outset;
+	padding: @padding-large 0 @padding-large 0;
+
+	span {
+
+	}
+}
 
 .content-body {
 	position: relative;
 	padding: @padding-large;
-	background: @color-contentbg;
-	.double-border();
 	z-index: 2;
+	background-color: @color-bg-light;
+}
+
+.content-footer  {
+	padding:  @padding-xlarge 0 @padding-xlarge 0;
 }
 
 .content-navigation {
@@ -469,12 +459,11 @@ pre {
 				padding: @padding-normal;
 				/*margin:  @padding-normal 0 @padding-normal 0;*/
 				font-weight: bold;
-				color:@color-link;
-				text-shadow: @shadow-dark;
+				color:@color-menu;
+				text-shadow: @textshadow-outset;
 
 				&:hover {
-					background-color: darken(@color-contentbg, 10%);
-					color:lighten(@color-link, 20%);
+					color:lighten(@color-menu, 30%);
 					.animate();
 				}
 
@@ -486,7 +475,7 @@ pre {
 		.current-page-ancestor > a,
 		.current-post-ancestor > a,
 		.current-category-ancestor > a {
-			color:@color-menu;
+			color:@color-activemenu;
 			opacity: 0.99;
 		}
 	}
@@ -520,10 +509,10 @@ pre {
 .vcard {
 	display:block;
 	vertical-align:top;
-	background-color:darken(@color-contentbg,10%);
 	padding: @padding-xlarge;
 	border-radius: @padding-large;
 	margin: -@padding-large;
+	font-size: @font-xlarge;
 
 	img {
 		float: left;
@@ -536,7 +525,6 @@ pre {
 	a {
 		float: right;
 		width:80%;
-		border:@border-dotted-dark;
 		margin: 0 0 0 1%;
 		line-height:@line-height-large;
 		text-align:left;
@@ -545,11 +533,6 @@ pre {
 		overflow: hidden;
 		color: darken(@color-link, 20%);
 		vertical-align:middle;
-
-		&:hover {
-			color: @color-link;
-			border:@border-dotted-light
-		}
 
 		&:before {
 			.iconstyle();
@@ -561,9 +544,17 @@ pre {
 
 /* ARCTICLE */
 .article-list-element {
-	//box-shadow: 0.1em 0.1em 0.1em darken(@color-contentbg,1%);
 	margin: 0 0 @padding-large 0;
 	//border-radius: @padding-normal;
+
+	p {
+		margin: @padding-large 0 @padding-large 0;
+	}
+}
+
+/* STATUS */
+.article-status {
+	margin: 0 0 @font-enormous*2 0;
 
 	p {
 		margin: @padding-large 0 @padding-large 0;
@@ -583,47 +574,12 @@ pre {
 	}
 
 }
-
 .article-pubdate {
-	display: inline-block;
-	position: relative;
-	height: @font-enormous;
-	width: @font-normal*4;
+	display: block;
+	font-size: @font-small;
 	font-weight: normal;
-	color: darken(@color-text,5%);
-
-	.day, .month, .year, .hour {
-		position: absolute;
-	}
-
-	.day, .hour {
-		font-size: @font-xlarge;
-		top: @font-large;
-	}
-
-	.day {
-		left: @font-xlarge * 0.9;
-	}
-
-	.month {
-		top: @padding-normal;
-		left: @font-large;
-		font-size: @font-large;
-	}
-
-	.year {
-		top: 1em;
-		left: -0.6em;
-		font-size: 1em;
-		.rotate();
-		color: darken(@color-text,20%);
-	}
-
-	.hour {
-		left: @font-xlarge*2.2;
-	}
-
-
+	color: darken(@color-text,20%);
+	font-family: monospace;
 }
 
 .article-thumbnail,
@@ -672,12 +628,9 @@ pre {
 
 .photoblog-preview {
 	display: inline-block;
-	width: 32%;
-	padding-bottom: 32%;
+	width: 50%;
+	padding-bottom: 50%;
 	position: relative;
-	//border: 1px solid #666;
-	//box-shadow: 0 0 4px #111;
-	//overflow: hidden;
 
 	a {
 			figure {
@@ -694,23 +647,28 @@ pre {
 				background-repeat: no-repeat;
 				text-indent: -9999px;
 
-				&:hover {
-					opacity: 0.99;
-				}
-
 				figcaption {
 					position: absolute;
 					overflow: hidden;
-					bottom: 25%;
+					bottom: 33%;
 					left: 25%;
 					right: 25%;
 					text-align: center;
 					padding: @padding-small 1% @padding-small 1%;
-					background-color: darken(@color-contentbg,10%);
 					opacity: 0.8;
 					text-indent: 0;
 					border-radius: @padding-large;
+					font-size: @font-xlarge;
+					line-height: @font-large;
+					text-shadow: @textshadow-reverse;
+					color: #000;
 				}
+
+				&:hover {
+					opacity: 0.99;
+				}
+
+
 
 			}
 	}
@@ -792,6 +750,14 @@ pre {
 
 						li {
 							display: block;
+
+							a {
+								color: @color-menu;
+
+								&:hover {
+									color: @color-activemenu;
+								}
+							}
 						}
 					}
 				}
@@ -831,7 +797,6 @@ pre {
 						bottom: @padding-xsmall;
 						overflow: hidden;
 						border: 1px solid #666;
-						box-shadow: 0 0 4px #111;
 						overflow: hidden;
 						opacity: 0.5;
 						.animate();
@@ -880,20 +845,20 @@ pre {
 		display: none;
 	}
 
-	a, .current {
+	.current {
 		padding: @padding-normal @padding-large @padding-normal @padding-large;
-		color:darken(@color-link,20%);
-		border:@thinborder solid @color-contentbg;
+		opacity: 0.5;
+	}
+
+	a {
+		padding: @padding-normal @padding-large @padding-normal @padding-large;
 
 		&:hover {
 			color:@color-link;
-			border:@border-dotted-light;
 		}
 	}
 
 	.current {
-		background:darken(@color-contentbg,10%);
-		border:@border-dotted-dark;
 	}
 }
 
@@ -916,7 +881,6 @@ pre {
 		li {
 			margin:0 0 @padding-xlarge 0;
 			padding: 0 0 @padding-normal 0;
-			border-bottom:@border-dotted-dark;
 
 			a {
 				display:block;
@@ -964,10 +928,7 @@ pre {
 
 }
 
-.breadcrumbs {
-	display: block;
-	margin-top: 3em;
-}
+
 
 /* DESKTOP */
 @media	( min-width : 960px ) and ( orientation: landscape ) and ( -webkit-max-device-pixel-ratio: 1.5 ),
@@ -995,8 +956,6 @@ pre {
 		left:0;
 		width: 100%;
 		height:auto;
-		border: 0px solid @color-bg;
-		box-shadow: 0 0 0 @color-bg;
 		border-radius: @padding-large;
 		padding: 0 0 0 0;
 	}
@@ -1010,37 +969,30 @@ pre {
 	.content-logo {
 		float: right;
 		display: inline-block;
+		margin: 0.6em 0 0 0;
+
+		a {
+			img {
+				width: 14em;
+			}
+		}
 	}
 
 	.content-navigation {
 		display: inline-block;
+		margin: @padding-small 0 @padding-small 0;
 
 		ul {
 			.flatul();
 
 			li {
 
-				a {
-					border-radius: @padding-large;
-					display:block;
-					padding: 0 @padding-large 0 @padding-large;
-					font-weight: bold;
-					color:darken(@color-link,20%);
-					text-shadow: @shadow-dark;
-					letter-spacing: 0.16em;
-					.animate();
-
-					&:hover {
-						color:lighten(@color-link, 20%);
-						background-color: darken(@color-bg,10%);
-					}
-				}
+				margin-right: @padding-xlarge;
 
 				ul {
 					position: absolute;
 					top:-10em;
 					opacity: 0;
-					background-color: darken(@color-bg,10%);
 					border-radius: @padding-normal;
 					margin: -@padding-large 0 0 0;
 					display: none;
@@ -1051,57 +1003,9 @@ pre {
 
 					a {
 						padding: 0 @padding-small 0 @padding-small;
-
-						//&:hover {
-						//	color:lighten(@color-link, 20%);
-						//	background-color: darken(@color-bg,10%);
-						//}
-
-					}
-				}
-
-				&:hover {
-
-					a {
-						.animate();
-						background-color: darken(@color-bg,20%);
-					}
-
-					ul {
-						background-color: darken(@color-bg,20%);
-						display:block;
-						visibility:visible;
-
-						left: 0;
-						top:auto;
-						opacity: 0.99;
-						//z-index: 99;
-
-						a {
-							background-color: transparent;
-						}
 					}
 				}
 			}
-
-			.current-menu-item,
-			.current-page-ancestor,
-			.current-post-ancestor,
-			.current-category-ancestor {
-				> a {
-					color:@color-menu;
-					background-color: darken(@color-bg,10%);
-				}
-
-				ul {
-					display:block;
-					visibility:visible;
-					left:0;
-					top: auto;
-					opacity: 0.99;
-				}
-			}
-
 		}
 	}
 
@@ -1115,20 +1019,9 @@ pre {
 		float: right;
 	}
 
-	.breadcrumbs {
-		margin: 0.6em 0 0 0.5em;
-		padding: 0;
-
-		ul {
-			.flatul();
-
-			li.single {
-				&:before {
-					content: '»';
-					padding: 0 @padding-normal 0 @padding-normal;
-				}
-			}
-		}
+	.photoblog-preview {
+		width: 33.33%;
+		padding-bottom: 33%;
 	}
 
 }
@@ -1142,8 +1035,6 @@ pre {
 
 	padding:@padding-large;
 	margin: @padding-normal 0 @padding-normal 0;
-	background-color:lighten(@color-contentbg,5%);
-	.double-border();
 
 	.url,
 	.fn,
@@ -1162,7 +1053,7 @@ pre {
 	.comment {
 		margin:@padding-xlarge 0 0 0;
 		padding: 0 0 0 @padding-large;
-		border-left:@border-dotted-light;
+
 	}
 
 	.says {
@@ -1204,7 +1095,6 @@ pre {
 .forkongithub a,
 .forkongithub-line a {
 	font-size: @font-small;
-	background:darken(@color-contentbg,20%);
 	text-align:center;
 	font-weight:bold;
 	box-shadow:1px 1px 4px rgba(0,0,0,0.8);

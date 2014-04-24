@@ -15,6 +15,7 @@ class adaptive_images {
 	 */
 
 	const a_thumb = 'th'; /* for thumbnails */
+	const a_lthumb = 'lth'; /* for thumbnails */
 	const a_stnd = 'stnd'; /* for in-text images */
 	const a_hd = 'hd';  /* for large images */
 
@@ -23,7 +24,7 @@ class adaptive_images {
 
 	const default_prefix = 'adaptive';
 
-	const cache = 1;
+	const cache = 0;
 	private $sharesize = '';
 	const middlesize = 720;
 	public $image_sizes = array();
@@ -36,18 +37,21 @@ class adaptive_images {
 			/* legacy, below 720px */
 			460 => array (
 				self::a_thumb => 60,
+				self::a_lthumb => 220,
 				self::a_stnd => 120,
 				self::a_hd => 640,
 			),
 			/* normal, between 720px and 1200px*/
 			720 => array (
 				self::a_thumb => 90,
+				self::a_lthumb => 380,
 				self::a_stnd => 240,
 				self::a_hd => 1024,
 			),
 			/* anything larger than fullHD */
 			1400 => array (
 				self::a_thumb => 120,
+				self::a_lthumb => 540,
 				self::a_stnd => 400,
 				self::a_hd => 1200,
 			)
@@ -65,7 +69,7 @@ class adaptive_images {
 		*/
 		foreach ( $this->image_sizes as $resolution => $sizes ) {
 			foreach ( $sizes as $prefix => $size ) {
-				$crop = ( $prefix == self::a_hd ) ? false : true;
+				$crop = ( $prefix == self::a_thumb || $prefix == self::a_lthumb ) ? true : false;
 				add_image_size (
 					$prefix . $resolution, // name
 					$sizes[ $prefix ], // width
@@ -196,6 +200,7 @@ class adaptive_images {
 		extract( shortcode_atts(array(
 			'aid' => false,
 			'title' => false,
+			'square' => false
 		), $atts));
 
 		if ( empty ( $aid ) )
@@ -214,7 +219,7 @@ class adaptive_images {
 			$img = $this->get_imagemeta( $aid, false );
 
 			$images[ $aid ] = $img;
-			$bgdata = $this->bgdata ( array_keys( $images ) );
+			$bgdata = $this->bgdata ( array_keys( $images ), self::a_lthumb );
 			$css = $this->build_css ( $bgdata, $images );
 
 			$cache = array (
@@ -228,8 +233,8 @@ class adaptive_images {
 
 		$img = array_shift( $images );
 
-		$_id = $img['slug'];
-		$_src = $bgdata[ self::middlesize ][ $aid ][ self::a_stnd ];
+		$_id = $img['slug'] . '-' . self::a_lthumb;
+		$_src = $bgdata[ self::middlesize ][ $aid ][ self::a_lthumb ];
 
 		return $css .'<figure id="'. $_id .'">
 			<img src="'. $_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
@@ -369,15 +374,24 @@ class adaptive_images {
 	 *
 	 * @return array of image data resolution -> attachment id -> prefix -> url
 	 */
-	private function bgdata ( &$imgids ) {
+	private function bgdata ( &$imgids, $single = false ) {
 
 		/* alway use arrays, easier */
 		if ( ! is_array ( $imgids ) ) $imgids = array ( $imgids );
 
 		/* build array per resolution of every image with as background for that size */
 		foreach ( $imgids as $imgid ) {
+
+
 			foreach ( $this->image_sizes as $resolution => $sizes ) {
-				foreach ( $sizes as $prefix => $size ) {
+				if ( ! $single ) {
+					foreach ( $sizes as $prefix => $size ) {
+						$img = wp_get_attachment_image_src( $imgid, $prefix . $resolution );
+						$__bgimages[$resolution][$imgid][$prefix] = $img[0];
+					}
+				}
+				else {
+					$prefix = $single;
 					$img = wp_get_attachment_image_src( $imgid, $prefix . $resolution );
 					$__bgimages[$resolution][$imgid][$prefix] = $img[0];
 				}
