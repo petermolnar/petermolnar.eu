@@ -17,9 +17,7 @@ class petermolnareu {
 	public $info = array();
 	public $urlfilters = array ();
 	private $cleanup = null;
-	//private $adaptive_galleries = null;
 	private $adaptive_images = null;
-	//public $imgprefixes = array();
 
 	public function __construct () {
 		$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
@@ -33,15 +31,13 @@ class petermolnareu {
 		/* cleanup class */
 		$this->cleanup = new theme_cleaup();
 
-		/* adaptive galleries class */
-		//$this->adaptive_galleries = new adaptive_galleries();
-		$this->adaptive_images = new adaptive_images( $this );
-		//$this->imgprefixes = $this->adaptive_images->prefixes;
 
 		/* theme init */
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->cleanup, 'filters'));
-		//add_action( 'init', array( &$this->adaptive_galleries, 'init'));
+
+		/* adaptive galleries class */
+		$this->adaptive_images = new adaptive_images( $this );
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
 
 		/* set up CSS, JS and fonts */
@@ -61,7 +57,6 @@ class petermolnareu {
 		/* add main menus */
 		register_nav_menus( array(
 			self::menu_header => __( self::menu_header , self::theme_constant ),
-			//adaptive_galleries::menu_portfolio => __( adaptive_galleries::menu_portfolio, self::theme_constant )
 		) );
 
 		/* enable SVG uploads */
@@ -74,15 +69,7 @@ class petermolnareu {
 		/* legacy shortcode handler */
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
 
-		/* lightbox all the things! */
-		//add_filter( 'the_content', array( &$this, 'lightbox' ), 2);
-
-		/* autolink */
-		//add_filter ( 'the_content', array ( &$this, 'text2link' ), 2 );
-		//add_filter ( 'the_excerpt', array ( &$this, 'text2link' ), 2 );
-
-		//add_shortcode('photogal', array ( &$this->adaptive_images, 'adaptgal' ) );
-		//add_shortcode('wp-galleriffic', array ( &$this->adaptive_images, 'adaptgal' ) );
+		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
 		add_shortcode('gallery', array ( &$this->adaptive_images, 'adaptgal' ) );
 
@@ -94,14 +81,8 @@ class petermolnareu {
 		wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
 		wp_enqueue_style( 'reset' );
 
-		//if ( is_user_logged_in() )
-		//	wp_register_style( 'style', $this->theme_url . '/style-new.css' , array('reset'), $this->info->version );
-		//else
-			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+		wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
 		wp_enqueue_style( 'style' );
-
-		/* register styles for later optional use */
-		//wp_register_style( 'lightbox', $this->css_dir . 'jquery.lightbox-0.5.css', false, null );
 
 		/* syntax highlight */
 		wp_register_style( 'prism', $this->css_dir . 'prism.css', false, null );
@@ -109,11 +90,10 @@ class petermolnareu {
 
 		/* CDN scripts */
 		wp_deregister_script( 'jquery' );
-		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js' ), false, null, true );
+		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://code.jquery.com/jquery-1.11.0.min.js' ), false, null, true );
 		wp_enqueue_script( 'jquery' );
 
 		wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
-
 		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery','jquery.touchSwipe'), null, true );
 	}
 
@@ -153,7 +133,6 @@ class petermolnareu {
 	 */
 	public function share ( $link , $title, $comment=false, $parent=false ) {
 		global $post;
-		//$class='opacity75 icon-share';
 		$link = urlencode($link);
 		$title = urlencode($title);
 		$desciption = urlencode(get_the_excerpt());
@@ -343,10 +322,6 @@ class petermolnareu {
 
 	}
 
-	public function text2link ( $src ) {
-		return preg_replace ( "/(?<!a href=\")(?<!src=\")((http|ftp)+(s)?:\/\/[^<>\s]+)/i", "<a href=\"\\0\">\\0</a>", $src );
-	}
-
 	/**
 	 * replacing legacy code & formatting with newer ones
 	 *
@@ -359,38 +334,6 @@ class petermolnareu {
 		foreach ($matches as $match ) {
 			$shortcode = '[code]'.trim($match[1]).'[/code]';
 			$src = str_replace ( $match[0], $shortcode, $src );
-		}
-
-		/* replace strings within `` to monotype string *
-		$matches = array();
-		preg_match_all ( "'`(.*?)`'si", $src , $matches, PREG_SET_ORDER );
-
-		foreach ($matches as $match ) {
-			$shortcode = '<code>'.$match[1].'</code>';
-			$src = str_replace ( $match[0], $shortcode, $src );
-		}
-		 */
-		//$matches = array();
-		//preg_match_all ( "'[gallery(.*?)]'si", $src , $matches, PREG_SET_ORDER );
-		//foreach ($matches as $match ) {
-		//	$src = str_replace ( $match[0], '', $src );
-		//}
-
-		return $src;
-	}
-
-	/**
-	 * auto-lightbox
-	 */
-	public function lightbox ( $src ) {
-
-		$matches = array();
-		preg_match_all('!http://[a-z0-9\-\.\/]+\.(?:jpe?g|png)!Ui' , $src , $matches);
-		if ( !empty ( $matches ) ) {
-			wp_enqueue_style( 'lightbox' );
-			wp_enqueue_script( 'jquery' );
-			wp_enqueue_script( 'jquery.lightbox' );
-			wp_enqueue_script( 'jquery.lightbox.images' );
 		}
 
 		return $src;
@@ -416,34 +359,6 @@ class petermolnareu {
 				}
 
 		});</script>';
-	}
-
-	public function the_breadcrumb( $echo = true ) {
-		echo '<ul class="breadcrumbs">';
-		if (!is_home()) {
-			if ( is_category() || is_single() ) {
-				echo '<li class="category">';
-				the_category(' </li><li> ');
-
-				if (is_single()) {
-					echo '</li><li class="single">';
-					echo the_title();
-					echo '</li>';
-				}
-			} elseif (is_page()) {
-				echo '<li class="page">';
-				echo the_title();
-				echo '</li>';
-			}
-		}
-		elseif (is_tag()) {single_tag_title();}
-		elseif (is_day()) {echo"<li>Archive for "; the_time('F jS, Y'); echo'</li>';}
-		elseif (is_month()) {echo"<li>Archive for "; the_time('F, Y'); echo'</li>';}
-		elseif (is_year()) {echo"<li>Archive for "; the_time('Y'); echo'</li>';}
-		elseif (is_author()) {echo"<li>Author Archive"; echo'</li>';}
-		elseif (isset($_GET['paged']) && !empty($_GET['paged'])) {echo "<li>Blog Archives"; echo'</li>';}
-		elseif (is_search()) {echo"<li>Search Results"; echo'</li>';}
-		echo '</ul>';
 	}
 
 	public function dimox_breadcrumbs() {
@@ -619,11 +534,14 @@ class petermolnareu {
 	}
 }
 
-
-
 /**** END OF FUNCTIONS *****/
+
+
+
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {
 	$petermolnareu_theme = new petermolnareu();
 }
+
+
 
 ?>

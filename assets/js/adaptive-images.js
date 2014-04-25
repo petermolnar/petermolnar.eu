@@ -16,7 +16,7 @@ jQuery(document).ready(function($) {
 		PAGE_DOWN: 34,
 		PAGE_UP: 33,
 		RIGHT: 39,
-		UP: 38  
+		UP: 38
 	}
 */
 
@@ -34,6 +34,7 @@ jQuery(document).ready(function($) {
 			return false;
 		}
 
+		return true;
 	});
 
 	function next ( e ) {
@@ -63,8 +64,10 @@ jQuery(document).ready(function($) {
 		$active = $( $(this).attr('href') );
 		$thumbs.removeClass('adaptgal-active');
 		$(this).addClass('adaptgal-active');
-		location.href = $(this).attr('href');
-		//internalclick = false;
+
+		var pos = $(window).scrollTop();
+		location.hash = $(this).attr('href');
+		$(window).scrollTop(pos);
 	});
 
 	// swipe reactions, only one finger!

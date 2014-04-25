@@ -14,10 +14,15 @@
 	<script>
 	jQuery(document).ready(function($) {
 
-		$('#showContentHeader').click ( function (event) {
-			$(this).toggleClass( 'active' );
-			$('.content-header' ).toggleClass('open');
+		jQuery("a[href^='#']").click(function( e ) {
+			e.preventDefault();
+		});
+
+		jQuery('#showContentHeader').click ( function (event) {
+			jQuery(this).toggleClass( 'active' );
+			jQuery('.content-header' ).toggleClass('open');
 		} );
+
 	});
 
 	</script>
