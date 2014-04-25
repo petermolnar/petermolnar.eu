@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.3
+Version:		5.4
 */
 /********
 * FONTS *
@@ -398,7 +398,7 @@ pre {
   font-family: 'petermolnar';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: absolute;
+  position: fixed;
   margin: 0.3em 0 0 0.2em;
   z-index: 99;
   transition: all 0.3s ease;
@@ -429,7 +429,7 @@ pre {
 }
 .content-body {
   position: relative;
-  padding: 0.6em;
+  padding: 3em 0.6em 0.6em 0.6em;
   z-index: 2;
   background-color: #171a1d;
 }
@@ -886,6 +886,9 @@ pre {
 }
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi) {
+  .content-body {
+    padding: 0.6em;
+  }
   .content-logo {
     margin: 0;
   }
