@@ -71,8 +71,8 @@ class petermolnareu {
 
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
-		add_shortcode('gallery', array ( &$this->adaptive_images, 'adaptgal' ) );
 
+		add_shortcode('gallery', array ( &$this->adaptive_images, 'adaptgal' ) );
 	}
 
 	public function register_css_js () {

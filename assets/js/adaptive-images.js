@@ -8,6 +8,13 @@ jQuery(document).ready(function($) {
 	var $ae = false;
 	var h = 0.9;
 
+	//$(".adaptgal").each(function (i) {
+	//	var h = $(this).height()
+	//	if ( h > $(window).height() ) {
+	//		$(this).height ( $(window).height() )
+	//	}
+	//});
+
 /*	var keyCode = {
 		DOWN: 40,
 		END: 35,

@@ -24,7 +24,7 @@ if ( !is_singular() ):  ?><article class="photoblog-preview" id="photoblog-<?php
 		//$num = sizeof ( $attachments ) ;
 
 		$title = get_the_title();
-		echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'" large=1]');
+		echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'"]');
 	?>
 </a></article><?php
 

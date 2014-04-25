@@ -120,8 +120,22 @@ class adaptive_images {
 		return array ( 'post' => $post, 'imgids' => $ids, 'columns' => $columns );
 	}
 
+
+	public function adaptgal ( $atts, $content = null ) {
+		global $post;
+		$category = array_shift( get_the_category( $post->ID ) );
+		$template = $category->slug;
+
+		switch ( $template ) {
+			case 'photoblog':
+				return $this->adaptgal_pure ( $atts, $content );
+			default:
+				return $this->adaptgal_classic ( $atts, $content );
+		}
+	}
+
 	/* adaptive gallery shortcode function */
-	public function adaptgal( $atts , $content = null ) {
+	public function adaptgal_classic ( $atts , $content = null ) {
 
 		$atts = $this->_init ( $atts );
 		$post = $atts['post'];
@@ -168,7 +182,8 @@ class adaptive_images {
 			$keys = array_keys($this->image_sizes);
 			$src_src = $bgdata[ array_shift( $keys ) ][ $imgid ][ self::a_hd ];
 
-			$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
+			//$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
+			$caption = $img['title'];
 
 			$th_list[ $imgid ] = '<li><a id="'. $th_id .'" href="#'. $src_id .'">'. $img['title'] .'</a></li>';
 
@@ -184,7 +199,6 @@ class adaptive_images {
 			'. $css .'
 			<div class="adaptgal-previews">'. join( "", $src_list ) .'</div>
 			<nav class="adaptgal-thumbs'. $single .'"><ul>'. join( "", $th_list ) .'</ul></nav>
-			<br class="clear" />
 		</section>';
 
 		wp_enqueue_script( 'jquery' );
@@ -195,17 +209,20 @@ class adaptive_images {
 	}
 
 	/* adaptive image shortcode function */
-	public function adaptimg( $atts , $content = null ) {
+	public function adaptimg( $atts , $content=null ) {
 
 		extract( shortcode_atts(array(
 			'aid' => false,
 			'title' => false,
-			'square' => false
+			'size' => null,
+			'share' => false
 		), $atts));
 
 		if ( empty ( $aid ) )
 			return false;
 
+		if ( $size === null )
+			$size = self::a_lthumb;
 
 		$cached = ( self::cache == 1 ) ? wp_cache_get( $aid, self::cache_group ) : false;
 
@@ -216,10 +233,10 @@ class adaptive_images {
 		}
 		else {
 
-			$img = $this->get_imagemeta( $aid, false );
+			$img = $this->get_imagemeta( $aid );
 
 			$images[ $aid ] = $img;
-			$bgdata = $this->bgdata ( array_keys( $images ), self::a_lthumb );
+			$bgdata = $this->bgdata ( array_keys( $images ), $size );
 			$css = $this->build_css ( $bgdata, $images );
 
 			$cache = array (
@@ -232,15 +249,67 @@ class adaptive_images {
 		}
 
 		$img = array_shift( $images );
+		$_id = ( $size == self::a_hd ) ? $img['slug'] : $img['slug'] . '-' . $size;
+		$_src = $bgdata[ self::middlesize ][ $aid ][ $size ];
 
-		$_id = $img['slug'] . '-' . self::a_lthumb;
-		$_src = $bgdata[ self::middlesize ][ $aid ][ self::a_lthumb ];
+		if ( $share )
+			$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
+		elseif ( ! empty ( $title ))
+			$caption = $title;
+		else
+			$caption = $img['title'];
 
 		return $css .'<figure id="'. $_id .'">
 			<img src="'. $_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
-			<figcaption>'. $title .'</figcaption>
+			<figcaption>'. $caption .'</figcaption>
 		</figure>';
 
+	}
+
+	/* adaptive gallery shortcode function */
+	public function adaptgal_pure( $atts , $content = null ) {
+
+		$atts = $this->_init ( $atts );
+		$post = $atts['post'];
+		$imgids = $atts['imgids'];
+		$colums = $atts['columns'];
+
+		$cached = ( self::cache == 1 ) ? wp_cache_get( $post->ID, self::cache_group ) : false;
+
+		if ( $cached != false ) {
+			$images = $cached['images'];
+			$bgdata = $cached['bgdata'];
+			$css = $cached['css'];
+		}
+		else {
+			if ( $imgids == false ) {
+				$images = $this->image_attachments_by_post ( $post );
+			}
+			else {
+
+				$images = $this->image_attachments_by_ids ( $imgids );
+			}
+
+			$bgdata = $this->bgdata ( array_keys( $images ) );
+			$css = $this->build_css ( $bgdata, $images );
+
+			$cache = array (
+				'images' => $images,
+				'bgdata' => $bgdata,
+				'css' => $css
+			);
+
+			wp_cache_set( $post->ID, $cache, self::cache_group, self::cache_time );
+		}
+
+		$r = '<section class="adaptgal-pure">';
+
+		foreach ($images as $imgid => $img ) {
+			$r .= do_shortcode( '[adaptimg aid=' . $imgid .' title="'. $img['title'] .'" size="'. self::a_hd .'" share=1]');
+		}
+
+		$r .= '</section>';
+		return $r;
 	}
 
 	/*

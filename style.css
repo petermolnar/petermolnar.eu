@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.4
+Version:		5.9
 */
 /********
 * FONTS *
@@ -398,7 +398,7 @@ pre {
   font-family: 'petermolnar';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: fixed;
+  position: absolute;
   margin: 0.3em 0 0 0.2em;
   z-index: 99;
   transition: all 0.3s ease;
@@ -486,7 +486,7 @@ pre {
 }
 .share ul li {
   display: inline-block;
-  font-size: 2.8em;
+  font-size: 1.1em;
 }
 .share ul li a {
   display: block;
@@ -549,7 +549,7 @@ pre {
 }
 /* STATUS */
 .article-status {
-  margin: 0 0 5.6em 0;
+  margin: 0 0 4.4em 0;
 }
 .article-status p {
   margin: 0.6em 0 0.6em 0;
@@ -703,38 +703,12 @@ pre {
   opacity: 0;
 }
 .adaptgal .adaptgal-previews figure figcaption {
-  text-indent: 0;
-  position: absolute;
-  bottom: 0;
-  left: -10em;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-}
-.adaptgal .adaptgal-previews figure figcaption .share ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-.adaptgal .adaptgal-previews figure figcaption .share ul li {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-}
-.adaptgal .adaptgal-previews figure figcaption .share ul li {
-  display: block;
-}
-.adaptgal .adaptgal-previews figure figcaption .share ul li a {
-  color: #aaaaaa;
-}
-.adaptgal .adaptgal-previews figure figcaption .share ul li a:hover {
-  color: #ffffff;
+  display: none;
+  visibility: hidden;
 }
 .adaptgal .adaptgal-previews figure:target {
   opacity: 0.99;
   z-index: 10;
-}
-.adaptgal .adaptgal-previews figure:target figcaption {
-  left: 1em;
 }
 .adaptgal .adaptgal-thumbs {
   text-align: center;
@@ -780,13 +754,40 @@ pre {
   opacity: 0.99;
 }
 .adaptgal .adaptgal-thumbs.single {
-  width: 6%;
-  margin-left: 94%;
+  width: 5%;
+  margin-left: 95%;
 }
 .adaptgal .adaptgal-thumbs.single ul li {
   position: relative;
   width: 99%;
   padding-bottom: 99%;
+}
+.adaptgal-pure figure {
+  position: relative;
+  display: block;
+  height: auto;
+  width: 90%;
+  margin: 0 auto 0 auto;
+  padding: 0;
+  text-indent: -9999px;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  background-size: contain;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.adaptgal-pure figure figcaption {
+  text-indent: 0;
+  position: absolute;
+  bottom: 0;
+  left: 1em;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  text-shadow: 1px 1px #111111;
+}
+.adaptgal-pure figure img {
+  width: 100%;
+  height: auto;
 }
 /* PAGINATION */
 .wp-paginate {
@@ -886,18 +887,9 @@ pre {
 }
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi) {
-  .content-body {
-    padding: 0.6em;
-  }
-  .content-logo {
-    margin: 0;
-  }
-  .adaptgal .adaptgal-thumbs {
-    width: 11%;
-    margin-left: 88%;
-  }
-  .adaptgal .adaptgal-previews {
-    width: 86%;
+  .nav-toggle-button {
+    display: none;
+    visibility: hidden;
   }
   .content-header {
     background-color: transparent;
@@ -908,10 +900,6 @@ pre {
     height: auto;
     border-radius: 0.6em;
     padding: 0 0 0 0;
-  }
-  .nav-toggle-button {
-    display: none;
-    visibility: hidden;
   }
   .content-logo {
     float: right;
@@ -938,21 +926,15 @@ pre {
   .content-navigation ul li {
     margin-right: 1em;
   }
-  .content-navigation ul li ul {
-    position: absolute;
-    top: -10em;
-    opacity: 0;
-    border-radius: 0.3em;
-    margin: -0.6em 0 0 0;
-    display: none;
-    visibility: hidden;
-    z-index: 1;
-    transition: all 0.3s ease;
-    -webkit-transition: all 0.3s ease;
-    padding: 0 1em 0 0;
+  .content-body {
+    padding: 0.6em;
   }
-  .content-navigation ul li ul a {
-    padding: 0 0.2em 0 0.2em;
+  .adaptgal .adaptgal-thumbs {
+    width: 11%;
+    margin-left: 88%;
+  }
+  .adaptgal .adaptgal-previews {
+    width: 86%;
   }
   .category-postlist {
     width: 60%;
@@ -965,6 +947,20 @@ pre {
   .photoblog-preview {
     width: 33.33%;
     padding-bottom: 33%;
+  }
+  .share ul li {
+    font-size: 2.2em;
+  }
+  .adaptgal-pure {
+    -moz-column-count: 2;
+    -moz-column-gap: 0;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 0;
+    column-count: 2;
+    column-gap: 0;
+  }
+  .adaptgal-pure figure {
+    width: 98%;
   }
 }
 /* COMMENTS */
@@ -1088,9 +1084,4 @@ pre {
 .forkongithub-line a:hover,
 .forkongithub a:hover {
   opacity: 0.99;
-}
-/* TEMP */
-.adaptgal-links {
-  display: none;
-  visibility: hidden;
 }

@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.4
+Version:		5.9
 */
 
 // Grays
@@ -35,7 +35,7 @@ Version:		5.4
 @textshadow-reverse: 0px 0px 1px #fff;
 @textshadow-inset: -1px -1px #111;
 
-@font-enormous: 2.8em;
+@font-enormous: 2.2em;
 @font-xlarge: 1.2em;
 @font-large: 1.1em;
 @font-normal: 1em;
@@ -107,6 +107,15 @@ Version:		5.4
 	rotation: -90deg !important;
 	-webkit-transform: rotate(-90deg);
 	-moz-transform: rotate(-90deg);
+}
+
+.columns2() {
+	-moz-column-count: 2;
+	-moz-column-gap: 0;
+	-webkit-column-count: 2;
+	-webkit-column-gap: 0;
+	column-count: 2;
+	column-gap: 0;
 }
 
 /********
@@ -390,7 +399,7 @@ pre {
 	font-family: 'petermolnar';
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	position: fixed;
+	position: absolute;
 	margin: @padding-normal 0 0 @padding-small;
 	z-index: 99;
 	.animate();
@@ -491,7 +500,7 @@ pre {
 
 		li {
 			display:inline-block;
-			font-size: @font-enormous;
+			font-size: @font-large;
 
 			a {
 				display: block;
@@ -736,40 +745,13 @@ pre {
 			opacity: 0;
 
 			figcaption {
-				text-indent: 0;
-				position: absolute;
-				bottom: 0;
-				left:-10em;
-				.animate();
-
-				.share {
-
-					ul {
-
-					.flatul();
-
-						li {
-							display: block;
-
-							a {
-								color: @color-menu;
-
-								&:hover {
-									color: @color-activemenu;
-								}
-							}
-						}
-					}
-				}
+				display: none;
+				visibility: hidden;
 			}
 
 			&:target {
 				opacity: 0.99;
 				z-index: 10;
-
-				figcaption {
-					left:  1em;
-				}
 			}
 		}
 	}
@@ -815,14 +797,43 @@ pre {
 	}
 
 	.adaptgal-thumbs.single {
-		width: 6%;
-		margin-left: 94%;
+		width: 5%;
+		margin-left: 95%;
 		ul {
 			li {
 				position: relative;
 				width: 99%;
 				padding-bottom: 99%;
 			}
+		}
+	}
+}
+
+.adaptgal-pure {
+	figure {
+		position: relative;
+		display: block;
+		height:auto;
+		width:90%;
+		margin: 0 auto 0 auto;
+		padding: 0;
+
+		text-indent: -9999px;
+		.animate();
+		.fullbg();
+
+		figcaption {
+			text-indent: 0;
+			position: absolute;
+			bottom: 0;
+			left: 1em;
+			.animate();
+			text-shadow: @textshadow-outset;
+		}
+
+		img {
+			width: 100%;
+			height: auto;
 		}
 	}
 }
@@ -934,23 +945,9 @@ pre {
 @media	( min-width : 960px ) and ( orientation: landscape ) and ( -webkit-max-device-pixel-ratio: 1.5 ),
 		( min-width : 960px ) and ( orientation: landscape ) and ( max-resolution: 220dpi ) {
 
-.content-body {
-	padding: @padding-large;
-}
-
-.content-logo {
-	margin:  0;
-	}
-
-	.adaptgal {
-		.adaptgal-thumbs {
-			width: 11%;
-			margin-left: 88%;
-		}
-
-		.adaptgal-previews {
-			width:86%;
-		}
+	.nav-toggle-button {
+		display: none;
+		visibility: hidden;
 	}
 
 	.content-header {
@@ -962,12 +959,6 @@ pre {
 		height:auto;
 		border-radius: @padding-large;
 		padding: 0 0 0 0;
-	}
-
-
-	.nav-toggle-button {
-		display: none;
-		visibility: hidden;
 	}
 
 	.content-logo {
@@ -990,26 +981,23 @@ pre {
 			.flatul();
 
 			li {
-
 				margin-right: @padding-xlarge;
-
-				ul {
-					position: absolute;
-					top:-10em;
-					opacity: 0;
-					border-radius: @padding-normal;
-					margin: -@padding-large 0 0 0;
-					display: none;
-					visibility: hidden;
-					z-index: 1;
-					.animate();
-					padding: 0 @font-normal 0 0 ;
-
-					a {
-						padding: 0 @padding-small 0 @padding-small;
-					}
-				}
 			}
+		}
+	}
+
+	.content-body {
+		padding: @padding-large;
+	}
+
+	.adaptgal {
+		.adaptgal-thumbs {
+			width: 11%;
+			margin-left: 88%;
+		}
+
+		.adaptgal-previews {
+			width:86%;
 		}
 	}
 
@@ -1026,6 +1014,21 @@ pre {
 	.photoblog-preview {
 		width: 33.33%;
 		padding-bottom: 33%;
+	}
+
+	.share {
+		ul {
+			li {
+				font-size: @font-enormous;
+			}
+		}
+	}
+
+	.adaptgal-pure {
+		.columns2();
+		figure {
+			width:98%;
+		}
 	}
 
 }
@@ -1126,10 +1129,4 @@ pre {
 .forkongithub-line a:hover,
 .forkongithub a:hover {
 	opacity: 0.99;
-}
-
-/* TEMP */
-.adaptgal-links {
-	display: none;
-	visibility: hidden;
 }
