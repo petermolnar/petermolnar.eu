@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.9
+Version:		5.13
 */
 
 // Grays
@@ -36,6 +36,7 @@ Version:		5.9
 @textshadow-inset: -1px -1px #111;
 
 @font-enormous: 2.2em;
+@font-xxlarge: 1.8em;
 @font-xlarge: 1.2em;
 @font-large: 1.1em;
 @font-normal: 1em;
@@ -373,6 +374,17 @@ pre {
 .icon-smile:before { content: '\e825'; } /* '' */
 .icon-frown:before { content: '\e824'; } /* '' */
 .icon-meh:before { content: '\e823'; } /* '' */
+.icon-cc:before { content: '\e827'; } /* '' */
+.icon-cc-by:before { content: '\e828'; } /* '' */
+.icon-cc-nc:before { content: '\e829'; } /* '' */
+.icon-cc-nc-eu:before { content: '\e82a'; } /* '' */
+.icon-cc-nc-jp:before { content: '\e82b'; } /* '' */
+.icon-cc-sa:before { content: '\e82c'; } /* '' */
+.icon-cc-nd:before { content: '\e82d'; } /* '' */
+.icon-cc-pd:before { content: '\e831'; } /* '' */
+.icon-cc-zero:before { content: '\e82e'; } /* '' */
+.icon-cc-share:before { content: '\e82f'; } /* '' */
+.icon-cc-remix:before { content: '\e830'; } /* '' */
 
 
 /* PANEL */
@@ -446,6 +458,7 @@ pre {
 
 .content-footer  {
 	padding:  @padding-xlarge 0 @padding-xlarge 0;
+	font-size:  @font-small;
 }
 
 .content-navigation {
@@ -500,7 +513,7 @@ pre {
 
 		li {
 			display:inline-block;
-			font-size: @font-large;
+			font-size: @font-enormous;
 
 			a {
 				display: block;
@@ -564,6 +577,7 @@ pre {
 /* STATUS */
 .article-status {
 	margin: 0 0 @font-enormous*2 0;
+	display: inline-block;
 
 	p {
 		margin: @padding-large 0 @padding-large 0;
@@ -619,10 +633,6 @@ pre {
 .article-single-footer {
 	margin: @padding-xlarge 0 0 0;
 	text-align: left;
-}
-
-.article-status-footer {
-	text-align: right;
 }
 
 /* ASIDE, for status updates */
@@ -822,6 +832,14 @@ pre {
 		.animate();
 		.fullbg();
 
+		.share {
+			ul {
+				li {
+					font-size: @font-xxlarge;
+				}
+			}
+		}
+
 		figcaption {
 			text-indent: 0;
 			position: absolute;
@@ -959,6 +977,7 @@ pre {
 		height:auto;
 		border-radius: @padding-large;
 		padding: 0 0 0 0;
+		background-image: none;
 	}
 
 	.content-logo {
@@ -1016,19 +1035,25 @@ pre {
 		padding-bottom: 33%;
 	}
 
-	.share {
-		ul {
-			li {
-				font-size: @font-enormous;
-			}
+	//.share {
+	//	ul {
+	//		li {
+	//			font-size: @font-enormous;
+	//		}
+	//	}
+	//}
+
+	.adaptgal-pure {
+		width: 90%;
+		margin:  0 auto 0 auto;
+		.columns2();
+		figure {
+			width:92%;
 		}
 	}
 
-	.adaptgal-pure {
+	.status-postlist {
 		.columns2();
-		figure {
-			width:98%;
-		}
 	}
 
 }

@@ -83,10 +83,12 @@
 	}
 	/* not singular */
 	else {
+
 		if ( $category_meta['show-sidebar'] == 1 ) { ?>
 			<section class="category-postlist">
 		<?php }
 
+			?><div class="<?php echo $category_meta['custom-template'] ?>-postlist"><?php
 			if ( have_posts() ) {
 				while ( have_posts() ) {
 					the_post();
@@ -101,6 +103,7 @@
 						get_template_part('template', 'list');
 				}
 			}
+			?></div><?php
 
 		if ( $category_meta['show-sidebar'] == 1 ) { ?>
 			</section>

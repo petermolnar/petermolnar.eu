@@ -7,7 +7,7 @@
 
 	<?php $petermolnareu_theme->article_time(); ?>
 
-	<?php if ( has_post_thumbnail () ) { ?>
+	<?php /* if ( has_post_thumbnail () ) { ?>
 		<figure class="article-thumbnail-small">
 			<?php
 				$thumb = get_the_post_thumbnail( $post->ID, 'thumbnail', array(
@@ -17,11 +17,11 @@
 				echo $petermolnareu_theme->replace_if_ssl ( $thumb );
 			?>
 		</figure>
-	<?php } ?>
+	<?php } */ ?>
 
 	<?php the_content(); ?>
 
-	<footer class="article-status-footer small">
+	<footer class="article-status-footer">
 		<?php echo $petermolnareu_theme->share ( get_permalink() , substr( get_the_excerpt(), 0, 80 ), true ); ?>
 	</footer>
 
