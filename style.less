@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.13
+Version:		5.14
 */
 
 // Grays
@@ -47,7 +47,7 @@ Version:		5.13
 @line-height-small: 1.2em;
 @line-height-large: 3.6em;
 
-@panel-width: 22em;
+@panel-width: 18em;
 @toggle-size: 3em;
 @toggle-active: 5.7em;
 
@@ -669,18 +669,17 @@ pre {
 				figcaption {
 					position: absolute;
 					overflow: hidden;
-					bottom: 33%;
-					left: 25%;
-					right: 25%;
+					top: 25%;
+					left: 5%;
+					right: 5%;
 					text-align: center;
 					padding: @padding-small 1% @padding-small 1%;
-					opacity: 0.8;
+					opacity: 0.9;
 					text-indent: 0;
-					border-radius: @padding-large;
-					font-size: @font-xlarge;
-					line-height: @font-large;
-					text-shadow: @textshadow-reverse;
-					color: #000;
+					font-size: @font-xxlarge;
+					line-height: @font-xlarge;
+					text-shadow: 0 0 2px #000;
+					color: #fff;
 				}
 
 				&:hover {
@@ -718,108 +717,8 @@ pre {
 	max-width: 90px;
 }
 
-
-/* ADAPTGAL */
+.adaptgal-pure,
 .adaptgal {
-	position: relative;
-
-	.adaptgal-previews {
-		position:absolute;
-		display: block;
-		height:auto;
-		bottom:0;
-		top:0;
-		left:0;
-		right:0;
-		z-index:2;
-		vertical-align: top;
-		overflow:hidden;
-		width:84%;
-
-
-		figure {
-			position:absolute;
-			display: block;
-			width:auto;
-			height:auto;
-			top:0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-
-			vertical-align: top;
-			overflow:hidden;
-			text-indent: -9999px;
-			.animate();
-			.fullbg();
-			opacity: 0;
-
-			figcaption {
-				display: none;
-				visibility: hidden;
-			}
-
-			&:target {
-				opacity: 0.99;
-				z-index: 10;
-			}
-		}
-	}
-
-	.adaptgal-thumbs {
-		text-align: center;
-		position: relative;
-		width: 16%;
-		margin-left: 84%;
-		vertical-align: top;
-
-			ul {
-				.flatul();
-
-				li {
-					position: relative;
-					width: 45%;
-					padding-bottom: 45%;
-
-					a {
-						position: absolute;
-						left: @padding-xsmall;
-						right: @padding-xsmall;
-						top: @padding-xsmall;
-						bottom: @padding-xsmall;
-						overflow: hidden;
-						border: 1px solid #666;
-						overflow: hidden;
-						opacity: 0.5;
-						.animate();
-						background-size: contain;
-						background-position: center center;
-						background-repeat: no-repeat;
-						text-indent: -999px;
-					}
-
-					a:hover, a:active a:focus, a.adaptgal-active {
-						opacity: 0.99;
-					}
-				}
-			}
-
-	}
-
-	.adaptgal-thumbs.single {
-		width: 5%;
-		margin-left: 95%;
-		ul {
-			li {
-				position: relative;
-				width: 99%;
-				padding-bottom: 99%;
-			}
-		}
-	}
-}
-
-.adaptgal-pure {
 	figure {
 		position: relative;
 		display: block;
@@ -852,6 +751,19 @@ pre {
 		img {
 			width: 100%;
 			height: auto;
+		}
+	}
+
+	.adaptgal-thumbs {
+		display: none;
+		visibility: hidden;
+	}
+}
+
+.adaptgal {
+	figure {
+		figcaption {
+			text-indent: none;
 		}
 	}
 }
@@ -1009,14 +921,107 @@ pre {
 		padding: @padding-large;
 	}
 
+	/* ADAPTGAL */
 	.adaptgal {
-		.adaptgal-thumbs {
-			width: 11%;
-			margin-left: 88%;
-		}
+		position: relative;
 
 		.adaptgal-previews {
+			position:absolute;
+			display: block;
+			height:auto;
+			bottom:0;
+			top:0;
+			left:0;
+			right:0;
+			z-index:2;
+			vertical-align: top;
+			overflow:hidden;
 			width:86%;
+
+			figure {
+				position:absolute;
+				display: block;
+				width:auto;
+				height:auto;
+				top:0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+
+				vertical-align: top;
+				overflow:hidden;
+				text-indent: -9999px;
+				.animate();
+				.fullbg();
+				opacity: 0;
+
+				figcaption {
+					text-indent: -9999px;
+				}
+
+				&:target {
+					opacity: 0.99;
+					z-index: 10;
+				}
+			}
+		}
+
+		.adaptgal-thumbs,
+		.adaptgal-thumbs-single {
+			display: block;
+			visibility: visible
+		}
+
+		.adaptgal-thumbs {
+			text-align: center;
+			position: relative;
+			width: 11%;
+			margin-left: 88%;
+			vertical-align: top;
+
+				ul {
+					.flatul();
+
+					li {
+						position: relative;
+						width: 45%;
+						padding-bottom: 45%;
+
+						a {
+							position: absolute;
+							left: @padding-xsmall;
+							right: @padding-xsmall;
+							top: @padding-xsmall;
+							bottom: @padding-xsmall;
+							overflow: hidden;
+							border: 1px solid #666;
+							overflow: hidden;
+							opacity: 0.5;
+							.animate();
+							background-size: contain;
+							background-position: center center;
+							background-repeat: no-repeat;
+							text-indent: -999px;
+						}
+
+						a:hover, a:active a:focus, a.adaptgal-active {
+							opacity: 0.99;
+						}
+					}
+				}
+
+		}
+
+		.adaptgal-thumbs.single {
+			width: 5%;
+			margin-left: 95%;
+			ul {
+				li {
+					position: relative;
+					width: 99%;
+					padding-bottom: 99%;
+				}
+			}
 		}
 	}
 

@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.12
+Version:		5.14
 */
 /********
 * FONTS *
@@ -422,11 +422,11 @@ pre {
 /* PANEL */
 .content-header {
   position: fixed;
-  width: 22em;
+  width: 18em;
   height: 100%;
   top: 0;
   z-index: 99;
-  left: -22em;
+  left: -18em;
   padding: 0 0 0 2em;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
@@ -669,23 +669,22 @@ pre {
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
-  text-indent: -9998.99999999px;
+  text-indent: -9999px;
 }
 .photoblog-preview a figure figcaption {
   position: absolute;
   overflow: hidden;
-  bottom: 33%;
-  left: 25%;
-  right: 25%;
+  top: 25%;
+  left: 5%;
+  right: 5%;
   text-align: center;
   padding: 0.2em 1% 0.2em 1%;
-  opacity: 0.8;
+  opacity: 0.9;
   text-indent: 0;
-  border-radius: 0.6em;
-  font-size: 1.2em;
-  line-height: 1.1em;
-  text-shadow: 0px 0px 1px #ffffff;
-  color: #000;
+  font-size: 1.8em;
+  line-height: 1.2em;
+  text-shadow: 0 0 2px #000;
+  color: #fff;
 }
 .photoblog-preview a figure:hover {
   opacity: 0.99;
@@ -710,102 +709,8 @@ pre {
   max-width: 90px;
 }
 /* ADAPTGAL */
-.adaptgal {
-  position: relative;
-}
-.adaptgal .adaptgal-previews {
-  position: absolute;
-  display: block;
-  height: auto;
-  bottom: 0;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  vertical-align: top;
-  overflow: hidden;
-  width: 84%;
-}
-.adaptgal .adaptgal-previews figure {
-  position: absolute;
-  display: block;
-  width: auto;
-  height: auto;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  vertical-align: top;
-  overflow: hidden;
-  text-indent: -9999px;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
-  opacity: 0;
-}
-.adaptgal .adaptgal-previews figure figcaption {
-  display: none;
-  visibility: hidden;
-}
-.adaptgal .adaptgal-previews figure:target {
-  opacity: 0.99;
-  z-index: 10;
-}
-.adaptgal .adaptgal-thumbs {
-  text-align: center;
-  position: relative;
-  width: 16%;
-  margin-left: 84%;
-  vertical-align: top;
-}
-.adaptgal .adaptgal-thumbs ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-.adaptgal .adaptgal-thumbs ul li {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-}
-.adaptgal .adaptgal-thumbs ul li {
-  position: relative;
-  width: 45%;
-  padding-bottom: 45%;
-}
-.adaptgal .adaptgal-thumbs ul li a {
-  position: absolute;
-  left: 0.1em;
-  right: 0.1em;
-  top: 0.1em;
-  bottom: 0.1em;
-  border: 1px solid #666;
-  overflow: hidden;
-  opacity: 0.5;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
-  text-indent: -999px;
-}
-.adaptgal .adaptgal-thumbs ul li a:hover,
-.adaptgal .adaptgal-thumbs ul li a:active a:focus,
-.adaptgal .adaptgal-thumbs ul li a.adaptgal-active {
-  opacity: 0.99;
-}
-.adaptgal .adaptgal-thumbs.single {
-  width: 5%;
-  margin-left: 95%;
-}
-.adaptgal .adaptgal-thumbs.single ul li {
-  position: relative;
-  width: 99%;
-  padding-bottom: 99%;
-}
-.adaptgal-pure figure {
+.adaptgal-pure figure,
+.adaptgal figure {
   position: relative;
   display: block;
   height: auto;
@@ -819,10 +724,12 @@ pre {
   background-position: center center;
   background-repeat: no-repeat;
 }
-.adaptgal-pure figure .share ul li {
+.adaptgal-pure figure .share ul li,
+.adaptgal figure .share ul li {
   font-size: 1.8em;
 }
-.adaptgal-pure figure figcaption {
+.adaptgal-pure figure figcaption,
+.adaptgal figure figcaption {
   text-indent: 0;
   position: absolute;
   bottom: 0;
@@ -831,9 +738,18 @@ pre {
   -webkit-transition: all 0.3s ease;
   text-shadow: 1px 1px #111111;
 }
-.adaptgal-pure figure img {
+.adaptgal-pure figure img,
+.adaptgal figure img {
   width: 100%;
   height: auto;
+}
+.adaptgal-pure .adaptgal-thumbs,
+.adaptgal .adaptgal-thumbs {
+  display: none;
+  visibility: hidden;
+}
+.adaptgal figure figcaption {
+  text-indent: none;
 }
 /* PAGINATION */
 .wp-paginate {
@@ -976,12 +892,105 @@ pre {
   .content-body {
     padding: 0.6em;
   }
-  .adaptgal .adaptgal-thumbs {
-    width: 11%;
-    margin-left: 88%;
+  /* ADAPTGAL */
+  .adaptgal {
+    position: relative;
   }
   .adaptgal .adaptgal-previews {
+    position: absolute;
+    display: block;
+    height: auto;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    vertical-align: top;
+    overflow: hidden;
     width: 86%;
+  }
+  .adaptgal .adaptgal-previews figure {
+    position: absolute;
+    display: block;
+    width: auto;
+    height: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    vertical-align: top;
+    overflow: hidden;
+    text-indent: -9999px;
+    transition: all 0.3s ease;
+    -webkit-transition: all 0.3s ease;
+    background-size: contain;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0;
+  }
+  .adaptgal .adaptgal-previews figure figcaption {
+    text-indent: -9999px;
+  }
+  .adaptgal .adaptgal-previews figure:target {
+    opacity: 0.99;
+    z-index: 10;
+  }
+  .adaptgal .adaptgal-thumbs,
+  .adaptgal .adaptgal-thumbs-single {
+    display: block;
+    visibility: visible;
+  }
+  .adaptgal .adaptgal-thumbs {
+    text-align: center;
+    position: relative;
+    width: 11%;
+    margin-left: 88%;
+    vertical-align: top;
+  }
+  .adaptgal .adaptgal-thumbs ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .adaptgal .adaptgal-thumbs ul li {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+  }
+  .adaptgal .adaptgal-thumbs ul li {
+    position: relative;
+    width: 45%;
+    padding-bottom: 45%;
+  }
+  .adaptgal .adaptgal-thumbs ul li a {
+    position: absolute;
+    left: 0.1em;
+    right: 0.1em;
+    top: 0.1em;
+    bottom: 0.1em;
+    border: 1px solid #666;
+    overflow: hidden;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    -webkit-transition: all 0.3s ease;
+    background-size: contain;
+    background-position: center center;
+    background-repeat: no-repeat;
+    text-indent: -999px;
+  }
+  .adaptgal .adaptgal-thumbs ul li a:hover,
+  .adaptgal .adaptgal-thumbs ul li a:active a:focus,
+  .adaptgal .adaptgal-thumbs ul li a.adaptgal-active {
+    opacity: 0.99;
+  }
+  .adaptgal .adaptgal-thumbs.single {
+    width: 5%;
+    margin-left: 95%;
+  }
+  .adaptgal .adaptgal-thumbs.single ul li {
+    position: relative;
+    width: 99%;
+    padding-bottom: 99%;
   }
   .category-postlist {
     width: 60%;

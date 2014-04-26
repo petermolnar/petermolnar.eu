@@ -81,7 +81,10 @@ class petermolnareu {
 		wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
 		wp_enqueue_style( 'reset' );
 
-		wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+		//if ( is_user_logged_in() )
+		//	wp_register_style( 'style', $this->theme_url . '/style-new.css' , array('reset'), $this->info->version );
+		//else
+			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
 		wp_enqueue_style( 'style' );
 
 		/* syntax highlight */
