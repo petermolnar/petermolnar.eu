@@ -77,17 +77,17 @@ jQuery(document).ready(function($) {
 		$(window).scrollTop(pos);
 	});
 
-	// swipe reactions, only one finger!
-	$previews.swipe( {
-		swipeLeft:function(event, direction, distance, duration, fingerCount) {
-			next( $(this) );
-		},
-		swipeRight:function(event, direction, distance, duration, fingerCount) {
-			prev( $(this) );
-		},
-		threshold:0,
-		fingers:1
-	});
+	//// swipe reactions, only one finger!
+	//$previews.swipe( {
+	//	swipeLeft:function(event, direction, distance, duration, fingerCount) {
+	//		next( $(this) );
+	//	},
+	//	swipeRight:function(event, direction, distance, duration, fingerCount) {
+	//		prev( $(this) );
+	//	},
+	//	threshold:0,
+	//	fingers:1
+	//});
 
 	// init the first element or activate the one set by anchor hash
 	if ( $active == false ) {

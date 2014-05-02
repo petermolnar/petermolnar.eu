@@ -24,7 +24,7 @@ class adaptive_images {
 
 	const default_prefix = 'adaptive';
 
-	const cache = 0;
+	const cache = 1;
 	private $sharesize = '';
 	const middlesize = 720;
 	public $image_sizes = array();
@@ -202,7 +202,7 @@ class adaptive_images {
 		</section>';
 
 		wp_enqueue_script( 'jquery' );
-		wp_enqueue_script( 'jquery.touchSwipe' );
+		//wp_enqueue_script( 'jquery.touchSwipe' );
 		wp_enqueue_script( 'jquery.adaptive-images' );
 
 		return $output;
@@ -224,7 +224,9 @@ class adaptive_images {
 		if ( $size === null )
 			$size = self::a_lthumb;
 
-		$cached = ( self::cache == 1 ) ? wp_cache_get( $aid, self::cache_group ) : false;
+		$cid = $aid . $size;
+
+		$cached = ( self::cache == 1 ) ? wp_cache_get( $cid, self::cache_group ) : false;
 
 		if ( $cached != false ) {
 			$images = $cached['images'];
@@ -245,7 +247,7 @@ class adaptive_images {
 				'css' => $css
 			);
 
-			wp_cache_set( $aid, $cache, self::cache_group, self::cache_time );
+			wp_cache_set( $cid, $cache, self::cache_group, self::cache_time );
 		}
 
 		$img = array_shift( $images );

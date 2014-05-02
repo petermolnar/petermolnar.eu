@@ -4,19 +4,18 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.14
+Version:		5.21
 */
 
 // Grays
 @color-bg-dark: #2D333A;
 @color-bg-light: darken(@color-bg-dark,10%);
-@color-text: #aaa;
-@color-link: #ccc;
+@color-text: #999;
+@color-link: #ddd;
 @color-menu: #aaa;
 @color-activemenu: #fff;
 @color-header: #888;
-@color-table: #ccc;
-
+@color-table: #777;
 
 @thickborder: 2px;
 @thinborder: 1px;
@@ -32,8 +31,6 @@ Version:		5.14
 @padding-xsmall: 0.1em;
 
 @textshadow-outset: 1px 1px #111;
-@textshadow-reverse: 0px 0px 1px #fff;
-@textshadow-inset: -1px -1px #111;
 
 @font-enormous: 2.2em;
 @font-xxlarge: 1.8em;
@@ -104,19 +101,13 @@ Version:		5.14
 	background-repeat: no-repeat;
 }
 
-.rotate() {
-	rotation: -90deg !important;
-	-webkit-transform: rotate(-90deg);
-	-moz-transform: rotate(-90deg);
-}
-
 .columns2() {
 	-moz-column-count: 2;
-	-moz-column-gap: 0;
+	-moz-column-gap: @font-large;
 	-webkit-column-count: 2;
-	-webkit-column-gap: 0;
+	-webkit-column-gap: @font-large;
 	column-count: 2;
-	column-gap: 0;
+	column-gap: @font-large;
 }
 
 /********
@@ -126,10 +117,10 @@ Version:		5.14
 	font-family: 'petermolnar';
 	src: url('assets/font/petermolnar.eot?89917930');
 	src: local('petermolnar'),
-		 url('assets/font/petermolnar.eot?89917930#iefix') format('embedded-opentype'),
-		 url('assets/font/petermolnar.woff?89917930') format('woff'),
-		 url('assets/font/petermolnar.ttf?89917930') format('truetype'),
-		 url('assets/font/petermolnar.svg?89917930#petermolnar') format('svg');
+		 url('assets/font/petermolnar.eot#iefix') format('embedded-opentype'),
+		 url('assets/font/petermolnar.woff') format('woff'),
+		 url('assets/font/petermolnar.ttf') format('truetype'),
+		 url('assets/font/petermolnar.svg#petermolnar') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -197,7 +188,7 @@ img.left {
 .left {
 	float:left;
 }
-
+/*
 .clear {
 	clear:both;
 	height: 0px;
@@ -205,6 +196,44 @@ img.left {
 	line-height:0;
 	display:block;
 }
+*/
+/* http://sonspring.com/journal/clearing-floats */
+
+.clear {
+	clear: both;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+/* http://perishablepress.com/press/2008/02/05/lessons-learned-concerning-the-clearfix-css-hack *
+
+.clearfix:after {
+	clear: both;
+	content: ' ';
+	display: block;
+	font-size: 0;
+	line-height: 0;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+* html .clearfix {
+	height: 1%;
+}
+
+.clearfix {
+	display: block;
+}
+*/
+
 
 .small {
 	font-size: @font-xsmall;
@@ -239,7 +268,6 @@ blockquote {
 	margin-left: @padding-xlarge;
 	padding-left: @padding-large;
 	font-style: italic;
-	//border-left: @thickborder solid darken(@color-text,20%);
 
 	&:before,
 	&:after {
@@ -290,7 +318,8 @@ td, th {
 }
 
 ul, ol {
-	padding-left:@padding-xlarge;
+	margin: @padding-xlarge 0 0 0;
+	padding-left:@padding-xlarge*2;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -430,6 +459,7 @@ pre {
 }
 
 #showContentHeader.active {
+	.animate();
 	left: @toggle-active;
 	z-index: 999;
 	color: @color-menu;
@@ -443,10 +473,6 @@ pre {
 	color: @color-header;
 	text-shadow: @textshadow-outset;
 	padding: @padding-large 0 @padding-large 0;
-
-	span {
-
-	}
 }
 
 .content-body {
@@ -479,7 +505,6 @@ pre {
 				display:block;
 				line-height: 2.4em;
 				padding: @padding-normal;
-				/*margin:  @padding-normal 0 @padding-normal 0;*/
 				font-weight: bold;
 				color:@color-menu;
 				text-shadow: @textshadow-outset;
@@ -564,26 +589,30 @@ pre {
 	}
 }
 
-/* ARCTICLE */
-.article-list-element {
-	margin: 0 0 @padding-large 0;
-	//border-radius: @padding-normal;
-
-	p {
-		margin: @padding-large 0 @padding-large 0;
-	}
-}
-
 /* STATUS */
 .article-status {
 	margin: 0 0 @font-enormous*2 0;
 	display: inline-block;
+	width: 100%;
+
+	p {
+		margin: @padding-large 0 @padding-large 0;
+	}
+
+	.article-pubdate {
+		background: darken(@color-bg-dark,14%);
+		padding:  0 0 0 @padding-normal;
+	}
+}
+
+/* ARCTICLE */
+.article-list-element {
+	margin: 0 0 @padding-large 0;
 
 	p {
 		margin: @padding-large 0 @padding-large 0;
 	}
 }
-
 
 .article-header {
 	position: relative;
@@ -605,12 +634,12 @@ pre {
 	font-family: monospace;
 }
 
-.article-thumbnail,
-.article-thumbnail-small {
+.article-thumbnail {
 		display:block;
 		float:left;
 		margin: @padding-normal @padding-large @padding-large 0;
-
+		width: 8%;
+		max-width: 90px;
 
 		img {
 			width: 100%;
@@ -625,26 +654,13 @@ pre {
 	margin: @padding-normal @padding-large @padding-large 0;
 }
 
-.article-thumbnail {
-	width: 8%;
-	max-width: 90px;
-}
-
 .article-single-footer {
 	margin: @padding-xlarge 0 0 0;
 	text-align: left;
 }
 
-/* ASIDE, for status updates */
-
-.article-thumbnail-small {
-		margin: @padding-large @padding-large @padding-normal 0;
-		width: 6%;
-		max-width: 70px;
-}
 
 /* PHOTOBLOG */
-
 .photoblog-preview {
 	display: inline-block;
 	width: 50%;
@@ -686,8 +702,6 @@ pre {
 					opacity: 0.99;
 				}
 
-
-
 			}
 	}
 }
@@ -712,10 +726,8 @@ pre {
 	padding-bottom: 32%;
 }
 
-.article-thumbnail {
-	width: 8%;
-	max-width: 90px;
-}
+
+/* ADAPTGAL */
 
 .adaptgal-pure,
 .adaptgal {
@@ -786,21 +798,15 @@ pre {
 		display: none;
 	}
 
-	.current {
+	.current,
+	a {
 		padding: @padding-normal @padding-large @padding-normal @padding-large;
+	}
+
+	.current {
 		opacity: 0.5;
 	}
 
-	a {
-		padding: @padding-normal @padding-large @padding-normal @padding-large;
-
-		&:hover {
-			color:@color-link;
-		}
-	}
-
-	.current {
-	}
 }
 
 /* PORTFOLIO */
@@ -842,34 +848,32 @@ pre {
 	}
 }
 
-@media (orientation : portrait) {
-	.adaptgal {
-		.adaptgal-thumbs {
-			width: 6%;
-			margin-left: 93%;
-
-			ul {
-				li {
-					position: relative;
-					width: 99%;
-					padding-bottom: 99%;
-				}
-			}
-		}
-
-		.adaptgal-thumbs.single {
-			width: 12%;
-			margin-left: 88%;
-		}
-
-		.adaptgal-previews {
-			width:88%;
-		}
-	}
-
-}
-
-
+//@media (orientation : portrait) {
+//	.adaptgal {
+//		.adaptgal-thumbs {
+//			width: 6%;
+//			margin-left: 93%;
+//
+//			ul {
+//				li {
+//					position: relative;
+//					width: 99%;
+//					padding-bottom: 99%;
+//				}
+//			}
+//		}
+//
+//		.adaptgal-thumbs.single {
+//			width: 12%;
+//			margin-left: 88%;
+//		}
+//
+//		.adaptgal-previews {
+//			width:88%;
+//		}
+//	}
+//
+//}
 
 /* DESKTOP */
 @media	( min-width : 960px ) and ( orientation: landscape ) and ( -webkit-max-device-pixel-ratio: 1.5 ),
@@ -1025,6 +1029,15 @@ pre {
 		}
 	}
 
+	.adaptgal-pure {
+		width: 90%;
+		margin:  0 auto 0 auto;
+		.columns2();
+		figure {
+			width:92%;
+		}
+	}
+
 	.category-postlist {
 		width: 60%;
 		float: left;
@@ -1038,23 +1051,6 @@ pre {
 	.photoblog-preview {
 		width: 33.33%;
 		padding-bottom: 33%;
-	}
-
-	//.share {
-	//	ul {
-	//		li {
-	//			font-size: @font-enormous;
-	//		}
-	//	}
-	//}
-
-	.adaptgal-pure {
-		width: 90%;
-		margin:  0 auto 0 auto;
-		.columns2();
-		figure {
-			width:92%;
-		}
 	}
 
 	.status-postlist {

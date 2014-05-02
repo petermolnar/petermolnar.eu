@@ -52,7 +52,23 @@ class petermolnareu {
 		/* set theme supports */
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
-		add_theme_support( 'post-formats', array( 'gallery', 'image', 'status', 'aside' ) );
+		add_theme_support( 'automatic-feed-links' );
+		/*
+		 * Enable support for Post Formats.
+		 * See http://codex.wordpress.org/Post_Formats
+		 */
+		add_theme_support( 'post-formats', array(
+			// aside
+			'image', 'video', 'audio', 'quote', 'link', 'gallery', 'status'
+		) );
+
+		/*
+		 * Switch default core markup for search form, comment form, and comments
+		 * to output valid HTML5.
+		 */
+		add_theme_support( 'html5', array(
+			'search-form', 'comment-form', 'comment-list', 'gallery', 'caption'
+		) );
 
 		/* add main menus */
 		register_nav_menus( array(
@@ -61,6 +77,9 @@ class petermolnareu {
 
 		/* enable SVG uploads */
 		add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
+
+		/* embed size */
+		add_filter('embed_defaults', array( &$this, 'embed_size'));
 
 		/* add syntax highlighting */
 		add_shortcode('code', array ( &$this, 'syntax_highlight' ) );
@@ -353,7 +372,7 @@ class petermolnareu {
 					});
 				}
 
-				if( jQuery("#wp-character-count").length ) {
+				if( jQuery("#wp-word-count").length ) {
 					jQuery("#wp-word-count").after("<td id=\'wp-character-count\'>Character count: <span class=\'character-count\'>0</span></td>");
 					jQuery("#wp-character-count .character-count").html(jQuery("#wp-content-wrap .wp-editor-area").val().length);
 					jQuery("#wp-content-wrap .wp-editor-area").keyup( function() {
@@ -535,6 +554,15 @@ class petermolnareu {
 			</time>
 		<?php
 	}
+
+	public function embed_size ( $embed_size ) {
+		if( is_single() ) {
+			$embed_size['width'] = 400;
+			$embed_size['height'] = 300;
+		}
+		return $embed_size;
+	}
+
 }
 
 /**** END OF FUNCTIONS *****/

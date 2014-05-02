@@ -1,16 +1,17 @@
-<!DOCTYPE html>
+<?php
+global $petermolnareu_theme;
+$logo_img = $petermolnareu_theme->image_dir . 'peter_molnar_logo.svg';
+$favicon = $petermolnareu_theme->image_dir . 'favicon.png';
+
+?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
 	<meta charset="<?php bloginfo('charset'); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title><?php wp_title( ); ?></title>
-	<link rel="author" href="https://plus.google.com/117393351799968573179/posts" />
-	<link rel="publisher" href="https://plus.google.com/117393351799968573179/posts" />
+	<link rel="shortcut icon" href="<?php echo "$favicon" ?>" />
 	<?php wp_head(); ?>
-	<?php global $petermolnareu_theme; ?>
 </head>
-
-<?php $logo_img = $petermolnareu_theme->image_dir . 'peter_molnar_logo.svg'; ?>
 
 <body>
 	<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>

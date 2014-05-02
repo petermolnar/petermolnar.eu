@@ -8,20 +8,11 @@ if ( empty ( $category )) $category = array_shift( get_the_category( $post->ID )
 $template = $category->slug;
 
 /* in a list */
-if ( !is_singular() ):  ?><article class="photoblog-preview" id="photoblog-<?php the_ID(); ?>" ><a href="<?php the_permalink(); ?>">
+if ( !is_singular() ):
+
+?><article class="photoblog-preview" id="photoblog-<?php the_ID(); ?>" ><a href="<?php the_permalink(); ?>">
 
 	<?php $aid = get_post_thumbnail_id( );
-
-		///* get image type attachments for the post by ID */
-		//$attachments = get_children( array (
-		//	'post_parent'=>$post->ID,
-		//	'post_type'=>'attachment',
-		//	'post_mime_type'=>'image',
-		//	'orderby'=>'menu_order',
-		//	'order'=>'asc'
-		//) );
-		//
-		//$num = sizeof ( $attachments ) ;
 
 		$title = get_the_title();
 		echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'"]');
@@ -51,7 +42,6 @@ elseif ( $template == 'photoblog' ):
 
 else:
 
-/* <h1 class="portfolio-title"><a href="<?php echo $petermolnareu_theme->base_url . '/' . $category->slug ?>"><?php echo $category->name ?></a> &raquo; <?php the_title() ?></h1> */
 ?><article class="portfolio" id="portfolio-<?php the_ID(); ?>">
 	<header class="portfolio-header">
 		<h1><?php $petermolnareu_theme->dimox_breadcrumbs(); ?></h1>

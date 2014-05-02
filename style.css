@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.14
+Version:		5.21
 */
 /********
 * FONTS *
@@ -12,7 +12,7 @@ Version:		5.14
 @font-face {
   font-family: 'petermolnar';
   src: url('assets/font/petermolnar.eot?89917930');
-  src: local('petermolnar'), url('assets/font/petermolnar.eot?89917930#iefix') format('embedded-opentype'), url('assets/font/petermolnar.woff?89917930') format('woff'), url('assets/font/petermolnar.ttf?89917930') format('truetype'), url('assets/font/petermolnar.svg?89917930#petermolnar') format('svg');
+  src: local('petermolnar'), url('assets/font/petermolnar.eot#iefix') format('embedded-opentype'), url('assets/font/petermolnar.woff') format('woff'), url('assets/font/petermolnar.ttf') format('truetype'), url('assets/font/petermolnar.svg#petermolnar') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -32,7 +32,7 @@ img.alignright,
 img.right,
 img.left {
   margin-bottom: 1em;
-  border: 1px solid #cccccc;
+  border: 1px solid #777777;
 }
 img.alignright,
 img.right {
@@ -65,13 +65,49 @@ img.left {
 .left {
   float: left;
 }
+/*
+.clear {
+	clear:both;
+	height: 0px;
+	font-size:0px;
+	line-height:0;
+	display:block;
+}
+*/
+/* http://sonspring.com/journal/clearing-floats */
 .clear {
   clear: both;
-  height: 0px;
-  font-size: 0px;
-  line-height: 0;
   display: block;
+  overflow: hidden;
+  visibility: hidden;
+  width: 0;
+  height: 0;
 }
+/* http://perishablepress.com/press/2008/02/05/lessons-learned-concerning-the-clearfix-css-hack *
+
+.clearfix:after {
+	clear: both;
+	content: ' ';
+	display: block;
+	font-size: 0;
+	line-height: 0;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+}
+
+.clearfix {
+	display: inline-block;
+}
+
+* html .clearfix {
+	height: 1%;
+}
+
+.clearfix {
+	display: block;
+}
+*/
 .small {
   font-size: 0.7em;
 }
@@ -88,7 +124,7 @@ body {
   line-height: 1.4em;
   font-family: 'Liberation Sans', sans-serif;
   font-size: 16px;
-  color: #aaaaaa;
+  color: #999999;
   letter-spacing: 0.06em;
   font-weight: normal;
 }
@@ -130,7 +166,7 @@ blockquote:after {
   padding: 0 0 0.3em 0;
 }
 a {
-  color: #cccccc;
+  color: #dddddd;
   text-decoration: none;
 }
 a:hover {
@@ -150,12 +186,13 @@ table {
 }
 td,
 th {
-  border: 1px solid #cccccc;
+  border: 1px solid #777777;
   padding: 0.3em;
 }
 ul,
 ol {
-  padding-left: 1em;
+  margin: 1em 0 0 0;
+  padding-left: 2em;
 }
 h1,
 h2,
@@ -165,7 +202,7 @@ h5,
 h6 {
   font-weight: bold;
   clear: both;
-  color: #c3c3c3;
+  color: #b3b3b3;
 }
 h1 {
   font-size: 1.2em;
@@ -192,7 +229,7 @@ dd {
 pre {
   margin: 0.3em 0 0.3em 0;
   padding: 0.3em;
-  border: 1px solid #cccccc;
+  border: 1px solid #777777;
   overflow: auto;
 }
 /* FONT ICONS */
@@ -459,6 +496,8 @@ pre {
   -webkit-transition: all 0.3s ease;
 }
 #showContentHeader.active {
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
   left: 5.7em;
   z-index: 999;
   color: #aaaaaa;
@@ -498,7 +537,6 @@ pre {
   display: block;
   line-height: 2.4em;
   padding: 0.3em;
-  /*margin:  @padding-normal 0 @padding-normal 0;*/
   font-weight: bold;
   color: #aaaaaa;
   text-shadow: 1px 1px #111111;
@@ -551,7 +589,7 @@ pre {
 }
 .vcard img {
   float: left;
-  border: 1px solid #aaaaaa;
+  border: 1px solid #999999;
   width: 17%;
   margin: 0 1% 0 1%;
   height: auto;
@@ -565,7 +603,7 @@ pre {
   margin-bottom: 0.6em;
   text-overflow: ellipsis;
   overflow: hidden;
-  color: #999999;
+  color: #aaaaaa;
   vertical-align: middle;
 }
 .vcard a:before {
@@ -585,19 +623,24 @@ pre {
   font-size: 1.1em;
   padding: 0 0.6em 0 0.6em;
 }
+/* STATUS */
+.article-status {
+  margin: 0 0 4.4em 0;
+  display: inline-block;
+  width: 100%;
+}
+.article-status p {
+  margin: 0.6em 0 0.6em 0;
+}
+.article-status .article-pubdate {
+  background: #0e1012;
+  padding: 0 0 0 0.3em;
+}
 /* ARCTICLE */
 .article-list-element {
   margin: 0 0 0.6em 0;
 }
 .article-list-element p {
-  margin: 0.6em 0 0.6em 0;
-}
-/* STATUS */
-.article-status {
-  margin: 0 0 4.4em 0;
-  display: inline-block;
-}
-.article-status p {
   margin: 0.6em 0 0.6em 0;
 }
 .article-header {
@@ -614,17 +657,17 @@ pre {
   display: block;
   font-size: 0.9em;
   font-weight: normal;
-  color: #777777;
+  color: #666666;
   font-family: monospace;
 }
-.article-thumbnail,
-.article-thumbnail-small {
+.article-thumbnail {
   display: block;
   float: left;
   margin: 0.3em 0.6em 0.6em 0;
+  width: 8%;
+  max-width: 90px;
 }
-.article-thumbnail img,
-.article-thumbnail-small img {
+.article-thumbnail img {
   width: 100%;
   height: auto;
   width: auto\9;
@@ -635,19 +678,9 @@ pre {
   float: left;
   margin: 0.3em 0.6em 0.6em 0;
 }
-.article-thumbnail {
-  width: 8%;
-  max-width: 90px;
-}
 .article-single-footer {
   margin: 1em 0 0 0;
   text-align: left;
-}
-/* ASIDE, for status updates */
-.article-thumbnail-small {
-  margin: 0.6em 0.6em 0.3em 0;
-  width: 6%;
-  max-width: 70px;
 }
 /* PHOTOBLOG */
 .photoblog-preview {
@@ -669,7 +702,7 @@ pre {
   background-size: contain;
   background-position: center center;
   background-repeat: no-repeat;
-  text-indent: -9999px;
+  text-indent: -9998.99999999px;
 }
 .photoblog-preview a figure figcaption {
   position: absolute;
@@ -694,19 +727,15 @@ pre {
   padding: 0 0 0.6em 0;
 }
 .photoblog-navigation a {
-  color: #999999;
+  color: #aaaaaa;
 }
 .photoblog-navigation a:hover {
-  color: #e6e6e6;
+  color: #f7f7f7;
 }
 .photoblog-list {
   display: inline-block;
   width: 32%;
   padding-bottom: 32%;
-}
-.article-thumbnail {
-  width: 8%;
-  max-width: 90px;
 }
 /* ADAPTGAL */
 .adaptgal-pure figure,
@@ -767,15 +796,12 @@ pre {
 .wp-paginate .title {
   display: none;
 }
-.wp-paginate .current {
-  padding: 0.3em 0.6em 0.3em 0.6em;
-  opacity: 0.5;
-}
+.wp-paginate .current,
 .wp-paginate a {
   padding: 0.3em 0.6em 0.3em 0.6em;
 }
-.wp-paginate a:hover {
-  color: #cccccc;
+.wp-paginate .current {
+  opacity: 0.5;
 }
 /* PORTFOLIO */
 .portfolio-title {
@@ -808,7 +834,7 @@ pre {
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
-  color: #9d9d9d;
+  color: #8c8c8c;
 }
 .sidebar ul li a:before {
   font-family: "petermolnar";
@@ -827,25 +853,7 @@ pre {
   content: "\e821";
 }
 .sidebar ul li a:hover {
-  color: #e6e6e6;
-}
-@media (orientation: portrait) {
-  .adaptgal .adaptgal-thumbs {
-    width: 6%;
-    margin-left: 93%;
-  }
-  .adaptgal .adaptgal-thumbs ul li {
-    position: relative;
-    width: 99%;
-    padding-bottom: 99%;
-  }
-  .adaptgal .adaptgal-thumbs.single {
-    width: 12%;
-    margin-left: 88%;
-  }
-  .adaptgal .adaptgal-previews {
-    width: 88%;
-  }
+  color: #f7f7f7;
 }
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi) {
@@ -992,6 +1000,19 @@ pre {
     width: 99%;
     padding-bottom: 99%;
   }
+  .adaptgal-pure {
+    width: 90%;
+    margin: 0 auto 0 auto;
+    -moz-column-count: 2;
+    -moz-column-gap: 1.1em;
+    -webkit-column-count: 2;
+    -webkit-column-gap: 1.1em;
+    column-count: 2;
+    column-gap: 1.1em;
+  }
+  .adaptgal-pure figure {
+    width: 92%;
+  }
   .category-postlist {
     width: 60%;
     float: left;
@@ -1004,26 +1025,13 @@ pre {
     width: 33.33%;
     padding-bottom: 33%;
   }
-  .adaptgal-pure {
-    width: 90%;
-    margin: 0 auto 0 auto;
-    -moz-column-count: 2;
-    -moz-column-gap: 0;
-    -webkit-column-count: 2;
-    -webkit-column-gap: 0;
-    column-count: 2;
-    column-gap: 0;
-  }
-  .adaptgal-pure figure {
-    width: 92%;
-  }
   .status-postlist {
     -moz-column-count: 2;
-    -moz-column-gap: 0;
+    -moz-column-gap: 1.1em;
     -webkit-column-count: 2;
-    -webkit-column-gap: 0;
+    -webkit-column-gap: 1.1em;
     column-count: 2;
-    column-gap: 0;
+    column-gap: 1.1em;
   }
 }
 /* COMMENTS */

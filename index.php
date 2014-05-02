@@ -9,6 +9,12 @@
 	global $category;
 	$_query_string = $query_string;
 
+	if ( is_user_logged_in() ) {
+		echo "<!--";
+		var_dump ( $wp_query);
+	   	echo "-->";
+	}
+
 	$cat = get_query_var('cat');
 	$category_meta = array();
 	$meta_keys = array (
@@ -41,6 +47,10 @@
 
 		}
 
+		/* post per page bugfix */
+		$posts_per_page = $category_meta['posts-per-page'];
+
+
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
 
 	}
@@ -51,8 +61,6 @@
 	}
 
 	query_posts( $_query_string );
-
-
 
 	$is_single = is_singular();
 
@@ -73,6 +81,7 @@
 				get_template_part('template', 'gallery');
 				break;
 			case 'status':
+			case 'link':
 				get_template_part('template', 'status');
 				break;
 			default:
@@ -83,12 +92,12 @@
 	}
 	/* not singular */
 	else {
-
-		if ( $category_meta['show-sidebar'] == 1 ) { ?>
-			<section class="category-postlist">
-		<?php }
-
-			?><div class="<?php echo $category_meta['custom-template'] ?>-postlist"><?php
+		$sectionclass = $category_meta['custom-template']. "-postlist";
+		if ( $category_meta['show-sidebar'] == 1 )
+			$sectionclass .= " category-postlist"
+		?>
+		<section class="<?php echo $sectionclass; ?>">
+		<?php
 			if ( have_posts() ) {
 				while ( have_posts() ) {
 					the_post();
@@ -103,10 +112,9 @@
 						get_template_part('template', 'list');
 				}
 			}
-			?></div><?php
 
+		?></section><?php
 		if ( $category_meta['show-sidebar'] == 1 ) { ?>
-			</section>
 			<section class="sidebar">
 				<?php
 					$page = get_query_var('paged');
