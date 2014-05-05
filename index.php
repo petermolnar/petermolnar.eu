@@ -9,12 +9,6 @@
 	global $category;
 	$_query_string = $query_string;
 
-	if ( is_user_logged_in() ) {
-		echo "<!--";
-		var_dump ( $wp_query);
-	   	echo "-->";
-	}
-
 	$cat = get_query_var('cat');
 	$category_meta = array();
 	$meta_keys = array (

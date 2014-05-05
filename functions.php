@@ -78,19 +78,21 @@ class petermolnareu {
 		/* enable SVG uploads */
 		add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
-		/* embed size */
-		add_filter('embed_defaults', array( &$this, 'embed_size'));
-
 		/* add syntax highlighting */
 		add_shortcode('code', array ( &$this, 'syntax_highlight' ) );
 		add_shortcode('cc', array ( &$this, 'syntax_highlight' ) );
 
 		/* legacy shortcode handler */
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
+		//remove_filter( 'the_content', 'wpautop' );
+		//add_filter( 'the_content', 'wpautop' , 99 );
+		add_filter( 'the_content', 'shortcode_unautop', 100 );
+
+		//add_filter('the_content', array( &$this, 'twtreplace'));
+		//add_filter('comment_text', array( &$this, 'twtreplace'));
 
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
-
 		add_shortcode('gallery', array ( &$this->adaptive_images, 'adaptgal' ) );
 	}
 
@@ -555,14 +557,21 @@ class petermolnareu {
 		<?php
 	}
 
-	public function embed_size ( $embed_size ) {
-		if( is_single() ) {
-			$embed_size['width'] = 400;
-			$embed_size['height'] = 300;
-		}
-		return $embed_size;
+	public function replace_images_with_adaptive ( $html ) {
+		return $this->adaptive_images->adaptive_embededed( $html );
 	}
 
+
+	public function twtreplace($content) {
+		$twtreplace = preg_replace('/([^a-zA-Z0-9-_&])@([0-9a-zA-Z_]+)/',"$1<a href=\"http://twitter.com/$2\" target=\"_blank\" rel=\"nofollow\">@$2</a>",$content);
+		return $twtreplace;
+	}
+
+	public function linkify ( $content ) {
+		$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
+		$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
+		return $content;
+	}
 }
 
 /**** END OF FUNCTIONS *****/

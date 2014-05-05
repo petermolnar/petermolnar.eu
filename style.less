@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.21
+Version:		5.26
 */
 
 // Grays
@@ -124,17 +124,61 @@ Version:		5.21
 	font-weight: normal;
 	font-style: normal;
 }
+//
+//@font-face {
+//	font-family: 'Liberation Sans';
+//	src: url('assets/font/liberation-sans.eot');
+//	src: local('Liberation Sans'),
+//		 url('assets/font/liberation-sans.eot?#iefix') format('embedded-opentype'),
+//		 url('assets/font/liberation-sans.woff') format('woff'),
+//		 url('assets/font/liberation-sans.ttf') format('truetype'),
+//		 url('assets/font/liberation-sans.svg#LiberationSansRegular') format('svg');
+//	font-weight: normal;
+//	font-style: normal;
+//}
 
 @font-face {
 	font-family: 'Liberation Sans';
-	src: url('assets/font/liberation-sans.eot');
-	src: local('Liberation Sans'),
-		 url('assets/font/liberation-sans.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/liberation-sans.woff') format('woff'),
-		 url('assets/font/liberation-sans.ttf') format('truetype'),
-		 url('assets/font/liberation-sans.svg#LiberationSansRegular') format('svg');
+	src: url('assets/font/LiberationSans-Regular-webfont.eot');
+	src: url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/LiberationSans-Regular-webfont.woff') format('woff'),
+		 url('assets/font/LiberationSans-Regular-webfont.ttf') format('truetype'),
+		 url('assets/font/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
 	font-weight: normal;
 	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Liberation Sans';
+	src: url('assets/font/LiberationSans-Bold-webfont.eot');
+	src: url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/LiberationSans-Bold-webfont.woff') format('woff'),
+		 url('assets/font/LiberationSans-Bold-webfont.ttf') format('truetype'),
+		 url('assets/font/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'liberation_sansitalic';
+	src: url('assets/font/LiberationSans-Italic-webfont.eot');
+	src: url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'),
+		 url('assets/font/LiberationSans-Italic-webfont.ttf') format('truetype'),
+		 url('assets/font/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
+	font-weight: normal;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Liberation Sans';
+	src: url('assets/font/LiberationSans-BoldItalic-webfont.eot');
+	src: url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('assets/font/LiberationSans-BoldItalic-webfont.woff') format('woff'),
+		 url('assets/font/LiberationSans-BoldItalic-webfont.ttf') format('truetype'),
+		 url('assets/font/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
+	font-weight: bold;
+	font-style: italic;
 }
 
 /*************
@@ -388,14 +432,14 @@ pre {
 .icon-globe:before { content: '\e80c'; } /* '' */
 .icon-qrcode:before { content: '\e813'; } /* '' */
 .icon-bitbucket:before { content: '\e815'; } /* '' */
-.icon-facebook:before { content: '\e808'; } /* '' */
-.icon-flickr:before { content: '\e809'; } /* '' */
-.icon-github:before { content: '\e802'; } /* '' */
+.vcard .x-facebook:before, .icon-facebook:before { content: '\e808'; } /* '' */
+.vcard .x-flickr:before, .icon-flickr:before { content: '\e809'; } /* '' */
+.vcard .x-github:before, .icon-github:before { content: '\e802'; } /* '' */
 .vcard .x-googleplus:before, .icon-googleplus:before, .icon-gplus:before { content: '\e801'; } /* '' */
-.icon-instagramm:before { content: '\e816'; } /* '' */
+.vcard .x-instagramm:before, .icon-instagramm:before { content: '\e816'; } /* '' */
 .vcard .x-linkedin:before, .icon-linkedin:before { content: '\e807'; } /* '' */
-.icon-pinterest:before { content: '\e805'; } /* '' */
-.icon-tumblr:before { content: '\e803'; } /* '' */
+.vcard .x-pinterest:before, .icon-pinterest:before { content: '\e805'; } /* '' */
+.vcard .x-tumblr:before, .icon-tumblr:before { content: '\e803'; } /* '' */
 .vcard .x-twitter:before, .icon-twitter:before { content: '\e804'; } /* '' */
 .icon-vimeo:before { content: '\e80a'; } /* '' */
 .icon-youtube:before { content: '\e806'; } /* '' */
@@ -414,6 +458,7 @@ pre {
 .icon-cc-zero:before { content: '\e82e'; } /* '' */
 .icon-cc-share:before { content: '\e82f'; } /* '' */
 .icon-cc-remix:before { content: '\e830'; } /* '' */
+.icon-wordpress:before { content: '\e832'; } /* '' */
 
 
 /* PANEL */
@@ -728,6 +773,32 @@ pre {
 
 
 /* ADAPTGAL */
+.adaptimg {
+	position: relative;
+	display: block;
+	height:auto;
+	width:90%;
+	margin: 0 auto 0 auto;
+	padding: 0;
+
+	text-indent: -9999px;
+	.animate();
+	.fullbg();
+
+	figcaption {
+		text-indent: 0;
+		position: absolute;
+		bottom: 0;
+		left: 1em;
+		.animate();
+		text-shadow: @textshadow-outset;
+	}
+
+	img {
+		width: 100%;
+		height: auto;
+	}
+}
 
 .adaptgal-pure,
 .adaptgal {
@@ -821,6 +892,7 @@ pre {
 
 /* SIDEBAR */
 .sidebar {
+	font-size: @font-small;
 	padding: @font-large 0 0 0;
 	ul {
 		.navul();
@@ -877,7 +949,9 @@ pre {
 
 /* DESKTOP */
 @media	( min-width : 960px ) and ( orientation: landscape ) and ( -webkit-max-device-pixel-ratio: 1.5 ),
-		( min-width : 960px ) and ( orientation: landscape ) and ( max-resolution: 220dpi ) {
+		( min-width : 960px ) and ( orientation: landscape ) and ( max-resolution: 220dpi ),
+		( min-width : 2400px ) and ( orientation: landscape ) and ( -webkit-max-device-pixel-ratio: 1.9 ),
+		( min-width : 2400px ) and ( orientation: landscape ) and ( max-resolution: 290dpi ) {
 
 	.nav-toggle-button {
 		display: none;
@@ -960,12 +1034,21 @@ pre {
 				opacity: 0;
 
 				figcaption {
-					text-indent: -9999px;
+					text-indent: -20em;
+
+					.share {
+						ul {
+							.navul();
+						}
+					}
 				}
 
 				&:target {
 					opacity: 0.99;
 					z-index: 10;
+					figcaption {
+						text-indent: 0em;
+					}
 				}
 			}
 		}

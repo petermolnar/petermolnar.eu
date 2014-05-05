@@ -96,6 +96,11 @@ class adaptive_images {
 		add_action( 'deleted_post', array( &$this , 'cclear' ), 0 );
 		add_action( 'edit_post', array( &$this , 'cclear' ), 0 );
 
+		//add_filter( 'post_thumbnail_html', array( &$this, 'adaptive_embededed' ), 10 );
+		//add_filter( 'image_send_to_editor', array( &$this, 'adaptive_embededed' ), 10 );
+		//add_filter( 'the_content', array( &$this, 'adaptive_embededed' ), 10 );
+
+
 	}
 
 	/* initialization for any shortcode function;
@@ -215,7 +220,8 @@ class adaptive_images {
 			'aid' => false,
 			'title' => false,
 			'size' => null,
-			'share' => false
+			'share' => false,
+			'standalone' => false,
 		), $atts));
 
 		if ( empty ( $aid ) )
@@ -254,14 +260,19 @@ class adaptive_images {
 		$_id = ( $size == self::a_hd ) ? $img['slug'] : $img['slug'] . '-' . $size;
 		$_src = $bgdata[ self::middlesize ][ $aid ][ $size ];
 
+		$cl = array();
 		if ( $share )
 			$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
 		elseif ( ! empty ( $title ))
 			$caption = $title;
+		elseif ( $standalone ) {
+			$caption = '';
+			$cl[] = 'adaptimg';
+		}
 		else
 			$caption = $img['title'];
 
-		return $css .'<figure id="'. $_id .'">
+		return $css .'<figure id="'. $_id .'" class="'. implode(" ", $cl ) .'">
 			<img src="'. $_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
 			<figcaption>'. $caption .'</figcaption>
 		</figure>';
@@ -402,7 +413,7 @@ class adaptive_images {
 		/* join the backgrounds into areas of CSS media queries */
 		foreach ( $bgdata as $resolution => $imgdata ) {
 
-			unset ( $imgcss );
+			$imgcss = '';
 			foreach ( $imgdata as $imgid => $sizes ) {
 				$_id = $images[$imgid]['slug'];
 				foreach ( $sizes as $prefix => $url ) {
@@ -533,14 +544,29 @@ class adaptive_images {
 				$out .= '<li><a class="'. $st .'" href="' . $details['url'] . '" title="' . $details['title'] . '">&nbsp;</a></li>';
 		}
 
-		$out = '
-			<nav class="share">
+		$out = '<nav class="share">
 				<ul>
 				'. $out .'
 				</ul>
 			</nav>';
 
 		return $out;
+	}
+
+
+
+	public function adaptive_embededed( $html ) {
+		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
+		if ( !empty ( $inline_images[0]  )) {
+			foreach ( $inline_images[0] as $cntr=>$imgstr ) {
+				$aid = $inline_images[1][$cntr];
+				$r = do_shortcode( '[adaptimg aid=' . $aid .' size="'. self::a_hd .'" share=0 standalone=1]');
+				$html = str_replace ( $imgstr, $r, $html );
+			}
+		}
+
+		//$html = preg_replace( '/(width|height)=\"\d*\"\s/', "", $html );
+		return $html;
 	}
 
 }
