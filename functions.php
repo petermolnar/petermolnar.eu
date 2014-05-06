@@ -6,6 +6,8 @@ include_once ('classes/adaptive-images.php');
 class petermolnareu {
 	const theme_constant = 'petermolnareu';
 	const menu_header = 'header';
+	const twitteruser = 'petermolnar';
+	const fbuser = 'petermolnar.eu';
 
 	public $base_url = '';
 	public $js_dir = '';
@@ -18,6 +20,7 @@ class petermolnareu {
 	public $urlfilters = array ();
 	private $cleanup = null;
 	private $adaptive_images = null;
+	private $syndicationlinks = array();
 
 	public function __construct () {
 		$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
@@ -28,8 +31,24 @@ class petermolnareu {
 		$this->image_dir = $this->theme_url . '/assets/image/';
 		$this->info = wp_get_theme( );
 
+		$this->syndicationlinks = array (
+			'twitter' => array (
+				'key' => 'snapTW',
+				'subkey' => 'pgID',
+				'split' => false,
+				'urlbase' => 'https://twitter.com/'. $this::twitteruser .'/status/%URL%'
+			),
+			'facebook' => array (
+				'key' => 'snapFB',
+				'subkey' => 'pgID',
+				'split' => true,
+				'urlbase' => 'https://www.facebook.com/'. $this::fbuser .'/posts/%URL%'
+			),
+		);
+
 		/* cleanup class */
 		$this->cleanup = new theme_cleaup();
+
 
 
 		/* theme init */
@@ -550,7 +569,11 @@ class petermolnareu {
 		<?php
 		*/
 		?>
-			<time class="article-pubdate" pubdate="<?php the_time( 'r' ); ?>">
+			<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>">
+				<span class="date"><?php the_time( get_option('date_format') ); ?></span>
+				<span class="time"><?php the_time( get_option('time_format') ); ?></span>
+			</time>
+			<time class="hide dt-updated" pubdate="<?php the_modified_time( 'r' ); ?>">
 				<span class="date"><?php the_time( get_option('date_format') ); ?></span>
 				<span class="time"><?php the_time( get_option('time_format') ); ?></span>
 			</time>
@@ -571,6 +594,66 @@ class petermolnareu {
 		$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
 		$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
 		return $content;
+	}
+
+	public function syndicated_links (  ) {
+		global $post;
+		foreach ( $this->syndicationlinks as $service=>$smeta ) {
+			$meta = maybe_unserialize(get_post_meta( $post->ID, $smeta['key'], true ));
+			if ( !empty($meta) && !empty( $meta[0][ $smeta['subkey'] ] ) ) {
+				$url = $meta[0][ $smeta['subkey'] ];
+
+				if ( $smeta['split'] ) {
+					$url = explode( '_', $url );
+					$url = $url[1];
+				}
+
+				$url = str_replace ( '%URL%',  $url, $smeta['urlbase']  );
+				$urls[$service] = $url;
+			}
+		}
+
+		$out = '';
+		if ( !empty ( $urls ) ) {
+			foreach ($urls as $service=>$url) {
+				if ( !empty($url) ) {
+					$st = 'icon-' . $service;
+					$out .= '<li><a class="'. $st .' u-syndication" rel="syndication" href="' . $url . '" title="' . $service . '">'. $url .'</a></li>';
+				}
+			}
+		}
+
+		if ( !empty ($out ) ) {
+			$out = '
+				<nav class="syndication">
+					<h6>Also on:</h6>
+					<ul>
+					'. $out .'
+					</ul>
+				</nav>';
+		}
+
+		return $out;
+	}
+
+	public function author ( $short=false ) {
+
+		$class = ( $short ) ? 'p-author h-card' : 'h-card';
+		$out = '<span class="'. $class .'">
+				<a class="p-name u-url fn" href="https://petermolnar.eu/about">Péter Molnár</a>
+				<img class="u-photo" src="https://s.gravatar.com/avatar/1915b220dfe0cc56209cb4d11b389383?s=12" />';
+		if ( !$short ) {
+			$out .= '
+				<a rel="me" class="icon-mail u-email" href="mailto:hello@petermolnar.eu" title="Peter Molnar email address"></a>
+				<span class="spacer">Find me:</span>
+				<a rel="me" class="x-twitter" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter"></a>
+				<a rel="me" class="x-googleplus" href="https://plus.google.com/u/0/+PéterMolnáreu/" title="Peter Molnar @ Google Plus"></a>
+				<a rel="me" class="x-facebook" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook"></a>
+				<a rel="me" class="x-linkedin" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn"></a>
+				<a rel="me" class="x-github" href="https://github.com/petermolnar" title="Peter Molnar @ Github"></a>';
+		}
+		$out .= '</span>';
+		return $out;
 	}
 }
 

@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.26
+Version:		5.34
 */
 
 // Grays
@@ -108,6 +108,16 @@ Version:		5.26
 	-webkit-column-gap: @font-large;
 	column-count: 2;
 	column-gap: @font-large;
+}
+
+.spacer {
+	display: inline-block;
+	padding: 0 0 0 @padding-normal;
+}
+
+.hide {
+	display: none;
+	visibility: hidden;
 }
 
 /********
@@ -310,26 +320,9 @@ body {
 
 blockquote {
 	margin-left: @padding-xlarge;
-	padding-left: @padding-large;
+	padding-left: @padding-xlarge;
 	font-style: italic;
-
-	&:before,
-	&:after {
-		.iconstyle();
-		font-size: @font-large;
-	}
-
-	&:before {
-		float:left;
-		content: '\e80f';
-		padding: 0 @padding-normal 0 0;
-	}
-
-	&:after {
-		float:right;
-		content: '\e810';
-		padding: 0 0 @padding-normal 0;
-	}
+	border-left: @border-thick;
 }
 
 a {
@@ -404,12 +397,14 @@ pre {
 }
 
 /* FONT ICONS */
-[class^="icon-"]:before, [class*=" icon-"]:before,  {
+[class^="icon-"]:before, [class*=" icon-"]:before,
+[class^="x-"]:before, [class*=" x-"]:before,
+.tel:before, .email:before {
 	.iconstyle()
 }
 
 .icon-blank:before { content: '\e817'; } /* '' */
-.vcard .url:before, .icon-home:before { content: '\e814'; } /* '' */
+.url:before, .icon-home:before { content: '\e814'; } /* '' */
 .icon-link-ext-alt:before { content: '\e821'; } /* '' */
 .icon-thumbs-up:before { content: '\e822'; } /* '' */
 .icon-thumbs-down:before { content: '\e826'; } /* '' */
@@ -420,27 +415,27 @@ pre {
 .icon-export-alt:before { content: '\e820'; } /* '' */
 .icon-comment:before { content: '\e812'; } /* '' */
 .icon-rss:before { content: '\e80b'; } /* '' */
-.vcard .tel:before, .icon-phone:before { content: '\e800'; } /* '' */
+.tel:before, .icon-phone:before { content: '\e800'; } /* '' */
 .icon-menu:before { content: '\e81b'; } /* '' */
 .icon-angle-double-left:before { content: '\e81d'; } /* '' */
 .icon-angle-double-right:before { content: '\e81c'; } /* '' */
 .icon-angle-double-up:before { content: '\e81f'; } /* '' */
-.vcard .email:before, .icon-mail:before { content: '\e80d'; } /* '' */
+.email:before, .icon-mail:before { content: '\e80d'; } /* '' */
 .icon-play:before { content: '\e818'; } /* '' */
 .icon-stop:before { content: '\e819'; } /* '' */
 .icon-pause:before { content: '\e81a'; } /* '' */
 .icon-globe:before { content: '\e80c'; } /* '' */
 .icon-qrcode:before { content: '\e813'; } /* '' */
 .icon-bitbucket:before { content: '\e815'; } /* '' */
-.vcard .x-facebook:before, .icon-facebook:before { content: '\e808'; } /* '' */
-.vcard .x-flickr:before, .icon-flickr:before { content: '\e809'; } /* '' */
-.vcard .x-github:before, .icon-github:before { content: '\e802'; } /* '' */
-.vcard .x-googleplus:before, .icon-googleplus:before, .icon-gplus:before { content: '\e801'; } /* '' */
-.vcard .x-instagramm:before, .icon-instagramm:before { content: '\e816'; } /* '' */
-.vcard .x-linkedin:before, .icon-linkedin:before { content: '\e807'; } /* '' */
-.vcard .x-pinterest:before, .icon-pinterest:before { content: '\e805'; } /* '' */
-.vcard .x-tumblr:before, .icon-tumblr:before { content: '\e803'; } /* '' */
-.vcard .x-twitter:before, .icon-twitter:before { content: '\e804'; } /* '' */
+.x-facebook:before, .icon-facebook:before { content: '\e808'; } /* '' */
+.x-flickr:before, .icon-flickr:before { content: '\e809'; } /* '' */
+.x-github:before, .icon-github:before { content: '\e802'; } /* '' */
+.x-googleplus:before, .icon-googleplus:before, .icon-gplus:before { content: '\e801'; } /* '' */
+.x-instagramm:before, .icon-instagramm:before { content: '\e816'; } /* '' */
+.x-linkedin:before, .icon-linkedin:before { content: '\e807'; } /* '' */
+.x-pinterest:before, .icon-pinterest:before { content: '\e805'; } /* '' */
+.x-tumblr:before, .icon-tumblr:before { content: '\e803'; } /* '' */
+.x-twitter:before, .icon-twitter:before { content: '\e804'; } /* '' */
 .icon-vimeo:before { content: '\e80a'; } /* '' */
 .icon-youtube:before { content: '\e806'; } /* '' */
 .icon-angle-double-down:before { content: '\e81e'; } /* '' */
@@ -577,6 +572,7 @@ pre {
 /* SHARE */
 .share {
 	display: block;
+	margin: 1em 0 0 0;
 
 	ul {
 	.flatul();
@@ -669,8 +665,8 @@ pre {
 		line-height: @font-xlarge;
 		display: inline-block;
 	}
-
 }
+
 .article-pubdate {
 	display: block;
 	font-size: @font-small;
@@ -693,13 +689,13 @@ pre {
 		}
 }
 
-.article-image {
-	display:block;
-	float:left;
-	margin: @padding-normal @padding-large @padding-large 0;
-}
+//.article-image {
+//	display:block;
+//	float:left;
+//	margin: @padding-normal @padding-large @padding-large 0;
+//}
 
-.article-single-footer {
+.article-footer {
 	margin: @padding-xlarge 0 0 0;
 	text-align: left;
 }
@@ -708,8 +704,8 @@ pre {
 /* PHOTOBLOG */
 .photoblog-preview {
 	display: inline-block;
-	width: 50%;
-	padding-bottom: 50%;
+	width: 49.9%;
+	padding-bottom: 49.9%;
 	position: relative;
 
 	a {
@@ -751,7 +747,7 @@ pre {
 	}
 }
 
-.photoblog-navigation {
+.siblings {
 	display: block;
 	padding: 0 0 @padding-large 0;
 
@@ -815,9 +811,10 @@ pre {
 		.fullbg();
 
 		.share {
+			margin: 0;
 			ul {
 				li {
-					font-size: @font-xxlarge;
+					font-size: @font-enormous;
 				}
 			}
 		}
@@ -1037,8 +1034,12 @@ pre {
 					text-indent: -20em;
 
 					.share {
+						margin: 0;
 						ul {
 							.navul();
+							li {
+								font-size: @font-enormous;
+							}
 						}
 					}
 				}
@@ -1132,12 +1133,16 @@ pre {
 	}
 
 	.photoblog-preview {
-		width: 33.33%;
-		padding-bottom: 33%;
+		width: 32.9%;
+		padding-bottom: 32.9%;
 	}
 
 	.status-postlist {
 		.columns2();
+	}
+
+	.share {
+		font-size:  @font-xsmall;
 	}
 
 }

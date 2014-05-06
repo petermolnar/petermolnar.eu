@@ -1,6 +1,6 @@
 <?php
 
-	define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
+	//define ('REDIRECT_TO_MAIN', get_option ('siteurl') . '/linux-tech-coding/' );
 
 	global $petermolnareu_theme;
 	global $query_string;
@@ -10,6 +10,12 @@
 	$_query_string = $query_string;
 
 	$cat = get_query_var('cat');
+
+	if ( is_home() ) {
+		$query_string .= '&cat=5';
+		$cat = 5;
+	}
+
 	$category_meta = array();
 	$meta_keys = array (
 		'custom-template' => 'default',
@@ -44,7 +50,6 @@
 		/* post per page bugfix */
 		$posts_per_page = $category_meta['posts-per-page'];
 
-
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
 
 	}
@@ -61,28 +66,7 @@
 	get_header();
 
 	if ( $is_single ) {
-		the_post();
-		$post_format = get_post_format();
-		if ( $post_format === false )
-			$post_format = get_post_type();
-
-		switch ( $post_format ) {
-			case 'page':
-			case 'aside':
-				get_template_part('template', 'page');
-				break;
-			case 'gallery':
-				get_template_part('template', 'gallery');
-				break;
-			case 'status':
-			case 'link':
-				get_template_part('template', 'status');
-				break;
-			default:
-				get_template_part('template', 'article');
-				break;
-		}
-
+		get_template_part('template', 'singular');
 	}
 	/* not singular */
 	else {
@@ -95,19 +79,26 @@
 			if ( have_posts() ) {
 				while ( have_posts() ) {
 					the_post();
+					get_template_part('template', 'listelement');
 
-					$post_format = get_post_format();
-					if ( $post_format === false )
-						$post_format = get_post_type();
-
-					if ( !empty($category_meta['custom-template']) && $category_meta['custom-template'] != 'default'  )
-						get_template_part('template', $category_meta['custom-template'] );
-					else
-						get_template_part('template', 'list');
+				//	if ( is_user_logged_in()) {
+				//
+				//	}
+				//	else {
+				//	$post_format = get_post_format();
+				//	if ( $post_format === false )
+				//		$post_format = get_post_type();
+				//
+				//	if ( !empty($category_meta['custom-template']) && $category_meta['custom-template'] != 'default'  )
+				//		get_template_part('template', $category_meta['custom-template'] );
+				//	else
+				//		get_template_part('template', 'list');
+				//}
 				}
 			}
 
 		?></section><?php
+
 		if ( $category_meta['show-sidebar'] == 1 ) { ?>
 			<section class="sidebar">
 				<?php
@@ -117,6 +108,7 @@
 					$pstart = $page * $category_meta['posts-per-page'];
 					echo $petermolnareu_theme->list_posts( $category, $category_meta['sidebar-entries'], $pstart ); ?>
 			</section>
+
 		<?php }
 
 	}

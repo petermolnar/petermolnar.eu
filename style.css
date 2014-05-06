@@ -4,8 +4,16 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.26
+Version:		5.34
 */
+.spacer {
+  display: inline-block;
+  padding: 0 0 0 0.3em;
+}
+.hide {
+  display: none;
+  visibility: hidden;
+}
 /********
 * FONTS *
 *********/
@@ -156,35 +164,9 @@ body {
 }
 blockquote {
   margin-left: 1em;
-  padding-left: 0.6em;
+  padding-left: 1em;
   font-style: italic;
-}
-blockquote:before,
-blockquote:after {
-  font-family: "petermolnar";
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  text-decoration: inherit;
-  width: 1em;
-  text-align: center;
-  /* For safety - reset parent styles, that can break glyph codes*/
-  font-variant: normal;
-  text-transform: none;
-  /* fix buttons height, for twitter bootstrap */
-  line-height: 1em;
-  font-size: 1.1em;
-}
-blockquote:before {
-  float: left;
-  content: '\e80f';
-  padding: 0 0.3em 0 0;
-}
-blockquote:after {
-  float: right;
-  content: '\e810';
-  padding: 0 0 0.3em 0;
+  border-left: 2px solid #777777;
 }
 a {
   color: #dddddd;
@@ -255,7 +237,11 @@ pre {
 }
 /* FONT ICONS */
 [class^="icon-"]:before,
-[class*=" icon-"]:before {
+[class*=" icon-"]:before,
+[class^="x-"]:before,
+[class*=" x-"]:before,
+.tel:before,
+.email:before {
   font-family: "petermolnar";
   font-style: normal;
   font-weight: normal;
@@ -274,7 +260,7 @@ pre {
   content: '\e817';
 }
 /* '' */
-.vcard .url:before,
+.url:before,
 .icon-home:before {
   content: '\e814';
 }
@@ -319,7 +305,7 @@ pre {
   content: '\e80b';
 }
 /* '' */
-.vcard .tel:before,
+.tel:before,
 .icon-phone:before {
   content: '\e800';
 }
@@ -340,7 +326,7 @@ pre {
   content: '\e81f';
 }
 /* '' */
-.vcard .email:before,
+.email:before,
 .icon-mail:before {
   content: '\e80d';
 }
@@ -369,48 +355,48 @@ pre {
   content: '\e815';
 }
 /* '' */
-.vcard .x-facebook:before,
+.x-facebook:before,
 .icon-facebook:before {
   content: '\e808';
 }
 /* '' */
-.vcard .x-flickr:before,
+.x-flickr:before,
 .icon-flickr:before {
   content: '\e809';
 }
 /* '' */
-.vcard .x-github:before,
+.x-github:before,
 .icon-github:before {
   content: '\e802';
 }
 /* '' */
-.vcard .x-googleplus:before,
+.x-googleplus:before,
 .icon-googleplus:before,
 .icon-gplus:before {
   content: '\e801';
 }
 /* '' */
-.vcard .x-instagramm:before,
+.x-instagramm:before,
 .icon-instagramm:before {
   content: '\e816';
 }
 /* '' */
-.vcard .x-linkedin:before,
+.x-linkedin:before,
 .icon-linkedin:before {
   content: '\e807';
 }
 /* '' */
-.vcard .x-pinterest:before,
+.x-pinterest:before,
 .icon-pinterest:before {
   content: '\e805';
 }
 /* '' */
-.vcard .x-tumblr:before,
+.x-tumblr:before,
 .icon-tumblr:before {
   content: '\e803';
 }
 /* '' */
-.vcard .x-twitter:before,
+.x-twitter:before,
 .icon-twitter:before {
   content: '\e804';
 }
@@ -587,6 +573,7 @@ pre {
 /* SHARE */
 .share {
   display: block;
+  margin: 1em 0 0 0;
 }
 .share ul {
   list-style-type: none;
@@ -704,20 +691,15 @@ pre {
   width: auto\9;
   /* ie8 fix */
 }
-.article-image {
-  display: block;
-  float: left;
-  margin: 0.3em 0.6em 0.6em 0;
-}
-.article-single-footer {
+.article-footer {
   margin: 1em 0 0 0;
   text-align: left;
 }
 /* PHOTOBLOG */
 .photoblog-preview {
   display: inline-block;
-  width: 50%;
-  padding-bottom: 50%;
+  width: 49.9%;
+  padding-bottom: 49.9%;
   position: relative;
 }
 .photoblog-preview a figure {
@@ -753,14 +735,14 @@ pre {
 .photoblog-preview a figure:hover {
   opacity: 0.99;
 }
-.photoblog-navigation {
+.siblings {
   display: block;
   padding: 0 0 0.6em 0;
 }
-.photoblog-navigation a {
+.siblings a {
   color: #aaaaaa;
 }
-.photoblog-navigation a:hover {
+.siblings a:hover {
   color: #f7f7f7;
 }
 .photoblog-list {
@@ -811,9 +793,13 @@ pre {
   background-position: center center;
   background-repeat: no-repeat;
 }
+.adaptgal-pure figure .share,
+.adaptgal figure .share {
+  margin: 0;
+}
 .adaptgal-pure figure .share ul li,
 .adaptgal figure .share ul li {
-  font-size: 1.8em;
+  font-size: 2.2em;
 }
 .adaptgal-pure figure figcaption,
 .adaptgal figure figcaption {
@@ -998,6 +984,9 @@ pre {
   .adaptgal .adaptgal-previews figure figcaption {
     text-indent: -20em;
   }
+  .adaptgal .adaptgal-previews figure figcaption .share {
+    margin: 0;
+  }
   .adaptgal .adaptgal-previews figure figcaption .share ul {
     list-style-type: none;
     padding: 0;
@@ -1007,6 +996,9 @@ pre {
     display: block;
     padding: 0;
     margin: 0;
+  }
+  .adaptgal .adaptgal-previews figure figcaption .share ul li {
+    font-size: 2.2em;
   }
   .adaptgal .adaptgal-previews figure:target {
     opacity: 0.99;
@@ -1094,8 +1086,8 @@ pre {
     float: right;
   }
   .photoblog-preview {
-    width: 33.33%;
-    padding-bottom: 33%;
+    width: 32.9%;
+    padding-bottom: 32.9%;
   }
   .status-postlist {
     -moz-column-count: 2;
@@ -1104,6 +1096,9 @@ pre {
     -webkit-column-gap: 1.1em;
     column-count: 2;
     column-gap: 1.1em;
+  }
+  .share {
+    font-size: 0.7em;
   }
 }
 /* COMMENTS */
