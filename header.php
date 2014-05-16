@@ -11,7 +11,7 @@ $favicon = $petermolnareu_theme->image_dir . 'favicon.png';
 	<title><?php wp_title( ); ?></title>
 	<link rel="shortcut icon" href="<?php echo "$favicon" ?>" />
 	<link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>" />
-	<?php wp_head(); ?>
+	<?php	wp_head(); ?>
 </head>
 
 <body>

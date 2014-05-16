@@ -19,7 +19,7 @@ class petermolnareu {
 	public $info = array();
 	public $urlfilters = array ();
 	private $cleanup = null;
-	private $adaptive_images = null;
+	public $adaptive_images = null;
 	private $syndicationlinks = array();
 
 	public function __construct () {
@@ -43,6 +43,13 @@ class petermolnareu {
 				'subkey' => 'pgID',
 				'split' => true,
 				'urlbase' => 'https://www.facebook.com/'. $this::fbuser .'/posts/%URL%'
+			),
+			'tumblr' => array (
+				'key' => 'snapTR',
+				'subkey' => 'postURL',
+				'split' => false,
+				'urlbase' => '%URL%',
+				'correction' => array ( 'tumblr.petermolnar.eupost' => 'tumblr.petermolnar.eu/post' ),
 			),
 		);
 
@@ -112,7 +119,11 @@ class petermolnareu {
 
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
-		add_shortcode('gallery', array ( &$this->adaptive_images, 'adaptgal' ) );
+		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
+
+		//add_filter ( 'comment_text', array(&$this, 'linkify' ));
+		//add_filter( 'comment_form_defaults', array ( &$this, 'custom_comment_form_defaults' ) );
+		//add_action('init', array( $this, 'custom_comment_tags' ), 10);
 	}
 
 	public function register_css_js () {
@@ -133,11 +144,15 @@ class petermolnareu {
 
 		/* CDN scripts */
 		wp_deregister_script( 'jquery' );
-		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://code.jquery.com/jquery-1.11.0.min.js' ), false, null, true );
+		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://code.jquery.com/jquery-1.11.0.min.js' ), false, null, false );
 		wp_enqueue_script( 'jquery' );
 
-		wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
-		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery','jquery.touchSwipe'), null, true );
+		//wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
+		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery'), null, true );
+
+
+		if ( (!is_admin()) && is_singular() && comments_open() && get_option('thread_comments') )
+			wp_enqueue_script( 'comment-reply' );
 	}
 
 	/**
@@ -218,14 +233,15 @@ class petermolnareu {
 			$share['comment'] = array (
 				'url'=>get_permalink( $post->ID ) . "#comments",
 				'title'=>__('comment', self::theme_constant),
+				'rel' => 'discussion',
 			);
 		}
 
 		$out = '';
 		foreach ($share as $site=>$details) {
 				$st = 'icon-' . $site;
-
-				$out .= '<li><a class="'. $st .'" href="' . $details['url'] . '" title="' . $details['title'] . '">&nbsp;</a></li>';
+				$rel = empty( $details['rel'] ) ? '' : 'rel="'. $details['rel'] .'"';
+				$out .= '<li><a '. $rel .' class="'. $st .'" href="' . $details['url'] . '" title="' . $details['title'] . '">&nbsp;</a></li>';
 		}
 
 		$out = '
@@ -290,24 +306,26 @@ class petermolnareu {
 	 *
 	 *
 	 */
-	public function related_posts ( $_post ) {
-		$tags = wp_get_post_tags($_post->ID);
+	public function related_posts ( $_post, $onlysiblings = false ) {
+		$args = array( 'fields' => 'ids' );
+		$tags = wp_get_post_tags($_post->ID, $args );
+		$categories = wp_get_post_categories ( $_post->ID, $args );
+
 		$list = '';
 
-		if ($tags) {
-			$tag_ids = array();
-			foreach($tags as $tag) {
-				$tag_ids[] = $tag->term_id;
-				$tags_names[] = $tag->name;
-			}
 
+		if ( !empty($tags) ) {
 
 			$args=array(
-				'tag__in' => $tag_ids,
+				'tag__in' => $tags,
 				'post__not_in' => array($_post->ID),
 				'posts_per_page'=>12,
 				'ignore_sticky_posts'=>1
 			);
+
+			if ( $onlysiblings ) {
+				$args['category__in'] = $categories;
+			}
 
 			$_query = new wp_query( $args );
 
@@ -327,14 +345,14 @@ class petermolnareu {
 		}
 
 		$out = '
-		<section class="sidebar">
+		<aside class="sidebar">
 			<nav class="sidebar-postlist">
 				<h3 class="postlist-title">'. __( "Related posts" ) . '</h3>
 				<ul class="postlist">
 				'. $list .'
 				</ul>
 			</nav>
-		</section>';
+		</aside>';
 
 		return $out;
 	}
@@ -567,8 +585,10 @@ class petermolnareu {
 				<span class="hour"><?php the_time( 'H:i' ); ?></span>
 			</time>
 		<?php
+		*
 		*/
 		?>
+
 			<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>">
 				<span class="date"><?php the_time( get_option('date_format') ); ?></span>
 				<span class="time"><?php the_time( get_option('time_format') ); ?></span>
@@ -584,10 +604,20 @@ class petermolnareu {
 		return $this->adaptive_images->adaptive_embededed( $html );
 	}
 
-
 	public function twtreplace($content) {
-		$twtreplace = preg_replace('/([^a-zA-Z0-9-_&])@([0-9a-zA-Z_]+)/',"$1<a href=\"http://twitter.com/$2\" target=\"_blank\" rel=\"nofollow\">@$2</a>",$content);
-		return $twtreplace;
+		//$twtreplace = preg_replace('/([^a-zA-Z0-9-_&])@([0-9a-zA-Z_]+)/',"$1<a href=\"http://twitter.com/$2\" target=\"_blank\" rel=\"nofollow\">@$2</a>",$content);
+		$exceptions = array ( 'media' => 1, 'import' => 1 );
+		preg_match_all('/@([0-9a-zA-Z_]+)/', $content, $twusers);
+
+		if ( !empty ( $twusers[0] ) && !empty ( $twusers[1] )) {
+			foreach ( $twusers[1] as $cntr=>$twname ) {
+				$repl = $twusers[0][$cntr];
+				if ( ! isset($exceptions[$twname]) )
+					$content = str_replace ( $uname, '<a href="http://twitter.com/'.$twname.'" rel="nofollow">@'.$twname.'</a>', $content );
+			}
+		}
+
+		return $content;
 	}
 
 	public function linkify ( $content ) {
@@ -597,7 +627,42 @@ class petermolnareu {
 	}
 
 	public function syndicated_links (  ) {
+		return false;
+
+		global $nxs_snapAvNts;
 		global $post;
+
+		if ( is_user_logged_in()) {
+			echo "<!-- DEBUG -->";
+			$snap_options = get_option('NS_SNAutoPoster');
+			//~ var_export ( $snap_options );
+
+			foreach ( $nxs_snapAvNts as $key => $serv ) {
+				/* all SNAP entries are in separate meta entries for the post based on the service name's "code" */
+				$mkey = 'snap'. $serv['code'];
+				$urlkey = $serv['lcode'].'URL';
+				$okey = $serv['lcode'];
+				$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
+				if ( !empty( $metas ) && is_array ( $metas ) ) {
+					foreach ( $metas as $cntr => $m ) {
+
+						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
+							/* Facebook exception, why not */
+							if ( $serv['code'] == 'FB' ) {
+								$pos = strpos( $m['pgID'],'_' );
+								$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
+							}
+							else {
+								$pgID = $m['pgID'];
+							}
+							$o = $snap_options[ $okey ][$cntr];
+							var_export ( $o );
+						}
+					}
+				}
+			}
+		}
+
 		foreach ( $this->syndicationlinks as $service=>$smeta ) {
 			$meta = maybe_unserialize(get_post_meta( $post->ID, $smeta['key'], true ));
 			if ( !empty($meta) && !empty( $meta[0][ $smeta['subkey'] ] ) ) {
@@ -609,6 +674,11 @@ class petermolnareu {
 				}
 
 				$url = str_replace ( '%URL%',  $url, $smeta['urlbase']  );
+				if ( isset ( $smeta['correction'] ) && is_array ( $smeta['correction'] )) {
+					foreach ( $smeta['correction'] as $search => $replace ) {
+						$url = str_replace ( $search, $replace, $url );
+					}
+				}
 				$urls[$service] = $url;
 			}
 		}
@@ -618,7 +688,7 @@ class petermolnareu {
 			foreach ($urls as $service=>$url) {
 				if ( !empty($url) ) {
 					$st = 'icon-' . $service;
-					$out .= '<li><a class="'. $st .' u-syndication" rel="syndication" href="' . $url . '" title="' . $service . '">'. $url .'</a></li>';
+					$out .= '<li><a class="'. $st .' u-syndication" rel="syndication" href="' . $url . '" title="' . $service . '">'. $service .'</a></li>';
 				}
 			}
 		}
@@ -638,33 +708,75 @@ class petermolnareu {
 
 	public function author ( $short=false ) {
 
-		$class = ( $short ) ? 'p-author h-card' : 'h-card';
+		$class = ( $short ) ? 'p-author h-card vcard' : 'h-card vcard';
 		$out = '<span class="'. $class .'">
-				<a class="p-name u-url fn" href="https://petermolnar.eu/about">Péter Molnár</a>
-				<img class="u-photo" src="https://s.gravatar.com/avatar/1915b220dfe0cc56209cb4d11b389383?s=12" />';
+				<a class="url fn p-name u-url" href="https://petermolnar.eu">Péter Molnár</a>
+				<img class="photo avatar u-photo u-avatar" src="https://s.gravatar.com/avatar/1915b220dfe0cc56209cb4d11b389383?s=64" style="width:12px; height:12px;" alt="Photo of Peter Molnar"/>';
 		if ( !$short ) {
 			$out .= '
-				<a rel="me" class="icon-mail u-email" href="mailto:hello@petermolnar.eu" title="Peter Molnar email address"></a>
+				<a rel="me" class="u-email email" href="mailto:hello@petermolnar.eu" title="Peter Molnar email address">hello@petermolnar.eu</a>
+				<a rel="me" class="p-tel tel" href="callto://00447592011721" title="Peter Molnar mobile phone number">00447592011721</a>
 				<span class="spacer">Find me:</span>
-				<a rel="me" class="x-twitter" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter"></a>
-				<a rel="me" class="x-googleplus" href="https://plus.google.com/u/0/+PéterMolnáreu/" title="Peter Molnar @ Google Plus"></a>
-				<a rel="me" class="x-facebook" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook"></a>
-				<a rel="me" class="x-linkedin" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn"></a>
-				<a rel="me" class="x-github" href="https://github.com/petermolnar" title="Peter Molnar @ Github"></a>';
+				<a rel="me" class="u-twitter x-twitter" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter">@petermolnar</a>
+				<a rel="me" class="u-googleplus x-googleplus" href="https://plus.google.com/u/0/+PéterMolnáreu/" title="Peter Molnar @ Google Plus">+PéterMolnáreu</a>
+				<a rel="me" class="u-facebook x-facebook" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook">petermolnar.eu</a>
+				<a rel="me" class="u-linkedin x-linkedin" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn">petermolnareu</a>
+				<a rel="me" class="u-github x-github" href="https://github.com/petermolnar" title="Peter Molnar @ Github">petermolnar</a>';
 		}
 		$out .= '</span>';
 		return $out;
 	}
+
+	//public function custom_comment_form_defaults( $args ) {
+	//	if ( is_user_logged_in() )
+	//		$mce_plugins = 'inlinepopups, fullscreen, wordpress, wplink, wpdialogs';
+	//	else
+	//		$mce_plugins = 'fullscreen, wordpress';
+	//
+	//	ob_start();
+	//	wp_editor( '', 'comment', array(
+	//		'media_buttons' => true,
+	//		'teeny' => true,
+	//		'textarea_rows' => '7',
+	//		'tinymce' => array( 'plugins' => $mce_plugins )
+	//	) );
+	//	$args['comment_field'] = ob_get_clean();
+	//	return $args;
+	//}
+	//
+	//public function custom_comment_tags() {
+	//	//define('CUSTOM_TAGS', true);
+	//	global $allowedtags;
+	//
+	//	$allowedtags = array(
+	//	'abbr',
+	//	'acronym',
+	//	'blockquote',
+	//	'cite',
+	//	'code',
+	//	'ins',
+	//	'del',
+	//	'strike',
+	//	'strong',
+	//	'b',
+	//	'em',
+	//	'i',
+	//	'p',
+	//	'br',
+	//	'a',
+	//	'img',
+	//	'q',
+	//	'ul',
+	//	'ol',
+	//	'li'
+	//	);
+	//}
 }
 
 /**** END OF FUNCTIONS *****/
 
-
-
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {
 	$petermolnareu_theme = new petermolnareu();
 }
-
-
 
 ?>

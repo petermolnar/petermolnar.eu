@@ -244,7 +244,8 @@ class adaptive_images {
 			$img = $this->get_imagemeta( $aid );
 
 			$images[ $aid ] = $img;
-			$bgdata = $this->bgdata ( array_keys( $images ), $size );
+			$keys =  array_keys( $images );
+			$bgdata = $this->bgdata ( $keys, $size );
 			$css = $this->build_css ( $bgdata, $images );
 
 			$cache = array (
@@ -339,6 +340,10 @@ class adaptive_images {
 		//echo "<!-- " . var_export( $__post, true) . '-->';
 		//$img['slug'] =  ( empty ( $__post->post_name ) ) ? $imgid : esc_attr( $__post->post_name );
 		$img['slug'] =  sanitize_title ( $__post->post_title , $imgid );
+
+		if ( is_numeric( substr( $img['slug'], 0, 1) ) )
+			$img['slug'] = 'img-' . $img['slug'];
+
 		//$img['slug'] =  $imgid;
 
 		if ( $getsharesrc )

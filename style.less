@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.34
+Version:		5.43
 */
 
 // Grays
@@ -32,6 +32,7 @@ Version:		5.34
 
 @textshadow-outset: 1px 1px #111;
 
+@font-base: 16px;
 @font-enormous: 2.2em;
 @font-xxlarge: 1.8em;
 @font-xlarge: 1.2em;
@@ -134,18 +135,6 @@ Version:		5.34
 	font-weight: normal;
 	font-style: normal;
 }
-//
-//@font-face {
-//	font-family: 'Liberation Sans';
-//	src: url('assets/font/liberation-sans.eot');
-//	src: local('Liberation Sans'),
-//		 url('assets/font/liberation-sans.eot?#iefix') format('embedded-opentype'),
-//		 url('assets/font/liberation-sans.woff') format('woff'),
-//		 url('assets/font/liberation-sans.ttf') format('truetype'),
-//		 url('assets/font/liberation-sans.svg#LiberationSansRegular') format('svg');
-//	font-weight: normal;
-//	font-style: normal;
-//}
 
 @font-face {
 	font-family: 'Liberation Sans';
@@ -170,7 +159,7 @@ Version:		5.34
 }
 
 @font-face {
-	font-family: 'liberation_sansitalic';
+	font-family: 'Liberation Sans';
 	src: url('assets/font/LiberationSans-Italic-webfont.eot');
 	src: url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'),
@@ -306,7 +295,7 @@ body {
 	margin: @padding-normal auto @padding-normal auto;
 	line-height: @line-height;
 	font-family: 'Liberation Sans', sans-serif;
-	font-size:16px;
+	font-size:@font-base;
 	color:@color-text;
 	letter-spacing:0.06em;
 	font-weight: normal;
@@ -390,6 +379,9 @@ dd {
 }
 
 pre {
+	font-size: 0.9em;
+	line-height: 1.2em;
+	font-family: monospace;
 	margin: @padding-normal 0 @padding-normal 0;
 	padding: @padding-normal;
 	border:@border-thin;
@@ -404,7 +396,7 @@ pre {
 }
 
 .icon-blank:before { content: '\e817'; } /* '' */
-.url:before, .icon-home:before { content: '\e814'; } /* '' */
+.icon-home:before { content: '\e814'; } /* '' */
 .icon-link-ext-alt:before { content: '\e821'; } /* '' */
 .icon-thumbs-up:before { content: '\e822'; } /* '' */
 .icon-thumbs-down:before { content: '\e826'; } /* '' */
@@ -525,6 +517,19 @@ pre {
 .content-footer  {
 	padding:  @padding-xlarge 0 @padding-xlarge 0;
 	font-size:  @font-small;
+
+	.h-card {
+		a[rel="me"] {
+			font-size: 1px;
+			letter-spacing: -1px;
+			color: transparent;
+
+			&:before {
+				font-size: @font-base;
+				color: @color-link;
+			}
+		}
+	}
 }
 
 .content-navigation {
@@ -594,7 +599,7 @@ pre {
 }
 
 /* VCARD */
-.vcard {
+.vcard-page {
 	display:block;
 	vertical-align:top;
 	padding: @padding-xlarge;
@@ -640,15 +645,14 @@ pre {
 		margin: @padding-large 0 @padding-large 0;
 	}
 
-	.article-pubdate {
-		background: darken(@color-bg-dark,14%);
-		padding:  0 0 0 @padding-normal;
-	}
+	//.article-pubdate {
+	//
+	//}
 }
 
 /* ARCTICLE */
 .article-list-element {
-	margin: 0 0 @padding-large 0;
+	margin: 0 0 @font-enormous*2 0;
 
 	p {
 		margin: @padding-large 0 @padding-large 0;
@@ -673,6 +677,9 @@ pre {
 	font-weight: normal;
 	color: darken(@color-text,20%);
 	font-family: monospace;
+	background: darken(@color-bg-dark,14%);
+	padding:  0 0 0 @padding-normal;
+	margin: 0 0 @padding-normal 0;
 }
 
 .article-thumbnail {
@@ -704,8 +711,8 @@ pre {
 /* PHOTOBLOG */
 .photoblog-preview {
 	display: inline-block;
-	width: 49.9%;
-	padding-bottom: 49.9%;
+	width: 49%;
+	padding-bottom: 49%;
 	position: relative;
 
 	a {
@@ -890,7 +897,12 @@ pre {
 /* SIDEBAR */
 .sidebar {
 	font-size: @font-small;
-	padding: @font-large 0 0 0;
+	//padding: @font-large 0 0 0;
+
+	h3 {
+		margin: 0 0 @padding-large 0;
+	}
+
 	ul {
 		.navul();
 
@@ -1147,42 +1159,97 @@ pre {
 
 }
 
+
 /* COMMENTS */
-#disqus_thread,
-.comments-content,
-.commentlist,
-#respond {
-	.flatul();
+//#disqus_thread,
+//.comments-content,
+//.commentlist,
+//.comment-list,
+//#respond {
+//	.navul();
+//
+//	padding:@padding-large;
+//	margin: @padding-normal 0 @padding-normal 0;
+//
+//	.url,
+//	.fn,
+//	.vcard {
+//
+//		padding:0;
+//		margin:0;
+//		text-align:left;
+//		border:none;
+//		background:none;
+//		float:none;
+//		width:auto;
+//		font-style:normal;
+//	}
+//
+//	.comment {
+//		margin:@font-enormous 0 0 0;
+//		padding: 0 0 0 @padding-large;
+//
+//		article {
+//			padding: @padding-normal;
+//			border-left: 4px solid darken(@color-bg-dark,5%);
+//			line-height: 1.1em;
+//
+//			.avatar {
+//				float:left;
+//				margin: 0 @padding-large @padding-large 0;
+//			}
+//		}
+//	}
+//
+//	.says {
+//		display:none;
+//	}
+//
+//	ul {
+//		.flatul();
+//	}
+//}
 
-	padding:@padding-large;
-	margin: @padding-normal 0 @padding-normal 0;
 
-	.url,
-	.fn,
-	.vcard {
+/* COMMENTS */
+.comment-list {
+	.navul();
 
-		padding:0;
-		margin:0;
-		text-align:left;
-		border:none;
-		background:none;
-		float:none;
-		width:auto;
-		font-style:normal;
-	}
+	li {
+		margin: 0 0 @padding-large 0;
+		padding: 0;
 
-	.comment {
-		margin:@padding-xlarge 0 0 0;
-		padding: 0 0 0 @padding-large;
+		.comment-reply-title,
+		.comment-reply-link,
+		.comment-edit-link,
+		time {
+			font-size: @font-xsmall;
+		}
 
-	}
+		.comment-reply-title,
+		time {
+			color: darken(@color-text,15%);
+		}
 
-	.says {
-		display:none;
-	}
+		.avatar {
+			float: left;
+			margin: @padding-normal @padding-normal @padding-normal 0;
+		}
 
-	ul {
-		.flatul();
+		li {
+			margin: 0 0 @padding-large @font-xsmall;
+			padding: 0 0 0 @font-xsmall;
+			border-left: @border-thick;
+		}
+
+		.says {
+			display: none;
+		}
+
+		p {
+			margin: @padding-normal 0 0 0;
+		}
+
 	}
 }
 

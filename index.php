@@ -17,35 +17,41 @@
 	}
 
 	$category_meta = array();
-	$meta_keys = array (
-		'custom-template' => 'default',
-		'posts-per-page' => 10,
-		'show-sidebar' => 1,
-		'show-pagination' => 1,
-		'order-by' => 'date',
-		'sidebar-entries' => 10
+
+	$cmeta = array (
+		'blips' => array (
+			'custom-template' => 'status',
+			'posts-per-page' => 12,
+			'show-sidebar' => 0,
+		),
+		'photoblog' => array (
+			'custom-template' => 'gallery',
+			'posts-per-page' => 6,
+			'show-sidebar' => 0,
+			'show-pagination' => 1,
+		),
+		'portfolio' => array (
+			'custom-template' => 'gallery',
+			'posts-per-page' => -1,
+			'show-sidebar' => 0,
+			'show-pagination' => 0,
+			'order-by' => 'modified',
+		),
+		'default' => array (
+			'custom-template' => 'default',
+			'posts-per-page' => 4,
+			'show-sidebar' => 1,
+			'show-pagination' => 1,
+			'order-by' => 'date',
+			'sidebar-entries' => 12
+		)
 	);
 
 	if ( !empty( $cat ) ) {
 		/* get category */
 		$category = get_category( $cat );
 
-		foreach ( $meta_keys as $key=>$default ) {
-			unset ($val);
-			$val = get_field( $key, 'category_'. $category->term_id );
-
-			if ( $val == 'yes' )
-				$val = 1;
-			elseif ( empty($val) )
-				$val = $default;
-			elseif ( $val === 0 || $val == 'no' || $val === '0' )
-				$val = 0;
-			elseif ( is_numeric($val) )
-				$val = intval ( $val );
-
-			$category_meta[ $key ] = $val;
-
-		}
+		$category_meta = ( empty( $cmeta[ $category->slug ] ) ) ? $cmeta['default'] : array_merge ( $cmeta['default'], $cmeta [ $category->slug ] );
 
 		/* post per page bugfix */
 		$posts_per_page = $category_meta['posts-per-page'];

@@ -1,26 +1,10 @@
-<?php
-/**
- * The template for displaying Comments
- *
- * The area of the page that contains comments and the comment form.
- *
- * @package WordPress
- * @subpackage Twenty_Fourteen
- * @since Twenty Fourteen 1.0
- */
+<?php if ( post_password_required() ) return; ?>
 
-/*
- * If the current post is protected by a password and the visitor has not yet
- * entered the password we will return early without loading the comments.
- */
-if ( post_password_required() ) {
-	return;
-}
-?>
+<section class="content-comments"><div class="inner"><a id="comments" />
 
-<section id="comments" class="comments-area">
+<?php comment_form(); ?>
 
-	<?php if ( have_comments() ) : ?>
+<?php if ( have_comments() ) : ?>
 
 	<h2 class="comments-title">
 		<?php
@@ -55,12 +39,6 @@ if ( post_password_required() ) {
 	</nav><!-- #comment-nav-below -->
 	<?php endif; // Check for comment navigation. ?>
 
-	<?php if ( ! comments_open() ) : ?>
-	<p class="no-comments"><?php _e( 'Comments are closed.', 'twentyfourteen' ); ?></p>
-	<?php endif; ?>
+<?php endif; // have_comments() ?>
 
-	<?php endif; // have_comments() ?>
-
-	<?php comment_form(); ?>
-
-</section><!-- #comments -->
+</div></section>

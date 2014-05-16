@@ -24,6 +24,8 @@
 		case 'quote':
 		case 'status':
 		case 'image':
+		case 'video':
+		case 'audio':
 			//$siblings = true;
 			$linkify = true;
 			$header = 'pubdate';
@@ -82,15 +84,26 @@
 		ob_start();
 		the_content();
 		$content = ob_get_clean();
+		$feat = get_post_thumbnail_id( $post->ID );
 
 		if ( $linkify ) {
-			$content = $petermolnareu_theme->replace_images_with_adaptive ( $content );
+			/* adaptify */
+			$icontent = $petermolnareu_theme->replace_images_with_adaptive ( $content );
 
+			/* auto feat img */
+			if ( $content == $icontent && !empty($feat) )
+				$content .= do_shortcode( '[adaptimg aid=' . $feat .' size=hd share=0 standalone=1]');
+			else
+				$content = $icontent;
+
+			/* twittify */
 			if ( has_tag( 'twitter' ) )
 				$content = $petermolnareu_theme->twtreplace($content);
 
+			/* linkify */
 			$content = $petermolnareu_theme->linkify($content);
 		}
+
 	?>
 	<div class="article-content e-content">
 		<?php echo $content ?>
@@ -107,4 +120,4 @@
 </article>
 
 <!-- related posts -->
-<?php  if ( $sidebar ) echo $petermolnareu_theme->related_posts( $post ); ?>
+<?php  if ( $sidebar ) echo $petermolnareu_theme->related_posts( $post, true ); ?>
