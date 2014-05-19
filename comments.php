@@ -2,7 +2,12 @@
 
 <section class="content-comments"><div class="inner"><a id="comments" />
 
-<?php comment_form(); ?>
+<?php
+if ( comments_open() ) :
+	comment_form();
+else: ?>
+<h4><?php _e( 'Commenting is closed on this article.', 'twentyfourteen' ) ?></h4>
+<?php endif; ?>
 
 <?php if ( have_comments() ) : ?>
 

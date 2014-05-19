@@ -112,7 +112,7 @@
 	<!-- article footer -->
 	<?php if ( $footer ) : ?>
 	<footer class="article-footer">
-		<?php echo $petermolnareu_theme->syndicated_links(); ?>
+		<?php if ( function_exists('add_js_rel_syndication')) echo add_js_rel_syndication(''); ?>
 		<?php echo $petermolnareu_theme->share ( get_permalink() , wp_title( '', false ), true ); ?>
 	</footer>
 	<?php endif; ?>

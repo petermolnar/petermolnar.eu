@@ -2,7 +2,7 @@
 	<br class="clear" />
 	</div></section>
 
-	<?php if ( is_singular() && comments_open()) : ?>
+	<?php if ( is_singular() ) : ?>
 	<section class="content-comments"><div class="inner">
 		<a id="comments" /></a>
 		<?php comments_template( ); ?>

@@ -20,7 +20,6 @@ class petermolnareu {
 	public $urlfilters = array ();
 	private $cleanup = null;
 	public $adaptive_images = null;
-	private $syndicationlinks = array();
 
 	public function __construct () {
 		$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
@@ -31,32 +30,8 @@ class petermolnareu {
 		$this->image_dir = $this->theme_url . '/assets/image/';
 		$this->info = wp_get_theme( );
 
-		$this->syndicationlinks = array (
-			'twitter' => array (
-				'key' => 'snapTW',
-				'subkey' => 'pgID',
-				'split' => false,
-				'urlbase' => 'https://twitter.com/'. $this::twitteruser .'/status/%URL%'
-			),
-			'facebook' => array (
-				'key' => 'snapFB',
-				'subkey' => 'pgID',
-				'split' => true,
-				'urlbase' => 'https://www.facebook.com/'. $this::fbuser .'/posts/%URL%'
-			),
-			'tumblr' => array (
-				'key' => 'snapTR',
-				'subkey' => 'postURL',
-				'split' => false,
-				'urlbase' => '%URL%',
-				'correction' => array ( 'tumblr.petermolnar.eupost' => 'tumblr.petermolnar.eu/post' ),
-			),
-		);
-
 		/* cleanup class */
 		$this->cleanup = new theme_cleaup();
-
-
 
 		/* theme init */
 		add_action( 'init', array( &$this, 'init'));
@@ -626,102 +601,22 @@ class petermolnareu {
 		return $content;
 	}
 
-	public function syndicated_links (  ) {
-		return false;
-
-		global $nxs_snapAvNts;
-		global $post;
-
-		if ( is_user_logged_in()) {
-			echo "<!-- DEBUG -->";
-			$snap_options = get_option('NS_SNAutoPoster');
-			//~ var_export ( $snap_options );
-
-			foreach ( $nxs_snapAvNts as $key => $serv ) {
-				/* all SNAP entries are in separate meta entries for the post based on the service name's "code" */
-				$mkey = 'snap'. $serv['code'];
-				$urlkey = $serv['lcode'].'URL';
-				$okey = $serv['lcode'];
-				$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
-				if ( !empty( $metas ) && is_array ( $metas ) ) {
-					foreach ( $metas as $cntr => $m ) {
-
-						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
-							/* Facebook exception, why not */
-							if ( $serv['code'] == 'FB' ) {
-								$pos = strpos( $m['pgID'],'_' );
-								$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
-							}
-							else {
-								$pgID = $m['pgID'];
-							}
-							$o = $snap_options[ $okey ][$cntr];
-							var_export ( $o );
-						}
-					}
-				}
-			}
-		}
-
-		foreach ( $this->syndicationlinks as $service=>$smeta ) {
-			$meta = maybe_unserialize(get_post_meta( $post->ID, $smeta['key'], true ));
-			if ( !empty($meta) && !empty( $meta[0][ $smeta['subkey'] ] ) ) {
-				$url = $meta[0][ $smeta['subkey'] ];
-
-				if ( $smeta['split'] ) {
-					$url = explode( '_', $url );
-					$url = $url[1];
-				}
-
-				$url = str_replace ( '%URL%',  $url, $smeta['urlbase']  );
-				if ( isset ( $smeta['correction'] ) && is_array ( $smeta['correction'] )) {
-					foreach ( $smeta['correction'] as $search => $replace ) {
-						$url = str_replace ( $search, $replace, $url );
-					}
-				}
-				$urls[$service] = $url;
-			}
-		}
-
-		$out = '';
-		if ( !empty ( $urls ) ) {
-			foreach ($urls as $service=>$url) {
-				if ( !empty($url) ) {
-					$st = 'icon-' . $service;
-					$out .= '<li><a class="'. $st .' u-syndication" rel="syndication" href="' . $url . '" title="' . $service . '">'. $service .'</a></li>';
-				}
-			}
-		}
-
-		if ( !empty ($out ) ) {
-			$out = '
-				<nav class="syndication">
-					<h6>Also on:</h6>
-					<ul>
-					'. $out .'
-					</ul>
-				</nav>';
-		}
-
-		return $out;
-	}
-
 	public function author ( $short=false ) {
 
 		$class = ( $short ) ? 'p-author h-card vcard' : 'h-card vcard';
 		$out = '<span class="'. $class .'">
-				<a class="url fn p-name u-url" href="https://petermolnar.eu">Péter Molnár</a>
+				<a class="fn p-name url u-url" href="https://petermolnar.eu">Péter Molnár</a>
 				<img class="photo avatar u-photo u-avatar" src="https://s.gravatar.com/avatar/1915b220dfe0cc56209cb4d11b389383?s=64" style="width:12px; height:12px;" alt="Photo of Peter Molnar"/>';
 		if ( !$short ) {
 			$out .= '
 				<a rel="me" class="u-email email" href="mailto:hello@petermolnar.eu" title="Peter Molnar email address">hello@petermolnar.eu</a>
 				<a rel="me" class="p-tel tel" href="callto://00447592011721" title="Peter Molnar mobile phone number">00447592011721</a>
 				<span class="spacer">Find me:</span>
-				<a rel="me" class="u-twitter x-twitter" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter">@petermolnar</a>
-				<a rel="me" class="u-googleplus x-googleplus" href="https://plus.google.com/u/0/+PéterMolnáreu/" title="Peter Molnar @ Google Plus">+PéterMolnáreu</a>
-				<a rel="me" class="u-facebook x-facebook" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook">petermolnar.eu</a>
-				<a rel="me" class="u-linkedin x-linkedin" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn">petermolnareu</a>
-				<a rel="me" class="u-github x-github" href="https://github.com/petermolnar" title="Peter Molnar @ Github">petermolnar</a>';
+				<a rel="me" class="u-twitter x-twitter url u-url" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter">@petermolnar</a>
+				<a rel="me" class="u-googleplus x-googleplus url u-url" href="https://plus.google.com/u/0/+PéterMolnáreu/" title="Peter Molnar @ Google Plus">+PéterMolnáreu</a>
+				<a rel="me" class="u-facebook x-facebook url u-url" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook">petermolnar.eu</a>
+				<a rel="me" class="u-linkedin x-linkedin url u-url" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn">petermolnareu</a>
+				<a rel="me" class="u-github x-github url u-url" href="https://github.com/petermolnar" title="Peter Molnar @ Github">petermolnar</a>';
 		}
 		$out .= '</span>';
 		return $out;
