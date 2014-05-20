@@ -120,4 +120,8 @@
 </article>
 
 <!-- related posts -->
-<?php  if ( $sidebar ) echo $petermolnareu_theme->related_posts( $post, true ); ?>
+<?php  if ( $sidebar ) : ?>
+	<aside class="sidebar">
+	<?php echo $petermolnareu_theme->related_posts( $post, true ); ?>
+	</aside>
+<?php endif; ?>

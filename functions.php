@@ -30,18 +30,11 @@ class petermolnareu {
 		$this->image_dir = $this->theme_url . '/assets/image/';
 		$this->info = wp_get_theme( );
 
-		/* cleanup class */
 		$this->cleanup = new theme_cleaup();
-
-		/* theme init */
+		$this->adaptive_images = new adaptive_images( $this );
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->cleanup, 'filters'));
-
-		/* adaptive galleries class */
-		$this->adaptive_images = new adaptive_images( $this );
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
-
-		/* set up CSS, JS and fonts */
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
 
 		/* excerpt letter counter */
@@ -50,17 +43,13 @@ class petermolnareu {
 	}
 
 	public function init () {
-		/* set theme supports */
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
 		add_theme_support( 'automatic-feed-links' );
-		/*
-		 * Enable support for Post Formats.
-		 * See http://codex.wordpress.org/Post_Formats
-		 */
+
+		/* http://codex.wordpress.org/Post_Formats */
 		add_theme_support( 'post-formats', array(
-			// aside
-			'image', 'video', 'audio', 'quote', 'link', 'gallery', 'status'
+			'image', 'aside', 'video', 'audio', 'quote', 'link', 'gallery', 'status'
 		) );
 
 		/*
@@ -76,7 +65,7 @@ class petermolnareu {
 			self::menu_header => __( self::menu_header , self::theme_constant ),
 		) );
 
-		/* enable SVG uploads */
+		/* enable custom uploads */
 		add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
 		/* add syntax highlighting */
@@ -85,32 +74,27 @@ class petermolnareu {
 
 		/* legacy shortcode handler */
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
-		//remove_filter( 'the_content', 'wpautop' );
-		//add_filter( 'the_content', 'wpautop' , 99 );
 		add_filter( 'the_content', 'shortcode_unautop', 100 );
 
+		/* Link all @name to Twitter */
 		//add_filter('the_content', array( &$this, 'twtreplace'));
 		//add_filter('comment_text', array( &$this, 'twtreplace'));
 
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
 		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
-
-		//add_filter ( 'comment_text', array(&$this, 'linkify' ));
-		//add_filter( 'comment_form_defaults', array ( &$this, 'custom_comment_form_defaults' ) );
-		//add_action('init', array( $this, 'custom_comment_tags' ), 10);
 	}
 
+	/**
+	 * register & queue css & js
+	 */
 	public function register_css_js () {
 		/* enqueue CSS */
 
 		wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
 		wp_enqueue_style( 'reset' );
 
-		//if ( is_user_logged_in() )
-		//	wp_register_style( 'style', $this->theme_url . '/style-new.css' , array('reset'), $this->info->version );
-		//else
-			wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+		wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
 		wp_enqueue_style( 'style' );
 
 		/* syntax highlight */
@@ -122,10 +106,10 @@ class petermolnareu {
 		wp_register_script( 'jquery', $this->replace_if_ssl( 'http://code.jquery.com/jquery-1.11.0.min.js' ), false, null, false );
 		wp_enqueue_script( 'jquery' );
 
-		//wp_register_script( 'jquery.touchSwipe', $this->js_dir . 'jquery.touchSwipe.min.js', array('jquery'), null, true );
+		/* for adaptive image class, TODO move here */
 		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery'), null, true );
 
-
+		/* this is to have reply fields correctly */
 		if ( (!is_admin()) && is_singular() && comments_open() && get_option('thread_comments') )
 			wp_enqueue_script( 'comment-reply' );
 	}
@@ -161,7 +145,7 @@ class petermolnareu {
 	}
 
 	/**
-	 *
+	 * share links
 	 *
 	 */
 	public function share ( $link , $title, $comment=false, $parent=false ) {
@@ -202,7 +186,6 @@ class petermolnareu {
 				'title'=>__('pin', self::theme_constant),
 			);
 		}
-
 
 		if ($comment) {
 			$share['comment'] = array (
@@ -278,7 +261,7 @@ class petermolnareu {
 	}
 
 	/**
-	 *
+	 * related posts, based on same category & shared tags
 	 *
 	 */
 	public function related_posts ( $_post, $onlysiblings = false ) {
@@ -319,21 +302,19 @@ class petermolnareu {
 			}
 		}
 
-		$out = '
-		<aside class="sidebar">
-			<nav class="sidebar-postlist">
+		$out = '<nav class="sidebar-postlist">
 				<h3 class="postlist-title">'. __( "Related posts" ) . '</h3>
 				<ul class="postlist">
 				'. $list .'
 				</ul>
-			</nav>
-		</aside>';
+			</nav>';
 
 		return $out;
 	}
 
 	/**
-	 *
+	 * syntax highlight with prism (it's not that PRISM, don't worry)
+	 * http://prismjs.com/
 	 *
 	 */
 	public function syntax_highlight ( $atts ,  $content = null ) {
@@ -375,6 +356,9 @@ class petermolnareu {
 		return $src;
 	}
 
+	/**
+	 * character counter for text content field & excerpt field
+	*/
 	public function excerpt_count_js(){
 		echo '<script>jQuery(document).ready(function(){
 
@@ -397,6 +381,9 @@ class petermolnareu {
 		});</script>';
 	}
 
+	/**
+	 * from: http://dimox.net/wordpress-breadcrumbs-without-a-plugin/
+	 */
 	public function dimox_breadcrumbs() {
 
 		/* === OPTIONS === */
@@ -551,34 +538,28 @@ class petermolnareu {
 
 	public function article_time () {
 		global $post;
-		/*
 		?>
-			<time class="article-pubdate" pubdate="<?php the_time( 'r' ); ?>">
-				<span class="year"><?php the_time( 'Y' ); ?></span>
-				<span class="month"><?php the_time( 'M' ); ?></span>
-				<span class="day"><?php the_time( 'd' ); ?></span>
-				<span class="hour"><?php the_time( 'H:i' ); ?></span>
-			</time>
-		<?php
-		*
-		*/
-		?>
-
-			<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>">
-				<span class="date"><?php the_time( get_option('date_format') ); ?></span>
-				<span class="time"><?php the_time( get_option('time_format') ); ?></span>
-			</time>
-			<time class="hide dt-updated" pubdate="<?php the_modified_time( 'r' ); ?>">
-				<span class="date"><?php the_time( get_option('date_format') ); ?></span>
-				<span class="time"><?php the_time( get_option('time_format') ); ?></span>
-			</time>
+		<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>">
+			<span class="date"><?php the_time( get_option('date_format') ); ?></span>
+			<span class="time"><?php the_time( get_option('time_format') ); ?></span>
+		</time>
+		<time class="hide dt-updated" pubdate="<?php the_modified_time( 'r' ); ?>">
+			<span class="date"><?php the_time( get_option('date_format') ); ?></span>
+			<span class="time"><?php the_time( get_option('time_format') ); ?></span>
+		</time>
 		<?php
 	}
 
+	/**
+	 * function name speaks for itself
+	 */
 	public function replace_images_with_adaptive ( $html ) {
 		return $this->adaptive_images->adaptive_embededed( $html );
 	}
 
+	/**
+	 * Twitter link all @ starting string
+	 */
 	public function twtreplace($content) {
 		//$twtreplace = preg_replace('/([^a-zA-Z0-9-_&])@([0-9a-zA-Z_]+)/',"$1<a href=\"http://twitter.com/$2\" target=\"_blank\" rel=\"nofollow\">@$2</a>",$content);
 		$exceptions = array ( 'media' => 1, 'import' => 1 );
@@ -595,12 +576,18 @@ class petermolnareu {
 		return $content;
 	}
 
+	/**
+	 * auto-link all plain text links, exclude anything in html tags
+	 */
 	public function linkify ( $content ) {
 		$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
 		$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
 		return $content;
 	}
 
+	/**
+	 *  Peter Molnar vcard
+	 */
 	public function author ( $short=false ) {
 
 		$class = ( $short ) ? 'p-author h-card vcard' : 'h-card vcard';
@@ -622,50 +609,6 @@ class petermolnareu {
 		return $out;
 	}
 
-	//public function custom_comment_form_defaults( $args ) {
-	//	if ( is_user_logged_in() )
-	//		$mce_plugins = 'inlinepopups, fullscreen, wordpress, wplink, wpdialogs';
-	//	else
-	//		$mce_plugins = 'fullscreen, wordpress';
-	//
-	//	ob_start();
-	//	wp_editor( '', 'comment', array(
-	//		'media_buttons' => true,
-	//		'teeny' => true,
-	//		'textarea_rows' => '7',
-	//		'tinymce' => array( 'plugins' => $mce_plugins )
-	//	) );
-	//	$args['comment_field'] = ob_get_clean();
-	//	return $args;
-	//}
-	//
-	//public function custom_comment_tags() {
-	//	//define('CUSTOM_TAGS', true);
-	//	global $allowedtags;
-	//
-	//	$allowedtags = array(
-	//	'abbr',
-	//	'acronym',
-	//	'blockquote',
-	//	'cite',
-	//	'code',
-	//	'ins',
-	//	'del',
-	//	'strike',
-	//	'strong',
-	//	'b',
-	//	'em',
-	//	'i',
-	//	'p',
-	//	'br',
-	//	'a',
-	//	'img',
-	//	'q',
-	//	'ul',
-	//	'ol',
-	//	'li'
-	//	);
-	//}
 }
 
 /**** END OF FUNCTIONS *****/
