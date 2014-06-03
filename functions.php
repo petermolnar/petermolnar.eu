@@ -83,6 +83,10 @@ class petermolnareu {
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
 		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
+
+		// have links
+		add_filter( 'pre_option_link_manager_enabled', '__return_true' );
+
 	}
 
 	/**
@@ -145,70 +149,117 @@ class petermolnareu {
 	}
 
 	/**
-	 * share links
-	 *
+	 * updated share function: retweet/reshare/reshit if SNAP entry or something else is
+	 * available
 	 */
-	public function share ( $link , $title, $comment=false, $parent=false ) {
+	public function share_ ( $link , $title, $comment=false, $parent=false ) {
 		global $post;
+		global $nxs_snapAvNts;
+
 		$link = urlencode($link);
 		$title = urlencode($title);
 		$desciption = urlencode(get_the_excerpt());
 		$type = get_post_type ( $post );
+		$media = wp_get_attachment_image_src(get_post_thumbnail_id( $post->ID ),'large', true);
+		$media_url = ( ! $media ) ? false : $media[0];
 
-		$share = array (
+		$snap_options = get_option('NS_SNAutoPoster');
 
-			'twitter'=>array (
-
-				'url'=>'https://twitter.com/share?url='. $link .'&text='. $title,
-				'title'=>__('Tweet', self::theme_constant),
-			),
-
-			'facebook'=>array (
-				'url'=>'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title,
-				'title'=>__('Share', self::theme_constant),
-			),
-
-			'googleplus'=>array (
-				'url'=>'https://plus.google.com/share?url=' . $link,
-				'title'=>__('+1', self::theme_constant),
-			),
-
-			'tumblr'=>array (
-				'url'=>'http://www.tumblr.com/share/link?url='.$link.'&name='.$title.'&description='. $desciption,
-				'title'=>__('share', self::theme_constant),
-			),
-
-		);
-
-		if ( $parent != false ) {
-			$share['pinterest']  = array (
-				'url'=>'https://pinterest.com/pin/create/bookmarklet/?media='. $link .'&url='. urlencode($parent) .'&is_video=false&description='. $title,
-				'title'=>__('pin', self::theme_constant),
-			);
+		/* all SNAP entries are in separate meta entries for the post based on the service name's "code" */
+		foreach ( $nxs_snapAvNts as $key => $serv ) {
+			$mkey = 'snap'. $serv['code'];
+			$urlkey = $serv['lcode'].'URL';
+			$okey = $serv['lcode'];
+			$s = strtolower($serv['name']);
+			$metas = maybe_unserialize(get_post_meta($post->ID, $mkey, true ));
+			if ( !empty( $metas ) && is_array ( $metas ) ) {
+				foreach ( $metas as $cntr => $m ) {
+					$pgID = false;
+					if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
+						/* postURL entry will only be used if there's no urlmap set for the service above
+						 * this is due to either missing postURL values or buggy entries */
+						$pgIDs[ $s ] = $m['pgID'];
+					}
+					$surl[ $s ] = $snap_options[$okey][$cntr][$urlkey];
+				}
+			}
 		}
 
+		/* Twitter */
+		$service = 'twitter';
+		$repost_id = get_post_meta($post->ID, 'twitter_rt_id', true );
+		$repost_uid = get_post_meta($post->ID, 'twitter_rt_user_id', true );
+		$tw = get_post_meta( $post->ID, 'twitter_tweet_id', true );
+		if ( !empty( $pgIDs[ $service ] ) ) {
+			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $pgIDs[ $service ];
+			$txt = __( 'Reweet', self::theme_constant );
+		}
+		elseif ( !empty($repost_id) && !empty($repost_uid) ) {
+			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $repost_id;
+			$txt = __( 'Reweet', self::theme_constant );
+		}
+		elseif ( !empty($tw) ) {
+			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $tw;
+			$txt = __( 'Reweet', self::theme_constant );
+		}
+		else {
+			$url = 'https://twitter.com/share?url='. $link .'&text='. $title;
+			$txt = __( 'Tweet', self::theme_constant );
+		}
+		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+
+		/* Facebook */
+		$service = 'facebook';
+		if ( !empty( $pgIDs[ $service ] ) ) $pgIDs[$service] = explode ( '_', $pgIDs[$service] );
+		if ( is_array ( $pgIDs[$service] ) && !empty($pgIDs[$service][1]) ) {
+			//https://www.facebook.com/sharer.php?s=100&p[url]=http://www.example.com/&p[images][0]=/images/image.jpg&p[title]=Title&p[summary]=Summary
+			//$url = 'https://www.facebook.com/sharer/sharer.php?' . urlencode ('s=99&p[0]='. $pgIDs[$service][0] .'&p[1]='. $pgIDs[$service][1] );
+			// '&p[images][0]='.  $media_url . '&p[title]=' . $title . '&p[summary]=' ) . $desciption;
+			$base = '%BASE%/posts/%pgID%';
+			$search = array('%BASE%', '%pgID%' );
+			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
+			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
+		}
+		else {
+			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
+		}
+		$txt = __( 'Share', self::theme_constant );
+		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+
+		/* Google Plus */
+		$service = 'googleplus';
+		$url = 'https://plus.google.com/share?url=' . $link;
+		$txt = __( '+1', self::theme_constant );
+		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+
+		/* Tumblr */
+		$service = 'tumblr';
+		$url = 'http://www.tumblr.com/share/link?url='.$link.'&name='.$title.'&description='. $desciption;
+		$txt = __( 'share', self::theme_constant );
+		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+
+		/* Pinterest */
+		if ( $media_url ) {
+			$purl = ( $parent != false ) ? urlencode($parent) : $link;
+			$service = 'pinterest';
+			$url = 'https://pinterest.com/pin/create/bookmarklet/?media='. $media_url .'&url='. $purl .'&is_video=false&description='. $title;
+			$txt = __( 'pin', self::theme_constant );
+			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+		}
+
+		/* comment link */
 		if ($comment) {
-			$share['comment'] = array (
-				'url'=>get_permalink( $post->ID ) . "#comments",
-				'title'=>__('comment', self::theme_constant),
-				'rel' => 'discussion',
-			);
-		}
-
-		$out = '';
-		foreach ($share as $site=>$details) {
-				$st = 'icon-' . $site;
-				$rel = empty( $details['rel'] ) ? '' : 'rel="'. $details['rel'] .'"';
-				$out .= '<li><a '. $rel .' class="'. $st .'" href="' . $details['url'] . '" title="' . $details['title'] . '">&nbsp;</a></li>';
+			$service = 'comment';
+			$url = get_permalink( $post->ID ) . "#comments";
+			$txt = __( 'comment', self::theme_constant );
+			$shlist[] = '<a rel="discussion" class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 
 		$out = '
-			<nav class="share">
-				<ul>
-				'. $out .'
-				</ul>
-			</nav>';
-
+			<action do="post" with="'. get_the_permalink() .'" class="share">
+			<h6>' . __('Share:', self::theme_constant ) . '</h6>
+			<ul><li>'. implode( '</li><li>', $shlist ) .'</li></ul>
+			</action>';
 
 		return $out;
 	}
@@ -261,7 +312,7 @@ class petermolnareu {
 	}
 
 	/**
-	 * related posts, based on same category & shared tags
+	 * related posts, based shared tags
 	 *
 	 */
 	public function related_posts ( $_post, $onlysiblings = false ) {
@@ -270,7 +321,6 @@ class petermolnareu {
 		$categories = wp_get_post_categories ( $_post->ID, $args );
 
 		$list = '';
-
 
 		if ( !empty($tags) ) {
 
@@ -290,7 +340,7 @@ class petermolnareu {
 			while( $_query->have_posts() ) {
 				$_query->the_post();
 
-				$post_title = htmlspecialchars( stripslashes( get_the_title() ) );
+				$post_title = get_the_title();
 
 				$list .= '
 						<li>
@@ -536,17 +586,14 @@ class petermolnareu {
 	} // end dimox_breadcrumbs()
 
 
+	/**
+	 * display article pubdate
+	 */
 	public function article_time () {
 		global $post;
 		?>
-		<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>">
-			<span class="date"><?php the_time( get_option('date_format') ); ?></span>
-			<span class="time"><?php the_time( get_option('time_format') ); ?></span>
-		</time>
-		<time class="hide dt-updated" pubdate="<?php the_modified_time( 'r' ); ?>">
-			<span class="date"><?php the_time( get_option('date_format') ); ?></span>
-			<span class="time"><?php the_time( get_option('time_format') ); ?></span>
-		</time>
+		<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>"><?php the_time( get_option('date_format') ); ?> <?php the_time( get_option('time_format') ); ?></time>
+		<time class="hide dt-updated" pubdate="<?php the_modified_time( 'r' ); ?>"><?php the_time( get_option('date_format') ); ?><?php the_time( get_option('time_format') ); ?></time>
 		<?php
 	}
 
@@ -600,13 +647,56 @@ class petermolnareu {
 				<a rel="me" class="p-tel tel" href="callto://00447592011721" title="Peter Molnar mobile phone number">00447592011721</a>
 				<span class="spacer">Find me:</span>
 				<a rel="me" class="u-twitter x-twitter url u-url" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter">@petermolnar</a>
-				<a rel="me" class="u-googleplus x-googleplus url u-url" href="https://plus.google.com/u/0/+PéterMolnáreu/" title="Peter Molnar @ Google Plus">+PéterMolnáreu</a>
+				<a rel="me" class="u-googleplus x-googleplus url u-url" href="https://plus.google.com/+petermolnareu" title="Peter Molnar @ Google Plus">+petermolnareu</a>
 				<a rel="me" class="u-facebook x-facebook url u-url" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook">petermolnar.eu</a>
 				<a rel="me" class="u-linkedin x-linkedin url u-url" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn">petermolnareu</a>
 				<a rel="me" class="u-github x-github url u-url" href="https://github.com/petermolnar" title="Peter Molnar @ Github">petermolnar</a>';
 		}
 		$out .= '</span>';
 		return $out;
+	}
+
+	/**
+	 * get webmention/retweet/reply data and display origin link
+	 */
+	public function repost_data() {
+		global $post;
+
+		/* Twitter retweet */
+		$repost_id = get_post_meta($post->ID, 'twitter_rt_id', true );
+		$repost_uid = get_post_meta($post->ID, 'twitter_rt_user_id', true );
+		if ( !empty($repost_id) && !empty($repost_uid) ) {
+			$origin = 'https://twitter.com/'. $repost_uid .'/status/'. $repost_id; ?>
+				<p class="webmention"><?php _e("Visit the original post at: ") ?><a class="u-repost-of" href="<?php echo $origin; ?>" ><?php echo $origin; ?></a></p>
+			<?php
+		}
+		unset ( $repost_id, $repost_uid );
+
+		/* Twitter reply */
+		$reply_id = get_post_meta($post->ID, 'twitter_reply_id', true );
+		$reply_uid = get_post_meta($post->ID, 'twitter_reply_user_id', true );
+		if ( !empty($reply_id) && !empty($reply_uid) ) {
+			$origin = 'https://twitter.com/'. $reply_uid .'/status/'. $reply_id; ?>
+				<p class="webmention"><?php _e("This post is a reply to: ") ?><a rel="in-reply-to" class="u-in-reply-to" href="<?php echo $origin; ?>" ><?php echo $origin; ?></a></p>
+			<?php
+		}
+		unset ( $reply_id, $reply_uid );
+
+		/* General reply */
+		$reply_url = get_post_meta($post->ID, 'u-in-reply-to', true );
+		if ( !empty($reply_url) ) { ?>
+				<p class="webmention"><?php _e("This post is a reply to: ") ?><a rel="in-reply-to" class="u-in-reply-to" href="<?php echo $reply_url; ?>" ><?php echo $reply_url; ?></a></p>
+			<?php
+		}
+		unset ( $reply_url );
+
+		/* General repost */
+		$repost_url = get_post_meta($post->ID, 'u-repost-of', true );
+		if ( !empty($repost_url) ) { ?>
+				<p class="webmention"><?php _e("Visit the original post at: ") ?><a class="u-repost-of" href="<?php echo $repost_url; ?>" ><?php echo $repost_url; ?></a></p>
+			<?php
+		}
+		unset ( $repost_url );
 	}
 
 }

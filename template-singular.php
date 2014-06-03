@@ -43,7 +43,6 @@
 ?>
 
 <article id="post-<?php the_ID(); ?>" class="h-entry <?php echo $sidebar ?> article-<?php echo $post_format ?>">
-	<span class="u-uid hide"><?php the_ID(); ?></span>
 
 	<!-- prev-next links -->
 	<?php if ( $siblings ) : ?>
@@ -76,7 +75,16 @@
 				</a>
 			</h1>
 		<?php endif; ?>
-		<span class="hide"><?php echo $petermolnareu_theme->author( true ) ?></span>
+		<!-- semantic data -->
+		<div class="hide">
+			<?php echo $petermolnareu_theme->author( true ); ?>
+			<?php the_tags('<p class="p-category">', ', ', '</p>'); ?>
+			<p class="u-uid"><?php $permalink = get_bloginfo('url') . '/?p=' . get_the_ID(); echo $permalink; ?></p>
+		</div>
+		<!-- end of semantic data -->
+		<!-- reply / repost data -->
+			<?php $petermolnareu_theme->repost_data(); ?>
+		<!-- end of reply / repost data -->
 	</header>
 
 	<!-- article content -->
@@ -113,7 +121,20 @@
 	<?php if ( $footer ) : ?>
 	<footer class="article-footer">
 		<?php if ( function_exists('add_js_rel_syndication')) echo add_js_rel_syndication(''); ?>
-		<?php echo $petermolnareu_theme->share ( get_permalink() , wp_title( '', false ), true ); ?>
+
+		<?php
+		//$rt = get_post_meta( get_the_ID(), 'twitter_retweeted_status_id', true );
+		$tw = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
+		if ( !empty($tw) ) {
+			$twlnk = 'https://twitter.com/petermolnar/status/' . $tw;
+			?>
+			<nav class="usyndication"><h6><?php _e('Also on:', $petermolnareu_theme->theme_constant); ?></h6><ul><li><a class='u-syndication icon-twitter link-twitter' href='<?php echo $twlnk; ?>'> Twitter</a></li></ul></nav>
+		<?php }
+		?>
+
+		<?php
+			echo $petermolnareu_theme->share_ ( get_permalink() , wp_title( '', false ), true );
+		?>
 	</footer>
 	<?php endif; ?>
 
@@ -122,6 +143,6 @@
 <!-- related posts -->
 <?php  if ( $sidebar ) : ?>
 	<aside class="sidebar">
-	<?php echo $petermolnareu_theme->related_posts( $post, true ); ?>
+	<?php echo $petermolnareu_theme->related_posts( $post ); ?>
 	</aside>
 <?php endif; ?>

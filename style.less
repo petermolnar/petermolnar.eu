@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.43
+Version:		5.47
 */
 
 // Grays
@@ -32,7 +32,7 @@ Version:		5.43
 
 @textshadow-outset: 1px 1px #111;
 
-@font-base: 16px;
+@font-base: 15px;
 @font-enormous: 2.2em;
 @font-xxlarge: 1.8em;
 @font-xlarge: 1.2em;
@@ -575,19 +575,19 @@ pre {
 
 
 /* SHARE */
-.share {
+.share,
+.usyndication {
 	display: block;
-	margin: 1em 0 0 0;
+	margin: 2em 0 2em 0;
 
 	ul {
-	.flatul();
+	font-size: @font-enormous;
+	.navul();
 
 		li {
-			display:inline-block;
-			font-size: @font-enormous;
+			margin: 0 0 @padding-normal 0;
 
 			a {
-				display: block;
 				opacity: 0.6;
 
 				&:hover {
@@ -645,9 +645,6 @@ pre {
 		margin: @padding-large 0 @padding-large 0;
 	}
 
-	//.article-pubdate {
-	//
-	//}
 }
 
 /* ARCTICLE */
@@ -671,7 +668,8 @@ pre {
 	}
 }
 
-.article-pubdate {
+.article-pubdate,
+.webmention {
 	display: block;
 	font-size: @font-small;
 	font-weight: normal;
@@ -679,7 +677,7 @@ pre {
 	font-family: monospace;
 	background: darken(@color-bg-dark,14%);
 	padding:  0 0 0 @padding-normal;
-	margin: 0 0 @padding-normal 0;
+	margin: 0 0 @padding-large 0;
 }
 
 .article-thumbnail {
@@ -695,12 +693,6 @@ pre {
 			width: auto\9; /* ie8 fix */
 		}
 }
-
-//.article-image {
-//	display:block;
-//	float:left;
-//	margin: @padding-normal @padding-large @padding-large 0;
-//}
 
 .article-footer {
 	margin: @padding-xlarge 0 0 0;
@@ -911,7 +903,9 @@ pre {
 			padding: 0 0 @padding-normal 0;
 
 			a {
+/*
 				display:block;
+*/
 				text-overflow:ellipsis;
 				overflow: hidden;
 				color: darken(@color-text,5%);
@@ -928,33 +922,6 @@ pre {
 		}
 	}
 }
-
-//@media (orientation : portrait) {
-//	.adaptgal {
-//		.adaptgal-thumbs {
-//			width: 6%;
-//			margin-left: 93%;
-//
-//			ul {
-//				li {
-//					position: relative;
-//					width: 99%;
-//					padding-bottom: 99%;
-//				}
-//			}
-//		}
-//
-//		.adaptgal-thumbs.single {
-//			width: 12%;
-//			margin-left: 88%;
-//		}
-//
-//		.adaptgal-previews {
-//			width:88%;
-//		}
-//	}
-//
-//}
 
 /* DESKTOP */
 @media	( min-width : 960px ) and ( orientation: landscape ) and ( -webkit-max-device-pixel-ratio: 1.5 ),
@@ -1153,63 +1120,25 @@ pre {
 		.columns2();
 	}
 
-	.share {
-		font-size:  @font-xsmall;
+	.share,
+	.usyndication {
+		margin: 1em 0 0 0;
+		ul {
+			font-size: @font-xlarge;
+			.flatul();
+
+			li {
+				display:inline-block;
+				margin: 0 @padding-normal 0 0;
+
+				a {
+					display: block;
+				}
+			}
+		}
 	}
 
 }
-
-
-/* COMMENTS */
-//#disqus_thread,
-//.comments-content,
-//.commentlist,
-//.comment-list,
-//#respond {
-//	.navul();
-//
-//	padding:@padding-large;
-//	margin: @padding-normal 0 @padding-normal 0;
-//
-//	.url,
-//	.fn,
-//	.vcard {
-//
-//		padding:0;
-//		margin:0;
-//		text-align:left;
-//		border:none;
-//		background:none;
-//		float:none;
-//		width:auto;
-//		font-style:normal;
-//	}
-//
-//	.comment {
-//		margin:@font-enormous 0 0 0;
-//		padding: 0 0 0 @padding-large;
-//
-//		article {
-//			padding: @padding-normal;
-//			border-left: 4px solid darken(@color-bg-dark,5%);
-//			line-height: 1.1em;
-//
-//			.avatar {
-//				float:left;
-//				margin: 0 @padding-large @padding-large 0;
-//			}
-//		}
-//	}
-//
-//	.says {
-//		display:none;
-//	}
-//
-//	ul {
-//		.flatul();
-//	}
-//}
-
 
 /* COMMENTS */
 .comment-list {

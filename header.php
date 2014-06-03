@@ -10,6 +10,7 @@ $favicon = $petermolnareu_theme->image_dir . 'favicon.png';
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title><?php wp_title( ); ?></title>
 	<link rel="shortcut icon" href="<?php echo "$favicon" ?>" />
+	<meta name="bitly-verification" content="095a01f7d1f8" />
 	<?php	wp_head(); ?>
 </head>
 

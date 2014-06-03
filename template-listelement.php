@@ -11,14 +11,14 @@
 			break;
 		case 'status':
 			$header = 'pubdate';
-			$share = true;
+			//$share = false;
 			$contenttype = 'e-content';
 			$linkify = true;
 			$aclass = 'article-status';
 			break;
 		case 'blog':
 			$header = 'normal';
-			$share = false;
+			//$share = false;
 			$contenttype = 'e-content';
 			$linkify = false;
 			$aclass = 'article-list-element';
@@ -54,6 +54,9 @@
 			</h2>
 		<?php endif; ?>
 		<span class="hide"><?php echo $petermolnareu_theme->author( true ) ?></span>
+		<!-- reply / repost data -->
+			<?php $petermolnareu_theme->repost_data(); ?>
+		<!-- end of reply / repost data -->
 	</header>
 	<?php endif; ?>
 
