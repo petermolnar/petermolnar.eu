@@ -8,6 +8,8 @@ class petermolnareu {
 	const menu_header = 'header';
 	const twitteruser = 'petermolnar';
 	const fbuser = 'petermolnar.eu';
+	const shortdomain = 'http://pmlnr.eu/';
+	const shorturl_enabled = true;
 
 	public $base_url = '';
 	public $js_dir = '';
@@ -36,10 +38,19 @@ class petermolnareu {
 		add_action( 'init', array( &$this->cleanup, 'filters'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+		add_action( 'init', array( &$this, 'rewrites'));
+
+		/* custom post types */
+		add_action( 'init', array(&$this, 'add_post_types' ));
 
 		/* excerpt letter counter */
 		add_action( 'admin_head-post.php',  array(&$this, 'excerpt_count_js'));
 		add_action( 'admin_head-post-new.php',  array(&$this, 'excerpt_count_js' ));
+
+		/* replace shortlink */
+		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
+		add_action( 'wp_head', array(&$this, 'shortlink'));
+		add_filter( 'get_shortlink', array(&$this, 'get_shortlink'), 1, 4 );
 	}
 
 	public function init () {
@@ -75,6 +86,9 @@ class petermolnareu {
 		/* legacy shortcode handler */
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
 		add_filter( 'the_content', 'shortcode_unautop', 100 );
+
+		/* post type additional data */
+		add_filter( 'the_content', array(&$this, 'add_post_format_data'), 1 );
 
 		/* Link all @name to Twitter */
 		//add_filter('the_content', array( &$this, 'twtreplace'));
@@ -219,11 +233,13 @@ class petermolnareu {
 			$search = array('%BASE%', '%pgID%' );
 			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
 			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
+			$txt = __( 'Reshare', self::theme_constant );
 		}
 		else {
 			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
+			$txt = __( 'Share', self::theme_constant );
 		}
-		$txt = __( 'Share', self::theme_constant );
+
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 
 		/* Google Plus */
@@ -335,7 +351,7 @@ class petermolnareu {
 				$args['category__in'] = $categories;
 			}
 
-			$_query = new wp_query( $args );
+			$_query = new WP_Query( $args );
 
 			while( $_query->have_posts() ) {
 				$_query->the_post();
@@ -608,6 +624,7 @@ class petermolnareu {
 	 * Twitter link all @ starting string
 	 */
 	public function twtreplace($content) {
+
 		//$twtreplace = preg_replace('/([^a-zA-Z0-9-_&])@([0-9a-zA-Z_]+)/',"$1<a href=\"http://twitter.com/$2\" target=\"_blank\" rel=\"nofollow\">@$2</a>",$content);
 		$exceptions = array ( 'media' => 1, 'import' => 1 );
 		preg_match_all('/@([0-9a-zA-Z_]+)/', $content, $twusers);
@@ -616,7 +633,15 @@ class petermolnareu {
 			foreach ( $twusers[1] as $cntr=>$twname ) {
 				$repl = $twusers[0][$cntr];
 				if ( ! isset($exceptions[$twname]) )
-					$content = str_replace ( $uname, '<a href="http://twitter.com/'.$twname.'" rel="nofollow">@'.$twname.'</a>', $content );
+					$content = str_replace ( $repl, '<a href="https://twitter.com/'.$twname.'" rel="nofollow">@'.$twname.'</a>', $content );
+			}
+		}
+
+		preg_match_all('/#([0-9a-zA-Z_-]+)/', $content, $hashtags);
+		if ( !empty ( $hashtags[0] ) && !empty ( $hashtags[1] )) {
+			foreach ( $hashtags[1] as $cntr=>$tagname ) {
+				$repl = $hashtags[0][$cntr];
+				$content = str_replace ( $repl, '<a href="https://twitter.com/hashtag/'. $tagname.'?src=hash" rel="nofollow">#'.$tagname.'</a>', $content );
 			}
 		}
 
@@ -667,7 +692,7 @@ class petermolnareu {
 		$repost_uid = get_post_meta($post->ID, 'twitter_rt_user_id', true );
 		if ( !empty($repost_id) && !empty($repost_uid) ) {
 			$origin = 'https://twitter.com/'. $repost_uid .'/status/'. $repost_id; ?>
-				<p class="webmention"><?php _e("Visit the original post at: ") ?><a class="u-repost-of" href="<?php echo $origin; ?>" ><?php echo $origin; ?></a></p>
+				<p class="urel"><?php _e("Retweeted from: ") ?><a class="u-repost-of" href="<?php echo $origin; ?>" ><?php echo $origin; ?></a></p>
 			<?php
 		}
 		unset ( $repost_id, $repost_uid );
@@ -677,7 +702,7 @@ class petermolnareu {
 		$reply_uid = get_post_meta($post->ID, 'twitter_reply_user_id', true );
 		if ( !empty($reply_id) && !empty($reply_uid) ) {
 			$origin = 'https://twitter.com/'. $reply_uid .'/status/'. $reply_id; ?>
-				<p class="webmention"><?php _e("This post is a reply to: ") ?><a rel="in-reply-to" class="u-in-reply-to" href="<?php echo $origin; ?>" ><?php echo $origin; ?></a></p>
+				<p class="urel"><?php _e("In reply to: ") ?><a rel="in-reply-to" class="u-in-reply-to" href="<?php echo $origin; ?>" ><?php echo $origin; ?></a></p>
 			<?php
 		}
 		unset ( $reply_id, $reply_uid );
@@ -685,7 +710,7 @@ class petermolnareu {
 		/* General reply */
 		$reply_url = get_post_meta($post->ID, 'u-in-reply-to', true );
 		if ( !empty($reply_url) ) { ?>
-				<p class="webmention"><?php _e("This post is a reply to: ") ?><a rel="in-reply-to" class="u-in-reply-to" href="<?php echo $reply_url; ?>" ><?php echo $reply_url; ?></a></p>
+				<p class="urel"><?php _e("In reply to: ") ?><a rel="in-reply-to" class="u-in-reply-to" href="<?php echo $reply_url; ?>" ><?php echo $reply_url; ?></a></p>
 			<?php
 		}
 		unset ( $reply_url );
@@ -693,12 +718,147 @@ class petermolnareu {
 		/* General repost */
 		$repost_url = get_post_meta($post->ID, 'u-repost-of', true );
 		if ( !empty($repost_url) ) { ?>
-				<p class="webmention"><?php _e("Visit the original post at: ") ?><a class="u-repost-of" href="<?php echo $repost_url; ?>" ><?php echo $repost_url; ?></a></p>
+				<p class="urel"><?php _e("Repost of: ") ?><a class="u-repost-of" href="<?php echo $repost_url; ?>" ><?php echo $repost_url; ?></a></p>
 			<?php
 		}
 		unset ( $repost_url );
+
+		/* General url */
+		$url = get_post_meta($post->ID, 'u-source', true );
+		if ( !empty($url) ) { ?>
+				<p class="urel"><?php _e("Source: ") ?><a class="u-source" href="<?php echo $url; ?>" ><?php echo $repost_url; ?></a></p>
+			<?php
+		}
+		unset ( $url );
 	}
 
+	/**
+	 *
+	 */
+	public function rewrites () {
+		add_rewrite_rule("indieweb-decentralize-web-centralizing", "indieweb-decentralize-web-centralizing-ourselves", "bottom" );
+		add_rewrite_rule("/wordpress/(.*)", "/open-source/$matches[1]", "bottom" );
+		add_rewrite_rule("/b/(.*)", "/blips/$matches[1]", "bottom" );
+		add_rewrite_rule("/open-source/wordpress/(.*)", "/open-source/$matches[1]", "bottom" );
+	}
+
+	public function shorturl () {
+		global $post;
+
+		if ( self::shorturl_enabled ) {
+			return self::shortdomain . $post->ID;
+		}
+		else {
+			$url = rtrim( get_bloginfo('url'), '/' ) . '/';
+			return $url.'?p='.$post->ID;
+		}
+	}
+
+	public function get_shortlink ( $shortlink, $id, $context, $allow_slugs ) {
+		return $this->shorturl();
+	}
+
+	public function shortlink () {
+		echo '<link rel="shortlink" href="'. $this->shorturl() . '" />'."\n";
+	}
+
+	/**
+	 *
+	 */
+	public function add_post_types () {
+
+		//register_post_type( 'notes',
+			//array(
+				//'labels' => array(
+					//'name' => __( 'Note', self::theme_constant ),
+					//'singular_name' => __( 'Notes', self::theme_constant ),
+					//'menu_name' => __( 'Notes', self::theme_constant ),
+				//),
+				//'public' => true,
+				//'has_archive' => true,
+				//'menu_position' => 5,
+				//'menu_icon' => 'dashicons-tagcloud',
+				//'supports' => array (
+					//'editor',
+					//'author',
+					//'custom-fields',
+				//),
+			//)
+		//);
+
+		//register_taxonomy( 'relation', 'notes', array (
+			//'labels' => array(
+				//'name'                       => _x( 'Relations', 'Taxonomy General Name', self::theme_constant ),
+				//'singular_name'              => _x( 'Relation', 'Taxonomy Singular Name', self::theme_constant ),
+				//'menu_name'                  => __( 'Relations', self::theme_constant ),
+				//'all_items'                  => __( 'All relations', self::theme_constant ),
+				//'parent_item'                => __( 'Parent item', self::theme_constant ),
+				//'parent_item_colon'          => __( 'Parent Item:', self::theme_constant ),
+				//'new_item_name'              => __( 'New Relation', self::theme_constant ),
+				//'add_new_item'               => __( 'Add new relation', self::theme_constant ),
+				//'edit_item'                  => __( 'Edit relation', self::theme_constant ),
+				//'update_item'                => __( 'Update Item', self::theme_constant ),
+				//'separate_items_with_commas' => __( 'Separate relations with commas', self::theme_constant ),
+				//'search_items'               => __( 'Search relations', self::theme_constant ),
+				//'add_or_remove_items'        => __( 'Add or remove relations', self::theme_constant ),
+				//'choose_from_most_used'      => __( 'Choose from the most used relations', self::theme_constant ),
+				//'not_found'                  => __( 'Not Found', self::theme_constant ),
+			//),
+			//'public' => false,
+			//'show_ui' => true,
+			//'hierarchical' => true,
+			//'show_admin_column' => true,
+			//'show_in_nav_menus' => false,
+			//'show_tagcloud' => false,
+		//) );
+	}
+
+	public function add_post_format_data ( $src ) {
+		global $post;
+		$format = get_post_format ( $post->ID );
+
+		/* video meta */
+		$video = get_post_meta($post->ID, '_format_video_embed', true );
+		if ( !empty($video)) {
+			if ( strstr( $video, 'ted'))
+				$src .= '['. $video .']';
+			elseif (strstr( $video, 'youtube'))
+				$src .= '[embed]'. $video .'[/embed]';
+		}
+		unset ( $video );
+
+		/* audio meta */
+		$audio = get_post_meta($post->ID, '_format_audio_embed', true );
+		if ( !empty($audio)) {
+				$src .= $audio;
+		}
+		unset ( $audio );
+
+		/* link meta */
+		$url = get_post_meta($post->ID, '_format_link_url', true );
+		$title = get_the_title ($post->ID );
+		if ( !empty($url )) {
+			$src .= '<p>'. __('Link: ', self::theme_constant ) .'<a class="u-like u-like-of" href="'.$url.'">'. $title .'</a></p>';
+		}
+		unset ($url, $title);
+
+		/* quote format */
+		if ( $format == 'quote' && !strstr ( $src, '<blockquote>' ) )
+			$src = '<blockquote>'. $src .'</blockquote>';
+
+		/* quote meta */
+		$source_name = get_post_meta($post->ID, '_format_quote_source_name', true );
+		$source_url = get_post_meta($post->ID, '_format_quote_source_url', true );
+		if ( !empty( $source_name ) && !empty ( $source_url) ) {
+			$src .= '<p class="alignright"><a class="u-quote-source u-like-of" href="'. $source_url .'">'. $source_name .'</a></p>';
+		}
+		elseif ( !empty($source_name )) {
+			$src .= '<p class="u-quote-source alignright">'. $source_name .'</p>';
+		}
+		unset ($source_name, $source_url);
+
+		return $src;
+	}
 }
 
 /**** END OF FUNCTIONS *****/

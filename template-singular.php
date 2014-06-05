@@ -105,7 +105,7 @@
 				$content = $icontent;
 
 			/* twittify */
-			if ( has_tag( 'twitter' ) )
+			if ( has_tag( 'from-twitter' ) )
 				$content = $petermolnareu_theme->twtreplace($content);
 
 			/* linkify */
