@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.49
+Version:		5.50
 */
 
 // Grays
@@ -94,6 +94,8 @@ Version:		5.49
 
 	/* fix buttons height, for twitter bootstrap */
 	line-height: 1em;
+
+	margin-right: @padding-normal;
 }
 
 .fullbg() {
@@ -818,6 +820,10 @@ pre {
 			ul {
 				li {
 					font-size: @font-enormous;
+
+					a {
+						margin: 0;
+					}
 				}
 			}
 		}

@@ -35,7 +35,12 @@
 ?>
 
 <article id="post-<?php the_ID(); ?>" class="h-entry hentry <?php echo $aclass ?>">
-	<span class="u-uid hide"><?php the_ID(); ?></span>
+	<!-- semantic data -->
+	<div class="hide">
+		<?php echo $petermolnareu_theme->author( true ); ?>
+		<?php the_tags('<p class="p-category">', ', ', '</p>'); ?>
+		<p class="u-uid"><?php $permalink = get_bloginfo('url') . '/?p=' . get_the_ID(); echo $permalink; ?></p>
+	</div>
 
 	<?php if ( $header ) : ?>
 	<!-- article header -->
@@ -53,10 +58,9 @@
 				</a>
 			</h2>
 		<?php endif; ?>
-		<span class="hide"><?php echo $petermolnareu_theme->author( true ) ?></span>
-		<!-- reply / repost data -->
-			<?php $petermolnareu_theme->repost_data(); ?>
-		<!-- end of reply / repost data -->
+		<!-- reply / repost / like / webmention data -->
+		<?php $petermolnareu_theme->repost_data(); ?>
+		<!-- end of reply / repost / like / webmention data -->
 	</header>
 	<?php endif; ?>
 
@@ -71,15 +75,17 @@
 	<?php else: ?>
 	<!-- article content -->
 	<?php
+		$feat = get_post_thumbnail_id( $post->ID );
 		ob_start();
 
 		if ( $contenttype == 'e-summary' )
 			the_excerpt();
+		elseif ( contenttype == 'image' )
+			do_shortcode( '[adaptimg aid=' . $feat .' size=hd share=0 standalone=1]');
 		else
 			the_content();
 
 		$content = ob_get_clean();
-		$feat = get_post_thumbnail_id( $post->ID );
 
 		if ( $linkify ) {
 			/* adaptify */
@@ -90,13 +96,6 @@
 				$content .= do_shortcode( '[adaptimg aid=' . $feat .' size=hd share=0 standalone=1]');
 			else
 				$content = $icontent;
-
-			/* twittify */
-			if ( has_tag( 'twitter' ) )
-				$content = $petermolnareu_theme->twtreplace($content);
-
-			/* linkify */
-			$content = $petermolnareu_theme->linkify($content);
 		}
 
 		?>

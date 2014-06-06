@@ -637,13 +637,13 @@ class petermolnareu {
 			}
 		}
 
-		preg_match_all('/#([0-9a-zA-Z_-]+)/', $content, $hashtags);
-		if ( !empty ( $hashtags[0] ) && !empty ( $hashtags[1] )) {
-			foreach ( $hashtags[1] as $cntr=>$tagname ) {
-				$repl = $hashtags[0][$cntr];
-				$content = str_replace ( $repl, '<a href="https://twitter.com/hashtag/'. $tagname.'?src=hash" rel="nofollow">#'.$tagname.'</a>', $content );
-			}
-		}
+		//preg_match_all('/#([0-9a-zA-Z_-]+)/', $content, $hashtags);
+		//if ( !empty ( $hashtags[0] ) && !empty ( $hashtags[1] )) {
+			//foreach ( $hashtags[1] as $cntr=>$tagname ) {
+				//$repl = $hashtags[0][$cntr];
+				//$content = str_replace ( $repl, '<a href="https://twitter.com/hashtag/'. $tagname.'?src=hash" rel="nofollow">#'.$tagname.'</a>', $content );
+			//}
+		//}
 
 		return $content;
 	}
@@ -652,8 +652,8 @@ class petermolnareu {
 	 * auto-link all plain text links, exclude anything in html tags
 	 */
 	public function linkify ( $content ) {
-		$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
-		$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
+		//$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
+		//$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
 		return $content;
 	}
 
@@ -723,13 +723,47 @@ class petermolnareu {
 		}
 		unset ( $repost_url );
 
-		/* General url */
+		/* General url *
 		$url = get_post_meta($post->ID, 'u-source', true );
 		if ( !empty($url) ) { ?>
 				<p class="urel"><?php _e("Source: ") ?><a class="u-source" href="<?php echo $url; ?>" ><?php echo $repost_url; ?></a></p>
 			<?php
 		}
 		unset ( $url );
+		*/
+
+		/* link meta */
+		$url = get_post_meta($post->ID, '_format_link_url', true );
+		$title = get_the_title ($post->ID );
+		$webmention = get_post_meta($post->ID, '_format_link_webmention', true );
+		if ( !empty($url ) && !empty($webmention) && $webmention != 'none' ) {
+			switch ($webmention) {
+				case 'rsvp-yes':
+				case 'rsvp-no':
+				case 'reply':
+					?> <p><?php _e('This is a reply to: ', self::theme_constant )?><a class="u-in-reply-to icon-link-ext-alt" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
+					break;
+				case 'repost':
+					?> <p><?php _e('Reposted from: ', self::theme_constant )?><a class="u-repost-of icon-link-ext-alt" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
+					break;
+				case 'like':
+					?> <p><a class="u-like u-like-of icon-thumbs-up" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
+					break;
+			}
+
+			if ( strstr( $webmention, 'rsvp-' ) ) {
+				switch ($webmention) {
+					case 'rsvp-yes':
+						?><data class="p-rsvp" value="yes"><?php _e("I'll attend!", self::theme_constant ); ?></data><?php
+						break;
+					case 'rsvp-no':
+						?><data class="p-rsvp" value="no"><?php _e("I cannot make it.", self::theme_constant ); ?></data><?php
+						break;
+				}
+			}
+		}
+		unset ($url, $title, $webmention, $data);
+
 	}
 
 	/**
@@ -817,6 +851,40 @@ class petermolnareu {
 		global $post;
 		$format = get_post_format ( $post->ID );
 
+		/* quote format */
+		if ( $format == 'quote' && !strstr ( $src, '<blockquote>' ) )
+			$src = '<blockquote>'. $src .'</blockquote>';
+
+		/* quote meta */
+		$source_name = get_post_meta($post->ID, '_format_quote_source_name', true );
+		$source_url = get_post_meta($post->ID, '_format_quote_source_url', true );
+		if ( !empty( $source_name ) && !empty ( $source_url) ) {
+			$src .= '<p class="alignright"><a class="u-quote-source u-like-of icon-link-ext-alt" href="'. $source_url .'">'. $source_name .'</a></p>';
+		}
+		elseif ( !empty($source_name )) {
+			$src .= '<p class="u-quote-source alignright">'. $source_name .'</p>';
+		}
+		unset ($source_name, $source_url);
+
+		/* image meta */
+		$img = get_post_thumbnail_id( $post->ID );
+		if ( !empty($format) && $format != 'standard ' && $format != 'gallery' ) {
+			$asrc = $this->replace_images_with_adaptive ( $src );
+			if ( strlen($src) == strlen($asrc) && !empty($img) )
+				$src .= do_shortcode( '[adaptimg aid=' . $img .' size=hd share=0 standalone=1]');
+			else
+				$src = $asrc;
+			unset ( $asrc );
+		}
+		unset ( $img );
+
+		/* audio meta */
+		$audio = get_post_meta($post->ID, '_format_audio_embed', true );
+		if ( !empty($audio)) {
+				$src .= $audio;
+		}
+		unset ( $audio );
+
 		/* video meta */
 		$video = get_post_meta($post->ID, '_format_video_embed', true );
 		if ( !empty($video)) {
@@ -827,35 +895,14 @@ class petermolnareu {
 		}
 		unset ( $video );
 
-		/* audio meta */
-		$audio = get_post_meta($post->ID, '_format_audio_embed', true );
-		if ( !empty($audio)) {
-				$src .= $audio;
-		}
-		unset ( $audio );
-
 		/* link meta */
 		$url = get_post_meta($post->ID, '_format_link_url', true );
 		$title = get_the_title ($post->ID );
-		if ( !empty($url )) {
-			$src .= '<p>'. __('Link: ', self::theme_constant ) .'<a class="u-like u-like-of" href="'.$url.'">'. $title .'</a></p>';
+		$webmention = get_post_meta($post->ID, '_format_link_webmention', true );
+		if ( !empty($url ) && ( empty($webmention) || $webmention == 'none' ) ) {
+				$src .= '<p><a class="icon-link-ext-alt" href="'.$url.'">'. $title .'</a></p>';
 		}
-		unset ($url, $title);
-
-		/* quote format */
-		if ( $format == 'quote' && !strstr ( $src, '<blockquote>' ) )
-			$src = '<blockquote>'. $src .'</blockquote>';
-
-		/* quote meta */
-		$source_name = get_post_meta($post->ID, '_format_quote_source_name', true );
-		$source_url = get_post_meta($post->ID, '_format_quote_source_url', true );
-		if ( !empty( $source_name ) && !empty ( $source_url) ) {
-			$src .= '<p class="alignright"><a class="u-quote-source u-like-of" href="'. $source_url .'">'. $source_name .'</a></p>';
-		}
-		elseif ( !empty($source_name )) {
-			$src .= '<p class="u-quote-source alignright">'. $source_name .'</p>';
-		}
-		unset ($source_name, $source_url);
+		unset ($url, $title, $webmention);
 
 		return $src;
 	}

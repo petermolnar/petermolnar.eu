@@ -16,6 +16,7 @@
 	$siblings = ( $template == 'photoblog') ? true : false;
 	$footer = ( $template == 'portfolio') ? false : true;
 	$header = $linkify = $sidebar = false;
+	$linkify = false;
 	switch ( $post_format ) {
 		case 'page':
 			$footer = false;
@@ -29,7 +30,7 @@
 			//$siblings = true;
 			$linkify = true;
 			$header = 'pubdate';
-			$sidebar = 'category-postlist';
+			//$sidebar = 'category-postlist';
 			break;
 		case 'gallery':
 			$header = 'small';
@@ -82,9 +83,9 @@
 			<p class="u-uid"><?php $permalink = get_bloginfo('url') . '/?p=' . get_the_ID(); echo $permalink; ?></p>
 		</div>
 		<!-- end of semantic data -->
-		<!-- reply / repost data -->
+		<!-- reply / repost / like / webmention data -->
 			<?php $petermolnareu_theme->repost_data(); ?>
-		<!-- end of reply / repost data -->
+		<!-- end of reply / repost / like / webmention data -->
 	</header>
 
 	<!-- article content -->
@@ -95,21 +96,7 @@
 		$feat = get_post_thumbnail_id( $post->ID );
 
 		if ( $linkify ) {
-			/* adaptify */
-			$icontent = $petermolnareu_theme->replace_images_with_adaptive ( $content );
-
-			/* auto feat img */
-			if ( $content == $icontent && !empty($feat) )
-				$content .= do_shortcode( '[adaptimg aid=' . $feat .' size=hd share=0 standalone=1]');
-			else
-				$content = $icontent;
-
-			/* twittify */
-			if ( has_tag( 'from-twitter' ) )
-				$content = $petermolnareu_theme->twtreplace($content);
-
-			/* linkify */
-			$content = $petermolnareu_theme->linkify($content);
+			$content = $petermolnareu_theme->replace_images_with_adaptive ( $content );
 		}
 
 	?>

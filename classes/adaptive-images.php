@@ -546,7 +546,7 @@ class adaptive_images {
 		$out = '';
 		foreach ($share as $site=>$details) {
 				$st = 'icon-' . $site;
-				$out .= '<li><a class="'. $st .'" href="' . $details['url'] . '" title="' . $details['title'] . '">&nbsp;</a></li>';
+				$out .= '<li><a class="'. $st .'" href="' . $details['url'] . '" title="' . $details['title'] . '"></a></li>';
 		}
 
 		$out = '<nav class="share">
