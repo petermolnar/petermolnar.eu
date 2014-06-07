@@ -18,22 +18,21 @@
 	$header = $linkify = $sidebar = false;
 	$linkify = false;
 	switch ( $post_format ) {
-		case 'page':
-			$footer = false;
-			break;
 		case 'link':
 		case 'quote':
 		case 'status':
 		case 'image':
 		case 'video':
 		case 'audio':
-			//$siblings = true;
+		case 'aside':
 			$linkify = true;
 			$header = 'pubdate';
-			//$sidebar = 'category-postlist';
 			break;
 		case 'gallery':
 			$header = 'small';
+			break;
+		case 'page':
+			$footer = false;
 			break;
 		default:
 			$sidebar = 'category-postlist';

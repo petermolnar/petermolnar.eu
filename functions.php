@@ -98,8 +98,11 @@ class petermolnareu {
 		remove_shortcode('gallery');
 		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
 
-		// have links
-		add_filter( 'pre_option_link_manager_enabled', '__return_true' );
+		/* have links *
+		add_filter( 'pre_option_link_manager_enabled', '__return_true' );*/
+
+		/* additional user meta */
+		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
 
 	}
 
@@ -660,22 +663,61 @@ class petermolnareu {
 	/**
 	 *  Peter Molnar vcard
 	 */
-	public function author ( $short=false ) {
+	public function author ( $short=false, $uid = false ) {
+		if ( $short ) {
+			global $post;
+			$aid =  get_the_author_meta( 'ID' );
+			$aemail = get_the_author_meta ( 'user_email' , $aid );
+			$aname = get_the_author_meta ( 'display_name' , $aid );
+			$gravatar = md5( strtolower( trim(  $aemail )));
+			$class = 'p-author h-card vcard';
+		}
+		else {
+			$aid = ($uid==false)? 1 : $uid;
+			$aemail = get_the_author_meta ( 'user_email' , $aid );
+			$aname = get_the_author_meta ( 'display_name' , $aid );
+			$gravatar = md5( strtolower( trim(  $aemail )));
+			$class = 'h-card vcard';
+		}
 
-		$class = ( $short ) ? 'p-author h-card vcard' : 'h-card vcard';
 		$out = '<span class="'. $class .'">
-				<a class="fn p-name url u-url" href="https://petermolnar.eu">Péter Molnár</a>
-				<img class="photo avatar u-photo u-avatar" src="https://s.gravatar.com/avatar/1915b220dfe0cc56209cb4d11b389383?s=64" style="width:12px; height:12px;" alt="Photo of Peter Molnar"/>';
+				<a class="fn p-name url u-url" href="'. get_the_author_meta ( 'user_url' , $aid ) .'">'. $aname .'</a>
+				<img class="photo avatar u-photo u-avatar" src="https://s.gravatar.com/avatar/'.$gravatar.'?s=64" style="width:12px; height:12px;" alt="Photo of '. $aname .'"/>';
 		if ( !$short ) {
-			$out .= '
-				<a rel="me" class="u-email email" href="mailto:hello@petermolnar.eu" title="Peter Molnar email address">hello@petermolnar.eu</a>
-				<a rel="me" class="p-tel tel" href="callto://00447592011721" title="Peter Molnar mobile phone number">00447592011721</a>
-				<span class="spacer">Find me:</span>
-				<a rel="me" class="u-twitter x-twitter url u-url" href="https://twitter.com/petermolnar" title="Peter Molnar @ Twitter">@petermolnar</a>
-				<a rel="me" class="u-googleplus x-googleplus url u-url" href="https://plus.google.com/+petermolnareu" title="Peter Molnar @ Google Plus">+petermolnareu</a>
-				<a rel="me" class="u-facebook x-facebook url u-url" href="https://www.facebook.com/petermolnar.eu" title="Peter Molnar @ Facebook">petermolnar.eu</a>
-				<a rel="me" class="u-linkedin x-linkedin url u-url" href="http://uk.linkedin.com/in/petermolnareu/" title="Peter Molnar @ LinkedIn">petermolnareu</a>
-				<a rel="me" class="u-github x-github url u-url" href="https://github.com/petermolnar" title="Peter Molnar @ Github">petermolnar</a>';
+			$out .= '<a rel="me" class="u-email email" href="mailto:'.$aemail.'" title="'.$aname.' email address">'.$aemail.'</a>';
+
+			/* social */
+			$fb =  rtrim(get_the_author_meta ( 'facebook' , $aid ), '/');
+			if ( !empty ($fb)) {
+				$fbname = substr( $fb , strrpos($fb, '/') + 1);
+				$socials['facebook'] = '<a rel="me" class="u-facebook x-facebook url u-url" href="'.$afb.'" title="'.$aname.' @ Facebook">'.$fbname.'</a>';
+			}
+
+			$tw = get_the_author_meta ( 'twitter' , $aid );
+			if ( !empty ($tw)) {
+				$socials['twitter'] = '<a rel="me" class="u-twitter x-twitter url u-url" href="https://twitter.com/'.$tw.'" title="'.$aname.' @ Twitter">'.$tw.'</a>';
+			}
+
+			$g = rtrim( get_the_author_meta ( 'googleplus' , $aid ), '/' );
+			if ( !empty ($g)) {
+				$gname = substr( $g , strrpos($g, '/') + 1);
+				$socials['googleplus'] = '<a rel="me" class="u-googleplus x-googleplus url u-url" href="'.$g.'" title="'.$aname.' @ Google+">'.$gname.'</a>';
+			}
+
+			$l = rtrim(get_the_author_meta ( 'linkedin' , $aid ), '/');
+			if ( !empty ($l)) {
+				$lname = substr( $l , strrpos($l, '/') + 1);
+				$socials['linkedin'] = '<a rel="me" class="u-linkedin x-linkedin url u-url" href="'.$l.'" title="'.$aname.' @ LinkedIn">'.$lname.'</a>';
+			}
+
+			$gh = get_the_author_meta ( 'github' , $aid );
+			if ( !empty ($gh)) {
+				$socials['googleplus'] = '<a rel="me" class="u-github x-github url u-url" href="https://github.com/'.$gh.'" title="'.$aname.' @ Github">'.$gh.'</a>';
+			}
+
+			if ( !empty($socials)) {
+				$out .= '<span class="spacer">Find me:</span>' . join ( "\n", $socials);
+			}
 		}
 		$out .= '</span>';
 		return $out;
@@ -774,6 +816,7 @@ class petermolnareu {
 		add_rewrite_rule("/wordpress/(.*)", "/open-source/$matches[1]", "bottom" );
 		add_rewrite_rule("/b/(.*)", "/blips/$matches[1]", "bottom" );
 		add_rewrite_rule("/open-source/wordpress/(.*)", "/open-source/$matches[1]", "bottom" );
+		add_rewrite_rule("/blog/(.*)", "/journal/$matches[1]", "bottom" );
 	}
 
 	public function shorturl () {
@@ -906,6 +949,16 @@ class petermolnareu {
 
 		return $src;
 	}
+
+	public function add_user_meta_fields ($profile_fields) {
+
+		$profile_fields['github'] = 'Github username';
+		$profile_fields['mobile'] = 'Mobile phone number';
+		$profile_fields['linkedin'] = 'LinkedIn profile URL';
+
+		return $profile_fields;
+	}
+
 }
 
 /**** END OF FUNCTIONS *****/

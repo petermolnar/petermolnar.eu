@@ -4,7 +4,7 @@
 <?php
 if ( comments_open() ) :
 	/* <h6 class="urel"><?php _e('Feel free to use your own website to make a comment, a like, a reply, petermolnar.eu is <a href="http://indiewebcamp.com/webmentions">webmentions</a>-ready.', $petermolnareu_theme->theme_constant); ?></h6><?php */
-	comment_form();
+	comment_form( array( 'title_reply' => __( 'Leave a reply, or use <a href="http://indiewebcamp.com/webmentions" rel="nofollow">webmentions</a> from your site.', $petermolnareu_theme->theme_constant) ));
 endif; ?>
 
 <?php if ( have_comments() ) : ?>

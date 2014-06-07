@@ -64,24 +64,23 @@
 	</header>
 	<?php endif; ?>
 
+	<!-- article content -->
+	<?php $aid = get_post_thumbnail_id( $post->ID ); ?>
 	<?php if ( $contenttype == 'image') : ?>
 		<a class="u-url" href="<?php the_permalink(); ?>">
 			<?php
-				$aid = get_post_thumbnail_id( );
 				$title = get_the_title();
-				echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'"]');
+				echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'" share=0]');
 			?>
 		</a>
 	<?php else: ?>
-	<!-- article content -->
 	<?php
-		$feat = get_post_thumbnail_id( $post->ID );
 		ob_start();
 
 		if ( $contenttype == 'e-summary' )
 			the_excerpt();
-		elseif ( contenttype == 'image' )
-			do_shortcode( '[adaptimg aid=' . $feat .' size=hd share=0 standalone=1]');
+		//elseif ( contenttype == 'image' )
+			//do_shortcode( '[adaptimg aid=' . $aid .' size=hd share=0 standalone=1]');
 		else
 			the_content();
 
