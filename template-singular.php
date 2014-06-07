@@ -15,7 +15,7 @@
 
 	$siblings = ( $template == 'photoblog') ? true : false;
 	$footer = ( $template == 'portfolio') ? false : true;
-	$header = $linkify = $sidebar = false;
+	$header = $adaptify = $sidebar = false;
 	$linkify = false;
 	switch ( $post_format ) {
 		case 'link':
@@ -25,7 +25,7 @@
 		case 'video':
 		case 'audio':
 		case 'aside':
-			$linkify = true;
+			$adaptify = true;
 			$header = 'pubdate';
 			break;
 		case 'gallery':
@@ -94,7 +94,7 @@
 		$content = ob_get_clean();
 		$feat = get_post_thumbnail_id( $post->ID );
 
-		if ( $linkify ) {
+		if ( $adaptify ) {
 			$content = $petermolnareu_theme->replace_images_with_adaptive ( $content );
 		}
 

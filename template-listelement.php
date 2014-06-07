@@ -3,7 +3,7 @@
 	global $petermolnareu_theme;
 	global $category_meta;
 
-	$featimg = $linkify = $aclass = $share = $header = false;
+	$featimg = $adaptify = $aclass = $share = $header = false;
 	switch ($category_meta['custom-template']) {
 		case 'gallery':
 			$aclass = 'photoblog-preview';
@@ -13,14 +13,14 @@
 			$header = 'pubdate';
 			//$share = false;
 			$contenttype = 'e-content';
-			$linkify = true;
+			$adaptify = true;
 			$aclass = 'article-status';
 			break;
 		case 'blog':
 			$header = 'normal';
 			//$share = false;
 			$contenttype = 'e-content';
-			$linkify = false;
+			$adaptify = false;
 			$aclass = 'article-list-element';
 			$featimg = true;
 			break;
@@ -86,8 +86,7 @@
 
 		$content = ob_get_clean();
 
-		if ( $linkify ) {
-			/* adaptify */
+		if ( $adaptify ) {
 			$icontent = $petermolnareu_theme->replace_images_with_adaptive ( $content );
 
 			/* auto feat img */

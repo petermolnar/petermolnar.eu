@@ -51,6 +51,9 @@ class petermolnareu {
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
 		add_action( 'wp_head', array(&$this, 'shortlink'));
 		add_filter( 'get_shortlink', array(&$this, 'get_shortlink'), 1, 4 );
+
+		/* WordPress SEO cleanup */
+		add_filter('wpseo_author_link', array(&$this, 'author_url'));
 	}
 
 	public function init () {
@@ -626,27 +629,26 @@ class petermolnareu {
 	/**
 	 * Twitter link all @ starting string
 	 */
-	public function twtreplace($content) {
+	public function tweetify($content) {
 
-		//$twtreplace = preg_replace('/([^a-zA-Z0-9-_&])@([0-9a-zA-Z_]+)/',"$1<a href=\"http://twitter.com/$2\" target=\"_blank\" rel=\"nofollow\">@$2</a>",$content);
-		$exceptions = array ( 'media' => 1, 'import' => 1 );
 		preg_match_all('/@([0-9a-zA-Z_]+)/', $content, $twusers);
 
 		if ( !empty ( $twusers[0] ) && !empty ( $twusers[1] )) {
 			foreach ( $twusers[1] as $cntr=>$twname ) {
 				$repl = $twusers[0][$cntr];
-				if ( ! isset($exceptions[$twname]) )
-					$content = str_replace ( $repl, '<a href="https://twitter.com/'.$twname.'" rel="nofollow">@'.$twname.'</a>', $content );
+				$content = str_replace ( $repl, '<a href="https://twitter.com/'.$twname.'" rel="nofollow">@'.$twname.'</a>', $content );
 			}
 		}
 
-		//preg_match_all('/#([0-9a-zA-Z_-]+)/', $content, $hashtags);
-		//if ( !empty ( $hashtags[0] ) && !empty ( $hashtags[1] )) {
-			//foreach ( $hashtags[1] as $cntr=>$tagname ) {
-				//$repl = $hashtags[0][$cntr];
-				//$content = str_replace ( $repl, '<a href="https://twitter.com/hashtag/'. $tagname.'?src=hash" rel="nofollow">#'.$tagname.'</a>', $content );
-			//}
-		//}
+		preg_match_all('/#([0-9a-zA-Z_-]+)/', $content, $hashtags);
+		if ( !empty ( $hashtags[0] ) && !empty ( $hashtags[1] )) {
+			foreach ( $hashtags[1] as $cntr=>$tagname ) {
+				$repl = $hashtags[0][$cntr];
+				$content = str_replace ( $repl, '<a href="https://twitter.com/hashtag/'. $tagname.'?src=hash" rel="nofollow">#'.$tagname.'</a>', $content );
+			}
+		}
+
+		$content = $this->linkify ( $content );
 
 		return $content;
 	}
@@ -655,8 +657,8 @@ class petermolnareu {
 	 * auto-link all plain text links, exclude anything in html tags
 	 */
 	public function linkify ( $content ) {
-		//$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
-		//$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
+		$content = preg_replace('$(https?://[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', ' <a href="$1" target="_blank">$1</a> ', $content." ");
+		$content = preg_replace('$(www\.[a-z0-9_./?=&#-]+)(?![^<>]*>)$i', '<a target="_blank" href="http://$1"  target="_blank">$1</a> ', $content." ");
 		return $content;
 	}
 
@@ -690,7 +692,7 @@ class petermolnareu {
 			$fb =  rtrim(get_the_author_meta ( 'facebook' , $aid ), '/');
 			if ( !empty ($fb)) {
 				$fbname = substr( $fb , strrpos($fb, '/') + 1);
-				$socials['facebook'] = '<a rel="me" class="u-facebook x-facebook url u-url" href="'.$afb.'" title="'.$aname.' @ Facebook">'.$fbname.'</a>';
+				$socials['facebook'] = '<a rel="me" class="u-facebook x-facebook url u-url" href="'.$fb.'" title="'.$aname.' @ Facebook">'.$fbname.'</a>';
 			}
 
 			$tw = get_the_author_meta ( 'twitter' , $aid );
@@ -721,6 +723,15 @@ class petermolnareu {
 		}
 		$out .= '</span>';
 		return $out;
+	}
+
+	/**
+	 * WordPress SEO adds Google Plus url instead of regular author url, replace it
+	 */
+	public function author_url ( $url ) {
+			global $post;
+			$aid =  get_the_author_meta( 'ID' );
+			return get_the_author_meta ( 'user_url' , $aid );
 	}
 
 	/**
