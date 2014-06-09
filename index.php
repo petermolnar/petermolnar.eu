@@ -21,7 +21,7 @@
 	$cmeta = array (
 		'blips' => array (
 			'custom-template' => 'status',
-			'posts-per-page' => 12,
+			'posts-per-page' => 18,
 			'show-sidebar' => 0,
 		),
 		'photoblog' => array (

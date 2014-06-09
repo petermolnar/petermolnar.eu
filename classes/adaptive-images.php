@@ -207,7 +207,6 @@ class adaptive_images {
 		</section>';
 
 		wp_enqueue_script( 'jquery' );
-		//wp_enqueue_script( 'jquery.touchSwipe' );
 		wp_enqueue_script( 'jquery.adaptive-images' );
 
 		return $output;
@@ -558,8 +557,6 @@ class adaptive_images {
 		return $out;
 	}
 
-
-
 	public function adaptive_embededed( $html ) {
 		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
 		if ( !empty ( $inline_images[0]  )) {
@@ -570,7 +567,6 @@ class adaptive_images {
 			}
 		}
 
-		//$html = preg_replace( '/(width|height)=\"\d*\"\s/', "", $html );
 		return $html;
 	}
 

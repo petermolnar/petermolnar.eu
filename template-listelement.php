@@ -119,12 +119,12 @@
 		</div>
 	<?php endif; ?>
 
+	<!-- article footer -->
+	<footer class="article-footer">
 	<?php if ( $share ): ?>
-		<!-- article footer -->
-		<footer class="article-footer">
 			<?php echo $petermolnareu_theme->share ( get_permalink() , wp_title( '', false ), true ); ?>
-		</footer>
 	<?php endif; ?>
+	</footer>
 
 </article>
 

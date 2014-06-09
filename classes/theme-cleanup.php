@@ -2,6 +2,7 @@
 
 class theme_cleaup {
 	public $urlfilters = array ();
+	private $relative_urls = false;
 
 	public function __construct () {
 
@@ -35,11 +36,6 @@ class theme_cleaup {
 		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
 		remove_action('wp_head', 'rel_canonical');
 
-		//add_filter( 'nav_menu_css_class', array( &$this, 'custom_wp_nav_menu') );
-		//add_filter( 'nav_menu_item_id', array( &$this, 'custom_wp_nav_menu'));
-		//add_filter( 'page_css_class', array( &$this, 'custom_wp_nav_menu'));
-		//add_filter( 'wp_nav_menu', array( &$this, 'wp_nav_menu_c2a') );
-
 	}
 
 	/**
@@ -47,12 +43,12 @@ class theme_cleaup {
 	 */
 	public function filters() {
 		/* relative urls */
-		//add_filter( 'the_content', array( &$this, 'fix_urls'), 100);
-		//if ( ! is_feed()  && ! get_query_var( 'sitemap' ) ) {
-		//	foreach ( $this->urlfilters as $filter ) {
-		//		add_filter( $filter, 'wp_make_link_relative' );
-		//	}
-		//}
+		if ( $this->relative_urls ) {
+			add_filter( 'the_content', array( &$this, 'fix_urls'), 100);
+			if ( ! is_feed()  && ! get_query_var( 'sitemap' ) )
+				foreach ( $this->urlfilters as $filter )
+					add_filter( $filter, 'wp_make_link_relative' );
+		}
 
 		/* reorder autop */
 		remove_filter( 'the_content', 'wpautop' );
@@ -85,41 +81,6 @@ class theme_cleaup {
 		}
 
 		return $src;
-	}
-
-	// HTML5 Blank: Remove 'text/css' from our enqueued stylesheet
-	public function style_remove($tag) {
-		return preg_replace('~\s+type=["\'][^"\']++["\']~', '', $tag);
-	}
-
-	// HTML5 Blank: Remove thumbnail width and height dimensions that prevent fluid images in the_thumbnail
-	public function remove_thumbnail_dimensions( $html ) {
-		$html = preg_replace('/(width|height)=\"\d*\"\s/', "", $html);
-		return $html;
-	}
-
-	/**
-	 *
-	 */
-	public function custom_wp_nav_menu($var) {
-		return is_array($var) ? array_intersect($var, array(
-				//List of allowed menu classes
-				'current-menu-item',
-				'first',
-				'last',
-		)) : '';
-	}
-
-	/**
-	 *
-	 */
-	public function wp_nav_menu_c2a ($text) {
-		$replace = array(
-			//List of menu item classes that should be changed to "active"
-			'current-menu-item' => 'active',
-		);
-		$text = str_replace(array_keys($replace), $replace, $text);
-		return $text;
 	}
 
 }

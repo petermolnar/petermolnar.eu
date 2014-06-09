@@ -114,11 +114,7 @@ class petermolnareu {
 	 */
 	public function register_css_js () {
 		/* enqueue CSS */
-
-		wp_register_style( 'reset', $this->css_dir . 'reset.css', false, null );
-		wp_enqueue_style( 'reset' );
-
-		wp_register_style( 'style', $this->theme_url . '/style.css' , array('reset'), $this->info->version );
+		wp_register_style( 'style', $this->theme_url . '/style.css' , false, $this->info->version );
 		wp_enqueue_style( 'style' );
 
 		/* syntax highlight */
@@ -212,19 +208,19 @@ class petermolnareu {
 		$tw = get_post_meta( $post->ID, 'twitter_tweet_id', true );
 		if ( !empty( $pgIDs[ $service ] ) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $pgIDs[ $service ];
-			$txt = __( 'Reweet', self::theme_constant );
+			$txt = __( 'reweet', self::theme_constant );
 		}
 		elseif ( !empty($repost_id) && !empty($repost_uid) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $repost_id;
-			$txt = __( 'Reweet', self::theme_constant );
+			$txt = __( 'reweet', self::theme_constant );
 		}
 		elseif ( !empty($tw) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $tw;
-			$txt = __( 'Reweet', self::theme_constant );
+			$txt = __( 'reweet', self::theme_constant );
 		}
 		else {
 			$url = 'https://twitter.com/share?url='. $link .'&text='. $title;
-			$txt = __( 'Tweet', self::theme_constant );
+			$txt = __( 'tweet', self::theme_constant );
 		}
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 
@@ -239,11 +235,11 @@ class petermolnareu {
 			$search = array('%BASE%', '%pgID%' );
 			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
 			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
-			$txt = __( 'Reshare', self::theme_constant );
+			$txt = __( 'reshare', self::theme_constant );
 		}
 		else {
 			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
-			$txt = __( 'Share', self::theme_constant );
+			$txt = __( 'share', self::theme_constant );
 		}
 
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
@@ -944,7 +940,7 @@ class petermolnareu {
 		if ( !empty($video)) {
 			if ( strstr( $video, 'ted'))
 				$src .= '['. $video .']';
-			elseif (strstr( $video, 'youtube'))
+			else //(strstr( $video, 'youtube'))
 				$src .= '[embed]'. $video .'[/embed]';
 		}
 		unset ( $video );
