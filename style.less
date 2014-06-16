@@ -4,10 +4,9 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.60
+Version:		5.72
 */
 
-// Grays
 @color-bg-dark: #2D333A;
 @color-bg-light: darken(@color-bg-dark,10%);
 @color-text: #999;
@@ -32,7 +31,7 @@ Version:		5.60
 
 @textshadow-outset: 1px 1px #111;
 
-@font-base: 15px;
+@font-base: 16px;
 @font-enormous: 2.2em;
 @font-xxlarge: 1.8em;
 @font-xlarge: 1.2em;
@@ -45,7 +44,7 @@ Version:		5.60
 @line-height-small: 1.2em;
 @line-height-large: 3.6em;
 
-@panel-width: 18em;
+@panel-width: 17em;
 @toggle-size: 3em;
 @toggle-active: 5.7em;
 
@@ -105,21 +104,20 @@ Version:		5.60
 }
 
 .columns2() {
-/*
 	-moz-column-count: 2;
 	-moz-column-gap: @font-large;
 	-webkit-column-count: 2;
 	-webkit-column-gap: @font-large;
 	column-count: 2;
 	column-gap: @font-large;
-*/
-	margin:0 auto 0 auto;
-	max-width: 50em;
+
+	/*margin:0 auto 0 auto;
+	max-width: 42em;*/
 }
 
 .spacer {
 	display: inline-block;
-	padding: 0 0 0 @padding-normal;
+	padding: 0 @padding-normal 0 @padding-normal;
 }
 
 .hide {
@@ -190,8 +188,11 @@ table {
 	border-spacing: 0;
 }
 
-input, select {
+input, select, submit {
 	vertical-align:middle;
+	border: @thinborder solid lighten(@color-bg-dark,10%);
+	background-color: @color-bg-light;
+	color: @color-text;
 }
 
 /********
@@ -375,7 +376,7 @@ body {
 }
 
 .inner {
-	max-width:100em;
+	max-width:74em;
 	width:98%;
 	margin:0 auto 0 auto;
 }
@@ -428,7 +429,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-	font-size: @font-xlarge;
+	font-size: @font-enormous;
+	margin: @padding-large 0 @padding-large 0;
+	line-height: 1em;
 }
 
 h2 {
@@ -592,9 +595,14 @@ pre {
 	font-size:  @font-small;
 
 	.h-card {
+
+		img {
+			margin: 0 @padding-large 0 @padding-large;
+		}
+
 		a[rel="me"] {
-			font-size: 1px;
-			letter-spacing: -1px;
+			font-size: 0em;
+			letter-spacing: -1em;
 			color: transparent;
 
 			&:before {
@@ -602,6 +610,11 @@ pre {
 				color: @color-link;
 			}
 		}
+
+	}
+
+	.search-form {
+		display:inline;
 	}
 }
 
@@ -650,7 +663,6 @@ pre {
 	}
 }
 
-
 /* SHARE */
 .share,
 .usyndication {
@@ -672,6 +684,24 @@ pre {
 				}
 			}
 		}
+	}
+}
+
+.p-category {
+	a {
+		opacity: 0.4;
+
+		&:hover {
+			opacity: 0.99;
+		}
+	}
+}
+
+.commentcounter {
+	opacity: 0.4;
+
+	&:hover {
+		opacity: 0.99;
 	}
 }
 
@@ -712,25 +742,19 @@ pre {
 	}
 }
 
-/* STATUS */
-.article-status {
-	margin: 0 0 @font-enormous*2 0;
+.h-entry {
 	display: inline-block;
 	width: 100%;
-
-	p {
-		margin: @padding-large 0 @padding-large 0;
-	}
-
 }
 
-/* ARCTICLE */
+/* ARTICLE */
 .article-list-element {
 	margin: 0 0 @font-enormous*2 0;
 
 	p {
 		margin: @padding-large 0 @padding-large 0;
 	}
+
 }
 
 .article-header {
@@ -970,7 +994,6 @@ pre {
 /* SIDEBAR */
 .sidebar {
 	font-size: @font-small;
-	//padding: @font-large 0 0 0;
 
 	h3 {
 		margin: 0 0 @padding-large 0;
@@ -1197,20 +1220,30 @@ pre {
 		padding-bottom: 32.9%;
 	}
 
-	.status-postlist {
+	.category-columns {
 		.columns2();
 	}
+	/*
+	.article-link,
+	.article-quote,
+	.article-status,
+	.article-image,
+	.article-video,
+	.article-audio,
+	.article-aside {
+		.columns2();
+	}*/
 
 	.share,
 	.usyndication {
 		margin: 1em 0 0 0;
 		ul {
-			font-size: @font-xlarge;
+			font-size: @font-normal;
 			.flatul();
 
 			li {
 				display:inline-block;
-				margin: 0 @padding-normal 0 0;
+				margin: 0 @padding-large 0 0;
 
 				a {
 					display: block;

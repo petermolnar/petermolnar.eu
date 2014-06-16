@@ -1,6 +1,5 @@
 <?php
 
-include_once ('classes/theme-cleanup.php');
 include_once ('classes/adaptive-images.php');
 
 class petermolnareu {
@@ -19,9 +18,10 @@ class petermolnareu {
 	public $theme_url = '';
 	public $image_sizes = array();
 	public $info = array();
-	public $urlfilters = array ();
-	private $cleanup = null;
 	public $adaptive_images = null;
+
+	public $urlfilters = array ();
+	private $relative_urls = false;
 
 	public function __construct () {
 		$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
@@ -32,28 +32,47 @@ class petermolnareu {
 		$this->image_dir = $this->theme_url . '/assets/image/';
 		$this->info = wp_get_theme( );
 
-		$this->cleanup = new theme_cleaup();
 		$this->adaptive_images = new adaptive_images( $this );
+
+		$this->urlfilters = array(
+			'post_link', // Normal post link
+			'post_type_link', // Custom post type link
+			'page_link', // Page link
+			'attachment_link', // Attachment link
+
+			'post_type_archive_link', // Post type archive link
+			'get_pagenum_link', // Paginated link
+			'get_comments_pagenum_link', // Paginated comment link
+			'term_link', // Term link, including category, tag
+			'search_link', // Search link
+			'day_link', // Date archive link
+			'month_link',
+			'year_link',
+			'get_comment_link',
+			'wp_get_attachment_image_src',
+			'wp_get_attachment_thumb_url',
+			'wp_get_attachment_url',
+		);
+
 		add_action( 'init', array( &$this, 'init'));
-		add_action( 'init', array( &$this->cleanup, 'filters'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
 		add_action( 'init', array( &$this, 'rewrites'));
 
-		/* custom post types */
-		add_action( 'init', array(&$this, 'add_post_types' ));
-
-		/* excerpt letter counter */
-		add_action( 'admin_head-post.php',  array(&$this, 'excerpt_count_js'));
-		add_action( 'admin_head-post-new.php',  array(&$this, 'excerpt_count_js' ));
-
 		/* replace shortlink */
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
 		add_action( 'wp_head', array(&$this, 'shortlink'));
-		add_filter( 'get_shortlink', array(&$this, 'get_shortlink'), 1, 4 );
 
-		/* WordPress SEO cleanup */
-		add_filter('wpseo_author_link', array(&$this, 'author_url'));
+		/* cleanup */
+		remove_action('wp_head', 'rsd_link'); // Display the link to the Really Simple Discovery service endpoint, EditURI link
+		remove_action('wp_head', 'wlwmanifest_link'); // Display the link to the Windows Live Writer manifest file.
+		remove_action('wp_head', 'index_rel_link'); // Index link
+		remove_action('wp_head', 'parent_post_rel_link', 10, 0); // Prev link
+		remove_action('wp_head', 'start_post_rel_link', 10, 0); // Start link
+		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0); // Display relational links for the posts adjacent to the current post.
+		remove_action('wp_head', 'wp_generator'); // Display the XHTML generator that is generated on the wp_head hook, WP version
+		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
+		remove_action('wp_head', 'rel_canonical');
 	}
 
 	public function init () {
@@ -88,24 +107,41 @@ class petermolnareu {
 
 		/* legacy shortcode handler */
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
-		add_filter( 'the_content', 'shortcode_unautop', 100 );
 
 		/* post type additional data */
 		add_filter( 'the_content', array(&$this, 'add_post_format_data'), 1 );
 
-		/* Link all @name to Twitter */
-		//add_filter('the_content', array( &$this, 'twtreplace'));
-		//add_filter('comment_text', array( &$this, 'twtreplace'));
+		/* reorder autop */
+		remove_filter( 'the_content', 'wpautop' );
+		add_filter( 'the_content', 'shortcode_unautop', 20 );
+		add_filter( 'the_content', 'wpautop', 100 );
+
+		/* relative urls */
+		if ( $this->relative_urls ) {
+			add_filter( 'the_content', array( &$this, 'replace_if_ssl'), 100);
+			if ( ! is_feed()  && ! get_query_var( 'sitemap' ) )
+				foreach ( $this->urlfilters as $filter )
+					add_filter( $filter, 'wp_make_link_relative' );
+		}
 
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
 		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
 
-		/* have links *
+		/* have links in the admin *
 		add_filter( 'pre_option_link_manager_enabled', '__return_true' );*/
 
 		/* additional user meta */
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
+
+		/* better title */
+		add_filter( 'wp_title', array(&$this, 'nice_title') );
+
+		/* shortlink replacement */
+		add_filter( 'get_shortlink', array(&$this, 'get_shortlink'), 1, 4 );
+
+		/* WordPress SEO cleanup */
+		add_filter('wpseo_author_link', array(&$this, 'author_url'));
 
 	}
 
@@ -273,6 +309,11 @@ class petermolnareu {
 			$shlist[] = '<a rel="discussion" class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 
+		/* shorturl */
+		$service = 'url';
+		$txt = $url = wp_get_shortlink();
+		$shlist[] = '<a class="icon-globe" href="' . $url . '">'. $txt .'</a>';
+
 		$out = '
 			<action do="post" with="'. get_the_permalink() .'" class="share">
 			<h6>' . __('Share:', self::theme_constant ) . '</h6>
@@ -311,6 +352,7 @@ class petermolnareu {
 				$post_title = htmlspecialchars(stripslashes($post->post_title));
 				$list .= '
 						<li>
+							'. $this->article_time( $post ) .'
 							<a href="' . get_permalink($post->ID) . '" title="'. $post_title .'" >
 								' . $post_title . '
 							</a>
@@ -425,194 +467,19 @@ class petermolnareu {
 	}
 
 	/**
-	 * character counter for text content field & excerpt field
-	*/
-	public function excerpt_count_js(){
-		echo '<script>jQuery(document).ready(function(){
-
-				if( jQuery("#excerpt").length ) {
-					jQuery("#postexcerpt .handlediv").after("<input type=\'text\' value=\'0\' maxlength=\'3\' size=\'3\' id=\'excerpt_counter\' readonly=\'\' style=\'background:#fff; position:absolute;top:0.2em;right:2em; color:#666;\'>");
-					jQuery("#excerpt_counter").val(jQuery("#excerpt").val().length);
-					jQuery("#excerpt").keyup( function() {
-						jQuery("#excerpt_counter").val(jQuery("#excerpt").val().length);
-					});
-				}
-
-				if( jQuery("#wp-word-count").length ) {
-					jQuery("#wp-word-count").after("<td id=\'wp-character-count\'>Character count: <span class=\'character-count\'>0</span></td>");
-					jQuery("#wp-character-count .character-count").html(jQuery("#wp-content-wrap .wp-editor-area").val().length);
-					jQuery("#wp-content-wrap .wp-editor-area").keyup( function() {
-						jQuery("#wp-character-count .character-count").html(jQuery("#wp-content-wrap .wp-editor-area").val().length);
-					});
-				}
-
-		});</script>';
-	}
-
-	/**
-	 * from: http://dimox.net/wordpress-breadcrumbs-without-a-plugin/
-	 */
-	public function dimox_breadcrumbs() {
-
-		/* === OPTIONS === */
-		$text['home']	 = 'Home'; // text for the 'Home' link
-		$text['category'] = '%s'; // text for a category page
-		$text['search']	= 'Search for "%s"'; // text for a search results page
-		$text['tag']	 = '%s'; // text for a tag page
-		$text['author']	= '%s'; // text for an author page
-		$text['404']	 = 'Error 404'; // text for the 404 page
-
-		$show_current	= 1; // 1 - show current post/page/category title in breadcrumbs, 0 - don't show
-		$show_on_home	= 0; // 1 - show breadcrumbs on the homepage, 0 - don't show
-		$show_home_link = 0; // 1 - show the 'Home' link, 0 - don't show
-		$show_title	 = 1; // 1 - show the title for the links, 0 - don't show
-		$delimiter	 = ' &raquo; '; // delimiter between crumbs
-		$before		 = '<span class="current">'; // tag before the current crumb
-		$after		 = '</span>'; // tag after the current crumb
-		/* === END OF OPTIONS === */
-
-		global $post;
-		$home_link	= home_url('/');
-		$link_before = '<span typeof="v:Breadcrumb">';
-		$link_after	= '</span>';
-		$link_attr	= ' rel="v:url" property="v:title"';
-		$link		 = $link_before . '<a' . $link_attr . ' href="%1$s">%2$s</a>' . $link_after;
-		$parent_id	= $parent_id_2 = $post->post_parent;
-		$frontpage_id = get_option('page_on_front');
-
-		if (is_home() || is_front_page()) {
-
-			if ($show_on_home == 1) echo '<nav class="breadcrumbs"><div class="inner"><a href="' . $home_link . '">' . $text['home'] . '</a></div></nav>';
-
-		} else {
-
-			echo '<nav class="breadcrumbs" xmlns:v="http://rdf.data-vocabulary.org/#"><div class="inner">';
-			if ($show_home_link == 1) {
-				echo '<a href="' . $home_link . '" rel="v:url" property="v:title">' . $text['home'] . '</a>';
-				if ($frontpage_id == 0 || $parent_id != $frontpage_id) echo $delimiter;
-			}
-
-			if ( is_category() ) {
-				$this_cat = get_category(get_query_var('cat'), false);
-				if ($this_cat->parent != 0) {
-					$cats = get_category_parents($this_cat->parent, TRUE, $delimiter);
-					if ($show_current == 0) $cats = preg_replace("#^(.+)$delimiter$#", "$1", $cats);
-					$cats = str_replace('<a', $link_before . '<a' . $link_attr, $cats);
-					$cats = str_replace('</a>', '</a>' . $link_after, $cats);
-					if ($show_title == 0) $cats = preg_replace('/ title="(.*?)"/', '', $cats);
-					echo $cats;
-				}
-				if ($show_current == 1) echo $before . sprintf($text['category'], single_cat_title('', false)) . $after;
-
-			} elseif ( is_search() ) {
-				echo $before . sprintf($text['search'], get_search_query()) . $after;
-
-			} elseif ( is_day() ) {
-				echo sprintf($link, get_year_link(get_the_time('Y')), get_the_time('Y')) . $delimiter;
-				echo sprintf($link, get_month_link(get_the_time('Y'),get_the_time('m')), get_the_time('F')) . $delimiter;
-				echo $before . get_the_time('d') . $after;
-
-			} elseif ( is_month() ) {
-				echo sprintf($link, get_year_link(get_the_time('Y')), get_the_time('Y')) . $delimiter;
-				echo $before . get_the_time('F') . $after;
-
-			} elseif ( is_year() ) {
-				echo $before . get_the_time('Y') . $after;
-
-			} elseif ( is_single() && !is_attachment() ) {
-				if ( get_post_type() != 'post' ) {
-					$post_type = get_post_type_object(get_post_type());
-					$slug = $post_type->rewrite;
-					printf($link, $home_link . '/' . $slug['slug'] . '/', $post_type->labels->singular_name);
-					if ($show_current == 1) echo $delimiter . $before . get_the_title() . $after;
-				} else {
-					$cat = get_the_category(); $cat = $cat[0];
-					$cats = get_category_parents($cat, TRUE, $delimiter);
-					if ($show_current == 0) $cats = preg_replace("#^(.+)$delimiter$#", "$1", $cats);
-					$cats = str_replace('<a', $link_before . '<a' . $link_attr, $cats);
-					$cats = str_replace('</a>', '</a>' . $link_after, $cats);
-					if ($show_title == 0) $cats = preg_replace('/ title="(.*?)"/', '', $cats);
-					echo $cats;
-					if ($show_current == 1) echo $before . get_the_title() . $after;
-				}
-
-			} elseif ( !is_single() && !is_page() && get_post_type() != 'post' && !is_404() ) {
-				$post_type = get_post_type_object(get_post_type());
-				echo $before . $post_type->labels->singular_name . $after;
-
-			} elseif ( is_attachment() ) {
-				$parent = get_post($parent_id);
-				$cat = get_the_category($parent->ID); $cat = $cat[0];
-				if ($cat) {
-					$cats = get_category_parents($cat, TRUE, $delimiter);
-					$cats = str_replace('<a', $link_before . '<a' . $link_attr, $cats);
-					$cats = str_replace('</a>', '</a>' . $link_after, $cats);
-					if ($show_title == 0) $cats = preg_replace('/ title="(.*?)"/', '', $cats);
-					echo $cats;
-				}
-				printf($link, get_permalink($parent), $parent->post_title);
-				if ($show_current == 1) echo $delimiter . $before . get_the_title() . $after;
-
-			} elseif ( is_page() && !$parent_id ) {
-				if ($show_current == 1) echo $before . get_the_title() . $after;
-
-			} elseif ( is_page() && $parent_id ) {
-				if ($parent_id != $frontpage_id) {
-					$breadcrumbs = array();
-					while ($parent_id) {
-						$page = get_page($parent_id);
-						if ($parent_id != $frontpage_id) {
-							$breadcrumbs[] = sprintf($link, get_permalink($page->ID), get_the_title($page->ID));
-						}
-						$parent_id = $page->post_parent;
-					}
-					$breadcrumbs = array_reverse($breadcrumbs);
-					for ($i = 0; $i < count($breadcrumbs); $i++) {
-						echo $breadcrumbs[$i];
-						if ($i != count($breadcrumbs)-1) echo $delimiter;
-					}
-				}
-				if ($show_current == 1) {
-					if ($show_home_link == 1 || ($parent_id_2 != 0 && $parent_id_2 != $frontpage_id)) echo $delimiter;
-					echo $before . get_the_title() . $after;
-				}
-
-			} elseif ( is_tag() ) {
-				echo $before . sprintf($text['tag'], single_tag_title('', false)) . $after;
-
-			} elseif ( is_author() ) {
-				global $author;
-				$userdata = get_userdata($author);
-				echo $before . sprintf($text['author'], $userdata->display_name) . $after;
-
-			} elseif ( is_404() ) {
-				echo $before . $text['404'] . $after;
-
-			} elseif ( has_post_format() && !is_singular() ) {
-				echo get_post_format_string( get_post_format() );
-			}
-
-			if ( get_query_var('paged') ) {
-				if ( is_category() || is_day() || is_month() || is_year() || is_search() || is_tag() || is_author() ) echo ' (';
-				echo __('Page') . ' ' . get_query_var('paged');
-				if ( is_category() || is_day() || is_month() || is_year() || is_search() || is_tag() || is_author() ) echo ')';
-			}
-
-			echo '</div></nav><!-- .breadcrumbs -->';
-
-		}
-	} // end dimox_breadcrumbs()
-
-
-	/**
 	 * display article pubdate
 	 */
-	public function article_time () {
-		global $post;
+	public function article_time (&$post = false) {
+		if ( !$post )
+			global $post;
+
+		ob_start();
 		?>
-		<time class="article-pubdate dt-published" pubdate="<?php the_time( 'r' ); ?>"><?php the_time( get_option('date_format') ); ?> <?php the_time( get_option('time_format') ); ?></time>
-		<time class="hide dt-updated" pubdate="<?php the_modified_time( 'r' ); ?>"><?php the_time( get_option('date_format') ); ?><?php the_time( get_option('time_format') ); ?></time>
+		<time class="article-pubdate dt-published" pubdate="<?php echo get_the_time( 'r', $post->ID ); ?>"><?php echo get_the_time( get_option('date_format'), $post->ID ); ?> <?php echo get_the_time( get_option('time_format'), $post->ID ); ?></time>
+		<time class="hide dt-updated" pubdate="<?php echo get_the_modified_time( 'r', $post->ID ); ?>"><?php echo get_the_time( get_option('date_format'), $post->ID ); ?><?php echo get_the_time( get_option('time_format'), $post->ID ); ?></time>
 		<?php
+		$content = ob_get_clean();
+		return $content;
 	}
 
 	/**
@@ -659,7 +526,7 @@ class petermolnareu {
 	}
 
 	/**
-	 *  Peter Molnar vcard
+	 *  author vcard
 	 */
 	public function author ( $short=false, $uid = false ) {
 		if ( $short ) {
@@ -681,6 +548,7 @@ class petermolnareu {
 		$out = '<span class="'. $class .'">
 				<a class="fn p-name url u-url" href="'. get_the_author_meta ( 'user_url' , $aid ) .'">'. $aname .'</a>
 				<img class="photo avatar u-photo u-avatar" src="https://s.gravatar.com/avatar/'.$gravatar.'?s=64" style="width:12px; height:12px;" alt="Photo of '. $aname .'"/>';
+
 		if ( !$short ) {
 			$out .= '<a rel="me" class="u-email email" href="mailto:'.$aemail.'" title="'.$aname.' email address">'.$aemail.'</a>';
 
@@ -714,7 +582,8 @@ class petermolnareu {
 			}
 
 			if ( !empty($socials)) {
-				$out .= '<span class="spacer">Find me:</span>' . join ( "\n", $socials);
+				$out .= '<span class="spacer">Find me:</span>';
+				$out .= join ( "\n", $socials);
 			}
 		}
 		$out .= '</span>';
@@ -772,15 +641,6 @@ class petermolnareu {
 		}
 		unset ( $repost_url );
 
-		/* General url *
-		$url = get_post_meta($post->ID, 'u-source', true );
-		if ( !empty($url) ) { ?>
-				<p class="urel"><?php _e("Source: ") ?><a class="u-source" href="<?php echo $url; ?>" ><?php echo $repost_url; ?></a></p>
-			<?php
-		}
-		unset ( $url );
-		*/
-
 		/* link meta */
 		$url = get_post_meta($post->ID, '_format_link_url', true );
 		$title = get_the_title ($post->ID );
@@ -816,7 +676,7 @@ class petermolnareu {
 	}
 
 	/**
-	 *
+	 * redirect old stuff to prevent broken links
 	 */
 	public function rewrites () {
 		add_rewrite_rule("indieweb-decentralize-web-centralizing", "indieweb-decentralize-web-centralizing-ourselves", "bottom" );
@@ -826,6 +686,9 @@ class petermolnareu {
 		add_rewrite_rule("/blog/(.*)", "/journal/$matches[1]", "bottom" );
 	}
 
+	/**
+	 * replace original shortlink
+	 */
 	public function shorturl () {
 		global $post;
 
@@ -847,56 +710,8 @@ class petermolnareu {
 	}
 
 	/**
-	 *
+	 * additional post format data for: https://github.com/petermolnar/wp-post-formats ( fork of https://github.com/crowdfavorite/wp-post-formats )
 	 */
-	public function add_post_types () {
-
-		//register_post_type( 'notes',
-			//array(
-				//'labels' => array(
-					//'name' => __( 'Note', self::theme_constant ),
-					//'singular_name' => __( 'Notes', self::theme_constant ),
-					//'menu_name' => __( 'Notes', self::theme_constant ),
-				//),
-				//'public' => true,
-				//'has_archive' => true,
-				//'menu_position' => 5,
-				//'menu_icon' => 'dashicons-tagcloud',
-				//'supports' => array (
-					//'editor',
-					//'author',
-					//'custom-fields',
-				//),
-			//)
-		//);
-
-		//register_taxonomy( 'relation', 'notes', array (
-			//'labels' => array(
-				//'name'                       => _x( 'Relations', 'Taxonomy General Name', self::theme_constant ),
-				//'singular_name'              => _x( 'Relation', 'Taxonomy Singular Name', self::theme_constant ),
-				//'menu_name'                  => __( 'Relations', self::theme_constant ),
-				//'all_items'                  => __( 'All relations', self::theme_constant ),
-				//'parent_item'                => __( 'Parent item', self::theme_constant ),
-				//'parent_item_colon'          => __( 'Parent Item:', self::theme_constant ),
-				//'new_item_name'              => __( 'New Relation', self::theme_constant ),
-				//'add_new_item'               => __( 'Add new relation', self::theme_constant ),
-				//'edit_item'                  => __( 'Edit relation', self::theme_constant ),
-				//'update_item'                => __( 'Update Item', self::theme_constant ),
-				//'separate_items_with_commas' => __( 'Separate relations with commas', self::theme_constant ),
-				//'search_items'               => __( 'Search relations', self::theme_constant ),
-				//'add_or_remove_items'        => __( 'Add or remove relations', self::theme_constant ),
-				//'choose_from_most_used'      => __( 'Choose from the most used relations', self::theme_constant ),
-				//'not_found'                  => __( 'Not Found', self::theme_constant ),
-			//),
-			//'public' => false,
-			//'show_ui' => true,
-			//'hierarchical' => true,
-			//'show_admin_column' => true,
-			//'show_in_nav_menus' => false,
-			//'show_tagcloud' => false,
-		//) );
-	}
-
 	public function add_post_format_data ( $src ) {
 		global $post;
 		$format = get_post_format ( $post->ID );
@@ -918,10 +733,12 @@ class petermolnareu {
 
 		/* image meta */
 		$img = get_post_thumbnail_id( $post->ID );
-		if ( !empty($format) && $format != 'standard ' && $format != 'gallery' ) {
+		if ( !empty($format) && $format != 'standard ' && $format != 'gallery' && !empty($img) ) {
+			if ( empty($src))
+				$src = '<h3>'. get_the_title() .'</h3>';
 			$asrc = $this->replace_images_with_adaptive ( $src );
 			if ( strlen($src) == strlen($asrc) && !empty($img) )
-				$src .= do_shortcode( '[adaptimg aid=' . $img .' size=hd share=0 standalone=1]');
+				$src .= $this->cleanbr( do_shortcode( '[adaptimg aid=' . $img .' size=hd share=0 standalone=1]'));
 			else
 				$src = $asrc;
 			unset ( $asrc );
@@ -957,6 +774,9 @@ class petermolnareu {
 		return $src;
 	}
 
+	/**
+	 * additional user fields
+	 */
 	public function add_user_meta_fields ($profile_fields) {
 
 		$profile_fields['github'] = 'Github username';
@@ -964,6 +784,18 @@ class petermolnareu {
 		$profile_fields['linkedin'] = 'LinkedIn profile URL';
 
 		return $profile_fields;
+	}
+
+	/**
+	 *
+	 */
+	public function nice_title ( $title ) {
+		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
+	}
+
+	public function cleanbr ( $src ) {
+		$search = array ( '<br />', '<br>' );
+		return str_replace ( $search, '', shortcode_unautop ( $src ) );
 	}
 
 }

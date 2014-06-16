@@ -1,0 +1,3 @@
+[submodule "wp-common"]
+	path = wp-common
+	url = github:/petermolnar/wp-common

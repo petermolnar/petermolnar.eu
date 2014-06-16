@@ -20,6 +20,11 @@
 		<a href="http://wordpress.org" title="Powered by WordPress">
 			<span class="icon-wordpress"></span>
 		</a>
+		<form role="search" method="get" class="search-form" action="<?php echo $petermolnareu_theme->replace_if_ssl(get_bloginfo('url')); ?>">
+			<label for="search" class="spacer"><?php _e('Search:', $petermolnareu_theme->theme_constant ); ?></label>
+			<input type="search" class="search-field" placeholder="Search …" value="" name="s" title="<?php _e('Search for:', $petermolnareu_theme->theme_constant ); ?>">
+			<input type="submit" class="search-submit" value="<?php _e('Go', $petermolnareu_theme->theme_constant ); ?>">
+		</form>
 		<?php wp_footer(); ?>
 	</div></footer>
 
