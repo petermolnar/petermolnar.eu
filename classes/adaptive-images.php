@@ -272,7 +272,8 @@ class adaptive_images {
 		else
 			$caption = $img['title'];
 
-		return $css .'<figure id="'. $_id .'" class="'. implode(" ", $cl ) .'">
+		return '<figure id="'. $_id .'" class="'. implode(" ", $cl ) .'">
+			'. $css .'
 			<img src="'. $_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
 			<figcaption>'. $caption .'</figcaption>
 		</figure>';

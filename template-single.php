@@ -48,6 +48,7 @@
 			$footer = false;
 			$content_type = 'e-content';
 			$showtags = false;
+			$header = 'none';
 			break;
 		default:
 			$featimg = true;
@@ -147,7 +148,7 @@
 		<a class="u-url" href="<?php the_permalink(); ?>">
 			<?php
 				$title = get_the_title();
-				echo $petermolnareu_theme->cleanbr ( do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'" share=0]') );
+				echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'" share=0]');
 			?>
 		</a>
 	<?php else:
@@ -159,16 +160,6 @@
 			the_content();
 
 		$content = ob_get_clean();
-
-		if ( $adaptify ) {
-			$icontent = $petermolnareu_theme->replace_images_with_adaptive ( $content );
-
-			/* auto feat img */
-			if ( $content == $icontent && !empty($feat) )
-				$content .= $petermolnareu_theme->cleanbr ( do_shortcode( '[adaptimg aid=' . $feat .' size=hd share=0 standalone=1]') );
-			else
-				$content = $icontent;
-		}
 
 		?>
 		<div class="article-content <?php echo $contenttype ?>">

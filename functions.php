@@ -112,17 +112,17 @@ class petermolnareu {
 		add_filter( 'the_content', array(&$this, 'add_post_format_data'), 1 );
 
 		/* reorder autop */
-		remove_filter( 'the_content', 'wpautop' );
-		add_filter( 'the_content', 'shortcode_unautop', 20 );
-		add_filter( 'the_content', 'wpautop', 100 );
+		//remove_filter( 'the_content', 'wpautop', 1 );
+		//add_filter( 'the_content', 'shortcode_unautop', 100 );
+		//add_filter( 'the_content', 'wpautop', 99 );
 
-		/* relative urls */
+		/* relative urls *
 		if ( $this->relative_urls ) {
 			add_filter( 'the_content', array( &$this, 'replace_if_ssl'), 100);
 			if ( ! is_feed()  && ! get_query_var( 'sitemap' ) )
 				foreach ( $this->urlfilters as $filter )
 					add_filter( $filter, 'wp_make_link_relative' );
-		}
+		}*/
 
 		/* overwrite gallery shortcode */
 		remove_shortcode('gallery');
@@ -738,7 +738,7 @@ class petermolnareu {
 				$src = '<h3>'. get_the_title() .'</h3>';
 			$asrc = $this->replace_images_with_adaptive ( $src );
 			if ( strlen($src) == strlen($asrc) && !empty($img) )
-				$src .= $this->cleanbr( do_shortcode( '[adaptimg aid=' . $img .' size=hd share=0 standalone=1]'));
+				$src .= '[adaptimg aid=' . $img .' size=hd share=0 standalone=1]';
 			else
 				$src = $asrc;
 			unset ( $asrc );
@@ -793,11 +793,21 @@ class petermolnareu {
 		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
 	}
 
-	public function cleanbr ( $src ) {
-		$search = array ( '<br />', '<br>' );
-		return str_replace ( $search, '', shortcode_unautop ( $src ) );
-	}
+	public function wpunautop ( $s ) {
+		//remove any new lines already in there
+		$s = str_replace( "\n", "", $s);
 
+		//remove all <p>
+		$s = str_replace("<p>", "", $s);
+
+		//replace <br /> with \n
+		$s = str_replace(array("<br />", "<br>", "<br/>"), "\n", $s);
+
+		//replace </p> with \n\n
+		$s = str_replace("</p>", "\n\n", $s);
+
+		return $s;
+	}
 }
 
 /**** END OF FUNCTIONS *****/

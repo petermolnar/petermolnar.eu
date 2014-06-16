@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.72
+Version:		5.73
 */
 
 @color-bg-dark: #2D333A;
@@ -743,8 +743,9 @@ pre {
 }
 
 .h-entry {
-	display: inline-block;
-	width: 100%;
+	break-inside: avoid-column;
+	-webkit-column-break-inside: avoid;
+	display: block;
 }
 
 /* ARTICLE */
