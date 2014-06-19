@@ -4,13 +4,15 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		5.73
+Version:		6.7
 */
 
 @color-bg-dark: #2D333A;
-@color-bg-light: darken(@color-bg-dark,10%);
-@color-text: #999;
-@color-link: #ddd;
+@color-bg-light: #EFEFEF;
+@color-text-light: #999;
+@color-text-dark: #333;
+@color-link-light: #ddd;
+@color-link-dark: #000;
 @color-menu: #aaa;
 @color-activemenu: #fff;
 @color-header: #888;
@@ -30,8 +32,9 @@ Version:		5.73
 @padding-xsmall: 0.1em;
 
 @textshadow-outset: 1px 1px #111;
+@textshadow-light: 1px 1px #fff;
 
-@font-base: 16px;
+@font-base: 17px;
 @font-enormous: 2.2em;
 @font-xxlarge: 1.8em;
 @font-xlarge: 1.2em;
@@ -46,7 +49,7 @@ Version:		5.73
 
 @panel-width: 17em;
 @toggle-size: 3em;
-@toggle-active: 5.7em;
+@toggle-active: 4em;
 
 .flatul() {
 		list-style-type: none;
@@ -70,6 +73,14 @@ Version:		5.73
 			padding: 0;
 			margin: 0;
 		}
+}
+
+.linkopacity() {
+	opacity: 0.6;
+
+	&:hover {
+		opacity: 0.99;
+	}
 }
 
 .animate() {
@@ -192,7 +203,7 @@ input, select, submit {
 	vertical-align:middle;
 	border: @thinborder solid lighten(@color-bg-dark,10%);
 	background-color: @color-bg-light;
-	color: @color-text;
+	color: @color-text-light;
 }
 
 /********
@@ -305,15 +316,7 @@ img.left {
 .left {
 	float:left;
 }
-/*
-.clear {
-	clear:both;
-	height: 0px;
-	font-size:0px;
-	line-height:0;
-	display:block;
-}
-*/
+
 /* http://sonspring.com/journal/clearing-floats */
 
 .clear {
@@ -324,33 +327,6 @@ img.left {
 	width: 0;
 	height: 0;
 }
-
-/* http://perishablepress.com/press/2008/02/05/lessons-learned-concerning-the-clearfix-css-hack *
-
-.clearfix:after {
-	clear: both;
-	content: ' ';
-	display: block;
-	font-size: 0;
-	line-height: 0;
-	visibility: hidden;
-	width: 0;
-	height: 0;
-}
-
-.clearfix {
-	display: inline-block;
-}
-
-* html .clearfix {
-	height: 1%;
-}
-
-.clearfix {
-	display: block;
-}
-*/
-
 
 .small {
 	font-size: @font-xsmall;
@@ -366,11 +342,11 @@ html {
 body {
 	position:relative;
 	overflow:auto;
-	margin: @padding-normal auto @padding-normal auto;
+	margin: 0 auto 0t auto;
 	line-height: @line-height;
 	font-family: 'Liberation Sans', sans-serif;
 	font-size:@font-base;
-	color:@color-text;
+	color:@color-text-light;
 	letter-spacing:0.06em;
 	font-weight: normal;
 }
@@ -381,6 +357,17 @@ body {
 	margin:0 auto 0 auto;
 }
 
+.content-inner {
+	max-width:40em;
+	width:98%;
+	margin:0 auto @font-xlarge auto;
+}
+
+.article-list-element {
+	padding: 0 0 @font-xlarge 0;
+	border-bottom: @thinborder solid lighten(@color-text-dark,40%);
+}
+
 blockquote {
 	margin-left: @padding-xlarge;
 	padding-left: @padding-xlarge;
@@ -389,12 +376,12 @@ blockquote {
 }
 
 a {
-	color:@color-link;
+	color:@color-link-light;
 	text-decoration:none;
 
 	&:hover {
 		text-decoration:none;
-		color:lighten(@color-link,20%);
+		color:lighten(@color-link-light,20%);
 	}
 
 }
@@ -425,13 +412,13 @@ ul, ol {
 h1, h2, h3, h4, h5, h6 {
 	font-weight:bold;
 	clear:both;
-	color:lighten(@color-text,10%);
 }
 
 h1 {
 	font-size: @font-enormous;
 	margin: @padding-large 0 @padding-large 0;
 	line-height: 1em;
+	text-align: center;
 }
 
 h2 {
@@ -524,7 +511,7 @@ pre {
 .icon-wordpress:before { content: '\e832'; } /* '' */
 
 
-/* PANEL */
+/* HEADER */
 .content-header {
 	position: fixed;
 	width: @panel-width;
@@ -542,6 +529,11 @@ pre {
 	padding-right: 0;
 }
 
+.content-logo {
+	margin:  @padding-xlarge;
+}
+
+/* PANEL TOGGLE */
 .nav-toggle-button {
 	font-size: @toggle-size;
 	text-decoration: none;
@@ -549,9 +541,11 @@ pre {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	position: absolute;
-	margin: @padding-normal 0 0 @padding-small;
+	top: 1em;
+	right: -1em;
 	z-index: 99;
 	.animate();
+	text-shadow:1px 1px @color-text-dark;
 
 	&:hover {
 		text-decoration: none;
@@ -562,35 +556,47 @@ pre {
 	}
 }
 
-#showContentHeader {
-	.animate();
-}
-
-#showContentHeader.active {
-	.animate();
-	left: @toggle-active;
-	z-index: 999;
-	color: @color-menu;
-}
-
-.content-logo {
-	margin:  @padding-xlarge;
-}
-
-.breadcrumbs {
-	color: @color-header;
-	text-shadow: @textshadow-outset;
-	padding: @padding-large 0 @padding-large 0;
-}
-
+/* CONTENT */
 .content-body {
 	position: relative;
 	padding: @toggle-size @padding-large @padding-large @padding-large;
 	z-index: 2;
-	background-color: @color-bg-light;
+
 }
 
-.content-footer  {
+.content-dark {
+	background-color: darken(@color-bg-dark,10%);
+	color: @color-text-light;
+	p a {
+		color: @color-link-light;
+		display: inline;
+		border-bottom: @thinborder dotted @color-text-light;
+		line-height: @font-normal;
+		&:hover {
+			border-bottom: @thinborder dotted @color-link-light;
+		}
+	}
+}
+
+.content-light {
+	background-color: @color-bg-light;
+	color: @color-text-dark;
+	a {
+		color: @color-link-dark;
+	}
+
+	p a {
+		display: inline;
+		border-bottom: @thinborder dotted @color-text-light;
+		line-height: @font-normal;
+		&:hover {
+			border-bottom: @thinborder dotted @color-link-dark;
+		}
+	}
+
+}
+
+.content-footer {
 	padding:  @padding-xlarge 0 @padding-xlarge 0;
 	font-size:  @font-small;
 
@@ -607,7 +613,7 @@ pre {
 
 			&:before {
 				font-size: @font-base;
-				color: @color-link;
+				color: @color-link-light;
 			}
 		}
 
@@ -668,6 +674,7 @@ pre {
 .usyndication {
 	display: block;
 	margin: 2em 0 2em 0;
+	font-size: @font-small;
 
 	ul {
 	font-size: @font-xlarge;
@@ -677,11 +684,7 @@ pre {
 			margin: 0 0 @padding-normal 0;
 
 			a {
-				opacity: 0.4;
-
-				&:hover {
-					opacity: 0.99;
-				}
+				.linkopacity();
 			}
 		}
 	}
@@ -689,20 +692,12 @@ pre {
 
 .p-category {
 	a {
-		opacity: 0.4;
-
-		&:hover {
-			opacity: 0.99;
-		}
+		.linkopacity();
 	}
 }
 
 .commentcounter {
-	opacity: 0.4;
-
-	&:hover {
-		opacity: 0.99;
-	}
+	.linkopacity();
 }
 
 /* VCARD */
@@ -716,7 +711,7 @@ pre {
 
 	img {
 		float: left;
-		border: @thinborder solid @color-text;
+		border: @thinborder solid @color-text-light;
 		width: 17%;
 		margin: 0 1% 0 1%;
 		height: auto;
@@ -731,7 +726,7 @@ pre {
 		margin-bottom: @padding-large;
 		text-overflow: ellipsis;
 		overflow: hidden;
-		color: darken(@color-link, 20%);
+		color: darken(@color-link-light, 20%);
 		vertical-align:middle;
 
 		&:before {
@@ -742,21 +737,7 @@ pre {
 	}
 }
 
-.h-entry {
-	break-inside: avoid-column;
-	-webkit-column-break-inside: avoid;
-	display: block;
-}
-
 /* ARTICLE */
-.article-list-element {
-	margin: 0 0 @font-enormous*2 0;
-
-	p {
-		margin: @padding-large 0 @padding-large 0;
-	}
-
-}
 
 .article-header {
 	position: relative;
@@ -767,6 +748,11 @@ pre {
 		padding: 0;
 		line-height: @font-xlarge;
 		display: inline-block;
+
+		a:after {
+			content: '»';
+			margin-left: @padding-normal;
+		}
 	}
 }
 
@@ -775,9 +761,8 @@ pre {
 	display: block;
 	font-size: @font-small;
 	font-weight: normal;
-	color: darken(@color-text,20%);
+	color: darken(@color-text-light,20%);
 	font-family: monospace;
-	background: darken(@color-bg-dark,14%);
 	padding:  0 0 0 @padding-normal;
 	margin: 0 0 @padding-large 0;
 }
@@ -848,26 +833,25 @@ pre {
 	}
 }
 
-.siblings {
-	display: block;
-	padding: 0 0 @padding-large 0;
-
-	a {
-		color: darken(@color-link,20%);
-
-		&:hover {
-			color: lighten(@color-link,10%);
-		}
-	}
-
-}
-
 .photoblog-list {
 	display: inline-block;
 	width: 32%;
 	padding-bottom: 32%;
 }
 
+.siblings {
+	display: block;
+	padding: 0 0 @padding-large 0;
+
+	a {
+		color: darken(@color-link-light,20%);
+
+		&:hover {
+			color: lighten(@color-link-light,10%);
+		}
+	}
+
+}
 
 /* ADAPTGAL */
 .adaptimg {
@@ -918,6 +902,8 @@ pre {
 					font-size: @font-enormous;
 
 					a {
+						color: @color-link-light;
+
 						margin: 0;
 					}
 				}
@@ -931,6 +917,8 @@ pre {
 			left: 1em;
 			.animate();
 			text-shadow: @textshadow-outset;
+			display:none;
+			visibility:hidden;
 		}
 
 		img {
@@ -994,8 +982,6 @@ pre {
 
 /* SIDEBAR */
 .sidebar {
-	font-size: @font-small;
-
 	h3 {
 		margin: 0 0 @padding-large 0;
 	}
@@ -1008,21 +994,15 @@ pre {
 			padding: 0 0 @padding-normal 0;
 
 			a {
-/*
-				display:block;
-*/
+				.linkopacity();
 				text-overflow:ellipsis;
 				overflow: hidden;
-				color: darken(@color-text,5%);
 
 				&:before {
 					.iconstyle();
 					content: "\e821";
 				}
 
-				&:hover {
-					color: lighten(@color-link,10%);
-				}
 			}
 		}
 	}
@@ -1206,14 +1186,11 @@ pre {
 		}
 	}
 
-	.category-postlist {
-		width: 60%;
-		float: left;
-	}
-
+	.category-postlist,
 	.sidebar {
-		width: 36%;
-		float: right;
+		max-width: 38em;
+		display:block;
+		margin:auto;
 	}
 
 	.photoblog-preview {
@@ -1221,6 +1198,7 @@ pre {
 		padding-bottom: 32.9%;
 	}
 
+	/*
 	.category-columns {
 		.columns2();
 	}
@@ -1272,7 +1250,7 @@ pre {
 
 		.comment-reply-title,
 		time {
-			color: darken(@color-text,15%);
+			color: darken(@color-text-light,15%);
 		}
 
 		.avatar {

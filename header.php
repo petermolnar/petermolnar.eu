@@ -1,7 +1,7 @@
 <?php
 global $petermolnareu_theme;
-$logo_img = $petermolnareu_theme->image_dir . 'peter_molnar_logo.svg';
-$favicon = $petermolnareu_theme->image_dir . 'favicon.png';
+$logo_img = $petermolnareu_theme->image_url . 'peter_molnar_logo.svg';
+$favicon = $petermolnareu_theme->image_url . 'favicon.png';
 
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -14,9 +14,8 @@ $favicon = $petermolnareu_theme->image_dir . 'favicon.png';
 </head>
 
 <body>
-	<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
-
 	<header class="content-header"><div class="inner">
+		<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
 		<figure class="content-logo">
 			<a href="<?php bloginfo( 'url' ) ?>">
 				<img src="<?php echo $logo_img; ?>" title="<?php bloginfo( 'name' ) ?>" alt="<?php bloginfo( 'name' ) ?>" />
@@ -26,4 +25,4 @@ $favicon = $petermolnareu_theme->image_dir . 'favicon.png';
 		</nav>
 	</div></header>
 
-	<section class="content-body"><div class="inner">
+

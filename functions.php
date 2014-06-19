@@ -9,15 +9,18 @@ class petermolnareu {
 	const fbuser = 'petermolnar.eu';
 	const shortdomain = 'http://pmlnr.eu/';
 	const shorturl_enabled = true;
+	const cache_group = 'theme_meta';
+	const cache_time = 86400;
+	const cache = 1;
+
 
 	public $base_url = '';
-	public $js_dir = '';
-	public $css_dir = '';
-	public $font_dir = '';
-	public $image_dir = '';
+	public $js_url = '';
+	public $css_url = '';
+	public $font_url = '';
+	public $image_url = '';
 	public $theme_url = '';
 	public $image_sizes = array();
-	public $info = array();
 	public $adaptive_images = null;
 
 	public $urlfilters = array ();
@@ -26,11 +29,10 @@ class petermolnareu {
 	public function __construct () {
 		$this->base_url = $this->replace_if_ssl( get_bloginfo("url") );
 		$this->theme_url = $this->replace_if_ssl( get_bloginfo("stylesheet_directory") );
-		$this->js_dir = $this->theme_url . '/assets/js/';
-		$this->css_dir = $this->theme_url . '/assets/css/';
-		$this->font_dir = $this->theme_url . '/assets/font/';
-		$this->image_dir = $this->theme_url . '/assets/image/';
-		$this->info = wp_get_theme( );
+		$this->js_url = $this->theme_url . '/assets/js/';
+		$this->css_url = $this->theme_url . '/assets/css/';
+		$this->font_url = $this->theme_url . '/assets/font/';
+		$this->image_url = $this->theme_url . '/assets/image/';
 
 		$this->adaptive_images = new adaptive_images( $this );
 
@@ -112,9 +114,9 @@ class petermolnareu {
 		add_filter( 'the_content', array(&$this, 'add_post_format_data'), 1 );
 
 		/* reorder autop */
-		//remove_filter( 'the_content', 'wpautop', 1 );
-		//add_filter( 'the_content', 'shortcode_unautop', 100 );
-		//add_filter( 'the_content', 'wpautop', 99 );
+		remove_filter( 'the_content', 'wpautop' );
+		add_filter( 'the_content', 'shortcode_unautop', 100 );
+		add_filter( 'the_content', 'wpautop', 99 );
 
 		/* relative urls *
 		if ( $this->relative_urls ) {
@@ -150,12 +152,12 @@ class petermolnareu {
 	 */
 	public function register_css_js () {
 		/* enqueue CSS */
-		wp_register_style( 'style', $this->theme_url . '/style.css' , false, $this->info->version );
+		wp_register_style( 'style', $this->theme_url . '/style.css' , false, $this->css_version ( dirname(__FILE__) . '/style.css' ) );
 		wp_enqueue_style( 'style' );
 
 		/* syntax highlight */
-		wp_register_style( 'prism', $this->css_dir . 'prism.css', false, null );
-		wp_register_script( 'prism' , $this->js_dir . 'prism.js', false, null, true );
+		wp_register_style( 'prism', $this->css_url . 'prism.css', false, null );
+		wp_register_script( 'prism' , $this->js_url . 'prism.js', false, null, true );
 
 		/* CDN scripts */
 		wp_deregister_script( 'jquery' );
@@ -163,7 +165,7 @@ class petermolnareu {
 		wp_enqueue_script( 'jquery' );
 
 		/* for adaptive image class, TODO move here */
-		wp_register_script( 'jquery.adaptive-images', $this->js_dir . 'adaptive-images.js', array('jquery'), null, true );
+		wp_register_script( 'jquery.adaptive-images', $this->js_url . 'adaptive-images.js', array('jquery'), null, true );
 
 		/* this is to have reply fields correctly */
 		if ( (!is_admin()) && is_singular() && comments_open() && get_option('thread_comments') )
@@ -375,7 +377,7 @@ class petermolnareu {
 	 * related posts, based shared tags
 	 *
 	 */
-	public function related_posts ( $_post, $onlysiblings = false ) {
+	public function related_posts ( $_post, $onlysiblings = false, $limit = 12 ) {
 		$args = array( 'fields' => 'ids' );
 		$tags = wp_get_post_tags($_post->ID, $args );
 		$categories = wp_get_post_categories ( $_post->ID, $args );
@@ -387,8 +389,9 @@ class petermolnareu {
 			$args=array(
 				'tag__in' => $tags,
 				'post__not_in' => array($_post->ID),
-				'posts_per_page'=>12,
-				'ignore_sticky_posts'=>1
+				'posts_per_page'=>$limit,
+				'ignore_sticky_posts'=>1,
+				'orderby' => 'rand',
 			);
 
 			if ( $onlysiblings ) {
@@ -413,7 +416,7 @@ class petermolnareu {
 		}
 
 		$out = '<nav class="sidebar-postlist">
-				<h3 class="postlist-title">'. __( "Related posts" ) . '</h3>
+				<h2 class="postlist-title">'. __( "Some related posts" ) . '</h2>
 				<ul class="postlist">
 				'. $list .'
 				</ul>
@@ -475,8 +478,8 @@ class petermolnareu {
 
 		ob_start();
 		?>
-		<time class="article-pubdate dt-published" pubdate="<?php echo get_the_time( 'r', $post->ID ); ?>"><?php echo get_the_time( get_option('date_format'), $post->ID ); ?> <?php echo get_the_time( get_option('time_format'), $post->ID ); ?></time>
-		<time class="hide dt-updated" pubdate="<?php echo get_the_modified_time( 'r', $post->ID ); ?>"><?php echo get_the_time( get_option('date_format'), $post->ID ); ?><?php echo get_the_time( get_option('time_format'), $post->ID ); ?></time>
+		<time class="article-pubdate dt-published" datetime="<?php echo get_the_time( 'c', $post->ID ); ?>"><?php echo get_the_time( get_option('date_format'), $post->ID ); ?> <?php echo get_the_time( get_option('time_format'), $post->ID ); ?></time>
+		<time class="hide dt-updated" datetime="<?php echo get_the_modified_time( 'c', $post->ID ); ?>"><?php echo get_the_time( get_option('date_format'), $post->ID ); ?> <?php echo get_the_time( get_option('time_format'), $post->ID ); ?></time>
 		<?php
 		$content = ob_get_clean();
 		return $content;
@@ -680,10 +683,10 @@ class petermolnareu {
 	 */
 	public function rewrites () {
 		add_rewrite_rule("indieweb-decentralize-web-centralizing", "indieweb-decentralize-web-centralizing-ourselves", "bottom" );
-		add_rewrite_rule("/wordpress/(.*)", "/open-source/$matches[1]", "bottom" );
-		add_rewrite_rule("/b/(.*)", "/blips/$matches[1]", "bottom" );
-		add_rewrite_rule("/open-source/wordpress/(.*)", "/open-source/$matches[1]", "bottom" );
-		add_rewrite_rule("/blog/(.*)", "/journal/$matches[1]", "bottom" );
+		add_rewrite_rule("/wordpress(.*)", '/open-source$matches[1]', "bottom" );
+		add_rewrite_rule("/b(.*)", '/blips$matches[1]', "bottom" );
+		add_rewrite_rule("/open-source/wordpress/(.*)", '/open-source/$matches[1]', "bottom" );
+		add_rewrite_rule("/blog(.*)", '/journal$matches[1]', "bottom" );
 	}
 
 	/**
@@ -807,6 +810,166 @@ class petermolnareu {
 		$s = str_replace("</p>", "\n\n", $s);
 
 		return $s;
+	}
+
+	private function css_version ( $file ) {
+		$version = 0;
+		$handle = fopen($file, "r");
+		if ($handle) {
+			while (($line = fgets($handle)) !== false && empty($version) ) {
+				if ( strstr($line,'Version') ) {
+					$v = explode("\t",$line);
+					if ( !empty($v[2]) )
+						$version = $v[2];
+						break;
+				}
+			}
+		}
+		fclose($handle);
+
+		return $version;
+	}
+
+	public function category_meta( &$category ) {
+		if ( empty($category))
+			return false;
+
+		//$cid = 'category_' . $category->slug;
+		/*
+		$cached = ( self::cache == 1 ) ? wp_cache_get( $cid, self::cache_group ) : false;
+
+		if ( $cached != false ) {
+			return  $cached;
+		}*/
+
+		switch ( $category->slug ) {
+			case 'blips':
+				$category_meta = array (
+					'custom-template' => 'status',
+					'posts-per-page' => 12,
+					'show-sidebar' => 0,
+					'columns' => 0,
+					'siblings' => false,
+					'show-pagination' => 1,
+					'sidebar-entries' => 0,
+				);
+				break;
+			case 'photoblog':
+				$category_meta = array (
+					'custom-template' => 'gallery',
+					'posts-per-page' => 6,
+					'show-sidebar' => 0,
+					'show-pagination' => 1,
+					'columns' => 0,
+					'siblings' => true,
+					'sidebar-entries' => 0,
+				);
+				break;
+			case 'portfolio':
+				$category_meta = array (
+					'custom-template' => 'gallery',
+					'posts-per-page' => -1,
+					'show-sidebar' => 0,
+					'show-pagination' => 0,
+					'order-by' => 'modified',
+					'columns' => 0,
+					'siblings' => false,
+				);
+				break;
+			default:
+				$category_meta = array (
+					'custom-template' => 'default',
+					'posts-per-page' => 12,
+					'show-sidebar' => 0,
+					'show-pagination' => 1,
+					'order-by' => 'date',
+					'sidebar-entries' => 12,
+					'columns' => 0,
+					'siblings' => false,
+				);
+		}
+
+		//wp_cache_set( $cid, $category_meta, self::cache_group, self::cache_time );
+		return $category_meta;
+	}
+
+	public function article_meta( ) {
+		global $post;
+
+		if ( empty($post))
+			return false;
+
+		$singular = is_singular();
+
+		$cid = ($singular) ? 'article_' : 'article_list_';
+		$cid .= $post->ID;
+
+		$cached = ( self::cache == 1 ) ? wp_cache_get( $cid, self::cache_group ) : false;
+
+		if ( $cached != false ) {
+			return  $cached;
+		}
+
+		$ameta = array();
+
+		$post_format = get_post_format();
+		if ( $post_format === false )
+			$post_format = get_post_type();
+
+		$ameta['post-format'] = $post_format;
+		$ameta['category'] = array_shift( get_the_category( $post->ID ) );
+		$ameta['category_meta'] = $this->category_meta( $ameta['category'] );
+		$ameta['color'] = ( $ameta['category_meta']['custom-template'] == 'gallery') ? 'dark' : 'light';
+		$ameta['header'] = 'normal';
+		$ameta['adaptify'] = false;
+		$ameta['footer'] = ($singular) ? true : false;
+		$ameta['siblings'] = false;
+		$ameta['content_type'] = ( $singular ) ? 'e-content' : 'e-summary';
+		$ameta['class'] = ($singular) ? ' content-inner ' : ' content-inner article-list-element';
+		$ameta['featimg'] = false;
+		$ameta['showccntr'] = ($singular) ? false : true;
+		$ameta['showtags'] = ($singular) ? true : false;
+		$ameta['sidebar'] = false;
+
+		switch ( $post_format ) {
+			case 'link':
+			case 'quote':
+			case 'status':
+			case 'image':
+			case 'video':
+			case 'audio':
+			case 'aside':
+				$ameta['header'] = 'pubdate';
+				$ameta['adaptify'] = true;
+				$ameta['content_type'] = 'e-content';
+			break;
+			case 'gallery':
+				$ameta['header'] = ($singular) ? 'small' : 'none';
+				$ameta['content_type'] = ($singular) ? 'e-content' : 'image';
+				$ameta['class'] =  ($singular) ? '' : 'photoblog-preview';
+				$ameta['footer'] = false;
+				$ameta['showccntr'] = false;
+				switch ( $ameta['category']->slug ) {
+					case 'photoblog':
+						$ameta['footer'] = $ameta['siblings'] = ($singular) ? true :false ;
+						break;
+				}
+			break;
+			case 'page':
+				$ameta['header'] = 'none';
+				$ameta['footer'] = false;
+				$ameta['showccntr'] = false;
+				$ameta['showtags'] = false;
+				$ameta['color'] = 'dark';
+			break;
+		default:
+			$ameta['featimg'] = true;
+			$ameta['sidebar'] = ($singular) ? true : false;
+			break;
+		}
+
+		wp_cache_set( $cid, $ameta, self::cache_group, self::cache_time );
+		return $ameta;
 	}
 }
 

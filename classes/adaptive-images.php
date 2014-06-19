@@ -187,7 +187,7 @@ class adaptive_images {
 			$keys = array_keys($this->image_sizes);
 			$src_src = $bgdata[ array_shift( $keys ) ][ $imgid ][ self::a_hd ];
 
-			$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
+			//$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
 			//$caption = $img['title'];
 
 			$th_list[ $imgid ] = '<li><a id="'. $th_id .'" href="#'. $src_id .'">'. $img['title'] .'</a></li>';
@@ -319,7 +319,7 @@ class adaptive_images {
 		$r = '<section class="adaptgal-pure">';
 
 		foreach ($images as $imgid => $img ) {
-			$r .= do_shortcode( '[adaptimg aid=' . $imgid .' title="'. $img['title'] .'" size="'. self::a_hd .'" share=1]');
+			$r .= do_shortcode( '[adaptimg aid=' . $imgid .' title="'. $img['title'] .'" size="'. self::a_hd .'" share=0]');
 		}
 
 		$r .= '</section>';

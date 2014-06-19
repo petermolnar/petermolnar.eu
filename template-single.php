@@ -1,96 +1,28 @@
 <?php
-	global $post;
-	global $petermolnareu_theme;
-	global $category;
-	global $category_meta;
+global $post;
+global $petermolnareu_theme;
+$commentcounter = '<a class="u-url right icon-comment commentcounter" href="'. get_the_permalink() . '#comments">'. get_comments_number( '', '1', '%' ) . '</a>';
 
-	$post_format = get_post_format();
-	if ( $post_format === false )
-		$post_format = get_post_type();
+$ameta = $petermolnareu_theme->article_meta ();
 
-	if ( empty ( $category )) {
-		$category = get_the_category( $post->ID );
-		$category = array_shift( $category );
-	}
-
-	$header = 'normal';
-	$adaptify = false;
-	$footer = (is_singular()) ? true : false;
-	$siblings = false;
-	$content_type = ( is_singular() ) ? 'e-content' : 'e-summary';
-	$class = (is_singular()) ? '' : ' article-list-element';
-	$featimg = false;
-	$commentcounter = '<a class="u-url right icon-comment commentcounter" href="'. get_the_permalink() . '#comments">'. get_comments_number( '', '1', '%' ) . '</a>';
-	$showccntr = (is_singular()) ? false : true;
-	$showtags = (is_singular()) ? true : false;
-	$sidebar = '';
-
-	switch ( $post_format ) {
-		case 'link':
-		case 'quote':
-		case 'status':
-		case 'image':
-		case 'video':
-		case 'audio':
-		case 'aside':
-			$header = 'pubdate';
-			$adaptify = true;
-			$content_type = 'e-content';
-			break;
-		case 'gallery':
-			$header = ( is_singular() ) ? 'small' : 'none';
-			$content_type = ( is_singular() ) ? 'e-content' : 'image';
-			if ( !is_singular() ) $class = ' photoblog-preview';
-			$footer = false;
-			$showccntr = false;
-			break;
-		case 'page':
-			$footer = false;
-			$content_type = 'e-content';
-			$showtags = false;
-			$header = 'none';
-			break;
-		default:
-			$featimg = true;
-			switch ( $category->slug ) {
-				case 'portfolio':
-					$footer = false;
-					$showtags = false;
-					break;
-				case 'photoblog':
-					$siblings = true;
-					$showtags = false;
-					break;
-				/*
-				case 'journal':
-					$footer = true;
-					$siblings = true;
-					$content_type = 'e-content';
-					break;
-				*/
-				default:
-					if ( is_singular() ) {
-						$class = ' category-postlist';
-						$sidebar = true;
-					}
-					break;
-			}
-			break;
-	}
-
-	if ( is_singular()) {
-		$h = 1;
-	}
-	else {
-		$h = 2;
-	}
+if ( is_singular()) {
+	$h = 1;
+	$more = '';
+	?>
+	<section class="content-body content-<?php echo $ameta['color']; ?>"><div class="inner">
+	<?php
+}
+else {
+	$h = 2;
+	$more = '';
+}
 
 ?>
 
-<article id="post-<?php the_ID(); ?>" class="h-entry<?php echo $class; ?>">
+<article id="post-<?php the_ID(); ?>" class="h-entry <?php echo $ameta['class']; ?>">
 
 	<!-- prev-next links -->
-	<?php if ( $siblings ) : ?>
+	<?php if ( $ameta['siblings'] ) : ?>
 	<nav class="siblings">
 		<div class="link left"><?php	next_post_link( '&laquo; %link' , '%title' , true ); ?></div>
 		<div class="link right"><?php	previous_post_link( '%link &raquo; ' , '%title' , true ); ?></div>
@@ -101,30 +33,30 @@
 	<!-- article header -->
 	<header class="article-header">
 
-		<?php  if ( $header == 'none' ) : ?>
+		<?php  if ( $ameta['header'] == 'none' ) : ?>
 			<div class="hide">
 				<span class="p-name"><?php the_title(); ?></span>
 				<?php echo $petermolnareu_theme->article_time(); ?>
 			</div>
-		<?php  elseif ( $header == 'pubdate' ) : ?>
+		<?php  elseif ( $ameta['header'] == 'pubdate' ) : ?>
+			<?php if ($ameta['showccntr']) echo $commentcounter; ?>
 			<a class="u-url" href="<?php the_permalink() ?>">
 				<?php echo $petermolnareu_theme->article_time(); ?>
 			</a>
-			<?php if ($showccntr) echo $commentcounter; ?>
 			<span class="hide p-name"><?php the_title(); ?></span>
-		<?php elseif ( $header == 'small' ): ?>
+		<?php elseif ( $ameta['header'] == 'small' ): ?>
 			<h<?php echo $h; ?>>
 				<a class="u-url" href="<?php the_permalink() ?>">
-					<span class="p-name"><?php the_title(); ?></span>
+					<span class="p-name"><?php the_title(); ?></span><?php echo $more; ?>
 				</a>
 			</h<?php echo $h; ?>>
 			<span class="hide"><?php echo $petermolnareu_theme->article_time(); ?></span>
-		<?php elseif ( $header == 'normal'): ?>
+		<?php elseif ( $ameta['header'] == 'normal'): ?>
+			<?php if ($ameta['showccntr']) echo $commentcounter; ?>
 			<?php echo $petermolnareu_theme->article_time(); ?>
-			<?php if ($showccntr) echo $commentcounter; ?>
 			<h<?php echo $h; ?>>
 				<a class="u-url" href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
-					<span class="p-name"><?php the_title(); ?></span>
+					<span class="p-name"><?php the_title(); ?></span><?php echo $more; ?>
 				</a>
 			</h<?php echo $h; ?>>
 		<?php endif; ?>
@@ -144,7 +76,7 @@
 	<!-- article content -->
 	<?php $aid = get_post_thumbnail_id( $post->ID );
 
-	if ( $content_type == 'image') : ?>
+	if ( $ameta['content_type'] == 'image') : ?>
 		<a class="u-url" href="<?php the_permalink(); ?>">
 			<?php
 				$title = get_the_title();
@@ -154,7 +86,7 @@
 	<?php else:
 		ob_start();
 
-		if ( $content_type == 'e-summary' )
+		if ( $ameta['content_type'] == 'e-summary' )
 			the_excerpt();
 		else
 			the_content();
@@ -162,8 +94,8 @@
 		$content = ob_get_clean();
 
 		?>
-		<div class="article-content <?php echo $contenttype ?>">
-			<?php if ( $featimg && has_post_thumbnail () ) : ?>
+		<div class="article-content <?php echo $ameta['content_type'] ?>">
+			<?php if ( $ameta['featimg'] && has_post_thumbnail () ) : ?>
 				<figure class="article-thumbnail">
 					<a href="<?php the_permalink() ?>">
 					<?php
@@ -179,18 +111,19 @@
 			<?php endif ?>
 
 			<?php echo $content ?>
+			<br class="clear" />
 		</div>
 	<?php endif; ?>
 
 	<!-- article footer -->
-	<?php if ( $footer ) : ?>
+	<?php if ( $ameta['footer'] ) : ?>
 	<footer class="article-footer">
 
-		<?php if ( $showtags ): ?>
+		<?php if ( $ameta['showtags'] ): ?>
 			<h6><?php _e('Posted in:', $petermolnareu_theme->theme_constant) ?></h6>
 		<?php endif; ?>
 
-		<?php $hidetags = ( $showtags ) ? '' : ' hide'; ?>
+		<?php $hidetags = ( $ameta['showtags'] ) ? '' : ' hide'; ?>
 		<?php the_tags('<nav class="p-category'.$hidetags.'">', ', ', '</nav>'); ?>
 
 		<?php if ( function_exists('add_js_rel_syndication')) echo add_js_rel_syndication(''); ?>
@@ -213,8 +146,8 @@
 </article>
 
 <!-- related posts -->
-<?php  if ($sidebar) : ?>
-	<aside class="sidebar">
-	<?php echo $petermolnareu_theme->related_posts( $post ); ?>
+<?php  if ($ameta['sidebar']) : ?>
+	<aside class="sidebar content-<?php echo $colortheme ?>">
+	<?php echo $petermolnareu_theme->related_posts( $post, false, 4 ); ?>
 	</aside>
 <?php endif; ?>

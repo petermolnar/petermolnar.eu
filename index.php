@@ -9,79 +9,18 @@
 	$cat = get_query_var('cat');
 
 	if ( is_home() ) {
-		$query_string .= '&cat=5';
-		$cat = 5;
+		$query_string .= '&cat=341';
+		$cat = 341;
 	}
 
 	if ( !empty( $cat ) ) {
 		/* get category */
 		$category = get_category( $cat );
 
-		$category_meta = array();
-		switch ( $category->slug ) {
-			case 'blips':
-				$category_meta = array (
-					'custom-template' => 'status',
-					'posts-per-page' => 18,
-					'show-sidebar' => 0,
-					'columns' => 1,
-					'siblings' => false,
-					'show-pagination' => 1,
-					'sidebar-entries' => 0,
-				);
-				break;
-			case 'photoblog':
-				$category_meta = array (
-					'custom-template' => 'gallery',
-					'posts-per-page' => 6,
-					'show-sidebar' => 0,
-					'show-pagination' => 1,
-					'columns' => 0,
-					'siblings' => true,
-					'sidebar-entries' => 0,
-				);
-				break;
-			case 'portfolio':
-				$category_meta = array (
-					'custom-template' => 'gallery',
-					'posts-per-page' => -1,
-					'show-sidebar' => 0,
-					'show-pagination' => 0,
-					'order-by' => 'modified',
-					'columns' => 0,
-					'siblings' => false,
-				);
-				break;
-			/*
-			case 'journal':
-				$category_meta = array (
-					'custom-template' => 'default',
-					'posts-per-page' => 4,
-					'show-sidebar' => 0,
-					'show-pagination' => 1,
-					'order-by' => 'date',
-					'sidebar-entries' => 12,
-					'columns' => 0,
-					'siblings' => true,
-				);
-				break;
-			*/
-			default:
-				$category_meta = array (
-					'custom-template' => 'default',
-					'posts-per-page' => 4,
-					'show-sidebar' => 1,
-					'show-pagination' => 1,
-					'order-by' => 'date',
-					'sidebar-entries' => 12,
-					'columns' => 0,
-					'siblings' => false,
-				);
-		}
+		$category_meta = $petermolnareu_theme->category_meta( $category );
 
 		/* post per page "feature" fix */
 		$posts_per_page = $category_meta['posts-per-page'] + $category_meta['sidebar-entries'];
-
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
 
 	}
@@ -92,20 +31,22 @@
 	}
 
 	query_posts( $_query_string );
+	$is_single = is_singular();
 
 	get_header();
 
-	$is_single = is_singular();
-
 	if ( $is_single ) {
 		the_post();
-		//get_template_part('article', 'header');
-		//get_template_part('article', 'body');
-		//get_template_part('article', 'footer');
 		get_template_part('template', 'single');
 	}
 	/* not singular */
 	else {
+
+		if ( $category_meta['custom-template'] == 'gallery'): ?>
+		<section class="content-body content-dark"><div class="inner">
+		<?php else: ?>
+		<section class="content-body content-light"><div class="inner">
+		<?php endif;
 
 		$sectionclass = $category->slug . "-postlist";
 		if ( $category_meta['show-sidebar'] == 1 )
@@ -113,22 +54,19 @@
 		elseif ( $category_meta['columns'] == 1 )
 			$sectionclass = " category-columns";
 		?>
-		<section class="<?php echo $sectionclass; ?>">
+		<div class="<?php echo $sectionclass; ?>">
 		<?php
 			if ( have_posts() ) {
 				while ( have_posts() ) {
 					the_post();
-					//get_template_part('article', 'header');
-					//get_template_part('article', 'body');
-					//get_template_part('article', 'footer');
 					get_template_part('template', 'single');
 				}
 			}
 
-		?></section><?php
+		?></div><?php
 
 		if ( $category_meta['show-sidebar'] == 1 ) { ?>
-			<section class="sidebar">
+			<aside class="sidebar">
 				<?php
 					$page = get_query_var('paged');
 
@@ -137,12 +75,11 @@
 
 					?><h3><?php _e ('Earlier posts:', $petermolnareu_theme->theme_constant ); ?></h3><?php
 					echo $petermolnareu_theme->list_posts( $category, $category_meta['sidebar-entries'], $pstart ); ?>
-			</section>
+			</aside>
 
 		<?php }
 
 	}
-
 
 	if( function_exists('wp_paginate') && !empty( $category_meta['show-pagination'] ) && $category_meta['show-pagination'] == 1 )
 		wp_paginate();
