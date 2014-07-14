@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		6.7
+Version:		7.1
 */
 .spacer {
   display: inline-block;
@@ -162,8 +162,17 @@ select,
 submit {
   vertical-align: middle;
   border: 1px solid #434c57;
-  background-color: #efefef;
+  background-color: #2d333a;
   color: #999999;
+}
+input:active,
+select:active,
+submit:active,
+input:focus,
+select:focus,
+submit:focus {
+  border: 1px solid #5a6673;
+  background-color: #384048;
 }
 /********
 * FONTS *
@@ -271,7 +280,7 @@ body {
   font-family: 'Liberation Sans', sans-serif;
   font-size: 17px;
   color: #999999;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
   font-weight: normal;
 }
 .inner {
@@ -612,17 +621,18 @@ pre {
   top: 0;
   z-index: 99;
   left: -17em;
-  padding: 0 0 0 2em;
+  padding: 0 0 0 0;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
   background: url('assets/image/bg-noise.png') repeat scroll left top #121518;
 }
 .content-header.open {
-  left: -1em;
+  left: 0;
   padding-right: 0;
 }
 .content-logo {
-  margin: 1em;
+  margin: 1em 0 1em 0;
+  text-align: center;
 }
 /* PANEL TOGGLE */
 .nav-toggle-button {
@@ -632,9 +642,8 @@ pre {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
-  top: 1em;
   right: -1em;
-  z-index: 99;
+  z-index: 999!important;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
   text-shadow: 1px 1px #333333;
@@ -700,6 +709,9 @@ pre {
 }
 .content-comments {
   padding: 0.6em 0 0 0;
+}
+.content-navigation {
+  margin: 0 0 0 1em;
 }
 .content-navigation ul {
   list-style-type: none;
@@ -839,6 +851,14 @@ pre {
   content: '»';
   margin-left: 0.3em;
 }
+.article-content {
+  text-align: justify;
+}
+.minstoread {
+  font-size: 0.7em;
+  opacity: 0.5;
+  margin-right: 0.6em;
+}
 .article-pubdate,
 .urel {
   display: block;
@@ -883,10 +903,16 @@ pre {
   opacity: 0.7;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
-  text-indent: -9998.99999999px;
+  /*
+			background-size: contain;
+			background-position: center center;
+			background-repeat: no-repeat;
+			text-indent: -9999px;
+*/
+}
+.photoblog-preview a figure img {
+  width: auto;
+  height: 100%;
 }
 .photoblog-preview a figure figcaption {
   position: absolute;
@@ -911,6 +937,7 @@ pre {
   width: 32%;
   padding-bottom: 32%;
 }
+/* sibling links */
 .siblings {
   display: block;
   padding: 0 0 0.6em 0;
@@ -929,7 +956,9 @@ pre {
   width: 90%;
   margin: 0 auto 0 auto;
   padding: 0;
-  text-indent: -9999px;
+  /*
+	text-indent: -9999px;
+*/
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
   background-size: contain;
@@ -937,13 +966,15 @@ pre {
   background-repeat: no-repeat;
 }
 .adaptimg figcaption {
-  text-indent: 0;
-  position: absolute;
-  bottom: 0;
-  left: 1em;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-  text-shadow: 1px 1px #111111;
+  display: none;
+  /*
+		text-indent: 0;
+		position: absolute;
+		bottom: 0;
+		left: 1em;
+		.animate();
+		text-shadow: @textshadow-outset;
+*/
 }
 .adaptimg img {
   width: 100%;
@@ -957,37 +988,42 @@ pre {
   width: 90%;
   margin: 0 auto 0 auto;
   padding: 0;
-  text-indent: -9999px;
+  /*
+		text-indent: -9999px;
+		.fullbg();
+*/
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
-.adaptgal-pure figure .share,
-.adaptgal figure .share {
-  margin: 0;
-}
-.adaptgal-pure figure .share ul li,
-.adaptgal figure .share ul li {
-  font-size: 2.2em;
-}
-.adaptgal-pure figure .share ul li a,
-.adaptgal figure .share ul li a {
-  color: #dddddd;
-  margin: 0;
+  /*
+		.share {
+			margin: 0;
+			ul {
+				li {
+					font-size: @font-enormous;
+
+					a {
+						color: @color-link-light;
+
+						margin: 0;
+					}
+				}
+			}
+		}
+*/
 }
 .adaptgal-pure figure figcaption,
 .adaptgal figure figcaption {
-  text-indent: 0;
-  position: absolute;
-  bottom: 0;
-  left: 1em;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-  text-shadow: 1px 1px #111111;
   display: none;
-  visibility: hidden;
+  /*
+			text-indent: 0;
+			position: absolute;
+			bottom: 0;
+			left: 1em;
+			.animate();
+			text-shadow: @textshadow-outset;
+			display:none;
+			visibility:hidden;
+*/
 }
 .adaptgal-pure figure img,
 .adaptgal figure img {
@@ -1083,44 +1119,61 @@ pre {
     display: none;
     visibility: hidden;
   }
+  /*
+
+
+	.content-header {
+		background-color: transparent;
+		position: relative;
+		top:0;
+		left:0;
+		width: 100%;
+		height:auto;
+		border-radius: @padding-large;
+		padding: 0 0 0 0;
+		background-image: none;
+	}
+
+	.content-logo {
+		float: right;
+		display: inline-block;
+		margin: 0.6em 0 0 0;
+
+		a {
+			img {
+				width: 14em;
+			}
+		}
+	}
+
+	.content-navigation {
+		display: inline-block;
+		margin: @padding-small 0 @padding-small 0;
+
+		ul {
+			.flatul();
+
+			li {
+				margin-right: @padding-xlarge;
+			}
+		}
+	}
+
+	.content-body {
+		padding: @padding-large;
+	}
+	*
+*/
   .content-header {
-    background-color: transparent;
-    position: relative;
-    top: 0;
     left: 0;
-    width: 100%;
-    height: auto;
-    border-radius: 0.6em;
-    padding: 0 0 0 0;
-    background-image: none;
-  }
-  .content-logo {
-    float: right;
-    display: inline-block;
-    margin: 0.6em 0 0 0;
-  }
-  .content-logo a img {
-    width: 14em;
-  }
-  .content-navigation {
-    display: inline-block;
-    margin: 0.2em 0 0.2em 0;
-  }
-  .content-navigation ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  .content-navigation ul li {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-  }
-  .content-navigation ul li {
-    margin-right: 1em;
+    width: 12em;
   }
   .content-body {
     padding: 0.6em;
+  }
+  .content-footer,
+  .content-body {
+    margin-left: 12em;
   }
   /* ADAPTGAL */
   .adaptgal {
@@ -1149,33 +1202,36 @@ pre {
     right: 0;
     bottom: 0;
     vertical-align: top;
+    text-align: center;
     overflow: hidden;
-    text-indent: -9999px;
+    /*
+				text-indent: -9999px;
+				.fullbg();
+*/
     transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
-    background-size: contain;
-    background-position: center center;
-    background-repeat: no-repeat;
     opacity: 0;
   }
   .adaptgal .adaptgal-previews figure figcaption {
-    text-indent: -20em;
+    display: none;
+    /*
+					text-indent: -20em;
+
+					.share {
+						margin: 0;
+						ul {
+							.navul();
+							li {
+								font-size: @font-enormous;
+							}
+						}
+					}
+*/
   }
-  .adaptgal .adaptgal-previews figure figcaption .share {
-    margin: 0;
-  }
-  .adaptgal .adaptgal-previews figure figcaption .share ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  .adaptgal .adaptgal-previews figure figcaption .share ul li {
-    display: block;
-    padding: 0;
-    margin: 0;
-  }
-  .adaptgal .adaptgal-previews figure figcaption .share ul li {
-    font-size: 2.2em;
+  .adaptgal .adaptgal-previews figure img {
+    width: auto;
+    height: 100%;
+    border: 1px solid #777777;
   }
   .adaptgal .adaptgal-previews figure:target {
     opacity: 0.99;
@@ -1213,22 +1269,28 @@ pre {
   }
   .adaptgal .adaptgal-thumbs ul li a {
     position: absolute;
-    left: 0.1em;
-    right: 0.1em;
-    top: 0.1em;
-    bottom: 0.1em;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     border: 1px solid #666;
     overflow: hidden;
     opacity: 0.5;
     transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
-    background-size: contain;
-    background-position: center center;
-    background-repeat: no-repeat;
-    text-indent: -999px;
+    /*
+							background-size: contain;
+							background-position: center center;
+							background-repeat: no-repeat;
+							text-indent: -999px;
+*/
+  }
+  .adaptgal .adaptgal-thumbs ul li a img {
+    width: 100%;
+    height: auto;
   }
   .adaptgal .adaptgal-thumbs ul li a:hover,
-  .adaptgal .adaptgal-thumbs ul li a:active a:focus,
+  .adaptgal .adaptgal-thumbs ul li a:active .adaptgal .adaptgal-thumbs ul li a:focus,
   .adaptgal .adaptgal-thumbs ul li a.adaptgal-active {
     opacity: 0.99;
   }
@@ -1255,12 +1317,6 @@ pre {
   }
   .adaptgal-pure figure {
     width: 92%;
-  }
-  .category-postlist,
-  .sidebar {
-    max-width: 38em;
-    display: block;
-    margin: auto;
   }
   .photoblog-preview {
     width: 32.9%;

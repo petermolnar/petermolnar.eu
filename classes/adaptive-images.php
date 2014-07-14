@@ -19,12 +19,14 @@ class adaptive_images {
 	const a_stnd = 'stnd'; /* for in-text images */
 	const a_hd = 'hd';  /* for large images */
 
+	const scopedcss = false;
+
 	const cache_group = 'adaptive_images';
 	const cache_time = 86400;
 
 	const default_prefix = 'adaptive';
 
-	const cache = 1;
+	const cache = false;
 	private $sharesize = '';
 	const middlesize = 720;
 	public $image_sizes = array();
@@ -128,15 +130,19 @@ class adaptive_images {
 
 	public function adaptgal ( $atts, $content = null ) {
 		global $post;
-		$category = array_shift( get_the_category( $post->ID ) );
+		$c = get_the_category( $post->ID );
+		$category = array_shift( $c );
 		$template = $category->slug;
 
 		switch ( $template ) {
 			case 'photoblog':
-				return $this->adaptgal_pure ( $atts, $content );
+				$r = $this->adaptgal_pure ( $atts, $content );
+				break;
 			default:
-				return $this->adaptgal_classic ( $atts, $content );
+				$r = $this->adaptgal_classic ( $atts, $content );
 		}
+
+		return $r;
 	}
 
 	/* adaptive gallery shortcode function */
@@ -185,12 +191,18 @@ class adaptive_images {
 			$src_id = $img['slug'];
 
 			$keys = array_keys($this->image_sizes);
-			$src_src = $bgdata[ array_shift( $keys ) ][ $imgid ][ self::a_hd ];
+			$src_src = $bgdata[ self::middlesize ][ $imgid ][ self::a_hd ];
+			$th_src = $bgdata[ self::middlesize ][ $imgid ][ self::a_thumb ];
 
 			//$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
 			//$caption = $img['title'];
 
-			$th_list[ $imgid ] = '<li><a id="'. $th_id .'" href="#'. $src_id .'">'. $img['title'] .'</a></li>';
+			$th_list[ $imgid ] = '
+			<li>
+				<a id="'. $th_id .'" href="#'. $src_id .'" title="'. $img['title'] .'">
+					<img src="'. $th_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
+				</a>
+			</li>';
 
 			$src_list[ $imgid ] = '<figure id="'. $src_id .'">
 				<img src="'. $src_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
@@ -409,48 +421,49 @@ class adaptive_images {
 	 */
 	private function build_css ( &$bgdata, &$images ) {
 
-		/* css naming conventions */
-		//$naming = '#' . self::default_prefix . "-";
-		$ctr=0;
-		$mq = '';
-		$resolutions = array_keys ( $this->image_sizes );
+		///* css naming conventions */
+		////$naming = '#' . self::default_prefix . "-";
+		//$ctr=0;
+		//$mq = '';
+		//$resolutions = array_keys ( $this->image_sizes );
 
-		/* join the backgrounds into areas of CSS media queries */
-		foreach ( $bgdata as $resolution => $imgdata ) {
+		///* join the backgrounds into areas of CSS media queries */
+		//foreach ( $bgdata as $resolution => $imgdata ) {
 
-			$imgcss = '';
-			foreach ( $imgdata as $imgid => $sizes ) {
-				$_id = $images[$imgid]['slug'];
-				foreach ( $sizes as $prefix => $url ) {
-					// skip prefixing the preview images for nicer urls
-					$cssprefix = ( $prefix == self::a_hd ) ? '' : '-' . $prefix;
+			//$imgcss = '';
+			//foreach ( $imgdata as $imgid => $sizes ) {
+				//$_id = $images[$imgid]['slug'];
+				//foreach ( $sizes as $prefix => $url ) {
+					//// skip prefixing the preview images for nicer urls
+					//$cssprefix = ( $prefix == self::a_hd ) ? '' : '-' . $prefix;
 
-					$imgcss .= " #" . $_id . $cssprefix . ' { background-image: url('. $url .'); } ';
-				}
-			}
-			if ( $ctr == 0 ) {
-				$mq .= $imgcss;
-			}
-			// last one
-			elseif ( $ctr == sizeof ( $this->image_sizes ) - 1 ) {
-				//$mq .= '@media ( min-width : 1400px ) {
-				$mq .= '@media ( min-width : '. $resolution .'px ) {
-						'. $imgcss .'
-					}';
+					//$imgcss .= " #" . $_id . $cssprefix . ' { background-image: url('. $url .'); } ';
+				//}
+			//}
+			//if ( $ctr == 0 ) {
+				//$mq .= $imgcss;
+			//}
+			//// last one
+			//elseif ( $ctr == sizeof ( $this->image_sizes ) - 1 ) {
+				////$mq .= '@media ( min-width : 1400px ) {
+				//$mq .= '@media ( min-width : '. $resolution .'px ) {
+						//'. $imgcss .'
+					//}';
 
-			}
-			// middle steps
-			else {
-				//$mq .= '@media ( min-width : 720px ) and ( max-width : 1399px ) {
-				$mq .= '@media ( min-width : '. $resolution .'px ) and ( max-width : '. ( $resolutions[$ctr+1] - 1 ) .'px ) {
-						'. $imgcss .'
-					}';
-			}
-			$ctr++;
-		}
+			//}
+			//// middle steps
+			//else {
+				////$mq .= '@media ( min-width : 720px ) and ( max-width : 1399px ) {
+				//$mq .= '@media ( min-width : '. $resolution .'px ) and ( max-width : '. ( $resolutions[$ctr+1] - 1 ) .'px ) {
+						//'. $imgcss .'
+					//}';
+			//}
+			//$ctr++;
+		//}
 
-		$mq =  '<style scoped="scoped">' . $mq . '</style>';
-		return $mq;
+		//$sc = ( self::scopedcss == true ) ? ' scoped="scoped"' : '';
+		//$mq =  '<style'. $sc .'>' . $mq . '</style>';
+		//return $mq;
 
 	}
 

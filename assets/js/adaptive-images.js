@@ -68,26 +68,22 @@ jQuery(document).ready(function($) {
 
 	$thumbs.click( function (event) {
 		$ae = $(this);
-		$active = $( $(this).attr('href') );
 		$thumbs.removeClass('adaptgal-active');
 		$(this).addClass('adaptgal-active');
 
 		var pos = $(window).scrollTop();
 		location.hash = $(this).attr('href');
-		$(window).scrollTop(pos);
-	});
+		if ( $active == false ) {
+			$(window).scrollTop( $("h1").first() );
+			//console.log ( "Scroll to first h1" );
+		}
+		else {
+			$(window).scrollTop(pos);
+			//console.log ( "keep position" );
+		}
 
-	//// swipe reactions, only one finger!
-	//$previews.swipe( {
-	//	swipeLeft:function(event, direction, distance, duration, fingerCount) {
-	//		next( $(this) );
-	//	},
-	//	swipeRight:function(event, direction, distance, duration, fingerCount) {
-	//		prev( $(this) );
-	//	},
-	//	threshold:0,
-	//	fingers:1
-	//});
+		$active = $( $(this).attr('href') );
+	});
 
 	// init the first element or activate the one set by anchor hash
 	if ( $active == false ) {

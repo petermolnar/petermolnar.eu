@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		6.7
+Version:		7.1
 */
 
 @color-bg-dark: #2D333A;
@@ -50,6 +50,8 @@ Version:		6.7
 @panel-width: 17em;
 @toggle-size: 3em;
 @toggle-active: 4em;
+
+@panel-width-desktop: 12em;
 
 .flatul() {
 		list-style-type: none;
@@ -202,8 +204,13 @@ table {
 input, select, submit {
 	vertical-align:middle;
 	border: @thinborder solid lighten(@color-bg-dark,10%);
-	background-color: @color-bg-light;
+	background-color: @color-bg-dark;
 	color: @color-text-light;
+
+	&:active, &:focus {
+		border: @thinborder solid lighten(@color-bg-dark,20%);
+		background-color: lighten(@color-bg-dark,5%);
+	}
 }
 
 /********
@@ -347,7 +354,7 @@ body {
 	font-family: 'Liberation Sans', sans-serif;
 	font-size:@font-base;
 	color:@color-text-light;
-	letter-spacing:0.06em;
+	letter-spacing:0.01em;
 	font-weight: normal;
 }
 
@@ -519,18 +526,19 @@ pre {
 	top:0;
 	z-index: 99;
 	left: -( @panel-width );
-	padding: 0 0 0 2em;
+	padding: 0 0 0 0;
 	.animate();
 	background: url('assets/image/bg-noise.png') repeat scroll left top darken(@color-bg-dark,12%);
 }
 
 .content-header.open {
-	left: -1em;
+	left: 0;
 	padding-right: 0;
 }
 
 .content-logo {
-	margin:  @padding-xlarge;
+	margin: @padding-xlarge 0 @padding-xlarge 0;
+	text-align: center;
 }
 
 /* PANEL TOGGLE */
@@ -541,9 +549,8 @@ pre {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	position: absolute;
-	top: 1em;
 	right: -1em;
-	z-index: 99;
+	z-index: 999!important;
 	.animate();
 	text-shadow:1px 1px @color-text-dark;
 
@@ -561,7 +568,6 @@ pre {
 	position: relative;
 	padding: @toggle-size @padding-large @padding-large @padding-large;
 	z-index: 2;
-
 }
 
 .content-dark {
@@ -629,6 +635,7 @@ pre {
 }
 
 .content-navigation {
+	margin: 0 0 0 1em;
 
 	ul {
 		.navul();
@@ -756,6 +763,16 @@ pre {
 	}
 }
 
+.article-content {
+	text-align: justify;
+}
+
+.minstoread {
+	font-size: @font-xsmall;
+	opacity: 0.5;
+	margin-right: @padding-large;
+}
+
 .article-pubdate,
 .urel {
 	display: block;
@@ -795,41 +812,47 @@ pre {
 	position: relative;
 
 	a {
-			figure {
-				position: absolute;
-				left: @padding-xsmall;
-				right: @padding-xsmall;
-				top: @padding-xsmall;
-				bottom: @padding-xsmall;
-				overflow: hidden;
-				opacity: 0.7;
-				.animate();
-				background-size: contain;
-				background-position: center center;
-				background-repeat: no-repeat;
-				text-indent: -9999px;
-
-				figcaption {
-					position: absolute;
-					overflow: hidden;
-					top: 25%;
-					left: 5%;
-					right: 5%;
-					text-align: center;
-					padding: @padding-small 1% @padding-small 1%;
-					opacity: 0.9;
-					text-indent: 0;
-					font-size: @font-xxlarge;
-					line-height: @font-xlarge;
-					text-shadow: 0 0 2px #000;
-					color: #fff;
-				}
-
-				&:hover {
-					opacity: 0.99;
-				}
-
+		figure {
+			position: absolute;
+			left: @padding-xsmall;
+			right: @padding-xsmall;
+			top: @padding-xsmall;
+			bottom: @padding-xsmall;
+			overflow: hidden;
+			opacity: 0.7;
+			.animate();
+/*
+			background-size: contain;
+			background-position: center center;
+			background-repeat: no-repeat;
+			text-indent: -9999px;
+*/
+			img {
+				width:auto;
+				height: 100%;
 			}
+
+			figcaption {
+				position: absolute;
+				overflow: hidden;
+				top: 25%;
+				left: 5%;
+				right: 5%;
+				text-align: center;
+				padding: @padding-small 1% @padding-small 1%;
+				opacity: 0.9;
+				text-indent: 0;
+				font-size: @font-xxlarge;
+				line-height: @font-xlarge;
+				text-shadow: 0 0 2px #000;
+				color: #fff;
+			}
+
+			&:hover {
+				opacity: 0.99;
+			}
+
+		}
 	}
 }
 
@@ -839,6 +862,8 @@ pre {
 	padding-bottom: 32%;
 }
 
+
+/* sibling links */
 .siblings {
 	display: block;
 	padding: 0 0 @padding-large 0;
@@ -862,17 +887,22 @@ pre {
 	margin: 0 auto 0 auto;
 	padding: 0;
 
+/*
 	text-indent: -9999px;
+*/
 	.animate();
 	.fullbg();
 
 	figcaption {
+		display:none;
+/*
 		text-indent: 0;
 		position: absolute;
 		bottom: 0;
 		left: 1em;
 		.animate();
 		text-shadow: @textshadow-outset;
+*/
 	}
 
 	img {
@@ -891,10 +921,13 @@ pre {
 		margin: 0 auto 0 auto;
 		padding: 0;
 
+/*
 		text-indent: -9999px;
-		.animate();
 		.fullbg();
+*/
+		.animate();
 
+/*
 		.share {
 			margin: 0;
 			ul {
@@ -909,8 +942,11 @@ pre {
 				}
 			}
 		}
+*/
 
 		figcaption {
+			display:none;
+/*
 			text-indent: 0;
 			position: absolute;
 			bottom: 0;
@@ -919,6 +955,7 @@ pre {
 			text-shadow: @textshadow-outset;
 			display:none;
 			visibility:hidden;
+*/
 		}
 
 		img {
@@ -1019,6 +1056,9 @@ pre {
 		visibility: hidden;
 	}
 
+/*
+
+
 	.content-header {
 		background-color: transparent;
 		position: relative;
@@ -1059,6 +1099,22 @@ pre {
 	.content-body {
 		padding: @padding-large;
 	}
+	*
+*/
+
+	.content-header {
+		left:0;
+		width: @panel-width-desktop;
+	}
+
+	.content-body {
+		padding: @padding-large;
+	}
+
+	.content-footer,
+	.content-body {
+		margin-left:@panel-width-desktop;
+	}
 
 	/* ADAPTGAL */
 	.adaptgal {
@@ -1088,13 +1144,18 @@ pre {
 				bottom: 0;
 
 				vertical-align: top;
+				text-align:center;
 				overflow:hidden;
+/*
 				text-indent: -9999px;
-				.animate();
 				.fullbg();
+*/
+				.animate();
 				opacity: 0;
 
 				figcaption {
+					display:none;
+/*
 					text-indent: -20em;
 
 					.share {
@@ -1106,6 +1167,13 @@ pre {
 							}
 						}
 					}
+*/
+				}
+
+				img {
+					width:auto;
+					height:100%;
+					border:@border-thin;
 				}
 
 				&:target {
@@ -1141,23 +1209,30 @@ pre {
 
 						a {
 							position: absolute;
-							left: @padding-xsmall;
-							right: @padding-xsmall;
-							top: @padding-xsmall;
-							bottom: @padding-xsmall;
+							left: 0;
+							right: 0;
+							top: 0;
+							bottom: 0;
 							overflow: hidden;
 							border: 1px solid #666;
 							overflow: hidden;
 							opacity: 0.5;
 							.animate();
+
+							img {
+								width:100%;
+								height:auto;
+							}
+/*
 							background-size: contain;
 							background-position: center center;
 							background-repeat: no-repeat;
 							text-indent: -999px;
-						}
+*/
 
-						a:hover, a:active a:focus, a.adaptgal-active {
-							opacity: 0.99;
+							&:hover, &:active &:focus, &.adaptgal-active {
+								opacity: 0.99;
+							}
 						}
 					}
 				}
@@ -1184,13 +1259,6 @@ pre {
 		figure {
 			width:92%;
 		}
-	}
-
-	.category-postlist,
-	.sidebar {
-		max-width: 38em;
-		display:block;
-		margin:auto;
 	}
 
 	.photoblog-preview {

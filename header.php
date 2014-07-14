@@ -6,11 +6,12 @@ $favicon = $petermolnareu_theme->image_url . 'favicon.png';
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
+	<base href="<?php echo $petermolnareu_theme->base_url; ?>" />
 	<meta charset="<?php bloginfo('charset'); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title><?php wp_title( ); ?></title>
 	<link rel="shortcut icon" href="<?php echo "$favicon" ?>" />
-	<?php	wp_head(); ?>
+	<?php wp_head(); ?>
 </head>
 
 <body>

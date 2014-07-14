@@ -5,12 +5,17 @@
 	global $category_meta;
 	global $category;
 	$_query_string = $query_string;
+	$theme = 'dark';
 
 	$cat = get_query_var('cat');
 
 	if ( is_home() ) {
-		$query_string .= '&cat=341';
-		$cat = 341;
+		$posts_per_page = 10;
+		$_query_string .= $query_string . '&posts_per_page=' . $posts_per_page;
+		$category_meta = $petermolnareu_theme->category_meta( );
+		$theme = $category_meta['theme'];
+		//$query_string .= '&cat=341';
+		//$cat = 341;
 	}
 
 	if ( !empty( $cat ) ) {
@@ -22,12 +27,13 @@
 		/* post per page "feature" fix */
 		$posts_per_page = $category_meta['posts-per-page'] + $category_meta['sidebar-entries'];
 		$_query_string = $query_string . '&posts_per_page=' . $category_meta['posts-per-page'] . '&order=DESC&orderby=' . $category_meta['order-by'];
-
+		$theme = $category_meta['theme'];
 	}
 
 	$tag = get_query_var('tag');
 	if ( !empty( $tag ) ) {
 		$_query_string = $query_string . '&posts_per_page=-1';
+		$theme = 'light';
 	}
 
 	query_posts( $_query_string );
@@ -41,19 +47,14 @@
 	}
 	/* not singular */
 	else {
-
-		if ( $category_meta['custom-template'] == 'gallery'): ?>
-		<section class="content-body content-dark"><div class="inner">
-		<?php else: ?>
-		<section class="content-body content-light"><div class="inner">
-		<?php endif;
-
-		$sectionclass = $category->slug . "-postlist";
-		if ( $category_meta['show-sidebar'] == 1 )
-			$sectionclass = " category-postlist";
-		elseif ( $category_meta['columns'] == 1 )
-			$sectionclass = " category-columns";
 		?>
+		<section class="content-body content-<?php echo $theme; ?>">
+		<?php
+		$sectionclass = $category->slug . "-postlist";
+		if ( $category_meta['columns'] == 1 )
+			$sectionclass .= " category-columns";
+		?>
+
 		<div class="<?php echo $sectionclass; ?>">
 		<?php
 			if ( have_posts() ) {
@@ -64,21 +65,6 @@
 			}
 
 		?></div><?php
-
-		if ( $category_meta['show-sidebar'] == 1 ) { ?>
-			<aside class="sidebar">
-				<?php
-					$page = get_query_var('paged');
-
-					if ( empty ( $page ) ) $page = 1;
-					$pstart = $page * $category_meta['posts-per-page'];
-
-					?><h3><?php _e ('Earlier posts:', $petermolnareu_theme->theme_constant ); ?></h3><?php
-					echo $petermolnareu_theme->list_posts( $category, $category_meta['sidebar-entries'], $pstart ); ?>
-			</aside>
-
-		<?php }
-
 	}
 
 	if( function_exists('wp_paginate') && !empty( $category_meta['show-pagination'] ) && $category_meta['show-pagination'] == 1 )

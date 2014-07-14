@@ -3,7 +3,7 @@
 include_once ('classes/adaptive-images.php');
 
 class petermolnareu {
-	const theme_constant = 'petermolnareu';
+	public $theme_constant = 'petermolnareu';
 	const menu_header = 'header';
 	const twitteruser = 'petermolnar';
 	const fbuser = 'petermolnar.eu';
@@ -11,8 +11,7 @@ class petermolnareu {
 	const shorturl_enabled = true;
 	const cache_group = 'theme_meta';
 	const cache_time = 86400;
-	const cache = 1;
-
+	const cache = 0;
 
 	public $base_url = '';
 	public $js_url = '';
@@ -97,7 +96,7 @@ class petermolnareu {
 
 		/* add main menus */
 		register_nav_menus( array(
-			self::menu_header => __( self::menu_header , self::theme_constant ),
+			self::menu_header => __( self::menu_header , $this->theme_constant ),
 		) );
 
 		/* enable custom uploads */
@@ -107,16 +106,15 @@ class petermolnareu {
 		add_shortcode('code', array ( &$this, 'syntax_highlight' ) );
 		add_shortcode('cc', array ( &$this, 'syntax_highlight' ) );
 
+		/* overwrite gallery shortcode */
+		remove_shortcode('gallery');
+		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
+
 		/* legacy shortcode handler */
 		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
 
 		/* post type additional data */
 		add_filter( 'the_content', array(&$this, 'add_post_format_data'), 1 );
-
-		/* reorder autop */
-		remove_filter( 'the_content', 'wpautop' );
-		add_filter( 'the_content', 'shortcode_unautop', 100 );
-		add_filter( 'the_content', 'wpautop', 99 );
 
 		/* relative urls *
 		if ( $this->relative_urls ) {
@@ -126,9 +124,10 @@ class petermolnareu {
 					add_filter( $filter, 'wp_make_link_relative' );
 		}*/
 
-		/* overwrite gallery shortcode */
-		remove_shortcode('gallery');
-		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
+		//remove_filter( 'the_content', 'wpautop' );
+		//add_filter( 'the_content', 'wpautop' , 12);
+		//add_filter( 'the_content', 'shortcode_unautop' , 12);
+
 
 		/* have links in the admin *
 		add_filter( 'pre_option_link_manager_enabled', '__return_true' );*/
@@ -172,6 +171,53 @@ class petermolnareu {
 			wp_enqueue_script( 'comment-reply' );
 	}
 
+
+	/**
+	 * redirect old stuff to prevent broken links
+	 */
+	public function rewrites () {
+		add_rewrite_rule("indieweb-decentralize-web-centralizing", "indieweb-decentralize-web-centralizing-ourselves", "bottom" );
+		add_rewrite_rule("/wordpress(.*)", '/open-source$matches[1]', "bottom" );
+		add_rewrite_rule("/b(.*)", '/blips$matches[1]', "bottom" );
+		add_rewrite_rule("/open-source/wordpress/(.*)", '/open-source/$matches[1]', "bottom" );
+		add_rewrite_rule("/blog(.*)", '/journal$matches[1]', "bottom" );
+	}
+
+	/**
+	 * replace original shortlink
+	 */
+	public function shorturl () {
+		global $post;
+
+		if ( self::shorturl_enabled ) {
+			return self::shortdomain . $post->ID;
+		}
+		else {
+			$url = rtrim( get_bloginfo('url'), '/' ) . '/';
+			return $url.'?p='.$post->ID;
+		}
+	}
+
+	public function get_shortlink ( $shortlink, $id, $context, $allow_slugs ) {
+		return $this->shorturl();
+	}
+
+	public function shortlink () {
+		echo '<link rel="shortlink" href="'. $this->shorturl() . '" />'."\n";
+	}
+
+	/**
+	 * extend allowed mime types
+	 *
+	 * @param array $existing_mimes Array containing existing mime types
+	 */
+	public function custom_upload_mimes ( $existing_mimes=array() ) {
+		$existing_mimes['svg'] = 'image/svg+xml';
+		$existing_mimes['webp'] = 'image/webp';
+
+		return $existing_mimes;
+	}
+
 	/**
 	 * replaces http:// with https:// in an url if server is currently running on https
 	 *
@@ -188,18 +234,6 @@ class petermolnareu {
 			$url = str_replace ( 'http://' , 'https://' , $url );
 
 		return $url;
-	}
-
-	/**
-	 * extend allowed mime types
-	 *
-	 * @param array $existing_mimes Array containing existing mime types
-	 */
-	public function custom_upload_mimes ( $existing_mimes=array() ) {
-		$existing_mimes['svg'] = 'image/svg+xml';
-		$existing_mimes['webp'] = 'image/webp';
-
-		return $existing_mimes;
 	}
 
 	/**
@@ -220,25 +254,26 @@ class petermolnareu {
 		$snap_options = get_option('NS_SNAutoPoster');
 
 		/* all SNAP entries are in separate meta entries for the post based on the service name's "code" */
-		foreach ( $nxs_snapAvNts as $key => $serv ) {
-			$mkey = 'snap'. $serv['code'];
-			$urlkey = $serv['lcode'].'URL';
-			$okey = $serv['lcode'];
-			$s = strtolower($serv['name']);
-			$metas = maybe_unserialize(get_post_meta($post->ID, $mkey, true ));
-			if ( !empty( $metas ) && is_array ( $metas ) ) {
-				foreach ( $metas as $cntr => $m ) {
-					$pgID = false;
-					if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
-						/* postURL entry will only be used if there's no urlmap set for the service above
-						 * this is due to either missing postURL values or buggy entries */
-						$pgIDs[ $s ] = $m['pgID'];
+		if ( !empty ( $nxs_snapAvNts ) && is_array ( $nxs_snapAvNts ) ) {
+			foreach ( $nxs_snapAvNts as $key => $serv ) {
+				$mkey = 'snap'. $serv['code'];
+				$urlkey = $serv['lcode'].'URL';
+				$okey = $serv['lcode'];
+				$s = strtolower($serv['name']);
+				$metas = maybe_unserialize(get_post_meta($post->ID, $mkey, true ));
+				if ( !empty( $metas ) && is_array ( $metas ) ) {
+					foreach ( $metas as $cntr => $m ) {
+						$pgID = false;
+						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
+							/* postURL entry will only be used if there's no urlmap set for the service above
+							 * this is due to either missing postURL values or buggy entries */
+							$pgIDs[ $s ] = $m['pgID'];
+						}
+						$surl[ $s ] = $snap_options[$okey][$cntr][$urlkey];
 					}
-					$surl[ $s ] = $snap_options[$okey][$cntr][$urlkey];
 				}
 			}
 		}
-
 		/* Twitter */
 		$service = 'twitter';
 		$repost_id = get_post_meta($post->ID, 'twitter_rt_id', true );
@@ -246,19 +281,19 @@ class petermolnareu {
 		$tw = get_post_meta( $post->ID, 'twitter_tweet_id', true );
 		if ( !empty( $pgIDs[ $service ] ) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $pgIDs[ $service ];
-			$txt = __( 'reweet', self::theme_constant );
+			$txt = __( 'reweet', $this->theme_constant );
 		}
 		elseif ( !empty($repost_id) && !empty($repost_uid) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $repost_id;
-			$txt = __( 'reweet', self::theme_constant );
+			$txt = __( 'reweet', $this->theme_constant );
 		}
 		elseif ( !empty($tw) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $tw;
-			$txt = __( 'reweet', self::theme_constant );
+			$txt = __( 'reweet', $this->theme_constant );
 		}
 		else {
 			$url = 'https://twitter.com/share?url='. $link .'&text='. $title;
-			$txt = __( 'tweet', self::theme_constant );
+			$txt = __( 'tweet', $this->theme_constant );
 		}
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 
@@ -273,11 +308,11 @@ class petermolnareu {
 			$search = array('%BASE%', '%pgID%' );
 			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
 			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
-			$txt = __( 'reshare', self::theme_constant );
+			$txt = __( 'reshare', $this->theme_constant );
 		}
 		else {
 			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
-			$txt = __( 'share', self::theme_constant );
+			$txt = __( 'share', $this->theme_constant );
 		}
 
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
@@ -285,13 +320,13 @@ class petermolnareu {
 		/* Google Plus */
 		$service = 'googleplus';
 		$url = 'https://plus.google.com/share?url=' . $link;
-		$txt = __( '+1', self::theme_constant );
+		$txt = __( '+1', $this->theme_constant );
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 
 		/* Tumblr */
 		$service = 'tumblr';
 		$url = 'http://www.tumblr.com/share/link?url='.$link.'&name='.$title.'&description='. $desciption;
-		$txt = __( 'share', self::theme_constant );
+		$txt = __( 'share', $this->theme_constant );
 		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 
 		/* Pinterest */
@@ -299,7 +334,7 @@ class petermolnareu {
 			$purl = ( $parent != false ) ? urlencode($parent) : $link;
 			$service = 'pinterest';
 			$url = 'https://pinterest.com/pin/create/bookmarklet/?media='. $media_url .'&url='. $purl .'&is_video=false&description='. $title;
-			$txt = __( 'pin', self::theme_constant );
+			$txt = __( 'pin', $this->theme_constant );
 			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 
@@ -307,7 +342,7 @@ class petermolnareu {
 		if ($comment) {
 			$service = 'comment';
 			$url = get_permalink( $post->ID ) . "#comments";
-			$txt = __( 'comment', self::theme_constant );
+			$txt = __( 'comment', $this->theme_constant );
 			$shlist[] = '<a rel="discussion" class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 
@@ -318,7 +353,7 @@ class petermolnareu {
 
 		$out = '
 			<action do="post" with="'. get_the_permalink() .'" class="share">
-			<h6>' . __('Share:', self::theme_constant ) . '</h6>
+			<h6>' . __('Share:', $this->theme_constant ) . '</h6>
 			<ul><li>'. implode( '</li><li>', $shlist ) .'</li></ul>
 			</action>';
 
@@ -329,7 +364,7 @@ class petermolnareu {
 	/**
 	 * Returns unordered list of current category's posts
 	 *
-	 */
+	 *
 	public function list_posts( $category, $limit=-1 , $from=0 ) {
 		$req = ( $limit == -1 ) ? -1 : $from + $limit;
 		$category_meta = get_metadata ( 'taxonomy' , $category->term_id, '');
@@ -372,6 +407,7 @@ class petermolnareu {
 
 		return $out;
 	}
+	*/
 
 	/**
 	 * related posts, based shared tags
@@ -382,7 +418,7 @@ class petermolnareu {
 		$tags = wp_get_post_tags($_post->ID, $args );
 		$categories = wp_get_post_categories ( $_post->ID, $args );
 
-		$list = '';
+		$list = $out = '';
 
 		if ( !empty($tags) ) {
 
@@ -415,12 +451,15 @@ class petermolnareu {
 			}
 		}
 
-		$out = '<nav class="sidebar-postlist">
+		if ( !empty($list)) {
+			$out = '
 				<h2 class="postlist-title">'. __( "Some related posts" ) . '</h2>
-				<ul class="postlist">
-				'. $list .'
-				</ul>
-			</nav>';
+				<nav class="sidebar-postlist">
+					<ul class="postlist">
+					'. $list .'
+					</ul>
+				</nav>';
+		}
 
 		return $out;
 	}
@@ -442,8 +481,10 @@ class petermolnareu {
 			$return = false;
 		}
 		else {
-			$search = array( '<', '>' );
-			$replace = array( '&lt;', '&gt;' );
+			$cl = array ('<br />', '<p>', '</p>' );
+			$content = str_replace ( $cl, '', $content );
+			$search = array( '<', '>', '&lt;br /&gt;' );
+			$replace = array( '&lt;', '&gt;', '' );
 			$content = str_replace ( $search, $replace, $content );
 			$return = '<pre class="line-numbers"><code class="language-' . $lang . '">' . trim(str_replace( "\t", "  ", $content ) ) . '</code></pre>';
 		}
@@ -556,22 +597,26 @@ class petermolnareu {
 			$out .= '<a rel="me" class="u-email email" href="mailto:'.$aemail.'" title="'.$aname.' email address">'.$aemail.'</a>';
 
 			/* social */
+			/*
 			$fb =  rtrim(get_the_author_meta ( 'facebook' , $aid ), '/');
 			if ( !empty ($fb)) {
 				$fbname = substr( $fb , strrpos($fb, '/') + 1);
 				$socials['facebook'] = '<a rel="me" class="u-facebook x-facebook url u-url" href="'.$fb.'" title="'.$aname.' @ Facebook">'.$fbname.'</a>';
 			}
+			*/
 
 			$tw = get_the_author_meta ( 'twitter' , $aid );
 			if ( !empty ($tw)) {
 				$socials['twitter'] = '<a rel="me" class="u-twitter x-twitter url u-url" href="https://twitter.com/'.$tw.'" title="'.$aname.' @ Twitter">'.$tw.'</a>';
 			}
 
+			/*
 			$g = rtrim( get_the_author_meta ( 'googleplus' , $aid ), '/' );
 			if ( !empty ($g)) {
 				$gname = substr( $g , strrpos($g, '/') + 1);
 				$socials['googleplus'] = '<a rel="me" class="u-googleplus x-googleplus url u-url" href="'.$g.'" title="'.$aname.' @ Google+">'.$gname.'</a>';
 			}
+			*/
 
 			$l = rtrim(get_the_author_meta ( 'linkedin' , $aid ), '/');
 			if ( !empty ($l)) {
@@ -608,7 +653,7 @@ class petermolnareu {
 	public function repost_data() {
 		global $post;
 
-		/* Twitter retweet */
+		/* Twitter retweet *
 		$repost_id = get_post_meta($post->ID, 'twitter_rt_id', true );
 		$repost_uid = get_post_meta($post->ID, 'twitter_rt_user_id', true );
 		if ( !empty($repost_id) && !empty($repost_uid) ) {
@@ -617,6 +662,7 @@ class petermolnareu {
 			<?php
 		}
 		unset ( $repost_id, $repost_uid );
+		*/
 
 		/* Twitter reply */
 		$reply_id = get_post_meta($post->ID, 'twitter_reply_id', true );
@@ -653,63 +699,29 @@ class petermolnareu {
 				case 'rsvp-yes':
 				case 'rsvp-no':
 				case 'reply':
-					?> <p><?php _e('This is a reply to: ', self::theme_constant )?><a class="u-in-reply-to icon-link-ext-alt" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
+					?> <p  class="urel"><?php _e('This is a reply to: ', $this->theme_constant )?><a class="u-in-reply-to icon-link-ext-alt" href="<?php echo $url ?>"><?php echo $url ?></a></p><?php
 					break;
 				case 'repost':
-					?> <p><?php _e('Reposted from: ', self::theme_constant )?><a class="u-repost-of icon-link-ext-alt" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
+					?> <p class="urel"><?php _e('Reposted from: ', $this->theme_constant )?><a class="u-repost-of icon-link-ext-alt" href="<?php echo $url ?>"><?php echo $url ?></a></p><?php
 					break;
 				case 'like':
-					?> <p><a class="u-like u-like-of icon-thumbs-up" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
+					?> <p class="urel"><?php _e('Like of: ', $this->theme_constant )?><a class="u-like u-like-of icon-thumbs-up" href="<?php echo $url ?>"><?php echo $title ?></a></p><?php
 					break;
 			}
 
 			if ( strstr( $webmention, 'rsvp-' ) ) {
 				switch ($webmention) {
 					case 'rsvp-yes':
-						?><data class="p-rsvp" value="yes"><?php _e("I'll attend!", self::theme_constant ); ?></data><?php
+						?><data class="p-rsvp" value="yes"><?php _e("I'll attend!", $this->theme_constant ); ?></data><?php
 						break;
 					case 'rsvp-no':
-						?><data class="p-rsvp" value="no"><?php _e("I cannot make it.", self::theme_constant ); ?></data><?php
+						?><data class="p-rsvp" value="no"><?php _e("I cannot make it.", $this->theme_constant ); ?></data><?php
 						break;
 				}
 			}
 		}
 		unset ($url, $title, $webmention, $data);
 
-	}
-
-	/**
-	 * redirect old stuff to prevent broken links
-	 */
-	public function rewrites () {
-		add_rewrite_rule("indieweb-decentralize-web-centralizing", "indieweb-decentralize-web-centralizing-ourselves", "bottom" );
-		add_rewrite_rule("/wordpress(.*)", '/open-source$matches[1]', "bottom" );
-		add_rewrite_rule("/b(.*)", '/blips$matches[1]', "bottom" );
-		add_rewrite_rule("/open-source/wordpress/(.*)", '/open-source/$matches[1]', "bottom" );
-		add_rewrite_rule("/blog(.*)", '/journal$matches[1]', "bottom" );
-	}
-
-	/**
-	 * replace original shortlink
-	 */
-	public function shorturl () {
-		global $post;
-
-		if ( self::shorturl_enabled ) {
-			return self::shortdomain . $post->ID;
-		}
-		else {
-			$url = rtrim( get_bloginfo('url'), '/' ) . '/';
-			return $url.'?p='.$post->ID;
-		}
-	}
-
-	public function get_shortlink ( $shortlink, $id, $context, $allow_slugs ) {
-		return $this->shorturl();
-	}
-
-	public function shortlink () {
-		echo '<link rel="shortlink" href="'. $this->shorturl() . '" />'."\n";
 	}
 
 	/**
@@ -831,16 +843,29 @@ class petermolnareu {
 	}
 
 	public function category_meta( &$category ) {
-		if ( empty($category))
-			return false;
+		$default = array (
+			'custom-template' => 'default',
+			'posts-per-page' => 12,
+			'show-sidebar' => 0,
+			'show-pagination' => 1,
+			'order-by' => 'date',
+			'sidebar-entries' => 12,
+			'columns' => 0,
+			'siblings' => false,
+			'theme' => 'light',
+		);
 
-		//$cid = 'category_' . $category->slug;
-		/*
+		if ( empty($category)) {
+			return $default;
+		}
+
+
+		$cid = 'category_' . $category->slug;
 		$cached = ( self::cache == 1 ) ? wp_cache_get( $cid, self::cache_group ) : false;
 
 		if ( $cached != false ) {
 			return  $cached;
-		}*/
+		}
 
 		switch ( $category->slug ) {
 			case 'blips':
@@ -852,6 +877,7 @@ class petermolnareu {
 					'siblings' => false,
 					'show-pagination' => 1,
 					'sidebar-entries' => 0,
+					'theme' => 'light',
 				);
 				break;
 			case 'photoblog':
@@ -863,6 +889,7 @@ class petermolnareu {
 					'columns' => 0,
 					'siblings' => true,
 					'sidebar-entries' => 0,
+					'theme' => 'dark',
 				);
 				break;
 			case 'portfolio':
@@ -874,22 +901,14 @@ class petermolnareu {
 					'order-by' => 'modified',
 					'columns' => 0,
 					'siblings' => false,
+					'theme' => 'dark',
 				);
 				break;
 			default:
-				$category_meta = array (
-					'custom-template' => 'default',
-					'posts-per-page' => 12,
-					'show-sidebar' => 0,
-					'show-pagination' => 1,
-					'order-by' => 'date',
-					'sidebar-entries' => 12,
-					'columns' => 0,
-					'siblings' => false,
-				);
+				$category_meta = $default;
 		}
 
-		//wp_cache_set( $cid, $category_meta, self::cache_group, self::cache_time );
+		wp_cache_set( $cid, $category_meta, self::cache_group, self::cache_time );
 		return $category_meta;
 	}
 
@@ -917,15 +936,17 @@ class petermolnareu {
 			$post_format = get_post_type();
 
 		$ameta['post-format'] = $post_format;
-		$ameta['category'] = array_shift( get_the_category( $post->ID ) );
+		$c = get_the_category( $post->ID );
+		$ameta['category'] = array_shift( $c );
 		$ameta['category_meta'] = $this->category_meta( $ameta['category'] );
-		$ameta['color'] = ( $ameta['category_meta']['custom-template'] == 'gallery') ? 'dark' : 'light';
+		$ameta['theme'] = $ameta['category_meta']['theme'];
 		$ameta['header'] = 'normal';
 		$ameta['adaptify'] = false;
 		$ameta['footer'] = ($singular) ? true : false;
 		$ameta['siblings'] = false;
 		$ameta['content_type'] = ( $singular ) ? 'e-content' : 'e-summary';
-		$ameta['class'] = ($singular) ? ' content-inner ' : ' content-inner article-list-element';
+		$ameta['limitwidth'] = true;
+		$ameta['class'] = ($singular) ? ' journal ' : ' content-inner article-list-element';
 		$ameta['featimg'] = false;
 		$ameta['showccntr'] = ($singular) ? false : true;
 		$ameta['showtags'] = ($singular) ? true : false;
@@ -949,6 +970,7 @@ class petermolnareu {
 				$ameta['class'] =  ($singular) ? '' : 'photoblog-preview';
 				$ameta['footer'] = false;
 				$ameta['showccntr'] = false;
+				$ameta['limitwidth'] = false;
 				switch ( $ameta['category']->slug ) {
 					case 'photoblog':
 						$ameta['footer'] = $ameta['siblings'] = ($singular) ? true :false ;
