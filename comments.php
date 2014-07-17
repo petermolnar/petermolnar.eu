@@ -2,6 +2,7 @@
 <?php if ( post_password_required() ) return; ?>
 
 <section class="content-comments"><div class="content-inner">
+	<a id="comments" /></a>
 <?php
 if ( comments_open() ) :
 	/* <h6 class="urel"><?php _e('Feel free to use your own website to make a comment, a like, a reply, petermolnar.eu is <a href="http://indiewebcamp.com/webmentions">webmentions</a>-ready.', $petermolnareu_theme->theme_constant); ?></h6><?php */

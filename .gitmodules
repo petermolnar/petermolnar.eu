@@ -1,3 +1,9 @@
 [submodule "wp-common"]
 	path = wp-common
 	url = github:/petermolnar/wp-common
+[submodule "lib/parsedown-extra"]
+	path = lib/parsedown-extra
+	url = https://github.com/erusev/parsedown-extra.git
+[submodule "lib/parsedown"]
+	path = lib/parsedown
+	url = https://github.com/erusev/parsedown.git

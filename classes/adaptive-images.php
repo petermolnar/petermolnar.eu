@@ -26,7 +26,7 @@ class adaptive_images {
 
 	const default_prefix = 'adaptive';
 
-	const cache = false;
+	const cache = true;
 	private $sharesize = '';
 	const middlesize = 720;
 	public $image_sizes = array();
@@ -573,6 +573,7 @@ class adaptive_images {
 
 	public function adaptive_embededed( $html ) {
 		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
+
 		if ( !empty ( $inline_images[0]  )) {
 			foreach ( $inline_images[0] as $cntr=>$imgstr ) {
 				$aid = $inline_images[1][$cntr];
@@ -585,6 +586,5 @@ class adaptive_images {
 	}
 
 }
-
 
 ?>

@@ -1,6 +1,19 @@
 <?php
 
 include_once ('classes/adaptive-images.php');
+include_once ('lib/parsedown/Parsedown.php');
+include_once ('lib/parsedown-extra/ParsedownExtra.php');
+
+if ( !function_exists ( 'preg_value' ) ) {
+	function preg_value ( $string, $pattern, $index = 1 ) {
+		preg_match( $pattern, $string, $results );
+		if ( isset ( $results[ $index ] ) && !empty ( $results [ $index ] ) )
+			return $results [ $index ];
+		else
+			return false;
+	}
+}
+
 
 class petermolnareu {
 	public $theme_constant = 'petermolnareu';
@@ -13,6 +26,10 @@ class petermolnareu {
 	const cache_time = 86400;
 	const cache = 0;
 
+	const markdown = true;
+
+	private $markdown_post_types = array();
+
 	public $base_url = '';
 	public $js_url = '';
 	public $css_url = '';
@@ -21,8 +38,8 @@ class petermolnareu {
 	public $theme_url = '';
 	public $image_sizes = array();
 	public $adaptive_images = null;
+	private $parsedown = null;
 
-	public $urlfilters = array ();
 	private $relative_urls = false;
 
 	public function __construct () {
@@ -35,30 +52,35 @@ class petermolnareu {
 
 		$this->adaptive_images = new adaptive_images( $this );
 
-		$this->urlfilters = array(
-			'post_link', // Normal post link
-			'post_type_link', // Custom post type link
-			'page_link', // Page link
-			'attachment_link', // Attachment link
+		$this->parsedown = new ParsedownExtra();
 
-			'post_type_archive_link', // Post type archive link
-			'get_pagenum_link', // Paginated link
-			'get_comments_pagenum_link', // Paginated comment link
-			'term_link', // Term link, including category, tag
-			'search_link', // Search link
-			'day_link', // Date archive link
-			'month_link',
-			'year_link',
-			'get_comment_link',
-			'wp_get_attachment_image_src',
-			'wp_get_attachment_thumb_url',
-			'wp_get_attachment_url',
-		);
+		$this->markdown_post_types = array ( 'post', 'page' );
+		//$this->urlfilters = array(
+			//'post_link', // Normal post link
+			//'post_type_link', // Custom post type link
+			//'page_link', // Page link
+			//'attachment_link', // Attachment link
+
+			//'post_type_archive_link', // Post type archive link
+			//'get_pagenum_link', // Paginated link
+			//'get_comments_pagenum_link', // Paginated comment link
+			//'term_link', // Term link, including category, tag
+			//'search_link', // Search link
+			//'day_link', // Date archive link
+			//'month_link',
+			//'year_link',
+			//'get_comment_link',
+			//'wp_get_attachment_image_src',
+			//'wp_get_attachment_thumb_url',
+			//'wp_get_attachment_url',
+		//);
 
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
-		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
 		add_action( 'init', array( &$this, 'rewrites'));
+
+		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+		//add_action( 'admin_enqueue_scripts', array(&$this,'admin_register_css_js') );
 
 		/* replace shortlink */
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
@@ -110,8 +132,11 @@ class petermolnareu {
 		remove_shortcode('gallery');
 		add_shortcode('gallery', array (&$this->adaptive_images, 'adaptgal' ) );
 
-		/* legacy shortcode handler */
-		add_filter( 'the_content', array( &$this, 'legacy' ), 1);
+		/* legacy shortcode handler *
+		add_filter( 'the_content', array( &$this, 'legacy' ), 1);*/
+
+		/* display markdown */
+		add_filter( 'the_content', array(&$this, 'markdown_on_the_fly'), 1 );
 
 		/* post type additional data */
 		add_filter( 'the_content', array(&$this, 'add_post_format_data'), 1 );
@@ -128,7 +153,6 @@ class petermolnareu {
 		//add_filter( 'the_content', 'wpautop' , 12);
 		//add_filter( 'the_content', 'shortcode_unautop' , 12);
 
-
 		/* have links in the admin *
 		add_filter( 'pre_option_link_manager_enabled', '__return_true' );*/
 
@@ -144,15 +168,25 @@ class petermolnareu {
 		/* WordPress SEO cleanup */
 		add_filter('wpseo_author_link', array(&$this, 'author_url'));
 
+		//add_filter( 'post_thumbnail_html', array( &$this, 'image_to_shortcode'), 10 );
+		//add_filter( 'image_send_to_editor', array( &$this, 'image_to_shortcode'), 10 );
+
+		//add_filter( 'post_thumbnail_html', array( &$this, 'rebuild_media_string'), 10 );
+		add_filter( 'image_send_to_editor', array( &$this, 'rebuild_media_string'), 10 );
+
+	}
+
+	public function markdown_on_the_fly ( $html ) {
+		return $this->parsedown->text ( $html );
 	}
 
 	/**
 	 * register & queue css & js
 	 */
 	public function register_css_js () {
+
 		/* enqueue CSS */
 		wp_register_style( 'style', $this->theme_url . '/style.css' , false, $this->css_version ( dirname(__FILE__) . '/style.css' ) );
-		wp_enqueue_style( 'style' );
 
 		/* syntax highlight */
 		wp_register_style( 'prism', $this->css_url . 'prism.css', false, null );
@@ -166,17 +200,32 @@ class petermolnareu {
 		/* for adaptive image class, TODO move here */
 		wp_register_script( 'jquery.adaptive-images', $this->js_url . 'adaptive-images.js', array('jquery'), null, true );
 
+
+		wp_enqueue_style( 'style' );
+		wp_enqueue_style( 'prism' );
+		wp_enqueue_script( 'prism' );
+
 		/* this is to have reply fields correctly */
-		if ( (!is_admin()) && is_singular() && comments_open() && get_option('thread_comments') )
+		if ( is_singular() && comments_open() && get_option('thread_comments') )
 			wp_enqueue_script( 'comment-reply' );
+
 	}
 
+	/**
+	 * register & queue css & js
+	 *
+	public function admin_register_css_js () {
+		wp_register_script( 'js-markdown-extra' , $this->theme_url . '/lib/js-markdown-extra/js-markdown-extra.js' );
+		wp_enqueue_script( 'js-markdown-extra' );
+	}
+	*/
 
 	/**
 	 * redirect old stuff to prevent broken links
 	 */
 	public function rewrites () {
 		add_rewrite_rule("indieweb-decentralize-web-centralizing", "indieweb-decentralize-web-centralizing-ourselves", "bottom" );
+		add_rewrite_rule("/journal/living-without-google-on-android-phone/", "/linux-tech-coding/journal/living-without-google-on-android-phone/", "bottom" );
 		add_rewrite_rule("/wordpress(.*)", '/open-source$matches[1]', "bottom" );
 		add_rewrite_rule("/b(.*)", '/blips$matches[1]', "bottom" );
 		add_rewrite_rule("/open-source/wordpress/(.*)", '/open-source/$matches[1]', "bottom" );
@@ -481,12 +530,15 @@ class petermolnareu {
 			$return = false;
 		}
 		else {
+			/*
 			$cl = array ('<br />', '<p>', '</p>' );
 			$content = str_replace ( $cl, '', $content );
 			$search = array( '<', '>', '&lt;br /&gt;' );
 			$replace = array( '&lt;', '&gt;', '' );
 			$content = str_replace ( $search, $replace, $content );
 			$return = '<pre class="line-numbers"><code class="language-' . $lang . '">' . trim(str_replace( "\t", "  ", $content ) ) . '</code></pre>';
+			*/
+			$return = '<pre class="line-numbers"><code class="language-' . $lang . '">' . $content . '</code></pre>';
 		}
 
 		return $return;
@@ -597,26 +649,10 @@ class petermolnareu {
 			$out .= '<a rel="me" class="u-email email" href="mailto:'.$aemail.'" title="'.$aname.' email address">'.$aemail.'</a>';
 
 			/* social */
-			/*
-			$fb =  rtrim(get_the_author_meta ( 'facebook' , $aid ), '/');
-			if ( !empty ($fb)) {
-				$fbname = substr( $fb , strrpos($fb, '/') + 1);
-				$socials['facebook'] = '<a rel="me" class="u-facebook x-facebook url u-url" href="'.$fb.'" title="'.$aname.' @ Facebook">'.$fbname.'</a>';
-			}
-			*/
-
 			$tw = get_the_author_meta ( 'twitter' , $aid );
 			if ( !empty ($tw)) {
 				$socials['twitter'] = '<a rel="me" class="u-twitter x-twitter url u-url" href="https://twitter.com/'.$tw.'" title="'.$aname.' @ Twitter">'.$tw.'</a>';
 			}
-
-			/*
-			$g = rtrim( get_the_author_meta ( 'googleplus' , $aid ), '/' );
-			if ( !empty ($g)) {
-				$gname = substr( $g , strrpos($g, '/') + 1);
-				$socials['googleplus'] = '<a rel="me" class="u-googleplus x-googleplus url u-url" href="'.$g.'" title="'.$aname.' @ Google+">'.$gname.'</a>';
-			}
-			*/
 
 			$l = rtrim(get_the_author_meta ( 'linkedin' , $aid ), '/');
 			if ( !empty ($l)) {
@@ -628,6 +664,20 @@ class petermolnareu {
 			if ( !empty ($gh)) {
 				$socials['googleplus'] = '<a rel="me" class="u-github x-github url u-url" href="https://github.com/'.$gh.'" title="'.$aname.' @ Github">'.$gh.'</a>';
 			}
+
+			/*
+			$fb =  rtrim(get_the_author_meta ( 'facebook' , $aid ), '/');
+			if ( !empty ($fb)) {
+				$fbname = substr( $fb , strrpos($fb, '/') + 1);
+				$socials['facebook'] = '<a rel="me" class="u-facebook x-facebook url u-url" href="'.$fb.'" title="'.$aname.' @ Facebook">'.$fbname.'</a>';
+			}
+
+			$g = rtrim( get_the_author_meta ( 'googleplus' , $aid ), '/' );
+			if ( !empty ($g)) {
+				$gname = substr( $g , strrpos($g, '/') + 1);
+				$socials['googleplus'] = '<a rel="me" class="u-googleplus x-googleplus url u-url" href="'.$g.'" title="'.$aname.' @ Google+">'.$gname.'</a>';
+			}
+			*/
 
 			if ( !empty($socials)) {
 				$out .= '<span class="spacer">Find me:</span>';
@@ -730,27 +780,34 @@ class petermolnareu {
 	public function add_post_format_data ( $src ) {
 		global $post;
 		$format = get_post_format ( $post->ID );
+		//$ameta = $this->article_meta();
 
 		/* quote format */
-		if ( $format == 'quote' && !strstr ( $src, '<blockquote>' ) )
-			$src = '<blockquote>'. $src .'</blockquote>';
-
-		/* quote meta */
 		$source_name = get_post_meta($post->ID, '_format_quote_source_name', true );
 		$source_url = get_post_meta($post->ID, '_format_quote_source_url', true );
 		if ( !empty( $source_name ) && !empty ( $source_url) ) {
-			$src .= '<p class="alignright"><a class="u-quote-source u-like-of icon-link-ext-alt" href="'. $source_url .'">'. $source_name .'</a></p>';
+			$cite = '<cite><a class="u-quote-source u-like-of icon-link-ext-alt" href="'. $source_url .'">'. $source_name .'</a></cite>';
 		}
 		elseif ( !empty($source_name )) {
-			$src .= '<p class="u-quote-source alignright">'. $source_name .'</p>';
+			$cite = '<cite class="u-quote-source">'. $source_name .'</cite>';
+		}
+
+		if ( $format == 'quote' && !strstr ( $src, '<blockquote>' ) ) {
+			$src = '<blockquote>'. $src .'<p class="alignright">'. $cite .'</p></blockquote>';
+		}
+		elseif ( $format == 'quote' ) {
+			$src .= '<p class="alignright">'. $cite .'</p>';
 		}
 		unset ($source_name, $source_url);
 
 		/* image meta */
 		$img = get_post_thumbnail_id( $post->ID );
 		if ( !empty($format) && $format != 'standard ' && $format != 'gallery' && !empty($img) ) {
-			if ( empty($src))
-				$src = '<h3>'. get_the_title() .'</h3>';
+			//if ( empty($src)) $src = '<h3>'. get_the_title() .'</h3>';
+
+			/* replace all images with adaptive; if there's a hit, don't insert
+			 * the features image automatically
+			 */
 			$asrc = $this->replace_images_with_adaptive ( $src );
 			if ( strlen($src) == strlen($asrc) && !empty($img) )
 				$src .= '[adaptimg aid=' . $img .' size=hd share=0 standalone=1]';
@@ -782,7 +839,7 @@ class petermolnareu {
 		$title = get_the_title ($post->ID );
 		$webmention = get_post_meta($post->ID, '_format_link_webmention', true );
 		if ( !empty($url ) && ( empty($webmention) || $webmention == 'none' ) ) {
-				$src .= '<p><a class="icon-link-ext-alt" href="'.$url.'">'. $title .'</a></p>';
+				$src = '<p><a class="icon-link-ext-alt" href="'.$url.'">'. $title .'</a></p>' . $src;
 		}
 		unset ($url, $title, $webmention);
 
@@ -808,21 +865,21 @@ class petermolnareu {
 		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
 	}
 
-	public function wpunautop ( $s ) {
-		//remove any new lines already in there
-		$s = str_replace( "\n", "", $s);
+	//public function wpunautop ( $s ) {
+		////remove any new lines already in there
+		//$s = str_replace( "\n", "", $s);
 
-		//remove all <p>
-		$s = str_replace("<p>", "", $s);
+		////remove all <p>
+		//$s = str_replace("<p>", "", $s);
 
-		//replace <br /> with \n
-		$s = str_replace(array("<br />", "<br>", "<br/>"), "\n", $s);
+		////replace <br /> with \n
+		//$s = str_replace(array("<br />", "<br>", "<br/>"), "\n", $s);
 
-		//replace </p> with \n\n
-		$s = str_replace("</p>", "\n\n", $s);
+		////replace </p> with \n\n
+		//$s = str_replace("</p>", "\n\n", $s);
 
-		return $s;
-	}
+		//return $s;
+	//}
 
 	private function css_version ( $file ) {
 		$version = 0;
@@ -842,7 +899,10 @@ class petermolnareu {
 		return $version;
 	}
 
-	public function category_meta( &$category ) {
+	/**
+	 * display & other meta information for categories
+	 */
+	public function category_meta( &$category = null ) {
 		$default = array (
 			'custom-template' => 'default',
 			'posts-per-page' => 12,
@@ -862,10 +922,7 @@ class petermolnareu {
 
 		$cid = 'category_' . $category->slug;
 		$cached = ( self::cache == 1 ) ? wp_cache_get( $cid, self::cache_group ) : false;
-
-		if ( $cached != false ) {
-			return  $cached;
-		}
+		if ( $cached != false )  return  $cached;
 
 		switch ( $category->slug ) {
 			case 'blips':
@@ -882,8 +939,8 @@ class petermolnareu {
 				break;
 			case 'photoblog':
 				$category_meta = array (
-					'custom-template' => 'gallery',
-					'posts-per-page' => 6,
+					'custom-template' => 'default',
+					'posts-per-page' => 2,
 					'show-sidebar' => 0,
 					'show-pagination' => 1,
 					'columns' => 0,
@@ -912,6 +969,9 @@ class petermolnareu {
 		return $category_meta;
 	}
 
+	/**
+	 * display & other meta information for posts, based on category, post format, etc.
+	 */
 	public function article_meta( ) {
 		global $post;
 
@@ -924,10 +984,7 @@ class petermolnareu {
 		$cid .= $post->ID;
 
 		$cached = ( self::cache == 1 ) ? wp_cache_get( $cid, self::cache_group ) : false;
-
-		if ( $cached != false ) {
-			return  $cached;
-		}
+		if ( $cached != false ) return  $cached;
 
 		$ameta = array();
 
@@ -965,15 +1022,24 @@ class petermolnareu {
 				$ameta['content_type'] = 'e-content';
 			break;
 			case 'gallery':
-				$ameta['header'] = ($singular) ? 'small' : 'none';
-				$ameta['content_type'] = ($singular) ? 'e-content' : 'image';
-				$ameta['class'] =  ($singular) ? '' : 'photoblog-preview';
+				//$ameta['header'] = ($singular) ? 'small' : 'none';
+				//$ameta['content_type'] = ($singular) ? 'e-content' : 'image';
+
 				$ameta['footer'] = false;
 				$ameta['showccntr'] = false;
 				$ameta['limitwidth'] = false;
 				switch ( $ameta['category']->slug ) {
 					case 'photoblog':
-						$ameta['footer'] = $ameta['siblings'] = ($singular) ? true :false ;
+						$ameta['footer'] = ($singular) ? true :false ;
+						$ameta['siblings'] = true;
+						$ameta['content_type'] = 'e-content';
+						$ameta['class'] =  '';
+						$ameta['header'] = 'small';
+						break;
+					default:
+						$ameta['content_type'] = ($singular) ? 'e-content' : 'image';
+						$ameta['class'] =  ($singular) ? '' : 'photoblog-preview';
+						$ameta['header'] = ($singular) ? 'small' : 'none';
 						break;
 				}
 			break;
@@ -993,6 +1059,26 @@ class petermolnareu {
 		wp_cache_set( $cid, $ameta, self::cache_group, self::cache_time );
 		return $ameta;
 	}
+
+
+	function rebuild_media_string( $str ) {
+		if ( strstr ( $str, '<img' ) ) {
+			$src = preg_value ( $str, '/src="([^"]+)"/' );
+			$title = preg_value ( $str, '/title="([^"]+)"/' );
+			$alt = preg_value ( $str, '/alt="([^"]+)"/' );
+			if ( empty ( $alt ) && !empty ( $title ) ) $alt = $title;
+			$wpid = preg_value ( $str, '/wp-image-(\d*)/' );
+			$src = preg_value ( $str, '/src="([^"]+)"/' );
+			$cl = preg_value ( $str, '/class="([^"]+)?(align(left|right|center))([^"]+)?"/', 2 );
+
+			$img = '!['.$alt.']('. $src .' '. $title .'){#img-'. $wpid .' .'.$cl.'}';
+			return $img;
+		}
+		else {
+			return $str;
+		}
+	}
+
 }
 
 /**** END OF FUNCTIONS *****/

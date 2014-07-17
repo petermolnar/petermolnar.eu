@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		7.1
+Version:		7.5
 */
 
 @color-bg-dark: #2D333A;
@@ -123,9 +123,6 @@ Version:		7.1
 	-webkit-column-gap: @font-large;
 	column-count: 2;
 	column-gap: @font-large;
-
-	/*margin:0 auto 0 auto;
-	max-width: 42em;*/
 }
 
 .spacer {
@@ -282,7 +279,7 @@ img.alignright,
 img.right,
 img.left {
 	margin-bottom: @padding-xlarge;
-	border: @border-thin;
+	/* border: @border-thin; */
 }
 
 img.alignright,
@@ -440,12 +437,13 @@ dt {
 	clear:both;
 	line-height:@line-height-small;
 	font-size:@font-normal;
-	margin-top:@padding-xlarge 0 @padding-normal 0;
+	margin:@line-height 0 @padding-normal 0;
 
 }
 
 dd {
-	margin-left:@padding-xlarge;;
+	margin-left:@padding-xlarge;
+	clear: both;
 }
 
 pre {
@@ -573,6 +571,9 @@ pre {
 .content-dark {
 	background-color: darken(@color-bg-dark,10%);
 	color: @color-text-light;
+
+	dd a,
+	dt a,
 	p a {
 		color: @color-link-light;
 		display: inline;
@@ -591,6 +592,8 @@ pre {
 		color: @color-link-dark;
 	}
 
+	dd a,
+	dt a,
 	p a {
 		display: inline;
 		border-bottom: @thinborder dotted @color-text-light;
@@ -886,23 +889,10 @@ pre {
 	width:90%;
 	margin: 0 auto 0 auto;
 	padding: 0;
-
-/*
-	text-indent: -9999px;
-*/
 	.animate();
-	.fullbg();
 
 	figcaption {
 		display:none;
-/*
-		text-indent: 0;
-		position: absolute;
-		bottom: 0;
-		left: 1em;
-		.animate();
-		text-shadow: @textshadow-outset;
-*/
 	}
 
 	img {
@@ -920,42 +910,10 @@ pre {
 		width:90%;
 		margin: 0 auto 0 auto;
 		padding: 0;
-
-/*
-		text-indent: -9999px;
-		.fullbg();
-*/
 		.animate();
-
-/*
-		.share {
-			margin: 0;
-			ul {
-				li {
-					font-size: @font-enormous;
-
-					a {
-						color: @color-link-light;
-
-						margin: 0;
-					}
-				}
-			}
-		}
-*/
 
 		figcaption {
 			display:none;
-/*
-			text-indent: 0;
-			position: absolute;
-			bottom: 0;
-			left: 1em;
-			.animate();
-			text-shadow: @textshadow-outset;
-			display:none;
-			visibility:hidden;
-*/
 		}
 
 		img {
@@ -1056,52 +1014,6 @@ pre {
 		visibility: hidden;
 	}
 
-/*
-
-
-	.content-header {
-		background-color: transparent;
-		position: relative;
-		top:0;
-		left:0;
-		width: 100%;
-		height:auto;
-		border-radius: @padding-large;
-		padding: 0 0 0 0;
-		background-image: none;
-	}
-
-	.content-logo {
-		float: right;
-		display: inline-block;
-		margin: 0.6em 0 0 0;
-
-		a {
-			img {
-				width: 14em;
-			}
-		}
-	}
-
-	.content-navigation {
-		display: inline-block;
-		margin: @padding-small 0 @padding-small 0;
-
-		ul {
-			.flatul();
-
-			li {
-				margin-right: @padding-xlarge;
-			}
-		}
-	}
-
-	.content-body {
-		padding: @padding-large;
-	}
-	*
-*/
-
 	.content-header {
 		left:0;
 		width: @panel-width-desktop;
@@ -1112,7 +1024,8 @@ pre {
 	}
 
 	.content-footer,
-	.content-body {
+	.content-body,
+	.content-comments {
 		margin-left:@panel-width-desktop;
 	}
 
@@ -1146,28 +1059,11 @@ pre {
 				vertical-align: top;
 				text-align:center;
 				overflow:hidden;
-/*
-				text-indent: -9999px;
-				.fullbg();
-*/
 				.animate();
 				opacity: 0;
 
 				figcaption {
 					display:none;
-/*
-					text-indent: -20em;
-
-					.share {
-						margin: 0;
-						ul {
-							.navul();
-							li {
-								font-size: @font-enormous;
-							}
-						}
-					}
-*/
 				}
 
 				img {
@@ -1222,13 +1118,8 @@ pre {
 							img {
 								width:100%;
 								height:auto;
+								width: auto\9; /* ie8 fix */
 							}
-/*
-							background-size: contain;
-							background-position: center center;
-							background-repeat: no-repeat;
-							text-indent: -999px;
-*/
 
 							&:hover, &:active &:focus, &.adaptgal-active {
 								opacity: 0.99;
@@ -1265,21 +1156,6 @@ pre {
 		width: 32.9%;
 		padding-bottom: 32.9%;
 	}
-
-	/*
-	.category-columns {
-		.columns2();
-	}
-	/*
-	.article-link,
-	.article-quote,
-	.article-status,
-	.article-image,
-	.article-video,
-	.article-audio,
-	.article-aside {
-		.columns2();
-	}*/
 
 	.share,
 	.usyndication {

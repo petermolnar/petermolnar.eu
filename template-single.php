@@ -18,17 +18,22 @@ else {
 	$more = '';
 }
 
-ob_start();
-the_excerpt();
-$excerpt = ob_get_clean();
 
+if ( $ameta['content_type'] == 'e-summary' ) {
+	/* get the excerpt */
+	ob_start();
+	the_excerpt();
+	$excerpt = ob_get_clean();
+}
+
+/* get the content */
 ob_start();
 the_content();
 $content = ob_get_clean();
 
-$words = str_word_count(strip_tags($content), 0 );
-$commentcounter = '<a class="u-url right icon-comment commentcounter" href="'. get_the_permalink() . '#comments">'. get_comments_number( '', '1', '%' ) . '</a>';
-$mins = '<span class="right minstoread">'. round( $words / 300 ) . ' mins to read</span>';
+
+$commentcounter = ($ameta['showccntr']) ? '<a class="u-url right icon-comment commentcounter" href="'. get_the_permalink() . '#comments">'. get_comments_number( '', '1', '%' ) . '</a>' : '';
+
 
 ?>
 
@@ -53,7 +58,7 @@ $mins = '<span class="right minstoread">'. round( $words / 300 ) . ' mins to rea
 				<?php echo $petermolnareu_theme->article_time(); ?>
 			</div>
 		<?php  elseif ( $ameta['header'] == 'pubdate' ) : ?>
-			<?php if ($ameta['showccntr']) echo $commentcounter; ?>
+			<?php echo $commentcounter; ?>
 			<a class="u-url" href="<?php the_permalink() ?>">
 				<?php echo $petermolnareu_theme->article_time(); ?>
 			</a>
@@ -66,8 +71,8 @@ $mins = '<span class="right minstoread">'. round( $words / 300 ) . ' mins to rea
 			</h<?php echo $h; ?>>
 			<span class="hide"><?php echo $petermolnareu_theme->article_time(); ?></span>
 		<?php elseif ( $ameta['header'] == 'normal'): ?>
-			<?php if ($ameta['showccntr']) echo $commentcounter; ?>
-			<?php echo $mins; ?>
+			<?php echo $commentcounter; ?>
+			<?php echo '<span class="right minstoread">'. round( str_word_count(strip_tags($content), 0 ) / 300 ) . ' mins to read</span>'; ?>
 			<?php echo $petermolnareu_theme->article_time(); ?>
 			<h<?php echo $h; ?>>
 				<a class="u-url" href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
@@ -93,6 +98,7 @@ $mins = '<span class="right minstoread">'. round( $words / 300 ) . ' mins to rea
 	<!-- article content -->
 	<?php $aid = get_post_thumbnail_id( $post->ID );
 
+	/* portfolio & gallery list view images */
 	if ( $ameta['content_type'] == 'image') : ?>
 		<a class="u-url" href="<?php the_permalink(); ?>">
 			<?php
@@ -121,8 +127,13 @@ $mins = '<span class="right minstoread">'. round( $words / 300 ) . ' mins to rea
 			<?php
 				if ( $ameta['content_type'] == 'e-summary' )
 					echo $excerpt;
-				else
+				else {
+					if ( $ameta['adaptify'])
+						$content = $petermolnareu_theme->replace_images_with_adaptive ( $content );
+
 					echo $content;
+				}
+
 			?>
 			<br class="clear" />
 			<?php if ( $ameta['limitwidth'] ) echo '</div>'; ?>
@@ -163,7 +174,7 @@ $mins = '<span class="right minstoread">'. round( $words / 300 ) . ' mins to rea
 <!-- related posts -->
 <?php
 if ($ameta['sidebar']) :
-	$sposts = $petermolnareu_theme->related_posts( $post, false, 4 );
+	$sposts = $petermolnareu_theme->related_posts( $post, true, 4 );
 	if ( $sposts ): ?>
 	<aside class="sidebar content-inner">
 		<?php echo $sposts; ?>

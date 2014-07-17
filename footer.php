@@ -2,11 +2,8 @@
 	<br class="clear" />
 	</section>
 
-	<?php if ( is_singular() ) : ?>
-	<section class="content-comments"><div class="inner">
-		<a id="comments" /></a>
+	<?php if ( is_singular() && comments_open() ) : ?>
 		<?php comments_template( ); ?>
-	</div></section>
 	<?php endif; ?>
 
 	<footer class="content-footer aligncenter"><div class="inner">

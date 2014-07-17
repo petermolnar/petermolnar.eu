@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		7.1
+Version:		7.5
 */
 .spacer {
   display: inline-block;
@@ -221,7 +221,7 @@ img.alignright,
 img.right,
 img.left {
   margin-bottom: 1em;
-  border: 1px solid #777777;
+  /* border: @border-thin; */
 }
 img.alignright,
 img.right {
@@ -361,10 +361,11 @@ dt {
   clear: both;
   line-height: 1.2em;
   font-size: 1em;
-  margin-top: 1em 0 0.3em 0;
+  margin: 1.4em 0 0.3em 0;
 }
 dd {
   margin-left: 1em;
+  clear: both;
 }
 pre {
   font-size: 0.9em;
@@ -664,12 +665,16 @@ pre {
   background-color: #171a1d;
   color: #999999;
 }
+.content-dark dd a,
+.content-dark dt a,
 .content-dark p a {
   color: #dddddd;
   display: inline;
   border-bottom: 1px dotted #999999;
   line-height: 1em;
 }
+.content-dark dd a:hover,
+.content-dark dt a:hover,
 .content-dark p a:hover {
   border-bottom: 1px dotted #dddddd;
 }
@@ -680,11 +685,15 @@ pre {
 .content-light a {
   color: #000000;
 }
+.content-light dd a,
+.content-light dt a,
 .content-light p a {
   display: inline;
   border-bottom: 1px dotted #999999;
   line-height: 1em;
 }
+.content-light dd a:hover,
+.content-light dt a:hover,
 .content-light p a:hover {
   border-bottom: 1px dotted #000000;
 }
@@ -956,25 +965,11 @@ pre {
   width: 90%;
   margin: 0 auto 0 auto;
   padding: 0;
-  /*
-	text-indent: -9999px;
-*/
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
 }
 .adaptimg figcaption {
   display: none;
-  /*
-		text-indent: 0;
-		position: absolute;
-		bottom: 0;
-		left: 1em;
-		.animate();
-		text-shadow: @textshadow-outset;
-*/
 }
 .adaptimg img {
   width: 100%;
@@ -988,42 +983,12 @@ pre {
   width: 90%;
   margin: 0 auto 0 auto;
   padding: 0;
-  /*
-		text-indent: -9999px;
-		.fullbg();
-*/
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
-  /*
-		.share {
-			margin: 0;
-			ul {
-				li {
-					font-size: @font-enormous;
-
-					a {
-						color: @color-link-light;
-
-						margin: 0;
-					}
-				}
-			}
-		}
-*/
 }
 .adaptgal-pure figure figcaption,
 .adaptgal figure figcaption {
   display: none;
-  /*
-			text-indent: 0;
-			position: absolute;
-			bottom: 0;
-			left: 1em;
-			.animate();
-			text-shadow: @textshadow-outset;
-			display:none;
-			visibility:hidden;
-*/
 }
 .adaptgal-pure figure img,
 .adaptgal figure img {
@@ -1119,51 +1084,6 @@ pre {
     display: none;
     visibility: hidden;
   }
-  /*
-
-
-	.content-header {
-		background-color: transparent;
-		position: relative;
-		top:0;
-		left:0;
-		width: 100%;
-		height:auto;
-		border-radius: @padding-large;
-		padding: 0 0 0 0;
-		background-image: none;
-	}
-
-	.content-logo {
-		float: right;
-		display: inline-block;
-		margin: 0.6em 0 0 0;
-
-		a {
-			img {
-				width: 14em;
-			}
-		}
-	}
-
-	.content-navigation {
-		display: inline-block;
-		margin: @padding-small 0 @padding-small 0;
-
-		ul {
-			.flatul();
-
-			li {
-				margin-right: @padding-xlarge;
-			}
-		}
-	}
-
-	.content-body {
-		padding: @padding-large;
-	}
-	*
-*/
   .content-header {
     left: 0;
     width: 12em;
@@ -1172,7 +1092,8 @@ pre {
     padding: 0.6em;
   }
   .content-footer,
-  .content-body {
+  .content-body,
+  .content-comments {
     margin-left: 12em;
   }
   /* ADAPTGAL */
@@ -1204,29 +1125,12 @@ pre {
     vertical-align: top;
     text-align: center;
     overflow: hidden;
-    /*
-				text-indent: -9999px;
-				.fullbg();
-*/
     transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
     opacity: 0;
   }
   .adaptgal .adaptgal-previews figure figcaption {
     display: none;
-    /*
-					text-indent: -20em;
-
-					.share {
-						margin: 0;
-						ul {
-							.navul();
-							li {
-								font-size: @font-enormous;
-							}
-						}
-					}
-*/
   }
   .adaptgal .adaptgal-previews figure img {
     width: auto;
@@ -1278,16 +1182,12 @@ pre {
     opacity: 0.5;
     transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
-    /*
-							background-size: contain;
-							background-position: center center;
-							background-repeat: no-repeat;
-							text-indent: -999px;
-*/
   }
   .adaptgal .adaptgal-thumbs ul li a img {
     width: 100%;
     height: auto;
+    width: auto\9;
+    /* ie8 fix */
   }
   .adaptgal .adaptgal-thumbs ul li a:hover,
   .adaptgal .adaptgal-thumbs ul li a:active .adaptgal .adaptgal-thumbs ul li a:focus,
@@ -1312,8 +1212,6 @@ pre {
     -webkit-column-gap: 1.1em;
     column-count: 2;
     column-gap: 1.1em;
-    /*margin:0 auto 0 auto;
-	max-width: 42em;*/
   }
   .adaptgal-pure figure {
     width: 92%;
@@ -1322,20 +1220,6 @@ pre {
     width: 32.9%;
     padding-bottom: 32.9%;
   }
-  /*
-	.category-columns {
-		.columns2();
-	}
-	/*
-	.article-link,
-	.article-quote,
-	.article-status,
-	.article-image,
-	.article-video,
-	.article-audio,
-	.article-aside {
-		.columns2();
-	}*/
   .share,
   .usyndication {
     margin: 1em 0 0 0;

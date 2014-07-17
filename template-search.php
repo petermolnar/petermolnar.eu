@@ -3,7 +3,7 @@
 	global $petermolnareu_theme;
 	global $category;
 	global $category_meta;
-	$class = ' article-list-element category-postlist';
+	$class = ' content-inner article-list-element category-postlist';
 ?>
 
 <article id="post-<?php the_ID(); ?>" class="h-entry<?php echo $class; ?>">
@@ -52,5 +52,7 @@
 			<?php endif ?>
 
 			<?php echo $content ?>
+
+			<br class="clear" />
 		</div>
 </article>
