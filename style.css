@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		7.5
+Version:		7.12
 */
 .spacer {
   display: inline-block;
@@ -235,7 +235,10 @@ img.left {
 }
 .center,
 .aligncenter {
+  display: block;
   text-align: center;
+  margin: 0 auto 0 auto;
+  position: relative;
 }
 .right,
 .alignright {
@@ -316,7 +319,7 @@ strong {
   font-weight: bold;
 }
 p {
-  margin: 2em 0 0 0;
+  margin: 1.6em 0 0 0;
 }
 table {
   border-collapse: separate;
@@ -342,7 +345,7 @@ h6 {
   clear: both;
 }
 h1 {
-  font-size: 2.2em;
+  font-size: 2.8em;
   margin: 0.6em 0 0.6em 0;
   line-height: 1em;
   text-align: center;
@@ -350,10 +353,12 @@ h1 {
 h2 {
   font-size: 1.1em;
 }
+h5 {
+  margin: 2.8em 0 0.6em 0;
+}
 h2,
 h3,
 h4,
-h5,
 h6 {
   margin: 1.2em 0 1em 0;
 }
@@ -618,7 +623,7 @@ pre {
 .content-header {
   position: fixed;
   width: 17em;
-  height: 100%;
+  height: 3em;
   top: 0;
   z-index: 99;
   left: -17em;
@@ -630,6 +635,8 @@ pre {
 .content-header.open {
   left: 0;
   padding-right: 0;
+  width: 17em;
+  height: 100%;
 }
 .content-logo {
   margin: 1em 0 1em 0;
@@ -658,7 +665,7 @@ pre {
 /* CONTENT */
 .content-body {
   position: relative;
-  padding: 3em 0.6em 0.6em 0.6em;
+  /*padding: @toggle-size @padding-large @padding-large @padding-large;*/
   z-index: 2;
 }
 .content-dark {
@@ -760,7 +767,6 @@ pre {
 .usyndication {
   display: block;
   margin: 2em 0 2em 0;
-  font-size: 0.9em;
 }
 .share ul,
 .usyndication ul {
@@ -849,6 +855,15 @@ pre {
 .article-header {
   position: relative;
   clear: both;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  /* h1 {
+		a {
+			color: @color-link-light;
+			text-shadow: 0 0 2em @color-link-dark;
+		}
+	}*/
 }
 .article-header h2 {
   margin: 0;
@@ -856,16 +871,23 @@ pre {
   line-height: 1.2em;
   display: inline-block;
 }
-.article-header h2 a:after {
+.article-header h2 .more:after {
   content: '»';
   margin-left: 0.3em;
+}
+.article-header-singular {
+  min-height: 16em;
+}
+.article-header-singular h1 a {
+  color: #dddddd;
+  text-shadow: 0 0 2em #000000;
 }
 .article-content {
   text-align: justify;
 }
 .minstoread {
   font-size: 0.7em;
-  opacity: 0.5;
+  /* opacity: 0.5; */
   margin-right: 0.6em;
 }
 .article-pubdate,
@@ -1087,9 +1109,10 @@ pre {
   .content-header {
     left: 0;
     width: 12em;
+    height: 100%;
   }
   .content-body {
-    padding: 0.6em;
+    padding: 0;
   }
   .content-footer,
   .content-body,
@@ -1259,7 +1282,7 @@ pre {
   margin: 0;
 }
 .comment-list li {
-  margin: 0 0 0.6em 0;
+  margin: 0 0 1.6em 0;
   padding: 0;
 }
 .comment-list li .comment-reply-title,
@@ -1285,7 +1308,7 @@ pre {
   display: none;
 }
 .comment-list li p {
-  margin: 0.3em 0 0 0;
+  margin: 1em 0 0 0;
 }
 /* OPENSOURCE */
 .article-opensource {

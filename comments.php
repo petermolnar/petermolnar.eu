@@ -2,15 +2,16 @@
 <?php if ( post_password_required() ) return; ?>
 
 <section class="content-comments"><div class="content-inner">
-	<a id="comments" /></a>
 <?php
+/*
 if ( comments_open() ) :
-	/* <h6 class="urel"><?php _e('Feel free to use your own website to make a comment, a like, a reply, petermolnar.eu is <a href="http://indiewebcamp.com/webmentions">webmentions</a>-ready.', $petermolnareu_theme->theme_constant); ?></h6><?php */
 	comment_form( array( 'title_reply' => __( 'Leave a reply, or use <a href="http://indiewebcamp.com/webmentions" rel="nofollow">webmentions</a> from your site.', $petermolnareu_theme->theme_constant) ));
-endif; ?>
+endif;
+*/
+?>
 
 <?php if ( have_comments() ) : ?>
-	<a id="comments" /></a>
+	<p><a id="comments" /></a></p>
 	<h2 class="comments-title">
 		<?php
 			printf( _n( 'One thought on &ldquo;%2$s&rdquo;', '%1$s thoughts on &ldquo;%2$s&rdquo;', get_comments_number(), $petermolnareu_theme->theme_constant ),
@@ -30,8 +31,8 @@ endif; ?>
 		<?php
 			wp_list_comments( array(
 				'style'      => 'ol',
-				'short_ping' => true,
-				'avatar_size'=> 34,
+				'short_ping' => false,
+				'avatar_size'=> 42,
 			) );
 		?>
 	</ol><!-- .comment-list -->

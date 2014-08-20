@@ -4,13 +4,12 @@ global $petermolnareu_theme;
 
 
 $ameta = $petermolnareu_theme->article_meta ();
-$theme = empty( $ameta['theme'] ) ? 'dark' : $ameta['theme'];
 
 if ( is_singular()) {
 	$h = 1;
 	$more = '';
 	?>
-	<section class="content-body content-<?php echo $theme; ?>">
+	<section class="content-body content-<?php echo $ameta['theme']; ?>">
 	<?php
 }
 else {
@@ -31,9 +30,9 @@ ob_start();
 the_content();
 $content = ob_get_clean();
 
-
 $commentcounter = ($ameta['showccntr']) ? '<a class="u-url right icon-comment commentcounter" href="'. get_the_permalink() . '#comments">'. get_comments_number( '', '1', '%' ) . '</a>' : '';
 
+$thid = ( has_post_thumbnail () ) ? get_post_thumbnail_id( $post->ID ) : false;
 
 ?>
 
@@ -49,7 +48,18 @@ $commentcounter = ($ameta['showccntr']) ? '<a class="u-url right icon-comment co
 	<?php endif; ?>
 
 	<!-- article header -->
-	<header class="article-header">
+	<?php
+	$hstyle = false;
+
+	if ( is_singular() && $ameta['featimg'] && !empty( $thid ) ) {
+		$bgimg = wp_get_attachment_image_src( $thid, 'large' );
+		$hstyle = 'class="article-header article-header-singular" style="background-image:url('.$bgimg[0].');"';
+	}
+	else {
+		$hstyle = 'class="article-header"';
+	}
+	?>
+	<header <?php echo $hstyle; ?>>
 		<?php if ( $ameta['limitwidth'] ) echo '<div class="content-inner">'; ?>
 
 		<?php  if ( $ameta['header'] == 'none' ) : ?>
@@ -76,7 +86,15 @@ $commentcounter = ($ameta['showccntr']) ? '<a class="u-url right icon-comment co
 			<?php echo $petermolnareu_theme->article_time(); ?>
 			<h<?php echo $h; ?>>
 				<a class="u-url" href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
-					<span class="p-name"><?php the_title(); ?></span><?php echo $more; ?>
+					<span class="p-name more"><?php the_title(); ?></span>
+				</a>
+			</h<?php echo $h; ?>>
+		<?php elseif ( $ameta['header'] == 'titled'): ?>
+			<?php echo $commentcounter; ?>
+			<?php echo $petermolnareu_theme->article_time(); ?>
+			<h<?php echo $h; ?>>
+				<a class="u-url" href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title(); ?>">
+					<span class="p-name"><?php the_title(); ?></span>
 				</a>
 			</h<?php echo $h; ?>>
 		<?php endif; ?>
@@ -103,33 +121,44 @@ $commentcounter = ($ameta['showccntr']) ? '<a class="u-url right icon-comment co
 		<a class="u-url" href="<?php the_permalink(); ?>">
 			<?php
 				$title = get_the_title();
-				echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'" share=0]');
+				echo do_shortcode( '[adaptimg aid=' . $aid .' title="'. $title .'"]');
 			?>
 		</a>
 	<?php else: ?>
 		<div class="article-content <?php echo $ameta['content_type'] ?>">
-			<?php if ( $ameta['limitwidth'] ) echo '<div class="content-inner">'; ?>
-			<?php if ( $ameta['featimg'] && has_post_thumbnail () ) : ?>
-				<figure class="article-thumbnail">
-					<a href="<?php the_permalink() ?>">
-					<?php
+			<?php
+				if ( $ameta['limitwidth'] )
+					echo '<div class="content-inner">';
+
+				if ( $ameta['featimg'] && has_post_thumbnail () && !is_singular() ) :
+					/*if ( is_singular() ):
+
+						$thumb = get_the_post_thumbnail( $post->ID, 'medium', array(
+							'alt'	=> trim(strip_tags( $post->post_title )),
+							'title'	=> trim(strip_tags( $post->post_title )),
+							'class'	=> "u-photo alignleft",
+						));
+						echo $petermolnareu_theme->replace_if_ssl ( $thumb );
+
+					else:*/
+					 ?><figure class="article-thumbnail"><a href="<?php the_permalink() ?>"><?php
 						$thumb = get_the_post_thumbnail( $post->ID, 'thumbnail', array(
 							'alt'	=> trim(strip_tags( $post->post_title )),
 							'title'	=> trim(strip_tags( $post->post_title )),
 							'class'	=> "u-photo",
 						));
 						echo $petermolnareu_theme->replace_if_ssl ( $thumb );
-					?>
-					</a>
-				</figure>
-			<?php endif ?>
+					?></a></figure><?php
+					//endif;
+				endif;
 
-			<?php
 				if ( $ameta['content_type'] == 'e-summary' )
 					echo $excerpt;
 				else {
-					if ( $ameta['adaptify'])
+					if ( $ameta['adaptify'] )
 						$content = $petermolnareu_theme->replace_images_with_adaptive ( $content );
+					if ( $ameta['tweetify'] )
+						$content = $petermolnareu_theme->tweetify ( $content );
 
 					echo $content;
 				}
@@ -145,25 +174,40 @@ $commentcounter = ($ameta['showccntr']) ? '<a class="u-url right icon-comment co
 	<footer class="article-footer">
 		<?php if ( $ameta['limitwidth'] ) echo '<div class="content-inner">'; ?>
 		<?php if ( $ameta['showtags'] ): ?>
-			<h6><?php _e('Posted in:', $petermolnareu_theme->theme_constant) ?></h6>
+			<h5><?php _e('Tagged as:', $petermolnareu_theme->theme_constant) ?></h5>
 		<?php endif; ?>
 
 		<?php $hidetags = ( $ameta['showtags'] ) ? '' : ' hide'; ?>
 		<?php the_tags('<nav class="p-category'.$hidetags.'">', ', ', '</nav>'); ?>
 
-		<?php if ( function_exists('add_js_rel_syndication')) echo add_js_rel_syndication(''); ?>
-
-		<?php
-		//$rt = get_post_meta( get_the_ID(), 'twitter_retweeted_status_id', true );
-		$tw = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
-		if ( !empty($tw) ) :
-			$twlnk = 'https://twitter.com/petermolnar/status/' . $tw;
-			?>
-			<nav class="usyndication"><h6><?php _e('Also on:', $petermolnareu_theme->theme_constant); ?></h6><ul><li><a class='u-syndication icon-twitter link-twitter' href='<?php echo $twlnk; ?>'> Twitter</a></li></ul></nav>
-		<?php endif; ?>
-
 		<?php
 			echo $petermolnareu_theme->share_ ( get_permalink() , wp_title( '', false ), true );
+		?>
+
+		<h5><?php _e( '<a name="how-to-respond"></a>No, no comment form here. Still want to talk about it?', $petermolnareu_theme->theme_constant ); ?></h5>
+		<?php
+			$wm = __ ( '<p>Use <a href="http://indiewebcamp.com/webmentions" rel="nofollow">webmentions</a>, or send <a href="http://www.wpbeginner.com/beginners-guide/what-why-and-how-tos-of-trackbacks-and-pingbacks-in-wordpress/">a pingback or a trackback</a>, maybe mention <a href="https://twitter.com/petermolnar">@petermolnar</a> in a tweet with the thought', $petermolnareu_theme->theme_constant ); ?>
+
+		<?php
+			$syndicated = array();
+			if ( function_exists('getRelSyndicationFromSNAP'))
+				$syndicated = getRelSyndicationFromSNAP( true );
+
+			$tw = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
+			if ( !empty($tw) )
+				$syndicated['twitter'] = 'https://twitter.com/petermolnar/status/' . $tw;
+
+			if (!empty($syndicated)) {
+				$wm .=  __ ( ", or reply on:</p>", $petermolnareu_theme->theme_constant );
+				echo $wm;
+				echo '<nav class="usyndication"><ul>' . implode ( "\n", $syndicated ) . '</ul></nav>';
+				//_e ( '<p class="small">Your comment will show up here as well, thanks to <a href="https://www.brid.gy/">bridgy</a>.</p>', $petermolnareu_theme->theme_constant );
+			}
+			else {
+				$wm .= '.</p>';
+				echo $wm;
+			}
+
 		?>
 		<?php if ( $ameta['limitwidth'] ) echo '</div>'; ?>
 	</footer>

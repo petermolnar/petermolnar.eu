@@ -26,7 +26,7 @@ class adaptive_images {
 
 	const default_prefix = 'adaptive';
 
-	const cache = true;
+	const cache = false;
 	private $sharesize = '';
 	const middlesize = 720;
 	public $image_sizes = array();
@@ -36,25 +36,25 @@ class adaptive_images {
 		//$this->prefixes = array ( self::a_thumb, self::a_stnd, self::a_hd );
 
 		$this->image_sizes = array (
-			/* legacy, below 720px */
+			/* for legacy displays */
 			460 => array (
 				self::a_thumb => 60,
 				self::a_lthumb => 220,
 				self::a_stnd => 120,
 				self::a_hd => 640,
 			),
-			/* normal, between 720px and 1200px*/
+			/* for normal displays */
 			720 => array (
 				self::a_thumb => 90,
 				self::a_lthumb => 380,
 				self::a_stnd => 240,
-				self::a_hd => 1024,
+				self::a_hd => 980,
 			),
-			/* anything larger than fullHD */
-			1400 => array (
+			/* anything with crips display */
+			1600 => array (
 				self::a_thumb => 120,
 				self::a_lthumb => 540,
-				self::a_stnd => 400,
+				self::a_stnd => 480,
 				self::a_hd => 1200,
 			)
 		);
@@ -248,7 +248,7 @@ class adaptive_images {
 		if ( $cached != false ) {
 			$images = $cached['images'];
 			$bgdata = $cached['bgdata'];
-			$css = $cached['css'];
+			//$css = $cached['css'];
 		}
 		else {
 
@@ -257,12 +257,12 @@ class adaptive_images {
 			$images[ $aid ] = $img;
 			$keys =  array_keys( $images );
 			$bgdata = $this->bgdata ( $keys, $size );
-			$css = $this->build_css ( $bgdata, $images );
+			//$css = $this->build_css ( $bgdata, $images );
 
 			$cache = array (
 				'images' => $images,
 				'bgdata' => $bgdata,
-				'css' => $css
+				//'css' => $css
 			);
 
 			wp_cache_set( $cid, $cache, self::cache_group, self::cache_time );
@@ -273,22 +273,39 @@ class adaptive_images {
 		$_src = $bgdata[ self::middlesize ][ $aid ][ $size ];
 
 		$cl = array();
-		if ( $share )
+		if ( $share ) {
 			$caption = $this->share( $img['sharesrc'][0], $img['title'], get_permalink( $post ), $img['description'] );
-		elseif ( ! empty ( $title ))
+		}
+		elseif ( ! empty ( $title )) {
 			$caption = $title;
+		}
 		elseif ( $standalone ) {
 			$caption = '';
 			$cl[] = 'adaptimg';
 		}
-		else
+		else {
 			$caption = $img['title'];
+		}
 
-		return '<figure id="'. $_id .'" class="'. implode(" ", $cl ) .'">
-			'. $css .'
-			<img src="'. $_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
-			<figcaption>'. $caption .'</figcaption>
-		</figure>';
+
+		foreach ( $bgdata as $w => $img ) {
+			$srcset[] = array_shift( $img[ $aid ] ) . ' ' . $w . "w";
+		}
+		return '
+		<picture>
+			<img src="'. $_src .'" id="'. $_id .'" class="'. implode(" ", $cl ) .'"
+				title="'. $img['title'] .'" alt="'. $img['alttext'] . '"
+				sizes="(min-width: '. self::middlesize .'px) 60vw, 100vw"
+				srcset="'. join (",\n", $srcset).'"
+			/>
+		</picture>';
+
+
+		//return '<figure id="'. $_id .'" class="'. implode(" ", $cl ) .'">
+			//'. $css .'
+			//<img src="'. $_src .'" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" />
+			//<figcaption>'. $caption .'</figcaption>
+		//</figure>';
 
 	}
 

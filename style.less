@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		7.5
+Version:		7.12
 */
 
 @color-bg-dark: #2D333A;
@@ -27,7 +27,7 @@ Version:		7.5
 @padding-normal: 0.3em;
 @padding-large: 0.6em;
 @padding-xlarge: 1em;
-@padding-sxlarge: 2em;
+@padding-sxlarge: 1.6em;
 @padding-small: 0.2em;
 @padding-xsmall: 0.1em;
 
@@ -35,7 +35,7 @@ Version:		7.5
 @textshadow-light: 1px 1px #fff;
 
 @font-base: 17px;
-@font-enormous: 2.2em;
+@font-enormous: 2.8em;
 @font-xxlarge: 1.8em;
 @font-xlarge: 1.2em;
 @font-large: 1.1em;
@@ -296,7 +296,10 @@ img.left {
 
 .center,
 .aligncenter {
+	display:block;
 	text-align:center;
+	margin: 0 auto 0 auto;
+	position: relative;
 }
 
 .right,
@@ -429,7 +432,11 @@ h2 {
 	font-size:@font-large;
 }
 
-h2, h3, h4, h5, h6 {
+h5 {
+	margin: @font-enormous 0 @padding-large 0;
+}
+
+h2, h3, h4, h6 {
 	margin: @font-xlarge 0 @padding-xlarge 0;
 }
 
@@ -520,7 +527,7 @@ pre {
 .content-header {
 	position: fixed;
 	width: @panel-width;
-	height: 100%;
+	height: @toggle-size;
 	top:0;
 	z-index: 99;
 	left: -( @panel-width );
@@ -532,6 +539,8 @@ pre {
 .content-header.open {
 	left: 0;
 	padding-right: 0;
+	width: @panel-width;
+	height: 100%;
 }
 
 .content-logo {
@@ -564,7 +573,7 @@ pre {
 /* CONTENT */
 .content-body {
 	position: relative;
-	padding: @toggle-size @padding-large @padding-large @padding-large;
+	/*padding: @toggle-size @padding-large @padding-large @padding-large;*/
 	z-index: 2;
 }
 
@@ -684,7 +693,6 @@ pre {
 .usyndication {
 	display: block;
 	margin: 2em 0 2em 0;
-	font-size: @font-small;
 
 	ul {
 	font-size: @font-xlarge;
@@ -752,6 +760,16 @@ pre {
 .article-header {
 	position: relative;
 	clear: both;
+	background-size: cover;
+	background-position: center center;
+	background-repeat: no-repeat;
+
+	/* h1 {
+		a {
+			color: @color-link-light;
+			text-shadow: 0 0 2em @color-link-dark;
+		}
+	}*/
 
 	h2 {
 		margin: 0;
@@ -759,9 +777,20 @@ pre {
 		line-height: @font-xlarge;
 		display: inline-block;
 
-		a:after {
+		.more:after {
 			content: '»';
 			margin-left: @padding-normal;
+		}
+	}
+}
+
+.article-header-singular {
+	min-height: 16em;
+
+	h1 {
+		a {
+			color: @color-link-light;
+			text-shadow: 0 0 2em @color-link-dark;
 		}
 	}
 }
@@ -772,7 +801,7 @@ pre {
 
 .minstoread {
 	font-size: @font-xsmall;
-	opacity: 0.5;
+	/* opacity: 0.5; */
 	margin-right: @padding-large;
 }
 
@@ -1017,11 +1046,14 @@ pre {
 	.content-header {
 		left:0;
 		width: @panel-width-desktop;
+		height:100%;
 	}
 
+
 	.content-body {
-		padding: @padding-large;
+		padding: 0;
 	}
+
 
 	.content-footer,
 	.content-body,
@@ -1182,7 +1214,7 @@ pre {
 	.navul();
 
 	li {
-		margin: 0 0 @padding-large 0;
+		margin: 0 0 @padding-sxlarge 0;
 		padding: 0;
 
 		.comment-reply-title,
@@ -1213,7 +1245,7 @@ pre {
 		}
 
 		p {
-			margin: @padding-normal 0 0 0;
+			margin: @padding-xlarge 0 0 0;
 		}
 
 	}

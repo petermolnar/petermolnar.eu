@@ -8,6 +8,7 @@
 	$theme = 'dark';
 
 	$cat = get_query_var('cat');
+	$tag = get_query_var('tag');
 
 	if ( is_home() ) {
 		$posts_per_page = 10;
@@ -30,7 +31,6 @@
 		$theme = $category_meta['theme'];
 	}
 
-	$tag = get_query_var('tag');
 	if ( !empty( $tag ) ) {
 		$_query_string = $query_string . '&posts_per_page=-1';
 		$theme = 'light';
