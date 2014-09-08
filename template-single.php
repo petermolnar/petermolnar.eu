@@ -49,14 +49,11 @@ $thid = ( has_post_thumbnail () ) ? get_post_thumbnail_id( $post->ID ) : false;
 
 	<!-- article header -->
 	<?php
-	$hstyle = false;
+	$hstyle = 'class="article-header"';
 
 	if ( is_singular() && $ameta['featimg'] && !empty( $thid ) ) {
 		$bgimg = wp_get_attachment_image_src( $thid, 'large' );
-		$hstyle = 'class="article-header article-header-singular" style="background-image:url('.$bgimg[0].');"';
-	}
-	else {
-		$hstyle = 'class="article-header"';
+		if ( $bgimg[1] > 720 ) $hstyle = 'class="article-header article-header-singular" style="background-image:url('.$bgimg[0].');"';
 	}
 	?>
 	<header <?php echo $hstyle; ?>>

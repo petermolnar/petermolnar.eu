@@ -50,7 +50,8 @@
 		?>
 		<section class="content-body content-<?php echo $theme; ?>">
 		<?php
-		$sectionclass = $category->slug . "-postlist";
+		if ( is_object ( $category ) )
+			$sectionclass = $category->slug . "-postlist";
 		if ( $category_meta['columns'] == 1 )
 			$sectionclass .= " category-columns";
 		?>

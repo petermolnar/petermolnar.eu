@@ -100,6 +100,8 @@ class petermolnareu {
 		remove_action('wp_head', 'wp_generator'); // Display the XHTML generator that is generated on the wp_head hook, WP version
 		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
 		remove_action('wp_head', 'rel_canonical');
+
+		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 	}
 
 	public function init () {
@@ -157,8 +159,8 @@ class petermolnareu {
 		//add_filter( 'the_content', 'wpautop' , 12);
 		//add_filter( 'the_content', 'shortcode_unautop' , 12);
 
-		/* have links in the admin *
-		add_filter( 'pre_option_link_manager_enabled', '__return_true' );*/
+		/* have links in the admin */
+		add_filter( 'pre_option_link_manager_enabled', '__return_true' );
 
 		/* additional user meta */
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
@@ -218,6 +220,19 @@ class petermolnareu {
 		if ( is_singular() && comments_open() && get_option('thread_comments') )
 			wp_enqueue_script( 'comment-reply' );
 
+
+		wp_deregister_style( 'jetpack-subscriptions' );
+	}
+
+	public function widgets_init () {
+		register_sidebar( array(
+			'name' => __( 'Subscribe', $this->theme_constant ),
+			'id' => 'subscribe',
+			'before_widget' => '',
+			'after_widget'  => '',
+			'before_title'  => '',
+			'after_title'   => '',
+		) );
 	}
 
 	/**
@@ -1026,11 +1041,13 @@ class petermolnareu {
 
 		$ameta['post-format'] = $post_format;
 		$c = get_the_category( $post->ID );
+
 		$ameta['category'] = array_shift( $c );
 		$ameta['category_meta'] = $this->category_meta( $ameta['category'] );
 		$ameta['theme'] = 'light';
 		$ameta['header'] = 'normal';
-		$ameta['adaptify'] = false;
+		$adfy = get_post_meta( $post->ID, 'adaptify', true );
+		$ameta['adaptify'] = empty($adfy)? false : $adfy;
 		$ameta['tweetify'] = false;
 		$ameta['footer'] = ($singular) ? true : false;
 		$ameta['siblings'] = false;
@@ -1041,6 +1058,8 @@ class petermolnareu {
 		$ameta['showccntr'] = ($singular) ? false : true;
 		$ameta['showtags'] = ($singular) ? true : false;
 		$ameta['sidebar'] = false;
+
+
 
 		switch ( $post_format ) {
 			case 'link':

@@ -12,12 +12,17 @@
 		<span class="spacer"></span>
 		<a rel="license" href="/licence" title="Licence"><i class="icon-cc"></i></a>
 		<span class="spacer"><a href="http://wordpress.org" title="Powered by WordPress"><i class="icon-wordpress"></i></a></span>
+		<br />
+		<aside class="footer-forms">
+			<form role="search" method="get" class="search-form" action="<?php echo $petermolnareu_theme->replace_if_ssl(get_bloginfo('url')); ?>">
+				<label for="search" class="spacer"><?php _e('Search:', $petermolnareu_theme->theme_constant ); ?></label>
+				<input type="search" class="search-field" placeholder="Search …" value="" name="s" title="<?php _e('Search for:', $petermolnareu_theme->theme_constant ); ?>">
+				<input type="submit" class="search-submit" value="<?php _e('Go', $petermolnareu_theme->theme_constant ); ?>">
+			</form>
 
-		<form role="search" method="get" class="search-form" action="<?php echo $petermolnareu_theme->replace_if_ssl(get_bloginfo('url')); ?>">
-			<label for="search" class="spacer"><?php _e('Search:', $petermolnareu_theme->theme_constant ); ?></label>
-			<input type="search" class="search-field" placeholder="Search …" value="" name="s" title="<?php _e('Search for:', $petermolnareu_theme->theme_constant ); ?>">
-			<input type="submit" class="search-submit" value="<?php _e('Go', $petermolnareu_theme->theme_constant ); ?>">
-		</form>
+			<?php dynamic_sidebar( 'subscribe' ); ?>
+		</aside>
+
 		<?php wp_footer(); ?>
 	</div></footer>
 
