@@ -115,7 +115,7 @@ class adaptive_images {
 		// '. join ("\n\t\t\t", $srcset) .'
 
 		$r = '
-		<picture>
+		<picture class="adaptive">
 			<img src="'. $fallback .'" id="'. $img['slug'] .'" class="adaptimg" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" srcset="'. join ( ', ', $srcset ) .'" />
 		</picture>';
 

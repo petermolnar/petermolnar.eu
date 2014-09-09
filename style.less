@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		7.14
+Version:		8.0
 */
 
 @color-bg-dark: #2D333A;
@@ -853,65 +853,6 @@ pre {
 }
 
 
-/* PHOTOBLOG */
-.photoblog-preview {
-	display: inline-block;
-	width: 49%;
-	padding-bottom: 49%;
-	position: relative;
-
-	a {
-		figure {
-			position: absolute;
-			left: @padding-xsmall;
-			right: @padding-xsmall;
-			top: @padding-xsmall;
-			bottom: @padding-xsmall;
-			overflow: hidden;
-			opacity: 0.7;
-			.animate();
-/*
-			background-size: contain;
-			background-position: center center;
-			background-repeat: no-repeat;
-			text-indent: -9999px;
-*/
-			img {
-				width:auto;
-				height: 100%;
-			}
-
-			figcaption {
-				position: absolute;
-				overflow: hidden;
-				top: 25%;
-				left: 5%;
-				right: 5%;
-				text-align: center;
-				padding: @padding-small 1% @padding-small 1%;
-				opacity: 0.9;
-				text-indent: 0;
-				font-size: @font-xxlarge;
-				line-height: @font-xlarge;
-				text-shadow: 0 0 2px #000;
-				color: #fff;
-			}
-
-			&:hover {
-				opacity: 0.99;
-			}
-
-		}
-	}
-}
-
-.photoblog-list {
-	display: inline-block;
-	width: 32%;
-	padding-bottom: 32%;
-}
-
-
 /* sibling links */
 .siblings {
 	display: block;
@@ -933,53 +874,9 @@ pre {
 	display: block;
 	height:auto;
 	width:90%;
-	margin: 0 auto 0 auto;
+	margin: @padding-large auto @padding-large auto;
 	padding: 0;
 	.animate();
-
-	figcaption {
-		display:none;
-	}
-
-	img {
-		width: 100%;
-		height: auto;
-	}
-}
-
-.adaptgal-pure,
-.adaptgal {
-	figure {
-		position: relative;
-		display: block;
-		height:auto;
-		width:90%;
-		margin: 0 auto 0 auto;
-		padding: 0;
-		.animate();
-
-		figcaption {
-			display:none;
-		}
-
-		img {
-			width: 100%;
-			height: auto;
-		}
-	}
-
-	.adaptgal-thumbs {
-		display: none;
-		visibility: hidden;
-	}
-}
-
-.adaptgal {
-	figure {
-		figcaption {
-			text-indent: none;
-		}
-	}
 }
 
 /* PAGINATION */
@@ -1009,16 +906,6 @@ pre {
 		opacity: 0.5;
 	}
 
-}
-
-/* PORTFOLIO */
-.portfolio-title {
-	font-size:  1em;
-	font-weight: normal;
-	color: @color-menu;
-	padding:0;
-	margin:0;
-	opacity: 0.9;
 }
 
 /* SIDEBAR */
@@ -1078,133 +965,6 @@ pre {
 		margin-left:@panel-width-desktop;
 	}
 
-	/* ADAPTGAL */
-	.adaptgal {
-		position: relative;
-
-		.adaptgal-previews {
-			position:absolute;
-			display: block;
-			height:auto;
-			bottom:0;
-			top:0;
-			left:0;
-			right:0;
-			z-index:2;
-			vertical-align: top;
-			overflow:hidden;
-			width:86%;
-
-			figure {
-				position:absolute;
-				display: block;
-				width:auto;
-				height:auto;
-				top:0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-
-				vertical-align: top;
-				text-align:center;
-				overflow:hidden;
-				.animate();
-				opacity: 0;
-
-				figcaption {
-					display:none;
-				}
-
-				img {
-					width:auto;
-					height:100%;
-					border:@border-thin;
-				}
-
-				&:target {
-					opacity: 0.99;
-					z-index: 10;
-					figcaption {
-						text-indent: 0em;
-					}
-				}
-			}
-		}
-
-		.adaptgal-thumbs,
-		.adaptgal-thumbs-single {
-			display: block;
-			visibility: visible
-		}
-
-		.adaptgal-thumbs {
-			text-align: center;
-			position: relative;
-			width: 11%;
-			margin-left: 88%;
-			vertical-align: top;
-
-				ul {
-					.flatul();
-
-					li {
-						position: relative;
-						width: 45%;
-						padding-bottom: 45%;
-
-						a {
-							position: absolute;
-							left: 0;
-							right: 0;
-							top: 0;
-							bottom: 0;
-							overflow: hidden;
-							border: 1px solid #666;
-							overflow: hidden;
-							opacity: 0.5;
-							.animate();
-
-							img {
-								width:100%;
-								height:auto;
-								width: auto\9; /* ie8 fix */
-							}
-
-							&:hover, &:active &:focus, &.adaptgal-active {
-								opacity: 0.99;
-							}
-						}
-					}
-				}
-
-		}
-
-		.adaptgal-thumbs.single {
-			width: 5%;
-			margin-left: 95%;
-			ul {
-				li {
-					position: relative;
-					width: 99%;
-					padding-bottom: 99%;
-				}
-			}
-		}
-	}
-
-	.adaptgal-pure {
-		width: 90%;
-		margin:  0 auto 0 auto;
-		.columns2();
-		figure {
-			width:92%;
-		}
-	}
-
-	.photoblog-preview {
-		width: 32.9%;
-		padding-bottom: 32.9%;
-	}
 
 	.share,
 	.usyndication {
@@ -1268,61 +1028,3 @@ pre {
 	}
 }
 
-/* OPENSOURCE */
-.article-opensource {
-	display: inline-block;
-	width: 48%;
-	padding: 0 1% 0 1%;
-	vertical-align: top;
-	margin:0 0 2em 0;
-}
-
-.inactive {
-	opacity: 0.6;
-}
-
-/* GITHUB */
-/**
-	github ribbon
-**/
-.forkongithub {
-	position:absolute;
-	display:block;
-	overflow:hidden;
-	top:0;
-	right:0;
-	width:11em;
-	height:11em;
-}
-
-.forkongithub a,
-.forkongithub-line a {
-	font-size: @font-small;
-	text-align:center;
-	font-weight:bold;
-	box-shadow:1px 1px 4px rgba(0,0,0,0.8);
-	opacity: 0.4;
-	.animate();
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-}
-
-.forkongithub a {
-	position:absolute;
-	top: 2.5em;
-	right: -2.5em;
-	padding:0.4em 2em 0.4em 2em;
-	transform:rotate(45deg);
-	-webkit-transform:rotate(45deg);
-}
-
-.forkongithub-line a {
-	border: 1px solid #666;
-	line-height: 2.3em;
-	padding: 0.3em 2em 0.3em 2em;
-}
-
-.forkongithub-line a:hover,
-.forkongithub a:hover {
-	opacity: 0.99;
-}

@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		7.14
+Version:		8.0
 */
 .spacer {
   display: inline-block;
@@ -929,57 +929,6 @@ pre {
   margin: 1em 0 0 0;
   text-align: left;
 }
-/* PHOTOBLOG */
-.photoblog-preview {
-  display: inline-block;
-  width: 49%;
-  padding-bottom: 49%;
-  position: relative;
-}
-.photoblog-preview a figure {
-  position: absolute;
-  left: 0.1em;
-  right: 0.1em;
-  top: 0.1em;
-  bottom: 0.1em;
-  overflow: hidden;
-  opacity: 0.7;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-  /*
-			background-size: contain;
-			background-position: center center;
-			background-repeat: no-repeat;
-			text-indent: -9999px;
-*/
-}
-.photoblog-preview a figure img {
-  width: auto;
-  height: 100%;
-}
-.photoblog-preview a figure figcaption {
-  position: absolute;
-  overflow: hidden;
-  top: 25%;
-  left: 5%;
-  right: 5%;
-  text-align: center;
-  padding: 0.2em 1% 0.2em 1%;
-  opacity: 0.9;
-  text-indent: 0;
-  font-size: 1.8em;
-  line-height: 1.2em;
-  text-shadow: 0 0 2px #000;
-  color: #fff;
-}
-.photoblog-preview a figure:hover {
-  opacity: 0.99;
-}
-.photoblog-list {
-  display: inline-block;
-  width: 32%;
-  padding-bottom: 32%;
-}
 /* sibling links */
 .siblings {
   display: block;
@@ -997,45 +946,10 @@ pre {
   display: block;
   height: auto;
   width: 90%;
-  margin: 0 auto 0 auto;
+  margin: 0.6em auto 0.6em auto;
   padding: 0;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
-}
-.adaptimg figcaption {
-  display: none;
-}
-.adaptimg img {
-  width: 100%;
-  height: auto;
-}
-.adaptgal-pure figure,
-.adaptgal figure {
-  position: relative;
-  display: block;
-  height: auto;
-  width: 90%;
-  margin: 0 auto 0 auto;
-  padding: 0;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-}
-.adaptgal-pure figure figcaption,
-.adaptgal figure figcaption {
-  display: none;
-}
-.adaptgal-pure figure img,
-.adaptgal figure img {
-  width: 100%;
-  height: auto;
-}
-.adaptgal-pure .adaptgal-thumbs,
-.adaptgal .adaptgal-thumbs {
-  display: none;
-  visibility: hidden;
-}
-.adaptgal figure figcaption {
-  text-indent: none;
 }
 /* PAGINATION */
 .wp-paginate {
@@ -1059,15 +973,6 @@ pre {
 }
 .wp-paginate .current {
   opacity: 0.5;
-}
-/* PORTFOLIO */
-.portfolio-title {
-  font-size: 1em;
-  font-weight: normal;
-  color: #aaaaaa;
-  padding: 0;
-  margin: 0;
-  opacity: 0.9;
 }
 /* SIDEBAR */
 .sidebar h3 {
@@ -1130,130 +1035,6 @@ pre {
   .content-body,
   .content-comments {
     margin-left: 12em;
-  }
-  /* ADAPTGAL */
-  .adaptgal {
-    position: relative;
-  }
-  .adaptgal .adaptgal-previews {
-    position: absolute;
-    display: block;
-    height: auto;
-    bottom: 0;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-    vertical-align: top;
-    overflow: hidden;
-    width: 86%;
-  }
-  .adaptgal .adaptgal-previews figure {
-    position: absolute;
-    display: block;
-    width: auto;
-    height: auto;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    vertical-align: top;
-    text-align: center;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    -webkit-transition: all 0.3s ease;
-    opacity: 0;
-  }
-  .adaptgal .adaptgal-previews figure figcaption {
-    display: none;
-  }
-  .adaptgal .adaptgal-previews figure img {
-    width: auto;
-    height: 100%;
-    border: 1px solid #777777;
-  }
-  .adaptgal .adaptgal-previews figure:target {
-    opacity: 0.99;
-    z-index: 10;
-  }
-  .adaptgal .adaptgal-previews figure:target figcaption {
-    text-indent: 0em;
-  }
-  .adaptgal .adaptgal-thumbs,
-  .adaptgal .adaptgal-thumbs-single {
-    display: block;
-    visibility: visible;
-  }
-  .adaptgal .adaptgal-thumbs {
-    text-align: center;
-    position: relative;
-    width: 11%;
-    margin-left: 88%;
-    vertical-align: top;
-  }
-  .adaptgal .adaptgal-thumbs ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  .adaptgal .adaptgal-thumbs ul li {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-  }
-  .adaptgal .adaptgal-thumbs ul li {
-    position: relative;
-    width: 45%;
-    padding-bottom: 45%;
-  }
-  .adaptgal .adaptgal-thumbs ul li a {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    border: 1px solid #666;
-    overflow: hidden;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-    -webkit-transition: all 0.3s ease;
-  }
-  .adaptgal .adaptgal-thumbs ul li a img {
-    width: 100%;
-    height: auto;
-    width: auto\9;
-    /* ie8 fix */
-  }
-  .adaptgal .adaptgal-thumbs ul li a:hover,
-  .adaptgal .adaptgal-thumbs ul li a:active .adaptgal .adaptgal-thumbs ul li a:focus,
-  .adaptgal .adaptgal-thumbs ul li a.adaptgal-active {
-    opacity: 0.99;
-  }
-  .adaptgal .adaptgal-thumbs.single {
-    width: 5%;
-    margin-left: 95%;
-  }
-  .adaptgal .adaptgal-thumbs.single ul li {
-    position: relative;
-    width: 99%;
-    padding-bottom: 99%;
-  }
-  .adaptgal-pure {
-    width: 90%;
-    margin: 0 auto 0 auto;
-    -moz-column-count: 2;
-    -moz-column-gap: 1.1em;
-    -webkit-column-count: 2;
-    -webkit-column-gap: 1.1em;
-    column-count: 2;
-    column-gap: 1.1em;
-  }
-  .adaptgal-pure figure {
-    width: 92%;
-  }
-  .photoblog-preview {
-    width: 32.9%;
-    padding-bottom: 32.9%;
   }
   .share,
   .usyndication {
@@ -1321,57 +1102,4 @@ pre {
 }
 .comment-list li p {
   margin: 1em 0 0 0;
-}
-/* OPENSOURCE */
-.article-opensource {
-  display: inline-block;
-  width: 48%;
-  padding: 0 1% 0 1%;
-  vertical-align: top;
-  margin: 0 0 2em 0;
-}
-.inactive {
-  opacity: 0.6;
-}
-/* GITHUB */
-/**
-	github ribbon
-**/
-.forkongithub {
-  position: absolute;
-  display: block;
-  overflow: hidden;
-  top: 0;
-  right: 0;
-  width: 11em;
-  height: 11em;
-}
-.forkongithub a,
-.forkongithub-line a {
-  font-size: 0.9em;
-  text-align: center;
-  font-weight: bold;
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-  opacity: 0.4;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
-  border-top: 1px solid #666;
-  border-bottom: 1px solid #666;
-}
-.forkongithub a {
-  position: absolute;
-  top: 2.5em;
-  right: -2.5em;
-  padding: 0.4em 2em 0.4em 2em;
-  transform: rotate(45deg);
-  -webkit-transform: rotate(45deg);
-}
-.forkongithub-line a {
-  border: 1px solid #666;
-  line-height: 2.3em;
-  padding: 0.3em 2em 0.3em 2em;
-}
-.forkongithub-line a:hover,
-.forkongithub a:hover {
-  opacity: 0.99;
 }
