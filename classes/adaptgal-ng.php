@@ -49,38 +49,10 @@ class adaptive_images {
 			add_image_size ( self::hprefix . $dpix, 0, $size, false );
 		}
 
-		//foreach ( $this->sizes as $resolution => $size ) {
-			//add_image_size (
-				//$resolution,
-				//$size,
-				//$size,
-				//false
-			//);
-
-		//}
-
-		add_shortcode('adaptgal', array ( &$this, 'adaptgal' ) );
 		add_shortcode('adaptimg', array ( &$this, 'adaptimg' ) );
 
-		$post_types = get_post_types( );
 		/* cache invalidation hooks */
-		foreach ( $post_types as $post_type ) {
-			add_action( 'new_to_publish_' .$post_type , array( &$this , 'cclear' ), 0 );
-			add_action( 'draft_to_publish' .$post_type , array( &$this , 'cclear' ), 0 );
-			add_action( 'pending_to_publish' .$post_type , array( &$this , 'cclear' ), 0 );
-			add_action( 'private_to_publish' .$post_type , array( &$this , 'cclear' ), 0 );
-			add_action( 'publish_' . $post_type , array( &$this , 'cclear' ), 0 );
-		}
-
-		/* invalidation on some other ocasions as well */
-		add_action( 'deleted_post', array( &$this , 'cclear' ), 0 );
-		add_action( 'edit_post', array( &$this , 'cclear' ), 0 );
-
-		//add_filter( 'post_thumbnail_html', array( &$this, 'adaptive_embededed' ), 10 );
-		//add_filter( 'image_send_to_editor', array( &$this, 'adaptive_embededed' ), 10 );
-		//add_filter( 'the_content', array( &$this, 'adaptive_embededed' ), 10 );
-
-
+		add_action(  'transition_post_status',  array( &$this , 'cclear' ), 10, 3 );
 	}
 
 	/* adaptive image shortcode function */
@@ -123,64 +95,6 @@ class adaptive_images {
 			wp_cache_set( $cid, $r, self::cache_group, self::cache_time );
 		}
 
-		return $r;
-	}
-
-	/* adaptive gallery shortcode function */
-	public function adaptgal( $atts , $content = null ) {
-
-		extract( shortcode_atts(array(
-			'postid' => false,
-			'ids' => false,
-			'columns' => false
-		), $atts));
-
-		if ( $postid == false )
-			global $post;
-		else
-			$post = get_post( $postid );
-
-		if ( !empty( $ids ))
-			$ids = explode ( ',' , $ids );
-
-		print_r ( $ids );
-
-/*
-		$cached = ( self::cache == 1 ) ? wp_cache_get( $post->ID, self::cache_group ) : false;
-
-		if ( $cached != false ) {
-			$images = $cached['images'];
-			$bgdata = $cached['bgdata'];
-			$css = $cached['css'];
-		}
-		else {
-			if ( $imgids == false ) {
-				$images = $this->image_attachments_by_post ( $post );
-			}
-			else {
-
-				$images = $this->image_attachments_by_ids ( $imgids );
-			}
-
-			$bgdata = $this->bgdata ( array_keys( $images ) );
-			$css = $this->build_css ( $bgdata, $images );
-
-			$cache = array (
-				'images' => $images,
-				'bgdata' => $bgdata,
-				'css' => $css
-			);
-
-			wp_cache_set( $post->ID, $cache, self::cache_group, self::cache_time );
-		}
-*/
-		$r = '<section class="adaptgal-pure">';
-
-		foreach ($images as $imgid => $img ) {
-			$r .= do_shortcode( '[adaptimg aid=' . $imgid .' title="'. $img['title'] .'" size="'. self::a_hd .'" share=0]');
-		}
-
-		$r .= '</section>';
 		return $r;
 	}
 
@@ -259,15 +173,9 @@ class adaptive_images {
 
 
 	/* clear cache entries */
-	public function cclear ( $post_id = false, $force = false ) {
-
-		/* exit if no post_id is specified */
-		if ( empty ( $post_id ) && $force === false ) {
-			return false;
-		}
-
-		wp_cache_delete ( $post_id, self::cache_group );
-
+	public function cclear ( $new_status, $old_status, $post ) {
+	//public function cclear ( $post_id = false, $force = false ) {
+		wp_cache_delete ( $post->ID, self::cache_group );
 	}
 
 	/* adaptify all images */
@@ -278,7 +186,7 @@ class adaptive_images {
 			foreach ( $inline_images[0] as $cntr=>$imgstr ) {
 				$aid = $inline_images[1][$cntr];
 				//$r = $this->adaptimg($aid);
-				$r = do_shortcode( '[adaptimg aid=' . $aid .' size="'. self::a_hd .'" share=0 standalone=1]');
+				$r = do_shortcode( '[adaptimg aid=' . $aid .' share=0 standalone=1]');
 				$html = str_replace ( $imgstr, $r, $html );
 			}
 		}
