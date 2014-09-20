@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.0
+Version:		8.3
 */
 .spacer {
   display: inline-block;
@@ -286,12 +286,13 @@ body {
   letter-spacing: 0.01em;
   font-weight: normal;
 }
-.inner {
+.limit {
   max-width: 74em;
   width: 98%;
   margin: 0 auto 0 auto;
 }
-.content-inner {
+.content-inner,
+.content-limit {
   max-width: 40em;
   width: 98%;
   margin: 0 auto 1.2em auto;
@@ -355,7 +356,7 @@ h2 {
   font-size: 1.1em;
 }
 h5 {
-  margin: 2.8em 0 0.6em 0;
+  margin: 1em 0 0.6em 0;
 }
 h2,
 h3,
@@ -861,6 +862,10 @@ pre {
   padding: 0 0.6em 0 0.6em;
 }
 /* ARTICLE */
+.more:after {
+  content: '»';
+  margin-left: 0.3em;
+}
 .article-header {
   position: relative;
   clear: both;
@@ -894,6 +899,7 @@ pre {
 .article-header-singular {
   min-height: 16em;
 }
+.e-content,
 .article-content {
   text-align: justify;
 }
@@ -902,6 +908,7 @@ pre {
   /* opacity: 0.5; */
   margin-right: 0.6em;
 }
+.dt-published,
 .article-pubdate,
 .urel {
   display: block;
@@ -932,13 +939,42 @@ pre {
 /* sibling links */
 .siblings {
   display: block;
-  padding: 0 0 0.6em 0;
+  margin-top: 1.6em;
 }
 .siblings a {
-  color: #aaaaaa;
+  display: inline-block;
+  width: 48%;
+  margin: 0;
+  vertical-align: top;
+  color: #919191;
 }
 .siblings a:hover {
-  color: #f7f7f7;
+  color: #5e5e5e;
+}
+.siblings a[rel="next"]:before,
+.siblings a[rel="prev"]:before {
+  font-size: 4em;
+  color: #dddddd;
+  line-height: 0.6em;
+  display: block;
+}
+.siblings a[rel="next"]:before {
+  content: '»';
+  margin-left: 0.1em;
+  float: right;
+}
+.siblings a[rel="prev"]:before {
+  content: '«';
+  margin-right: 0.1em;
+  float: left;
+}
+.siblings a[rel="next"] {
+  margin-right: 1%;
+  text-align: right;
+}
+.siblings a[rel="prev"] {
+  margin-left: 1%;
+  text-align: left;
 }
 /* ADAPTGAL */
 .adaptimg {

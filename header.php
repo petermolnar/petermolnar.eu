@@ -18,15 +18,16 @@ $favicon = $petermolnareu_theme->image_url . 'favicon.png';
 </head>
 
 <body>
-	<header class="content-header"><div class="inner">
-		<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
-		<figure class="content-logo">
-			<a href="<?php bloginfo( 'url' ) ?>">
+	<header class="content-header">
+		<div class="limit">
+			<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
+			<a href="<?php bloginfo( 'url' ) ?>" class="content-logo">
 				<img src="<?php echo $logo_img; ?>" title="<?php bloginfo( 'name' ) ?>" alt="<?php bloginfo( 'name' ) ?>" />
 			</a>
-		</figure><nav class="content-navigation">
-			<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
-		</nav>
-	</div></header>
+			<nav class="content-navigation">
+				<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
+			</nav>
+		</div>
+	</header>
 
 
