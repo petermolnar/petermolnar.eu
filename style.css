@@ -4,7 +4,11 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
+<<<<<<< HEAD
 Version:		8.4
+=======
+Version:		8.3
+>>>>>>> f93b73457ba158f6182305bf619866498c3a699f
 */
 .spacer {
   display: inline-block;
