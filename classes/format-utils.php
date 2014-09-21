@@ -56,14 +56,16 @@ class pmlnr_format {
 
 		$cite = '';
 		if ( !empty( $source_name ) && !empty ( $source_url) ) {
-			$cite = sprintf ( '<cite class="u-quote-source right"><a class="icon-link-ext-alt right" href="%s">%s</a></cite>', $source_url, $source_name);
+			//$cite = sprintf ( '<cite class="u-quote-source right"><a class="icon-link-ext-alt right" href="%s">%s</a></cite>', $source_url, $source_name);
+			$cite = sprintf ( '[%s](%s){.u-quote-source .right .icon-link-ext-alt}', $source_name, $source_url );
 		}
 		elseif ( !empty($source_name )) {
-			$cite = sprintf ( '<cite class="u-quote-source right">%s</cite>', $source_name);
+			//$cite = sprintf ( '<cite class="u-quote-source right">%s</cite>', $source_name);
+			$cite = sprintf ( '(%s){.u-quote-source}', $source_name );
 		}
 
 		if ( !strstr ( $this->src, '<blockquote>' ) )
-			$r = sprintf ('<blockquote>%s%s</blockquote>', $this->src, $cite );
+			$r = sprintf ("> %s\n%s", $this->src, $cite );
 		else
 			$r = $this->src . $cite;
 
@@ -131,7 +133,8 @@ class pmlnr_format {
 		$webmention = get_post_meta( $this->post->ID, '_format_link_webmention', true );
 
 		if ( !empty($url ) && ( empty($webmention) || $webmention == 'none' ) ) {
-			$l = sprintf ( '<p><a class="icon-link-ext-alt" href="%s">%s</a></p>', $url, $title );
+			//$l = sprintf ( '<p><a class="icon-link-ext-alt" href="%s">%s</a></p>', $url, $title );
+			$l = sprintf ( "[%s](%s){.icon-link-ext-alt}\n", $title, $url );
 			$r = $l . $r;
 		}
 

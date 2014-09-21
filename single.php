@@ -1,8 +1,8 @@
 <?php
 
-get_header();
-
 the_post();
+
+get_header();
 
 /* get the content */
 ob_start();
@@ -89,8 +89,8 @@ switch ( $meta['post_format'] ) {
 			<div class="content-inner">
 			<?php
 				echo pmlnr_article::tags();
+				echo pmlnr_article::reply();
 				echo pmlnr_article::share();
-				echo pmlnr_article::syndicates();
 				echo pmlnr_article::siblings();
 			?>
 			</div>

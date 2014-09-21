@@ -51,10 +51,12 @@ $excerpt = ob_get_clean();
 		<!-- article meta -->
 		<header <?php echo $hstyle; ?>>
 			<?php
+				echo pmlnr_article::commentcntr();
+
 				if ( $meta['show']['excerpt'] ) {
-					echo pmlnr_article::commentcntr( );
 					echo pmlnr_article::minstoread( $content );
 				}
+
 				echo pmlnr_article::pubdate();
 
 				if ( $meta['show']['header'] && $meta['show']['excerpt'] )

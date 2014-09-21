@@ -206,7 +206,7 @@ class pmlnr_article {
 	public static function siblings( $title = true ) {
 		/* thank you WordPress for not having get_(previous|next)_post_link */
 		ob_start();
-		if ( $title ) printf ('<h5>%s</h5>', _e('Read more:') );
+		if ( $title ) printf ('<h5>%s</h5>', __('Read more:') );
 
 		?><nav class="siblings"><?php
 			previous_post_link( '%link' , '%title' , true );
@@ -273,12 +273,46 @@ class pmlnr_article {
 	}
 
 	/**
+	 * reply at syndicated / linked networks
+	 *
+	 * @return string formatted message, including syndication list
+	 *
+	 */
+	public static function reply ( ) {
+		global $post;
+
+		$syndicates = array();
+		if ( function_exists('getRelSyndicationFromSNAP'))
+			$syndicates = getRelSyndicationFromSNAP( true );
+
+		/* Twitter */
+		if ( !empty ($syndicates['TW'])) {
+			preg_match('/href="(.*?)"/', $syndicates['TW'], $twurls );
+			if (!empty($twurls[1]))
+				$tweet_id = substr(strrchr($twurls[1], "/"), 1);
+		}
+
+		if ( empty ( $tweet_id ))
+			$tweet_id = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
+
+		if ( !empty($tweet_id) )
+			$syndicates['TW'] = sprintf ( '<li><a class="link-twitter icon-twitter" href="https://twitter.com/intent/tweet?in_reply_to=%s" target="_blank">Twitter</a></li>', $tweet_id );
+
+		if (!empty($syndicates)) {
+			$r = sprintf('<h5>%s</h5><div class="usyndication"><ul>%s</ul></div>', __('Reply'), implode ( "\n", $syndicates ));
+		}
+
+		return $r;
+	}
+
+	/**
 	 * updated share function: retweet/reshare/reshit if SNAP entry or something else is
 	 * available
 	 */
 	public static function share ( ) {
 		global $post;
 
+		$r = '';
 		$plink = get_permalink();
 		$link = urlencode( $plink );
 		$title = urlencode( get_the_title() );
@@ -318,6 +352,7 @@ class pmlnr_article {
 		$repost_id = get_post_meta($post->ID, 'twitter_rt_id', true );
 		$repost_uid = get_post_meta($post->ID, 'twitter_rt_user_id', true );
 		$tw = get_post_meta( $post->ID, 'twitter_tweet_id', true );
+		$url = false;
 		if ( !empty( $pgIDs[ $service ] ) ) {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $pgIDs[ $service ];
 			$txt = __( 'reweet' );
@@ -330,14 +365,20 @@ class pmlnr_article {
 			$url = 'https://twitter.com/intent/retweet?tweet_id=' . $tw;
 			$txt = __( 'reweet' );
 		}
-		else {
+
+		if ( empty($url) ) {
 			$url = 'https://twitter.com/share?url='. $link .'&text='. $title;
 			$txt = __( 'tweet' );
+			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
-		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+		else {
+			$rshlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+		}
+
 
 		/* Facebook */
 		$service = 'facebook';
+		$url = false;
 		if ( !empty( $pgIDs[ $service ] ) ) $pgIDs[$service] = explode ( '_', $pgIDs[$service] );
 		if ( is_array ( $pgIDs[$service] ) && !empty($pgIDs[$service][1]) ) {
 			//https://www.facebook.com/sharer.php?s=100&p[url]=http://www.example.com/&p[images][0]=/images/image.jpg&p[title]=Title&p[summary]=Summary
@@ -348,12 +389,13 @@ class pmlnr_article {
 			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
 			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
 			$txt = __( 'reshare' );
+			$rshlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 		else {
 			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
 			$txt = __( 'share' );
+			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
-		$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 
 		/* Google Plus */
 		$service = 'googleplus';
@@ -376,18 +418,10 @@ class pmlnr_article {
 			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 
-		/* comment link */
-		$service = 'comment';
-		$url = $plink . "#comments";
-		$txt = __( 'comment' );
-		$shlist[] = '<a rel="discussion" class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+		if ( !empty($rshlist))
+			$r .= sprintf ('<indie-action do="repost" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></action>', $plink, __('Reshare' ), implode( '</li><li>', $rshlist ) );
 
-		/* shorturl */
-		$service = 'url';
-		$txt = $url = wp_get_shortlink();
-		$shlist[] = '<a class="icon-globe" href="' . $url . '">'. $txt .'</a>';
-
-		$r = sprintf ('<action do="post" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></action>', $plink, __('Share:' ), implode( '</li><li>', $shlist ) );
+		$r .= sprintf ('<action do="post" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></action>', $plink, __('Share' ), implode( '</li><li>', $shlist ) );
 
 		return $r;
 	}

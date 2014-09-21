@@ -26,19 +26,17 @@ get_header();
 
 ?>
 
-	<section class="content-body content-<?php echo $theme; ?>">
+<section class="content-body content-<?php echo $theme; ?>">
 
-	<?php
-		if ( have_posts() ) {
-			while ( have_posts() ) {
-				get_template_part('listelement');
-			}
-		}
+<?php
+	if ( have_posts() )
+		while ( have_posts() )
+			get_template_part('listelement');
 
-		if( function_exists('wp_paginate') ) wp_paginate();
+	if( function_exists('wp_paginate') ) wp_paginate();
 
-	?>
-	</section>
+?>
+</section>
 
 <?php
 get_footer();

@@ -1,7 +1,7 @@
 
 	<!-- content end -->
 
-	<?php if ( is_singular() )	comments_template( ); ?>
+	<?php if ( is_single() )	comments_template( ); ?>
 
 	<footer class="content-footer aligncenter">
 		<div class="limit">
