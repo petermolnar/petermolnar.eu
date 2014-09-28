@@ -97,15 +97,13 @@ class pmlnr_article {
 	 */
 	public static function photo ( $hide = false ) {
 		global $post;
-		if ( has_post_thumbnail () ) {
-			$thid = get_post_thumbnail_id( $post->ID );
-			$aimg = wp_get_attachment_image_src( $thid, 'medium' );
-			$h = ( $hide ) ? ' hide' : '';
-			$r = sprintf ( '<img class="u-photo%s" src="%s" />' , $h, pmlnr_utils::absolute_url($aimg[0]) );
-		}
-		else {
-			$r = false;
-		}
+		if ( !has_post_thumbnail () )
+			return false;
+
+		$img = pmlnr_utils::imagewithmeta( get_post_thumbnail_id( $post->ID ) );
+		$h = ( $hide ) ? ' hide' : '';
+		$r = sprintf ( '<img class="u-photo%s" src="%s" />' , $h, $img['mediumurl'] );
+		//$r = sprintf ( '![%s](%s "%s"){.u-photo%s}' , $img['alt'], $img['mediumurl'], $img['title'], $h );
 
 		return $r;
 	}
@@ -299,7 +297,7 @@ class pmlnr_article {
 			$syndicates['TW'] = sprintf ( '<li><a class="link-twitter icon-twitter" href="https://twitter.com/intent/tweet?in_reply_to=%s" target="_blank">Twitter</a></li>', $tweet_id );
 
 		if (!empty($syndicates)) {
-			$r = sprintf('<h5>%s</h5><div class="usyndication"><ul>%s</ul></div>', __('Reply'), implode ( "\n", $syndicates ));
+			$r = sprintf('<indie-action do="reply" with="%s" class="share"><h5>%s</h5><ul>%s</ul></indie-action>', get_permalink(), __('Reply'), implode ( "\n", $syndicates ));
 		}
 
 		return $r;
@@ -419,9 +417,9 @@ class pmlnr_article {
 		}
 
 		if ( !empty($rshlist))
-			$r .= sprintf ('<indie-action do="repost" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></action>', $plink, __('Reshare' ), implode( '</li><li>', $rshlist ) );
+			$r .= sprintf ('<indie-action do="repost" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></indie-action>', $plink, __('Reshare' ), implode( '</li><li>', $rshlist ) );
 
-		$r .= sprintf ('<action do="post" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></action>', $plink, __('Share' ), implode( '</li><li>', $shlist ) );
+		$r .= sprintf ('<indie-action do="post" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></indie-action>', $plink, __('Share' ), implode( '</li><li>', $shlist ) );
 
 		return $r;
 	}

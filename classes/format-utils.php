@@ -1,5 +1,7 @@
 <?php
 
+include_once ( dirname(__FILE__) . '/adaptgal-ng.php' );
+
 class pmlnr_format {
 	private $format = '';
 	private $post = null;
@@ -21,11 +23,8 @@ class pmlnr_format {
 		$this->src = $src;
 
 		switch ( $this->format ) {
-			case 'quote':
+/*			case 'quote':
 				$r = $this->quote();
-				break;
-			case 'image':
-				$r = $this->image();
 				break;
 			case 'audio':
 				$r = $this->audio();
@@ -35,6 +34,10 @@ class pmlnr_format {
 				break;
 			case 'link':
 				$r = $this->link();
+				break;
+*/
+			case 'image':
+				$r = $this->image( );
 				break;
 			default:
 				$r = $src;
@@ -48,7 +51,7 @@ class pmlnr_format {
 	 * get metadata for quote format
 	 *
 	 * @return string HTML5 formatted content with quote data
-	 */
+	 *
 	private function quote ( ) {
 
 		$source_name = get_post_meta($this->post->ID, '_format_quote_source_name', true );
@@ -67,23 +70,32 @@ class pmlnr_format {
 		if ( !strstr ( $this->src, '<blockquote>' ) )
 			$r = sprintf ("> %s\n%s", $this->src, $cite );
 		else
-			$r = $this->src . $cite;
 
-		return $r;
+		$r = nl2br( $this->src . $cite);
+
+		return $this->src;
 	}
+	*/
 
 	/*
 	 * image post format formatter
 	 *
 	 * @return string content plus [adaptimg] shortcode with attachment image id
 	 */
-	private function image ( ) {
+	private function image ( $adaptify = true ) {
 		$thid = get_post_thumbnail_id( $this->post->ID );
 		$r = $this->src;
+
 		if ( !empty($this->format) && $this->format != 'standard ' && !empty($thid) ) {
-			$a = '[adaptimg aid=' . $thid .']';
-			$r = $r . $a;
+			$img = pmlnr_utils::imagewithmeta( $thid );
+			$a = sprintf ( '![%s](%s "%s"){.adaptimg #%s}' , $img['alt'], $img['url'], $img['title'], $thid );
+			//$a = '[adaptimg aid=' . $thid .']';
+			$r = $r . "\n" . $a;
 		}
+
+		if ( $adaptify )
+			$r = adaptive_images::adaptive_embedded( $r );
+
 		return $r;
 	}
 
@@ -91,10 +103,9 @@ class pmlnr_format {
 	 * audio post format formatter
 	 *
 	 * @return string content plus audio meta
-	 */
+	 *
 	private function audio () {
 		$r = $this->src;
-		/* audio meta */
 		$audio = get_post_meta( $this->post->ID, '_format_audio_embed', true );
 		if ( !empty($audio)) {
 			$r = $r . $audio;
@@ -102,23 +113,24 @@ class pmlnr_format {
 
 		return $r;
 	}
+	*/
 
 	/*
 	 * video post format formatter
 	 *
 	 * @return string content plus [embed] with video meta
-	 */
+	 *
 	private function video () {
 		$r = $this->src;
-		/* audio meta */
 		$video = get_post_meta( $this->post->ID, '_format_video_embed', true );
 		if ( !empty($video)) {
 			$video = sprintf ( '[embed]%s[/embed]' , $video );
-			$r = $r . $video;
+			$r = $r . "\n" . $video;
 		}
 
 		return $r;
 	}
+	*/
 
 	/*
 	 * link post format formatter
@@ -135,7 +147,7 @@ class pmlnr_format {
 		if ( !empty($url ) && ( empty($webmention) || $webmention == 'none' ) ) {
 			//$l = sprintf ( '<p><a class="icon-link-ext-alt" href="%s">%s</a></p>', $url, $title );
 			$l = sprintf ( "[%s](%s){.icon-link-ext-alt}\n", $title, $url );
-			$r = $l . $r;
+			$r = $l . "\n" . $r;
 		}
 
 		return $r;

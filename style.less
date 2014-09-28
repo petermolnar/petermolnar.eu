@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.4
+Version:		8.5
 */
 
 @color-bg-dark: #2D333A;
@@ -178,6 +178,11 @@ menu, nav, section {
 blockquote, q {
 	quotes: none;
 }
+
+/*
+blockquote p {
+	white-space: pre;
+}*/
 
 blockquote:before, blockquote:after,
 q:before, q:after {
@@ -845,7 +850,7 @@ pre {
 		display:block;
 		float:left;
 		margin: @padding-normal @padding-large @padding-large 0;
-		width: 8%;
+		width: 12%;
 		max-width: 90px;
 
 		img {
@@ -1033,6 +1038,10 @@ pre {
 	.navul();
 
 	li {
+		.fn {
+			display: block;
+		}
+
 		margin: 0 0 @padding-sxlarge 0;
 		padding: 0;
 
@@ -1050,7 +1059,8 @@ pre {
 
 		.avatar {
 			float: left;
-			margin: @padding-normal @padding-normal @padding-normal 0;
+			/* margin: @padding-normal @padding-normal @padding-normal 0; */
+			margin: 0 @padding-normal 0 0;
 		}
 
 		li {

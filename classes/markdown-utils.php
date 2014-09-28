@@ -25,4 +25,14 @@ class pmlnr_md {
 		return $img;
 	}
 
+	/**
+	 *
+	 */
+	public static function parsedown ( $md ) {
+		$parsedown = new ParsedownExtra();
+		$parsedown->setBreaksEnabled(true);
+		$md = $parsedown->text ( $md );
+		return $md;
+	}
+
 }

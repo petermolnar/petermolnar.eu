@@ -12,7 +12,6 @@ $meta['show']['commentcntr'] = true;
 $meta['show']['excerpt'] = false;
 
 switch ( $meta['post_format'] ) {
-	case 'link':
 	case 'quote':
 	case 'video':
 	case 'audio':
@@ -20,6 +19,7 @@ switch ( $meta['post_format'] ) {
 		$meta['show']['header'] = false;
 		break;
 	case 'image':
+	case 'link':
 		break;
 	default:
 		$meta['show']['minstoread'] = true;
@@ -79,12 +79,13 @@ $excerpt = ob_get_clean();
 			$thumb = '';
 			if ( has_post_thumbnail () ) {
 				//$aid = get_post_thumbnail_id( $post->ID );
-				$thumb = get_the_post_thumbnail( $post->ID, 'thumbnail', array(
+				$thumb = wp_get_attachment_image_src ( get_post_thumbnail_id( $post->ID ), 'thumbnail' );
+				/*$thumb = get_the_post_thumbnail( $post->ID, 'thumbnail', array(
 					'alt'	=> trim(strip_tags( $post->post_title )),
 					'title'	=> trim(strip_tags( $post->post_title )),
 					'class'	=> "u-photo alignleft",
-				));
-				$thumb = sprintf ( '<figure class="article-thumbnail"><a href="%s">%s</a></figure>', get_the_permalink(), pmlnr_utils::replace_if_ssl ( $thumb ) );
+				));*/
+				$thumb = sprintf ( '<a class="article-thumbnail" href="%s"><img src="%s" /></a>', get_the_permalink(), pmlnr_utils::replace_if_ssl ( $thumb[0] ) );
 			}
 		?>
 			<div class="e-summary">

@@ -1,10 +1,14 @@
 <?php
 
-include_once ('classes/adaptgal-ng.php');
-include_once ('classes/article-utils.php');
-include_once ('classes/utils.php');
-include_once ('classes/format-utils.php');
-include_once ('classes/markdown-utils.php');
+$dirname = dirname(__FILE__);
+include_once ($dirname . '/lib/parsedown/Parsedown.php');
+include_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
+include_once ($dirname . '/classes/adaptgal-ng.php');
+include_once ($dirname . '/classes/article-utils.php');
+include_once ($dirname . '/classes/utils.php');
+include_once ($dirname . '/classes/format-utils.php');
+include_once ($dirname . '/classes/markdown-utils.php');
+
 
 if ( !function_exists ( 'preg_value' ) ) {
 	function preg_value ( $string, $pattern, $index = 1 ) {
@@ -35,8 +39,10 @@ class petermolnareu {
 	public $theme_url = '';
 	public $image_sizes = array();
 	public $adaptive_images = null;
-	private $parsedown = null;
 	public $formatter = null;
+	public $parsedown = null;
+
+	private $utils = null;
 
 	private $relative_urls = false;
 
@@ -60,6 +66,9 @@ class petermolnareu {
 		/* replace shortlink */
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
 		add_action( 'wp_head', array(&$this, 'shortlink'));
+
+		/* */
+		add_action( 'init', array(&$this, 'add_custom_taxonomies'), 0 );
 
 		/* cleanup */
 		remove_action('wp_head', 'rsd_link'); // Display the link to the Really Simple Discovery service endpoint, EditURI link
@@ -110,8 +119,11 @@ class petermolnareu {
 		$this->formatter = new pmlnr_format();
 		add_filter( 'the_content', array( $this->formatter, 'filter'), 1 );
 
-		/* have links in the admin *
-		add_filter( 'pre_option_link_manager_enabled', '__return_true' );*/
+
+		$this->utils = new pmlnr_utils();
+		add_filter( 'the_content', array( $this->utils, 'facebookify'), 1 );
+		add_filter( 'the_content', array( $this->utils, 'tweetify'), 1 );
+
 
 		/* additional user meta */
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
@@ -126,7 +138,18 @@ class petermolnareu {
 		add_filter('wpseo_author_link', array(&$this, 'author_url'));
 
 		/* replace img inserts with Markdown */
-		add_filter( 'image_send_to_editor', array( 'pmlnr_md', 'rebuild_media_string'), 10 );
+		$this->parsedown = new pmlnr_md();
+		add_filter( 'image_send_to_editor', array( $this->parsedown, 'rebuild_media_string'), 10 );
+
+		if ( $_SERVER['SERVER_ADDR'] != $_SERVER['REMOTE_ADDR'] && $_SERVER['REMOTE_ADDR'] != '127.0.0.1' ) {
+			add_filter( 'the_content', array( $this->parsedown, 'parsedown'), 9 );
+		}
+		else {
+			add_filter( 'the_content', 'html_entity_decode', 9 );
+		}
+
+		remove_filter( 'the_content', 'wpautop' );
+		remove_filter( 'the_excerpt', 'wpautop' );
 
 	}
 
@@ -181,6 +204,7 @@ class petermolnareu {
 		add_rewrite_rule("/wordpress(.*)", '/open-source$matches[1]', "bottom" );
 		add_rewrite_rule("/b(.*)", '/blips$matches[1]', "bottom" );
 		add_rewrite_rule("/open-source/wp-ffpc(.*)", 'https://github.com/petermolnar/wp-ffpc', "bottom" );
+		add_rewrite_rule("/open-source/wordpress/wp-ffpc(.*)", 'https://github.com/petermolnar/wp-ffpc', "bottom" );
 		add_rewrite_rule("/open-source/wordpress/(.*)", '/open-source/$matches[1]', "bottom" );
 	}
 
@@ -265,6 +289,53 @@ class petermolnareu {
 
 		return $version;
 	}
+
+	/**
+	 *
+	 */
+	public static function parsedown ( $md ) {
+		$parsedown = new ParsedownExtra();
+		$md = $parsedown->text ( $md );
+		$md = str_replace ( '&lt; ?php', '&lt;?php', $md );
+		return $md;
+	}
+
+	/**
+	 * Add custom taxonomies
+	 *
+	 * Additional custom taxonomies can be defined here
+	 * http://codex.wordpress.org/Function_Reference/register_taxonomy
+	 */
+	function add_custom_taxonomies() {
+		/*
+		// Add new "Locations" taxonomy to Posts
+		register_taxonomy('series', 'post', array(
+			// Hierarchical taxonomy (like categories)
+			'hierarchical' => false,
+			// This array of options controls the labels displayed in the WordPress Admin UI
+			'labels' => array(
+				'name' => _x( 'Series', 'taxonomy general name' ),
+				'singular_name' => _x( 'Series', 'taxonomy singular name' ),
+				'search_items' =>	__( 'Search Series' ),
+				'all_items' => __( 'All Series' ),
+				//'parent_item' => __( 'Parent Location' ),
+				//'parent_item_colon' => __( 'Parent Location:' ),
+				'edit_item' => __( 'Edit Serie' ),
+				'update_item' => __( 'Update Serie' ),
+				'add_new_item' => __( 'Add New Serie' ),
+				'new_item_name' => __( 'New Serie Name' ),
+				'menu_name' => __( 'Series' ),
+			),
+			// Control the slugs used for this taxonomy
+			'rewrite' => array(
+				'slug' => 'series', // This controls the base slug that will display before each term
+				'with_front' => false, // Don't display the category base before "/locations/"
+				'hierarchical' => false // This will allow URL's like "/locations/boston/cambridge/"
+			),
+		));
+		*/
+	}
+
 
 }
 

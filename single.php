@@ -1,5 +1,11 @@
 <?php
 
+if ( $_SERVER['SERVER_ADDR'] == $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR'] == '127.0.0.1' ) {
+	include_once ( dirname(__FILE__) . '/flat.php');
+	exit;
+}
+
+
 the_post();
 
 get_header();
@@ -23,7 +29,6 @@ $meta['show']['minstoread'] = false;
 //$meta['filter']['tweetify'] = false;
 
 switch ( $meta['post_format'] ) {
-	case 'link':
 	case 'quote':
 	case 'video':
 	case 'audio':
@@ -31,6 +36,7 @@ switch ( $meta['post_format'] ) {
 		$meta['show']['header'] = false;
 		break;
 	case 'image':
+	case 'link':
 		break;
 	default:
 		if ( !empty( $thid ) ) {

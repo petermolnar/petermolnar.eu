@@ -179,16 +179,49 @@ class adaptive_images {
 	}
 
 	/* adaptify all images */
-	public function adaptive_embededed( $html ) {
+	public static function adaptive_embedded( $html ) {
+		if ( $_SERVER['SERVER_ADDR'] == $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR'] == '127.0.0.1' )
+			return ($html);
+
 		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
 
 		if ( !empty ( $inline_images[0]  )) {
 			foreach ( $inline_images[0] as $cntr=>$imgstr ) {
 				$aid = $inline_images[1][$cntr];
 				//$r = $this->adaptimg($aid);
-				$r = do_shortcode( '[adaptimg aid=' . $aid .' share=0 standalone=1]');
+				$r = '[adaptimg aid=' . $aid .' share=0 standalone=1]';
+				//$r = do_shortcode( '[adaptimg aid=' . $aid .' share=0 standalone=1]');
 				$html = str_replace ( $imgstr, $r, $html );
 			}
+		}
+
+		preg_match_all('/\!\[(.*?)\]\((.*?) "(.*?)"\)\{(.*?)\}/', $html, $markdown_images);
+		if ( !empty ( $markdown_images[0]  )) {
+
+			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
+				$alt = $markdown_images[1][$cntr];
+				$url = $markdown_images[2][$cntr];
+				$title = $markdown_images[3][$cntr];
+				$meta = explode(' ', $markdown_images[4][$cntr]);
+				foreach ( $meta as $val ) {
+					if ( strstr($val, '#')) {
+						$id = trim( $val, "#");
+						break;
+					}
+				}
+
+				//$id = substr( strpos( $meta, '#' );
+				//$r = $this->adaptimg($aid);
+				//$r = do_shortcode( '[adaptimg aid=' . $id .' share=0 standalone=1]');
+				$r = '[adaptimg aid=' . $id .' share=0 standalone=1]';
+				$html = str_replace ( $imgstr, $r, $html );
+			}
+			/*
+			if ( is_user_logged_in()) {
+				print_r ( $markdown_images );
+				die("");
+			}
+			*/
 		}
 
 		return $html;
@@ -197,3 +230,4 @@ class adaptive_images {
 }
 
 ?>
+
