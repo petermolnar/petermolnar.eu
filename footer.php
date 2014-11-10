@@ -40,5 +40,11 @@
 	</script>
 	<!-- end toggle menu -->
 
+	<?php /* if ( is_user_logged_in()) { ?>
+	<script>
+		window.navigator.registerProtocolHandler('indie+action', 'https://petermolnar.eu/indie-config.html?handler=%s', 'Peter Molnar');
+	</script>
+	<?php } */ ?>
+
 </body>
 </html>

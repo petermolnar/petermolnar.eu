@@ -49,7 +49,7 @@ $excerpt = ob_get_clean();
 	<article id="post-<?php the_ID(); ?>" class="h-entry article-list-element">
 
 		<!-- article meta -->
-		<header <?php echo $hstyle; ?>>
+		<header>
 			<?php
 				echo pmlnr_article::commentcntr();
 

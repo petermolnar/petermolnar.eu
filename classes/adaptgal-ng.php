@@ -57,6 +57,7 @@ class adaptive_images {
 
 	/* adaptive image shortcode function */
 	public function adaptimg( $atts , $content=null ) {
+		global $post;
 
 		extract( shortcode_atts(array(
 			'aid' => false,
@@ -77,19 +78,32 @@ class adaptive_images {
 		if ( !empty($title)) $img['title'] = $title;
 
 		$keys = array_keys ( $img['src']['w'] );
-		$fallback = $img['src']['w'][ $keys[0]][0];
+		$fallback = $img['src']['w'][ $keys[0] ][0];
+		/*
+		if ( is_user_logged_in() ) {
+			print_r ( $img );
+		}*/
 
 		foreach ( $img['src']['w'] as $dpix => $src ) {
 			$srcset[] = $src[0] . ' ' . $dpix . "x";
 			//$srcset[] = '<source media="(min-width: '.$this->viewport[$key].'px)" srcset="'. $im[0] .'">';
 		}
 
-		// '. join ("\n\t\t\t", $srcset) .'
+
+		if ( isset($img['parent']) && !empty($img['parent']) && $img['parent'] != $post->ID ) {
+			$l = get_permalink ( $img['parent'] );
+		}
+		else {
+			$l = end( $img['src']['h']);
+			$l = $l[0];
+		}
 
 		$r = '
-		<picture class="adaptive">
-			<img src="'. $fallback .'" id="'. $img['slug'] .'" class="adaptimg" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" srcset="'. join ( ', ', $srcset ) .'" />
-		</picture>';
+		<a class="adaptlink" href="'. $l .'">
+			<picture class="adaptive">
+				<img src="'. $fallback .'" id="'. $img['slug'] .'" class="adaptimg" title="'. $img['title'] .'" alt="'. $img['alttext'] . '" srcset="'. join ( ', ', $srcset ) .'" />
+			</picture>
+		</a>';
 
 		if ( self::cache == 1 ) {
 			wp_cache_set( $cid, $r, self::cache_group, self::cache_time );
@@ -114,10 +128,17 @@ class adaptive_images {
 		if ( is_numeric( substr( $img['slug'], 0, 1) ) )
 			$img['slug'] = 'img-' . $img['slug'];
 
+		if ( !empty ( $__post->post_parent ) ) {
+			$parent = get_post( $__post->post_parent );
+			$img['parent'] = $parent->ID;
+		}
+
 		foreach ( $this->dpix as $dpix => $size ) {
 			$img['src']['w'][$dpix] = wp_get_attachment_image_src( $imgid, self::wprefix . $dpix );
 			$img['src']['h'][$dpix] = wp_get_attachment_image_src( $imgid, self::hprefix . $dpix );
 		}
+
+		$img['src']['o'] = wp_get_attachment_image_src( $imgid, 'full' );
 
 		return $img;
 	}
@@ -195,10 +216,11 @@ class adaptive_images {
 			}
 		}
 
-		preg_match_all('/\!\[(.*?)\]\((.*?) "(.*?)"\)\{(.*?)\}/', $html, $markdown_images);
-		if ( !empty ( $markdown_images[0]  )) {
+		preg_match_all('/\!\[(.*?)\]\((.*?) "?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
 
+		if ( !empty ( $markdown_images[0]  )) {
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
+
 				$alt = $markdown_images[1][$cntr];
 				$url = $markdown_images[2][$cntr];
 				$title = $markdown_images[3][$cntr];
@@ -206,6 +228,8 @@ class adaptive_images {
 				foreach ( $meta as $val ) {
 					if ( strstr($val, '#')) {
 						$id = trim( $val, "#");
+						if ( strstr( $id, 'img-'))
+							$id = str_replace ( 'img-', '', $id );
 						break;
 					}
 				}

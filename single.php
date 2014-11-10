@@ -20,7 +20,10 @@ $hstyle = '';
 
 $meta['post_format'] = get_post_format();
 
-$meta['theme'] = ( $meta['post_format'] == 'image' ) ? 'dark' : 'light';
+$meta['webactions'] = pmlnr_md::parsedown ( pmlnr_article::meta() );
+
+//$meta['theme'] = ( $meta['post_format'] == 'image' ) ? 'dark' : 'light';
+$meta['theme'] = 'light';
 
 $meta['show']['header'] = true;
 $meta['show']['minstoread'] = false;
@@ -74,6 +77,8 @@ switch ( $meta['post_format'] ) {
 
 				echo pmlnr_article::photo(true);
 				echo pmlnr_article::author(true);
+
+				if ( !empty ( $meta['webactions'] )) echo $meta['webactions'];
 			?>
 			</div>
 		</header>
@@ -94,10 +99,12 @@ switch ( $meta['post_format'] ) {
 		<footer>
 			<div class="content-inner">
 			<?php
-				echo pmlnr_article::tags();
-				echo pmlnr_article::reply();
-				echo pmlnr_article::share();
-				echo pmlnr_article::siblings();
+				if ( empty ( $meta['webactions'] ) ) {
+					echo pmlnr_article::tags();
+					echo pmlnr_article::reply();
+					echo pmlnr_article::share();
+					echo pmlnr_article::siblings();
+				}
 			?>
 			</div>
 		</footer>

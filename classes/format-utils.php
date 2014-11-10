@@ -23,28 +23,43 @@ class pmlnr_format {
 		$this->src = $src;
 
 		switch ( $this->format ) {
-/*			case 'quote':
-				$r = $this->quote();
-				break;
+			case 'quote':
 			case 'audio':
-				$r = $this->audio();
-				break;
 			case 'video':
-				$r = $this->video();
-				break;
 			case 'link':
-				$r = $this->link();
 				break;
-*/
 			case 'image':
-				$r = $this->image( );
+				$this->image( );
 				break;
 			default:
-				$r = $src;
+				$this->src = adaptive_images::adaptive_embedded( $this->src );
 				break;
 		}
 
-		return $r;
+
+		return $this->src;
+	}
+
+	/*
+	 * image post format formatter
+	 *
+	 * @return string content plus [adaptimg] shortcode with attachment image id
+	 */
+	private function image ( $adaptify = true ) {
+		$thid = get_post_thumbnail_id( $this->post->ID );
+		$r = $this->src;
+
+		if ( !empty($this->format) && $this->format != 'standard ' && !empty($thid) ) {
+			$img = pmlnr_utils::imagewithmeta( $thid );
+			$a = sprintf ( '![%s](%s "%s"){.adaptimg #%s}' , $img['alt'], $img['url'], $img['title'], $thid );
+			//$a = '[adaptimg aid=' . $thid .']';
+			$this->src = $this->src . "\n" . $a;
+		}
+
+		if ( $adaptify )
+			$this->src = adaptive_images::adaptive_embedded( $this->src );
+
+		//return $r;
 	}
 
 	/*
@@ -76,28 +91,6 @@ class pmlnr_format {
 		return $this->src;
 	}
 	*/
-
-	/*
-	 * image post format formatter
-	 *
-	 * @return string content plus [adaptimg] shortcode with attachment image id
-	 */
-	private function image ( $adaptify = true ) {
-		$thid = get_post_thumbnail_id( $this->post->ID );
-		$r = $this->src;
-
-		if ( !empty($this->format) && $this->format != 'standard ' && !empty($thid) ) {
-			$img = pmlnr_utils::imagewithmeta( $thid );
-			$a = sprintf ( '![%s](%s "%s"){.adaptimg #%s}' , $img['alt'], $img['url'], $img['title'], $thid );
-			//$a = '[adaptimg aid=' . $thid .']';
-			$r = $r . "\n" . $a;
-		}
-
-		if ( $adaptify )
-			$r = adaptive_images::adaptive_embedded( $r );
-
-		return $r;
-	}
 
 	/*
 	 * audio post format formatter
@@ -136,7 +129,7 @@ class pmlnr_format {
 	 * link post format formatter
 	 *
 	 * @return string link + content
-	 */
+	 *
 	private function link () {
 		$r = $this->src;
 
@@ -152,5 +145,7 @@ class pmlnr_format {
 
 		return $r;
 	}
+	*/
+
 
 }

@@ -62,6 +62,10 @@ class petermolnareu {
 		add_action( 'init', array( &$this, 'rewrites'));
 
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+		/*
+		 * Remove Jetpack 3.2's Implode frontend CSS
+		 */
+		add_action('wp_footer', array(&$this,'deregister_css_js'));
 
 		/* replace shortlink */
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
@@ -121,7 +125,7 @@ class petermolnareu {
 
 
 		$this->utils = new pmlnr_utils();
-		add_filter( 'the_content', array( $this->utils, 'facebookify'), 1 );
+		//add_filter( 'the_content', array( $this->utils, 'facebookify'), 1 );
 		add_filter( 'the_content', array( $this->utils, 'tweetify'), 1 );
 
 
@@ -142,7 +146,7 @@ class petermolnareu {
 		add_filter( 'image_send_to_editor', array( $this->parsedown, 'rebuild_media_string'), 10 );
 
 		if ( $_SERVER['SERVER_ADDR'] != $_SERVER['REMOTE_ADDR'] && $_SERVER['REMOTE_ADDR'] != '127.0.0.1' ) {
-			add_filter( 'the_content', array( $this->parsedown, 'parsedown'), 9 );
+			add_filter( 'the_content', array( $this->parsedown, 'parsedown'), 8 );
 		}
 		else {
 			add_filter( 'the_content', 'html_entity_decode', 9 );
@@ -151,6 +155,12 @@ class petermolnareu {
 		remove_filter( 'the_content', 'wpautop' );
 		remove_filter( 'the_excerpt', 'wpautop' );
 
+		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
+
+		/*
+		 * Remove Jetpack 3.2's Implode frontend CSS
+		 */
+		add_filter( 'jetpack_implode_frontend_css', '__return_false' );
 	}
 
 	/**
@@ -170,16 +180,25 @@ class petermolnareu {
 		wp_register_script( 'jquery', pmlnr_utils::replace_if_ssl( 'http://code.jquery.com/jquery-1.11.0.min.js' ), false, null, false );
 		wp_enqueue_script( 'jquery' );
 
+		wp_register_script('indieweb-press-this', $this->js_url . 'press_this.js', false, null, true);
+		wp_enqueue_script( 'indieweb-press-this' );
+
 		wp_enqueue_style( 'style' );
 		wp_enqueue_style( 'prism' );
 		wp_enqueue_script( 'prism' );
 
-		/* this is to have reply fields correctly */
+		/* this is to have reply fields correctly *
 		if ( is_singular() && comments_open() && get_option('thread_comments') )
 			wp_enqueue_script( 'comment-reply' );
+		*/
+	}
 
-
+	/**
+	 * deregister & queue css & js
+	 */
+	public function deregister_css_js () {
 		wp_deregister_style( 'jetpack-subscriptions' );
+		wp_deregister_style( 'jetpack_css' );
 	}
 
 	public function widgets_init () {
@@ -336,6 +355,13 @@ class petermolnareu {
 		*/
 	}
 
+	function sanitize_content( $content ) {
+		$search = array( '”', '“', '’', '–' );
+		$replace = array ( '"', '"', "'", '-' );
+
+		$content = str_replace( $search, $replace, $content );
+		return $content;
+	}
 
 }
 

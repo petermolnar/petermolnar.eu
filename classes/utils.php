@@ -21,7 +21,7 @@ class pmlnr_utils {
 
 		$img['caption'] = esc_attr($__post->post_excerpt);
 		$img['description'] = esc_attr($__post->post_content);
-		$img['slug'] =  sanitize_title ( $__post->post_title , $imgid );
+		$img['slug'] =  sanitize_title ( $__post->post_title , $aid );
 			if ( is_numeric( substr( $img['slug'], 0, 1) ) )
 				$img['slug'] = 'img-' . $img['slug'];
 

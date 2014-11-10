@@ -87,6 +87,7 @@ slug: <?php echo $post->post_name; ?><?php echo "\n"; ?>
 date: <?php the_time('c'); ?><?php echo "\n"; ?>
 id: <?php echo $post->ID ?><?php echo "\n"; ?>
 permalink: <?php echo get_the_permalink(); ?><?php echo "\n"; ?>
+shortlink: <?php echo wp_get_shortlink(); ?><?php echo "\n"; ?>
 taxonomy:<?php echo "\n"; ?>
     category: <?php echo $category[0]->cat_name; ?><?php echo "\n"; ?>
     tag: <?php echo $taglist; ?><?php echo "\n"; ?>

@@ -29,9 +29,14 @@ class pmlnr_md {
 	 *
 	 */
 	public static function parsedown ( $md ) {
+
+		if ( empty ( $md ) )
+			return false;
+
 		$parsedown = new ParsedownExtra();
 		$parsedown->setBreaksEnabled(true);
 		$md = $parsedown->text ( $md );
+
 		return $md;
 	}
 

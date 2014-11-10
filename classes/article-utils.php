@@ -280,6 +280,7 @@ class pmlnr_article {
 		global $post;
 
 		$syndicates = array();
+		$r = '';
 		if ( function_exists('getRelSyndicationFromSNAP'))
 			$syndicates = getRelSyndicationFromSNAP( true );
 
@@ -377,8 +378,8 @@ class pmlnr_article {
 		/* Facebook */
 		$service = 'facebook';
 		$url = false;
-		if ( !empty( $pgIDs[ $service ] ) ) $pgIDs[$service] = explode ( '_', $pgIDs[$service] );
-		if ( is_array ( $pgIDs[$service] ) && !empty($pgIDs[$service][1]) ) {
+		if ( isset($pgIDs) && !empty( $pgIDs[ $service ] ) ) $pgIDs[$service] = explode ( '_', $pgIDs[$service] );
+		if ( isset($pgIDs) &&  is_array ( $pgIDs[$service] ) && !empty($pgIDs[$service][1]) ) {
 			//https://www.facebook.com/sharer.php?s=100&p[url]=http://www.example.com/&p[images][0]=/images/image.jpg&p[title]=Title&p[summary]=Summary
 			//$url = 'https://www.facebook.com/sharer/sharer.php?' . urlencode ('s=99&p[0]='. $pgIDs[$service][0] .'&p[1]='. $pgIDs[$service][1] );
 			// '&p[images][0]='.  $media_url . '&p[title]=' . $title . '&p[summary]=' ) . $desciption;
@@ -409,12 +410,18 @@ class pmlnr_article {
 
 		/* Pinterest */
 		if ( $media_url ) {
-			$purl = ( $parent != false ) ? urlencode($parent) : $link;
 			$service = 'pinterest';
-			$url = 'https://pinterest.com/pin/create/bookmarklet/?media='. $media_url .'&url='. $purl .'&is_video=false&description='. $title;
+			$url = 'https://pinterest.com/pin/create/bookmarklet/?media='. $media_url .'&url='. $link .'&is_video=false&description='. $title;
 			$txt = __( 'pin' );
 			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
+
+		/* short url */
+		$service = 'url';
+		$url = wp_get_shortlink();
+		$txt = $url;
+		$shlist[] = '<a class="icon-globe" href="' . $url . '">'. $txt .'</a>';
+
 
 		if ( !empty($rshlist))
 			$r .= sprintf ('<indie-action do="repost" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></indie-action>', $plink, __('Reshare' ), implode( '</li><li>', $rshlist ) );
@@ -424,4 +431,21 @@ class pmlnr_article {
 		return $r;
 	}
 
+
+	public static function meta ( ) {
+		global $post;
+		$reply = get_post_meta( $post->ID, 'u-in-reply-to', true );
+		if ( !empty($reply)) {
+			$l = sprintf ( "%s: [%s](%s){.u-in-reply-to}\n", __("This is a reply to"), $reply, $reply );
+			$r = $l;
+		}
+
+		$repost = get_post_meta( $post->ID, 'u-repost-of', true );
+		if ( !empty($repost)) {
+			$l = sprintf ( "%s: [%s](%s){.u-repost-of}\n", __("This is a repost of"), $reply, $reply );
+			$r = $l;
+		}
+
+		return $r;
+	}
 }

@@ -1,4 +1,5 @@
 <?php
+	wp_old_slug_redirect();
 	header('HTTP/1.0 404 Not Found');
 	get_header();
 ?>
