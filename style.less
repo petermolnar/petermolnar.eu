@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.12
+Version:		8.17
 */
 
 @color-bg-dark: #2D333A;
@@ -527,7 +527,12 @@ pre {
 .icon-cc-zero:before { content: '\e82e'; } /* '' */
 .icon-cc-share:before { content: '\e82f'; } /* '' */
 .icon-cc-remix:before { content: '\e830'; } /* '' */
-.icon-wordpress:before { content: '\e832'; } /* '' */
+.icon-wordpress:before { content: '\e837'; } /* '' */
+.icon-picture:before { content: '\e833'; } /* '' */
+.icon-camera-alt:before { content: '\e834'; } /* '' */
+.icon-camera:before { content: '\e835'; } /* '' */
+.icon-deviantart:before { content: '\e836'; } /* '' */
+
 
 
 /* HEADER */
@@ -588,9 +593,7 @@ pre {
 	background-color: darken(@color-bg-dark,10%);
 	color: @color-text-light;
 
-	dd a,
-	dt a,
-	p a {
+	a {
 		color: @color-link-light;
 		display: inline;
 		border-bottom: @thinborder dotted @color-text-light;
@@ -604,13 +607,9 @@ pre {
 .content-light {
 	background-color: @color-bg-light;
 	color: @color-text-dark;
+
 	a {
 		color: @color-link-dark;
-	}
-
-	dd a,
-	dt a,
-	p a {
 		display: inline;
 		border-bottom: @thinborder dotted @color-text-light;
 		line-height: @font-normal;
@@ -914,7 +913,23 @@ pre {
 
 /* ADAPTGAL */
 .adaptlink {
+
 	border: none;
+
+	&:before {
+		.iconstyle();
+		content: "\e833";
+		display: block;
+		line-height: 1em;
+		margin: 1em 0 0 0.5em;
+		padding: 0;
+		position: absolute;
+		z-index: 9;
+		font-size: 2em;
+		color: @color-link-light;
+		opacity: 0.5;
+	}
+
 }
 
 .adaptimg {

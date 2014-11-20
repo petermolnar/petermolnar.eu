@@ -27,6 +27,7 @@ $meta['theme'] = 'light';
 
 $meta['show']['header'] = true;
 $meta['show']['minstoread'] = false;
+$meta['show']['exif'] = false;
 //$meta['show']['commentcntr'] = false;
 //$meta['filter']['adaptify'] = false;
 //$meta['filter']['tweetify'] = false;

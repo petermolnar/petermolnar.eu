@@ -219,26 +219,32 @@ class adaptive_images {
 		preg_match_all('/\!\[(.*?)\]\((.*?) "?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
 
 		if ( !empty ( $markdown_images[0]  )) {
+			$excludes = array ( '.noadapt', '.alignleft', '.alignright' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
+				$adaptify = true;
 
 				$alt = $markdown_images[1][$cntr];
 				$url = $markdown_images[2][$cntr];
 				$title = $markdown_images[3][$cntr];
 				$meta = explode(' ', $markdown_images[4][$cntr]);
+
 				foreach ( $meta as $val ) {
 					if ( strstr($val, '#')) {
 						$id = trim( $val, "#");
 						if ( strstr( $id, 'img-'))
 							$id = str_replace ( 'img-', '', $id );
-						break;
 					}
+					if ( in_array($val, $excludes )) $adaptify = false;
+					//if ( strstr ($val, '.noadapt' )) $adaptify = false;
 				}
 
 				//$id = substr( strpos( $meta, '#' );
 				//$r = $this->adaptimg($aid);
 				//$r = do_shortcode( '[adaptimg aid=' . $id .' share=0 standalone=1]');
-				$r = '[adaptimg aid=' . $id .' share=0 standalone=1]';
-				$html = str_replace ( $imgstr, $r, $html );
+				if ( $adaptify ) {
+					$r = '[adaptimg aid=' . $id .' share=0 standalone=1]';
+					$html = str_replace ( $imgstr, $r, $html );
+				}
 			}
 			/*
 			if ( is_user_logged_in()) {

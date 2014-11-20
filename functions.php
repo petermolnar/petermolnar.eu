@@ -9,7 +9,6 @@ include_once ($dirname . '/classes/utils.php');
 include_once ($dirname . '/classes/format-utils.php');
 include_once ($dirname . '/classes/markdown-utils.php');
 
-
 if ( !function_exists ( 'preg_value' ) ) {
 	function preg_value ( $string, $pattern, $index = 1 ) {
 		preg_match( $pattern, $string, $results );
@@ -280,6 +279,8 @@ class petermolnareu {
 		$profile_fields['mobile'] = __('Mobile phone number', $this->theme_constant);
 		$profile_fields['linkedin'] = __('LinkedIn username', $this->theme_constant);
 		$profile_fields['flickr'] = __('Flickr username', $this->theme_constant);
+		$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
+
 
 		return $profile_fields;
 	}

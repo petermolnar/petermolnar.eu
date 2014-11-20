@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.12
+Version:		8.17
 */
 .spacer {
   display: inline-block;
@@ -622,9 +622,25 @@ pre {
 }
 /* '' */
 .icon-wordpress:before {
-  content: '\e832';
+  content: '\e837';
 }
 /* '' */
+.icon-picture:before {
+  content: '\e833';
+}
+/* '' */
+.icon-camera-alt:before {
+  content: '\e834';
+}
+/* '' */
+.icon-camera:before {
+  content: '\e835';
+}
+/* '' */
+.icon-deviantart:before {
+  content: '\e836';
+}
+/* '' */
 /* HEADER */
 .content-header {
   position: fixed;
@@ -678,17 +694,13 @@ pre {
   background-color: #171a1d;
   color: #999999;
 }
-.content-dark dd a,
-.content-dark dt a,
-.content-dark p a {
+.content-dark a {
   color: #dddddd;
   display: inline;
   border-bottom: 1px dotted #999999;
   line-height: 1em;
 }
-.content-dark dd a:hover,
-.content-dark dt a:hover,
-.content-dark p a:hover {
+.content-dark a:hover {
   border-bottom: 1px dotted #dddddd;
 }
 .content-light {
@@ -697,17 +709,11 @@ pre {
 }
 .content-light a {
   color: #000000;
-}
-.content-light dd a,
-.content-light dt a,
-.content-light p a {
   display: inline;
   border-bottom: 1px dotted #999999;
   line-height: 1em;
 }
-.content-light dd a:hover,
-.content-light dt a:hover,
-.content-light p a:hover {
+.content-light a:hover {
   border-bottom: 1px dotted #000000;
 }
 .content-footer {
@@ -987,6 +993,31 @@ pre {
 /* ADAPTGAL */
 .adaptlink {
   border: none;
+}
+.adaptlink:before {
+  font-family: "petermolnar";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  text-align: center;
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+  /* fix buttons height, for twitter bootstrap */
+  margin-right: 0.3em;
+  content: "\e833";
+  display: block;
+  line-height: 1em;
+  margin: 1em 0 0 0.5em;
+  padding: 0;
+  position: absolute;
+  z-index: 9;
+  font-size: 2em;
+  color: #dddddd;
+  opacity: 0.5;
 }
 .adaptimg {
   position: relative;

@@ -120,4 +120,23 @@ class pmlnr_utils {
 		return $url;
 	}
 
+	/**
+	 * the built-in WordPress EXIF shutter speed is not human-readable, this parses it
+	 */
+	public static function shutter_speed ( $num ) {
+		if ( (1 / $num) > 1) {
+			$r = "1/";
+			if ((number_format((1 / $num), 1)) == 1.3 or number_format((1 / $num), 1) == 1.5 or number_format((1 / $num), 1) == 1.6 or number_format((1 / $num), 1) == 2.5) {
+				$r .= number_format((1 / $num), 1, '.', '');
+			}
+			else {
+				$r .= number_format((1 / $num), 0, '.', '');
+			}
+		}
+		else {
+			$r = $num;
+		}
+		return $r;
+	}
+
 }

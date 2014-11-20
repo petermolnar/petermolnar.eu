@@ -49,11 +49,38 @@ class pmlnr_format {
 		$thid = get_post_thumbnail_id( $this->post->ID );
 		$r = $this->src;
 
-		if ( !empty($this->format) && $this->format != 'standard ' && !empty($thid) ) {
+		//if ( !empty($this->format) && $this->format != 'standard ' && !empty($thid) ) {
+		if ( !empty($thid) ) {
 			$img = pmlnr_utils::imagewithmeta( $thid );
 			$a = sprintf ( '![%s](%s "%s"){.adaptimg #%s}' , $img['alt'], $img['url'], $img['title'], $thid );
 			//$a = '[adaptimg aid=' . $thid .']';
 			$this->src = $this->src . "\n" . $a;
+
+			if ( is_singular()) {
+				$thmeta = wp_get_attachment_metadata( $thid );
+				if ( isset( $thmeta['image_meta'] ) && !empty($thmeta['image_meta']) ) {
+					$thmeta = $thmeta['image_meta'];
+
+					$displaymeta = array (
+						/*
+						'copyright' => sprintf ( __("Copyright\n:%s"), $thmeta['copyright']),
+						'camera' => sprintf ( __('Camera: %s'), $thmeta['camera']),
+						'iso' => sprintf (__('ISO: %s'), $thmeta['iso'] ),
+						'focal_length' => sprintf (__('Focal length: %smm'), $thmeta['focal_length'] ),
+						'aperture' => sprintf ( __('Aperture: f/%s'), $thmeta['aperture']),
+						'shutter_speed' => sprintf( __('Shutter: %ss'), pmlnr_utils::shutter_speed( $thmeta['shutter_speed'] )),
+						'created_timestamp' => sprintf ( __('Taken at: %s'), str_replace('T', ' ', date("c", $thmeta['created_timestamp']))),
+						*/
+						'camera' => $thmeta['camera'],
+						'iso' => sprintf (__('ISO %s'), $thmeta['iso'] ),
+						'focal_length' => sprintf (__('%smm'), $thmeta['focal_length'] ),
+						'aperture' => sprintf ( __('f/%s'), $thmeta['aperture']),
+						'shutter_speed' => sprintf( __('%ssec'), pmlnr_utils::shutter_speed( $thmeta['shutter_speed'] )),
+					);
+
+					$this->src = $this->src . __( "\n##### Exif information:\n" ) . join( ', ', $displaymeta );
+				}
+			}
 		}
 
 		if ( $adaptify )

@@ -51,16 +51,16 @@ class pmlnr_article {
 				'url' => 'https://twitter.com/%s',
 			),
 			'github' => array (
-				'name' => 'Twitter',
+				'name' => 'Github',
 				'url' => 'https://github.com/%s',
 			),
 			'linkedin' => array (
-				'name' => 'Twitter',
+				'name' => 'LinkedIn',
 				'url' => 'https://www.linkedin.com/in/%s',
 			),
 			'flickr' => array (
-				'name' => 'Twitter',
-				'url' => 'https://www.flickr.com/photos/%s',
+				'name' => 'Flickr',
+				'url' => 'https://www.flickr.com/people/%s',
 			),
 		);
 
@@ -431,7 +431,9 @@ class pmlnr_article {
 		return $r;
 	}
 
-
+	/**
+	 *
+	 */
 	public static function meta ( ) {
 		global $post;
 		$reply = get_post_meta( $post->ID, 'u-in-reply-to', true );
@@ -448,4 +450,5 @@ class pmlnr_article {
 
 		return $r;
 	}
+
 }
