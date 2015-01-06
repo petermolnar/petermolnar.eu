@@ -182,14 +182,16 @@ class pmlnr_article {
 	 */
 	 public static function tags ( $title = true ) {
 		$r = '';
-		if ( $title ) $r = sprintf ('<h5>%s</h5>', __('Tagged as:') );
+		if ( $title )
+			$r = sprintf ('<h5>%s</h5>', __('Tagged as:') );
+
 
 		$tags = get_the_tags();
 		if ( $tags ) {
 			$r .= '<div class="p-category">';
 
 			foreach( $tags as $tag )
-				$t[] = sprintf ( '<a href="%s">%s</a>', get_tag_link( $tag->term_id ), $tag->name );
+				$t[] = sprintf ( '<a href="%s" class="icon-tag">%s</a>', get_tag_link( $tag->term_id ), $tag->name );
 
 			$r .= join( ', ', $t ) . '</div>';
 		}
@@ -222,7 +224,7 @@ class pmlnr_article {
 	 *
 	 */
 	public static function minstoread ( &$content ) {
-		$r = sprintf ( '<span class="right minstoread">%d %s</span>', round( str_word_count( strip_tags($content), 0 ) / 300 ), __('mins to read') );
+		$r = sprintf ( '<span class="right spacer icon-clock">%d %s</span>', round( str_word_count( strip_tags($content), 0 ) / 300 ), __('mins to read') );
 		return $r;
 	}
 
@@ -234,7 +236,7 @@ class pmlnr_article {
 	 */
 	public static function commentcntr ( ) {
 		global $post;
-		return sprintf ( '<a class="u-url right icon-comment commentcounter" href="%s#comments">%s</a>', get_the_permalink(), get_comments_number( '', '1', '%' )  );
+		return sprintf ( '<a class="u-url right icon-comment spacer" href="%s#comments">%s</a>', get_the_permalink(), get_comments_number( '', '1', '%' )  );
 	}
 
 	/**
@@ -242,7 +244,7 @@ class pmlnr_article {
 	 *
 	 * @return string formatted message, including syndication list
 	 *
-	 */
+	 *
 	public static function syndicates ( ) {
 		global $post;
 
@@ -250,7 +252,6 @@ class pmlnr_article {
 		if ( function_exists('getRelSyndicationFromSNAP'))
 			$syndicates = getRelSyndicationFromSNAP( true );
 
-		/* imported tweets */
 		$tw = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
 		if ( !empty($tw) )
 			$syndicates['TW'] = sprintf ( '<li><a class="u-syndication link-twitter icon-twitter" rel="syndication" href="https://twitter.com/petermolnar/status/%s" target="_blank">Twitter</a></li>', $tw );
@@ -269,6 +270,7 @@ class pmlnr_article {
 
 		return $r;
 	}
+	*/
 
 	/**
 	 * reply at syndicated / linked networks
@@ -346,6 +348,27 @@ class pmlnr_article {
 			}
 		}
 
+		/* Facebook */
+		$service = 'facebook';
+		$url = false;
+		if ( isset($pgIDs) && !empty( $pgIDs[ $service ] ) ) $pgIDs[$service] = explode ( '_', $pgIDs[$service] );
+		if ( isset($pgIDs) &&  is_array ( $pgIDs[$service] ) && !empty($pgIDs[$service][1]) ) {
+			//https://www.facebook.com/sharer.php?s=100&p[url]=http://www.example.com/&p[images][0]=/images/image.jpg&p[title]=Title&p[summary]=Summary
+			//$url = 'https://www.facebook.com/sharer/sharer.php?' . urlencode ('s=99&p[0]='. $pgIDs[$service][0] .'&p[1]='. $pgIDs[$service][1] );
+			// '&p[images][0]='.  $media_url . '&p[title]=' . $title . '&p[summary]=' ) . $desciption;
+			$base = '%BASE%/posts/%pgID%';
+			$search = array('%BASE%', '%pgID%' );
+			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
+			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
+			$txt = __( 'reshare' );
+			$rshlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+		}
+		else {
+			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
+			$txt = __( 'share' );
+			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
+		}
+
 		/* Twitter */
 		$service = 'twitter';
 		$repost_id = get_post_meta($post->ID, 'twitter_rt_id', true );
@@ -374,27 +397,6 @@ class pmlnr_article {
 			$rshlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
 		}
 
-
-		/* Facebook */
-		$service = 'facebook';
-		$url = false;
-		if ( isset($pgIDs) && !empty( $pgIDs[ $service ] ) ) $pgIDs[$service] = explode ( '_', $pgIDs[$service] );
-		if ( isset($pgIDs) &&  is_array ( $pgIDs[$service] ) && !empty($pgIDs[$service][1]) ) {
-			//https://www.facebook.com/sharer.php?s=100&p[url]=http://www.example.com/&p[images][0]=/images/image.jpg&p[title]=Title&p[summary]=Summary
-			//$url = 'https://www.facebook.com/sharer/sharer.php?' . urlencode ('s=99&p[0]='. $pgIDs[$service][0] .'&p[1]='. $pgIDs[$service][1] );
-			// '&p[images][0]='.  $media_url . '&p[title]=' . $title . '&p[summary]=' ) . $desciption;
-			$base = '%BASE%/posts/%pgID%';
-			$search = array('%BASE%', '%pgID%' );
-			$replace = array ( $surl[ $service ], $pgIDs[$service][1] );
-			$url =  'http://www.facebook.com/share.php?u=' . str_replace ( $search, $replace, $base );
-			$txt = __( 'reshare' );
-			$rshlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
-		}
-		else {
-			$url = 'http://www.facebook.com/share.php?u=' . $link . '&t=' . $title;
-			$txt = __( 'share' );
-			$shlist[] = '<a class="icon-'. $service .'" href="' . $url . '">'. $txt .'</a>';
-		}
 
 		/* Google Plus */
 		$service = 'googleplus';

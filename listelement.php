@@ -50,6 +50,7 @@ $excerpt = ob_get_clean();
 
 		<!-- article meta -->
 		<header>
+			<div class="meta">
 			<?php
 				echo pmlnr_article::commentcntr();
 
@@ -58,6 +59,7 @@ $excerpt = ob_get_clean();
 				}
 
 				echo pmlnr_article::pubdate();
+				//echo pmlnr_article::tags(false);
 
 				if ( $meta['show']['header'] && $meta['show']['excerpt'] )
 					$title = 'listmore';
@@ -66,11 +68,11 @@ $excerpt = ob_get_clean();
 				else
 					$title = 'hide';
 
-				echo pmlnr_article::title( $title );
-
 				echo pmlnr_article::photo(true);
 				echo pmlnr_article::author(true);
 			?>
+			</div>
+			<?php echo pmlnr_article::title( $title ); ?>
 		</header>
 		<!-- end article meta ->
 

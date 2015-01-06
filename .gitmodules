@@ -4,3 +4,6 @@
 [submodule "lib/parsedown-extra"]
 	path = lib/parsedown-extra
 	url = https://github.com/erusev/parsedown-extra.git
+[submodule "lib/featherlight"]
+	path = lib/featherlight
+	url = https://github.com/noelboss/featherlight.git

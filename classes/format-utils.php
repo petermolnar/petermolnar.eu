@@ -58,7 +58,7 @@ class pmlnr_format {
 
 			if ( is_singular()) {
 				$thmeta = wp_get_attachment_metadata( $thid );
-				if ( isset( $thmeta['image_meta'] ) && !empty($thmeta['image_meta']) ) {
+				if ( isset( $thmeta['image_meta'] ) && !empty($thmeta['image_meta']) && isset($thmeta['image_meta']['camera']) && !empty($thmeta['image_meta']['camera']) ) {
 					$thmeta = $thmeta['image_meta'];
 
 					$displaymeta = array (
@@ -71,14 +71,25 @@ class pmlnr_format {
 						'shutter_speed' => sprintf( __('Shutter: %ss'), pmlnr_utils::shutter_speed( $thmeta['shutter_speed'] )),
 						'created_timestamp' => sprintf ( __('Taken at: %s'), str_replace('T', ' ', date("c", $thmeta['created_timestamp']))),
 						*/
-						'camera' => $thmeta['camera'],
-						'iso' => sprintf (__('ISO %s'), $thmeta['iso'] ),
-						'focal_length' => sprintf (__('%smm'), $thmeta['focal_length'] ),
-						'aperture' => sprintf ( __('f/%s'), $thmeta['aperture']),
-						'shutter_speed' => sprintf( __('%ssec'), pmlnr_utils::shutter_speed( $thmeta['shutter_speed'] )),
+						'camera' => '<i class="icon-camera spacer"></i>'. $thmeta['camera'],
+						'iso' => sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $thmeta['iso'] ),
+						'focal_length' => sprintf (__('<i class="icon-focallength spacer"></i>%smm'), $thmeta['focal_length'] ),
+						'aperture' => sprintf ( __('<i class="icon-aperture spacer"></i>f/%s'), $thmeta['aperture']),
+						'shutter_speed' => sprintf( __('<i class="icon-clock spacer"></i>%s sec'), pmlnr_utils::shutter_speed( $thmeta['shutter_speed'] )),
 					);
 
-					$this->src = $this->src . __( "\n##### Exif information:\n" ) . join( ', ', $displaymeta );
+					$cc = get_post_meta ( $this->post->ID, 'cc', true );
+					if ( empty ( $cc ) ) $cc = 'by';
+
+					$ccicons = explode('-', $cc);
+					$cci[] = '<i class="icon-cc"></i>';
+					foreach ( $ccicons as $ccicon ) {
+						$cci[] = '<i class="icon-cc-'. strtolower($ccicon) . '"></i>';
+					}
+
+					$cc = '<a href="http://creativecommons.org/licenses/'. $cc .'/4.0/">'. join( $cci,'' ) .'</a>';
+
+					$this->src = $this->src . '<div class="inlinelist">' . $cc . join( ', ', $displaymeta ) .'</div>';
 				}
 			}
 		}

@@ -160,6 +160,8 @@ class petermolnareu {
 		 * Remove Jetpack 3.2's Implode frontend CSS
 		 */
 		add_filter( 'jetpack_implode_frontend_css', '__return_false' );
+
+		add_filter('wp_headers', array(&$this, 'remove_x_pingback'));
 	}
 
 	/**
@@ -174,10 +176,11 @@ class petermolnareu {
 		wp_register_style( 'prism', $this->css_url . 'prism.css', false, null );
 		wp_register_script( 'prism' , $this->js_url . 'prism.js', false, null, true );
 
-		/* CDN scripts */
+		/* CDN scripts *
 		wp_deregister_script( 'jquery' );
 		wp_register_script( 'jquery', pmlnr_utils::replace_if_ssl( 'http://code.jquery.com/jquery-1.11.0.min.js' ), false, null, false );
 		wp_enqueue_script( 'jquery' );
+		*/
 
 		wp_register_script('indieweb-press-this', $this->js_url . 'press_this.js', false, null, true);
 		wp_enqueue_script( 'indieweb-press-this' );
@@ -362,6 +365,11 @@ class petermolnareu {
 
 		$content = str_replace( $search, $replace, $content );
 		return $content;
+	}
+
+	function remove_x_pingback($headers) {
+		unset($headers['X-Pingback']);
+		return $headers;
 	}
 
 }

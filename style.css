@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.17
+Version:		8.29
 */
 .spacer {
   display: inline-block;
@@ -191,28 +191,28 @@ submit:focus {
 @font-face {
   font-family: 'Liberation Sans';
   src: url('assets/font/LiberationSans-Regular-webfont.eot');
-  src: url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Regular-webfont.woff') format('woff'), url('assets/font/LiberationSans-Regular-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
+  src: local('Liberation Sans'), url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Regular-webfont.woff') format('woff'), url('assets/font/LiberationSans-Regular-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Liberation Sans';
   src: url('assets/font/LiberationSans-Bold-webfont.eot');
-  src: url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Bold-webfont.woff') format('woff'), url('assets/font/LiberationSans-Bold-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
+  src: local('Liberation Sans'), url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Bold-webfont.woff') format('woff'), url('assets/font/LiberationSans-Bold-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
   font-weight: bold;
   font-style: normal;
 }
 @font-face {
   font-family: 'Liberation Sans';
   src: url('assets/font/LiberationSans-Italic-webfont.eot');
-  src: url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'), url('assets/font/LiberationSans-Italic-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
+  src: local('Liberation Sans'), url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'), url('assets/font/LiberationSans-Italic-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
   font-weight: normal;
   font-style: italic;
 }
 @font-face {
   font-family: 'Liberation Sans';
   src: url('assets/font/LiberationSans-BoldItalic-webfont.eot');
-  src: url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-BoldItalic-webfont.woff') format('woff'), url('assets/font/LiberationSans-BoldItalic-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
+  src: local('Liberation Sans'), url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-BoldItalic-webfont.woff') format('woff'), url('assets/font/LiberationSans-BoldItalic-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
   font-weight: bold;
   font-style: italic;
 }
@@ -409,174 +409,18 @@ pre {
   line-height: 1em;
   margin-right: 0.3em;
 }
-.icon-blank:before {
-  content: '\e817';
-}
-/* '' */
-.icon-home:before {
-  content: '\e814';
-}
-/* '' */
-.icon-link-ext-alt:before {
-  content: '\e821';
-}
-/* '' */
-.icon-thumbs-up:before {
-  content: '\e822';
-}
-/* '' */
-.icon-thumbs-down:before {
-  content: '\e826';
-}
-/* '' */
-.icon-download:before {
-  content: '\e811';
-}
-/* '' */
-.icon-quote-left:before {
-  content: '\e80f';
-}
-/* '' */
-.icon-quote-right:before {
-  content: '\e810';
-}
-/* '' */
-.icon-code:before {
-  content: '\e80e';
-}
-/* '' */
-.icon-export-alt:before {
-  content: '\e820';
-}
-/* '' */
-.icon-comment:before {
-  content: '\e812';
-}
-/* '' */
-.icon-rss:before {
-  content: '\e80b';
-}
-/* '' */
-.tel:before,
-.icon-phone:before {
-  content: '\e800';
-}
-/* '' */
-.icon-menu:before {
-  content: '\e81b';
-}
-/* '' */
-.icon-angle-double-left:before {
-  content: '\e81d';
-}
-/* '' */
-.icon-angle-double-right:before {
-  content: '\e81c';
-}
-/* '' */
-.icon-angle-double-up:before {
-  content: '\e81f';
-}
-/* '' */
-.email:before,
-.icon-mail:before {
-  content: '\e80d';
-}
-/* '' */
-.icon-play:before {
-  content: '\e818';
-}
-/* '' */
-.icon-stop:before {
-  content: '\e819';
-}
-/* '' */
-.icon-pause:before {
+.icon-aperture:before {
   content: '\e81a';
 }
 /* '' */
-.icon-globe:before {
-  content: '\e80c';
+.icon-calendar:before {
+  content: '\e810';
 }
-/* '' */
-.icon-qrcode:before {
-  content: '\e813';
+/* '' */
+.icon-camera:before {
+  content: '\e819';
 }
-/* '' */
-.icon-bitbucket:before {
-  content: '\e815';
-}
-/* '' */
-.x-facebook:before,
-.icon-facebook:before {
-  content: '\e808';
-}
-/* '' */
-.x-flickr:before,
-.icon-flickr:before {
-  content: '\e809';
-}
-/* '' */
-.x-github:before,
-.icon-github:before {
-  content: '\e802';
-}
-/* '' */
-.x-googleplus:before,
-.icon-googleplus:before,
-.icon-gplus:before {
-  content: '\e801';
-}
-/* '' */
-.x-instagramm:before,
-.icon-instagramm:before {
-  content: '\e816';
-}
-/* '' */
-.x-linkedin:before,
-.icon-linkedin:before {
-  content: '\e807';
-}
-/* '' */
-.x-pinterest:before,
-.icon-pinterest:before {
-  content: '\e805';
-}
-/* '' */
-.x-tumblr:before,
-.icon-tumblr:before {
-  content: '\e803';
-}
-/* '' */
-.x-twitter:before,
-.icon-twitter:before {
-  content: '\e804';
-}
-/* '' */
-.icon-vimeo:before {
-  content: '\e80a';
-}
-/* '' */
-.icon-youtube:before {
-  content: '\e806';
-}
-/* '' */
-.icon-angle-double-down:before {
-  content: '\e81e';
-}
-/* '' */
-.icon-smile:before {
-  content: '\e825';
-}
-/* '' */
-.icon-frown:before {
-  content: '\e824';
-}
-/* '' */
-.icon-meh:before {
-  content: '\e823';
-}
-/* '' */
+/* '' */
 .icon-cc:before {
   content: '\e827';
 }
@@ -597,10 +441,6 @@ pre {
   content: '\e82b';
 }
 /* '' */
-.icon-cc-sa:before {
-  content: '\e82c';
-}
-/* '' */
 .icon-cc-nd:before {
   content: '\e82d';
 }
@@ -609,38 +449,165 @@ pre {
   content: '\e831';
 }
 /* '' */
-.icon-cc-zero:before {
-  content: '\e82e';
-}
-/* '' */
-.icon-cc-share:before {
-  content: '\e82f';
-}
-/* '' */
 .icon-cc-remix:before {
   content: '\e830';
 }
 /* '' */
-.icon-wordpress:before {
-  content: '\e837';
+.icon-cc-sa:before {
+  content: '\e82c';
 }
-/* '' */
+/* '' */
+.icon-cc-share:before {
+  content: '\e82f';
+}
+/* '' */
+.icon-cc-zero:before {
+  content: '\e82e';
+}
+/* '' */
+.icon-clock:before {
+  content: '\e817';
+}
+.icon-comment:before {
+  content: '\e80f';
+}
+/* '' */
+.x-facebook:before,
+.icon-facebook:before {
+  content: '\e808';
+}
+/* '' */
+.x-flickr:before,
+.icon-flickr:before {
+  content: '\e809';
+}
+/* '' */
+.icon-focallength:before {
+  content: '\e81c';
+}
+/* '' */
+.icon-folder:before {
+  content: '\e812';
+}
+/* '' */
+.icon-frown:before {
+  content: '\e824';
+}
+/* '' */
+.x-github:before,
+.icon-github:before {
+  content: '\e802';
+}
+/* '' */
+.icon-globe:before {
+  content: '\e80c';
+}
+/* '' */
+.x-googleplus:before,
+.icon-googleplus:before,
+.icon-gplus:before {
+  content: '\e801';
+}
+/* '' */
+.icon-hacker-news:before {
+  content: '\e80e';
+}
+/* '' */
+.icon-hash:before {
+  content: '\e80a';
+}
+/* '' */
+.x-instagramm:before,
+.icon-instagramm:before {
+  content: '\e816';
+}
+/* '' */
+.icon-lastfm:before {
+  content: '\e80d';
+}
+/* '' */
+.icon-like:before {
+  content: '\e822';
+}
+/* '' */
+.x-linkedin:before,
+.icon-linkedin:before {
+  content: '\e807';
+}
+/* '' */
+.icon-link-ext-alt:before {
+  content: '\e814';
+}
+/* '' */
+.email:before,
+.icon-mail:before {
+  content: '\e815';
+}
+/* '' */
+.icon-meh:before {
+  content: '\e823';
+}
+/* '' */
+.icon-menu:before {
+  content: '\e81b';
+}
+/* '' */
+.tel:before,
+.icon-phone:before {
+  content: '\e800';
+}
+/* '' */
 .icon-picture:before {
   content: '\e833';
 }
 /* '' */
-.icon-camera-alt:before {
-  content: '\e834';
+.x-pinterest:before,
+.icon-pinterest:before {
+  content: '\e805';
 }
-/* '' */
-.icon-camera:before {
-  content: '\e835';
+/* '' */
+.icon-qrcode:before {
+  content: '\e813';
 }
-/* '' */
-.icon-deviantart:before {
-  content: '\e836';
+/* '' */
+.icon-rss:before {
+  content: '\e80b';
 }
-/* '' */
+/* '' */
+.icon-sensitivity:before {
+  content: '\e81d';
+}
+/* '' */
+.icon-share:before {
+  content: '\e818';
+}
+/* '' */
+.icon-smile:before {
+  content: '\e825';
+}
+/* '' */
+.icon-tag:before {
+  content: '\e811';
+}
+/* '' */
+.x-tumblr:before,
+.icon-tumblr:before {
+  content: '\e803';
+}
+/* '' */
+.x-twitter:before,
+.icon-twitter:before {
+  content: '\e804';
+}
+/* '' */
+.icon-wordpress:before {
+  content: '\e837';
+}
+/* '' */
+.icon-youtube:before {
+  content: '\e806';
+}
+/* '' */
 /* HEADER */
 .content-header {
   position: fixed;
@@ -673,6 +640,7 @@ pre {
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
   right: -1em;
+  top: 1em;
   z-index: 999!important;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
@@ -690,19 +658,26 @@ pre {
   /*padding: @toggle-size @padding-large @padding-large @padding-large;*/
   z-index: 2;
 }
+/*
 .content-dark {
-  background-color: #171a1d;
-  color: #999999;
+	background-color: darken(@color-bg-dark,10%);
+	color: @color-text-light;
+
+	a {
+		color: @color-link-light;
+		display: inline;
+		border-bottom: @thinborder none @color-text-light;
+		line-height: @font-normal;
+		&:hover {
+			border-bottom: @thinborder dotted @color-link-light;
+		}
+	}
+
+	.h-entry a {
+		border-bottom: @thinborder dotted @color-text-light;
+	}
 }
-.content-dark a {
-  color: #dddddd;
-  display: inline;
-  border-bottom: 1px dotted #999999;
-  line-height: 1em;
-}
-.content-dark a:hover {
-  border-bottom: 1px dotted #dddddd;
-}
+*/
 .content-light {
   background-color: #efefef;
   color: #333333;
@@ -710,11 +685,16 @@ pre {
 .content-light a {
   color: #000000;
   display: inline;
+  border-bottom: 1px none #999999;
+  /*
+		&:hover {
+			border-bottom: @thinborder dotted @color-link-dark;
+		}
+		*/
+}
+.content-light .e-content a {
   border-bottom: 1px dotted #999999;
   line-height: 1em;
-}
-.content-light a:hover {
-  border-bottom: 1px dotted #000000;
 }
 .content-footer {
   padding: 1em 0 1em 0;
@@ -825,12 +805,13 @@ pre {
 .p-category a:hover {
   opacity: 0.99;
 }
-.commentcounter {
+.inlinelist {
   opacity: 0.6;
 }
-.commentcounter:hover {
-  opacity: 0.99;
-}
+/*
+.commentcounter {
+	.linkopacity();
+}*/
 /* VCARD */
 .vcard-page {
   display: block;
@@ -882,6 +863,10 @@ pre {
   content: '»';
   margin-left: 0.3em;
 }
+.h-entry .meta {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
 .article-header {
   position: relative;
   clear: both;
@@ -902,6 +887,7 @@ pre {
   background: rgba(0, 0, 0, 0.4);
   box-shadow: 0.6em 0 0 rgba(0, 0, 0, 0.4), -0.6em 0 0 rgba(0, 0, 0, 0.4);
   line-height: 1.4em;
+  border: none;
 }
 .article-header h2 {
   margin: 0;
@@ -909,29 +895,26 @@ pre {
   line-height: 1.2em;
   display: inline-block;
 }
-.article-header h2 .more:after {
-  content: '»';
-  margin-left: 0.3em;
-}
 .e-content,
 .article-content {
   text-align: justify;
 }
-.minstoread {
-  font-size: 0.7em;
-  /* opacity: 0.5; */
-  margin-right: 0.6em;
-}
+/*.minstoread {
+	font-size: @font-xsmall;
+	opacity: 0.5;
+	margin-right: @padding-large;
+}*/
 .dt-published,
 .article-pubdate,
 .urel {
-  display: block;
-  font-size: 0.9em;
+  display: inline-block;
+  /*font-size: @font-small;*/
   font-weight: normal;
-  color: #666666;
-  font-family: monospace;
-  padding: 0 0 0 0.3em;
-  margin: 0 0 0.6em 0;
+  letter-spacing: 0.06em;
+  /*color: darken(@color-text-light,20%);*/
+  /*font-family: monospace;*/
+  /*padding:  0 0 0 @padding-normal;
+	margin: 0 0 @padding-large 0;*/
 }
 .article-thumbnail {
   display: block;
@@ -939,6 +922,7 @@ pre {
   margin: 0.3em 0.6em 0.6em 0;
   width: 12%;
   max-width: 90px;
+  border: none;
 }
 .article-thumbnail img {
   width: 100%;

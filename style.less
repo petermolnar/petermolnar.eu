@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.17
+Version:		8.29
 */
 
 @color-bg-dark: #2D333A;
@@ -84,6 +84,11 @@ Version:		8.17
 		opacity: 0.99;
 	}
 }
+
+.listopacity() {
+	opacity: 0.6;
+}
+
 
 .animate() {
 	transition: all 0.3s ease;
@@ -233,7 +238,8 @@ input, select, submit {
 @font-face {
 	font-family: 'Liberation Sans';
 	src: url('assets/font/LiberationSans-Regular-webfont.eot');
-	src: url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+	src: local('Liberation Sans'),
+		 url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/LiberationSans-Regular-webfont.woff') format('woff'),
 		 url('assets/font/LiberationSans-Regular-webfont.ttf') format('truetype'),
 		 url('assets/font/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
@@ -244,7 +250,8 @@ input, select, submit {
 @font-face {
 	font-family: 'Liberation Sans';
 	src: url('assets/font/LiberationSans-Bold-webfont.eot');
-	src: url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+	src: local('Liberation Sans'),
+		 url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/LiberationSans-Bold-webfont.woff') format('woff'),
 		 url('assets/font/LiberationSans-Bold-webfont.ttf') format('truetype'),
 		 url('assets/font/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
@@ -255,7 +262,8 @@ input, select, submit {
 @font-face {
 	font-family: 'Liberation Sans';
 	src: url('assets/font/LiberationSans-Italic-webfont.eot');
-	src: url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'),
+	src: local('Liberation Sans'),
+		 url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'),
 		 url('assets/font/LiberationSans-Italic-webfont.ttf') format('truetype'),
 		 url('assets/font/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
@@ -266,7 +274,8 @@ input, select, submit {
 @font-face {
 	font-family: 'Liberation Sans';
 	src: url('assets/font/LiberationSans-BoldItalic-webfont.eot');
-	src: url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'),
+	src: local('Liberation Sans'),
+		 url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'),
 		 url('assets/font/LiberationSans-BoldItalic-webfont.woff') format('woff'),
 		 url('assets/font/LiberationSans-BoldItalic-webfont.ttf') format('truetype'),
 		 url('assets/font/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
@@ -477,63 +486,53 @@ pre {
 	.iconstyle()
 }
 
-.icon-blank:before { content: '\e817'; } /* '' */
-.icon-home:before { content: '\e814'; } /* '' */
-.icon-link-ext-alt:before { content: '\e821'; } /* '' */
-.icon-thumbs-up:before { content: '\e822'; } /* '' */
-.icon-thumbs-down:before { content: '\e826'; } /* '' */
-.icon-download:before { content: '\e811'; } /* '' */
-.icon-quote-left:before { content: '\e80f'; } /* '' */
-.icon-quote-right:before { content: '\e810'; } /* '' */
-.icon-code:before { content: '\e80e'; } /* '' */
-.icon-export-alt:before { content: '\e820'; } /* '' */
-.icon-comment:before { content: '\e812'; } /* '' */
-.icon-rss:before { content: '\e80b'; } /* '' */
-.tel:before, .icon-phone:before { content: '\e800'; } /* '' */
-.icon-menu:before { content: '\e81b'; } /* '' */
-.icon-angle-double-left:before { content: '\e81d'; } /* '' */
-.icon-angle-double-right:before { content: '\e81c'; } /* '' */
-.icon-angle-double-up:before { content: '\e81f'; } /* '' */
-.email:before, .icon-mail:before { content: '\e80d'; } /* '' */
-.icon-play:before { content: '\e818'; } /* '' */
-.icon-stop:before { content: '\e819'; } /* '' */
-.icon-pause:before { content: '\e81a'; } /* '' */
-.icon-globe:before { content: '\e80c'; } /* '' */
-.icon-qrcode:before { content: '\e813'; } /* '' */
-.icon-bitbucket:before { content: '\e815'; } /* '' */
-.x-facebook:before, .icon-facebook:before { content: '\e808'; } /* '' */
-.x-flickr:before, .icon-flickr:before { content: '\e809'; } /* '' */
-.x-github:before, .icon-github:before { content: '\e802'; } /* '' */
-.x-googleplus:before, .icon-googleplus:before, .icon-gplus:before { content: '\e801'; } /* '' */
-.x-instagramm:before, .icon-instagramm:before { content: '\e816'; } /* '' */
-.x-linkedin:before, .icon-linkedin:before { content: '\e807'; } /* '' */
-.x-pinterest:before, .icon-pinterest:before { content: '\e805'; } /* '' */
-.x-tumblr:before, .icon-tumblr:before { content: '\e803'; } /* '' */
-.x-twitter:before, .icon-twitter:before { content: '\e804'; } /* '' */
-.icon-vimeo:before { content: '\e80a'; } /* '' */
-.icon-youtube:before { content: '\e806'; } /* '' */
-.icon-angle-double-down:before { content: '\e81e'; } /* '' */
-.icon-smile:before { content: '\e825'; } /* '' */
-.icon-frown:before { content: '\e824'; } /* '' */
-.icon-meh:before { content: '\e823'; } /* '' */
+.icon-aperture:before { content: '\e81a'; } /* '' */
+.icon-calendar:before { content: '\e810'; } /* '' */
+.icon-camera:before { content: '\e819'; } /* '' */
 .icon-cc:before { content: '\e827'; } /* '' */
 .icon-cc-by:before { content: '\e828'; } /* '' */
 .icon-cc-nc:before { content: '\e829'; } /* '' */
 .icon-cc-nc-eu:before { content: '\e82a'; } /* '' */
 .icon-cc-nc-jp:before { content: '\e82b'; } /* '' */
-.icon-cc-sa:before { content: '\e82c'; } /* '' */
 .icon-cc-nd:before { content: '\e82d'; } /* '' */
 .icon-cc-pd:before { content: '\e831'; } /* '' */
-.icon-cc-zero:before { content: '\e82e'; } /* '' */
-.icon-cc-share:before { content: '\e82f'; } /* '' */
 .icon-cc-remix:before { content: '\e830'; } /* '' */
-.icon-wordpress:before { content: '\e837'; } /* '' */
+.icon-cc-sa:before { content: '\e82c'; } /* '' */
+.icon-cc-share:before { content: '\e82f'; } /* '' */
+.icon-cc-zero:before { content: '\e82e'; } /* '' */
+.icon-clock:before { content: '\e817'; }
+.icon-comment:before { content: '\e80f'; } /* '' */
+.x-facebook:before, .icon-facebook:before { content: '\e808'; } /* '' */
+.x-flickr:before, .icon-flickr:before { content: '\e809'; } /* '' */
+.icon-focallength:before { content: '\e81c'; } /* '' */
+.icon-folder:before { content: '\e812'; } /* '' */
+.icon-frown:before { content: '\e824'; } /* '' */
+.x-github:before, .icon-github:before { content: '\e802'; } /* '' */
+.icon-globe:before { content: '\e80c'; } /* '' */
+.x-googleplus:before, .icon-googleplus:before,.icon-gplus:before { content: '\e801'; } /* '' */
+.icon-hacker-news:before { content: '\e80e'; } /* '' */
+.icon-hash:before { content: '\e80a'; } /* '' */
+.x-instagramm:before, .icon-instagramm:before { content: '\e816'; } /* '' */
+.icon-lastfm:before { content: '\e80d'; } /* '' */
+.icon-like:before { content: '\e822'; } /* '' */
+.x-linkedin:before, .icon-linkedin:before { content: '\e807'; } /* '' */
+.icon-link-ext-alt:before { content: '\e814'; } /* '' */
+.email:before, .icon-mail:before { content: '\e815'; } /* '' */
+.icon-meh:before { content: '\e823'; } /* '' */
+.icon-menu:before { content: '\e81b'; } /* '' */
+.tel:before, .icon-phone:before { content: '\e800'; } /* '' */
 .icon-picture:before { content: '\e833'; } /* '' */
-.icon-camera-alt:before { content: '\e834'; } /* '' */
-.icon-camera:before { content: '\e835'; } /* '' */
-.icon-deviantart:before { content: '\e836'; } /* '' */
-
-
+.x-pinterest:before, .icon-pinterest:before { content: '\e805'; } /* '' */
+.icon-qrcode:before { content: '\e813'; } /* '' */
+.icon-rss:before { content: '\e80b'; } /* '' */
+.icon-sensitivity:before { content: '\e81d'; } /* '' */
+.icon-share:before { content: '\e818'; } /* '' */
+.icon-smile:before { content: '\e825'; } /* '' */
+.icon-tag:before { content: '\e811'; } /* '' */
+.x-tumblr:before,.icon-tumblr:before { content: '\e803'; } /* '' */
+.x-twitter:before,.icon-twitter:before { content: '\e804'; } /* '' */
+.icon-wordpress:before { content: '\e837'; } /* '' */
+.icon-youtube:before { content: '\e806'; } /* '' */
 
 /* HEADER */
 .content-header {
@@ -569,6 +568,7 @@ pre {
 	-moz-osx-font-smoothing: grayscale;
 	position: absolute;
 	right: -1em;
+	top: 1em;
 	z-index: 999!important;
 	.animate();
 	text-shadow:1px 1px @color-text-dark;
@@ -588,7 +588,7 @@ pre {
 	/*padding: @toggle-size @padding-large @padding-large @padding-large;*/
 	z-index: 2;
 }
-
+/*
 .content-dark {
 	background-color: darken(@color-bg-dark,10%);
 	color: @color-text-light;
@@ -596,14 +596,18 @@ pre {
 	a {
 		color: @color-link-light;
 		display: inline;
-		border-bottom: @thinborder dotted @color-text-light;
+		border-bottom: @thinborder none @color-text-light;
 		line-height: @font-normal;
 		&:hover {
 			border-bottom: @thinborder dotted @color-link-light;
 		}
 	}
-}
 
+	.h-entry a {
+		border-bottom: @thinborder dotted @color-text-light;
+	}
+}
+*/
 .content-light {
 	background-color: @color-bg-light;
 	color: @color-text-dark;
@@ -611,13 +615,18 @@ pre {
 	a {
 		color: @color-link-dark;
 		display: inline;
-		border-bottom: @thinborder dotted @color-text-light;
-		line-height: @font-normal;
+		border-bottom: @thinborder none @color-text-light;
+		/*
 		&:hover {
 			border-bottom: @thinborder dotted @color-link-dark;
 		}
+		*/
 	}
 
+	.e-content a {
+		border-bottom: @thinborder dotted @color-text-light;
+		line-height: @font-normal;
+	}
 }
 
 .content-footer {
@@ -733,9 +742,14 @@ pre {
 	}
 }
 
+.inlinelist {
+	.listopacity();
+}
+
+/*
 .commentcounter {
 	.linkopacity();
-}
+}*/
 
 /* VCARD */
 .vcard-page {
@@ -780,6 +794,13 @@ pre {
 	margin-left: @padding-normal;
 }
 
+.h-entry {
+	.meta {
+		font-size: 0.9em;
+		opacity: 0.9;
+	}
+}
+
 .article-header {
 	position: relative;
 	clear: both;
@@ -803,6 +824,7 @@ pre {
 			background: rgba(0,0,0,0.4);
 			box-shadow: @padding-large 0 0 rgba(0,0,0,0.4), -@padding-large 0 0 rgba(0,0,0,0.4);
 			line-height: @line-height;
+			border: none;
 		}
 	}
 
@@ -811,11 +833,6 @@ pre {
 		padding: 0;
 		line-height: @font-xlarge;
 		display: inline-block;
-
-		.more:after {
-			content: '»';
-			margin-left: @padding-normal;
-		}
 	}
 }
 
@@ -824,22 +841,23 @@ pre {
 	text-align: justify;
 }
 
-.minstoread {
+/*.minstoread {
 	font-size: @font-xsmall;
-	/* opacity: 0.5; */
+	opacity: 0.5;
 	margin-right: @padding-large;
-}
+}*/
 
 .dt-published,
 .article-pubdate,
 .urel {
-	display: block;
-	font-size: @font-small;
+	display: inline-block;
+	/*font-size: @font-small;*/
 	font-weight: normal;
-	color: darken(@color-text-light,20%);
-	font-family: monospace;
-	padding:  0 0 0 @padding-normal;
-	margin: 0 0 @padding-large 0;
+	letter-spacing: 0.06em;
+	/*color: darken(@color-text-light,20%);*/
+	/*font-family: monospace;*/
+	/*padding:  0 0 0 @padding-normal;
+	margin: 0 0 @padding-large 0;*/
 }
 
 .article-thumbnail {
@@ -848,6 +866,7 @@ pre {
 		margin: @padding-normal @padding-large @padding-large 0;
 		width: 12%;
 		max-width: 90px;
+		border: none;
 
 		img {
 			width: 100%;
