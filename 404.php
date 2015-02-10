@@ -1,9 +1,13 @@
 <?php
 	wp_old_slug_redirect();
+
+	global $wp_query;
+	$wp_query->set_404();
 	header('HTTP/1.0 404 Not Found');
+	header('HTTP/1.1 404 Not Found');
+
 	get_header();
 ?>
-
 <section class="content-body content-dark">
 	<div class="content-inner">
 	<article id="error-404">

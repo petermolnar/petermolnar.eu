@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.29
+Version:		8.45
 */
 .spacer {
   display: inline-block;
@@ -183,38 +183,45 @@ submit:focus {
 *********/
 @font-face {
   font-family: 'petermolnar';
-  src: url('assets/font/petermolnar.eot?89917930');
-  src: local('petermolnar'), url('assets/font/petermolnar.eot#iefix') format('embedded-opentype'), url('assets/font/petermolnar.woff') format('woff'), url('assets/font/petermolnar.ttf') format('truetype'), url('assets/font/petermolnar.svg#petermolnar') format('svg');
+  src: url('fonts/petermolnar.eot?89917930');
+  src: local('petermolnar'), url('fonts/petermolnar.eot#iefix') format('embedded-opentype'), url('fonts/petermolnar.woff') format('woff'), url('fonts/petermolnar.ttf') format('truetype'), url('fonts/petermolnar.svg#petermolnar') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Liberation Sans';
-  src: url('assets/font/LiberationSans-Regular-webfont.eot');
-  src: local('Liberation Sans'), url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Regular-webfont.woff') format('woff'), url('assets/font/LiberationSans-Regular-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
+  src: url('fonts/LiberationSans-Regular-webfont.eot');
+  src: local('Liberation Sans'), url('fonts/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/LiberationSans-Regular-webfont.woff') format('woff'), url('fonts/LiberationSans-Regular-webfont.ttf') format('truetype'), url('fonts/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Liberation Sans';
-  src: url('assets/font/LiberationSans-Bold-webfont.eot');
-  src: local('Liberation Sans'), url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Bold-webfont.woff') format('woff'), url('assets/font/LiberationSans-Bold-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
+  src: url('fonts/LiberationSans-Bold-webfont.eot');
+  src: local('Liberation Sans Bold'), url('fonts/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/LiberationSans-Bold-webfont.woff') format('woff'), url('fonts/LiberationSans-Bold-webfont.ttf') format('truetype'), url('fonts/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
   font-weight: bold;
   font-style: normal;
 }
 @font-face {
   font-family: 'Liberation Sans';
-  src: url('assets/font/LiberationSans-Italic-webfont.eot');
-  src: local('Liberation Sans'), url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'), url('assets/font/LiberationSans-Italic-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
+  src: url('fonts/LiberationSans-Italic-webfont.eot');
+  src: local('Liberation Sans Italic'), url('fonts/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/LiberationSans-Italic-webfont.woff') format('woff'), url('fonts/LiberationSans-Italic-webfont.ttf') format('truetype'), url('fonts/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
   font-weight: normal;
   font-style: italic;
 }
 @font-face {
   font-family: 'Liberation Sans';
-  src: url('assets/font/LiberationSans-BoldItalic-webfont.eot');
-  src: local('Liberation Sans'), url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'), url('assets/font/LiberationSans-BoldItalic-webfont.woff') format('woff'), url('assets/font/LiberationSans-BoldItalic-webfont.ttf') format('truetype'), url('assets/font/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
+  src: url('fonts/LiberationSans-BoldItalic-webfont.eot');
+  src: local('Liberation Sans Bold Italic'), url('fonts/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/LiberationSans-BoldItalic-webfont.woff') format('woff'), url('fonts/LiberationSans-BoldItalic-webfont.ttf') format('truetype'), url('fonts/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
   font-weight: bold;
   font-style: italic;
+}
+@font-face {
+  font-family: 'OpenWeb Icons';
+  src: url("lib/openwebicons/font/openwebicons.eot");
+  src: url("lib/openwebicons/font/openwebicons.eot?#iefix") format("embedded-opentype"), url("lib/openwebicons/font/openwebicons.woff2") format("woff2"), url("lib/openwebicons/font/openwebicons.woff") format("woff"), url("lib/openwebicons/font/openwebicons.ttf") format("truetype"), url("lib/openwebicons/font/openwebicons.svg#openweb_iconsregular") format("svg");
+  font-weight: normal;
+  font-style: normal;
 }
 /*************
 * ALIGNMENTS *
@@ -297,7 +304,7 @@ body {
 }
 .content-inner,
 .content-limit {
-  max-width: 40em;
+  max-width: 42em;
   width: 98%;
   margin: 0 auto 1.2em auto;
   padding: 0.6em;
@@ -394,13 +401,12 @@ pre {
 [class*=" x-"]:before,
 .tel:before,
 .email:before {
-  font-family: "petermolnar";
   font-style: normal;
   font-weight: normal;
   speak: none;
   display: inline-block;
   text-decoration: inherit;
-  width: 1em;
+  /*width: 1em;*/
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
   font-variant: normal;
@@ -408,6 +414,7 @@ pre {
   /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
   margin-right: 0.3em;
+  font-family: "petermolnar";
 }
 .icon-aperture:before {
   content: '\e81a';
@@ -608,6 +615,33 @@ pre {
   content: '\e806';
 }
 /* '' */
+.icon-500px:before {
+  content: '\e81e';
+}
+/* '' */
+[class^="openwebicon-"]:before,
+[class*=" openwebicon-"]:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  /*width: 1em;*/
+  text-align: center;
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+  margin-right: 0.3em;
+  font-family: "OpenWeb Icons";
+}
+.openwebicon-webmention:before {
+  content: "\f04d";
+}
+.openwebicon-indieweb:before {
+  content: "\f08b \f08c";
+}
 /* HEADER */
 .content-header {
   position: fixed;
@@ -841,13 +875,12 @@ pre {
   vertical-align: middle;
 }
 .vcard-page a:before {
-  font-family: "petermolnar";
   font-style: normal;
   font-weight: normal;
   speak: none;
   display: inline-block;
   text-decoration: inherit;
-  width: 1em;
+  /*width: 1em;*/
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
   font-variant: normal;
@@ -855,6 +888,7 @@ pre {
   /* fix buttons height, for twitter bootstrap */
   line-height: 1em;
   margin-right: 0.3em;
+  font-family: "petermolnar";
   font-size: 1.1em;
   padding: 0 0.6em 0 0.6em;
 }
@@ -865,7 +899,7 @@ pre {
 }
 .h-entry .meta {
   font-size: 0.9em;
-  opacity: 0.9;
+  opacity: 0.7;
 }
 .article-header {
   position: relative;
@@ -979,19 +1013,19 @@ pre {
   border: none;
 }
 .adaptlink:before {
-  font-family: "petermolnar";
   font-style: normal;
   font-weight: normal;
   speak: none;
   display: inline-block;
   text-decoration: inherit;
-  width: 1em;
+  /*width: 1em;*/
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
   font-variant: normal;
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
   margin-right: 0.3em;
+  font-family: "petermolnar";
   content: "\e833";
   display: block;
   line-height: 1em;
@@ -1063,13 +1097,12 @@ pre {
   opacity: 0.99;
 }
 .sidebar ul li a:before {
-  font-family: "petermolnar";
   font-style: normal;
   font-weight: normal;
   speak: none;
   display: inline-block;
   text-decoration: inherit;
-  width: 1em;
+  /*width: 1em;*/
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
   font-variant: normal;
@@ -1078,6 +1111,7 @@ pre {
   line-height: 1em;
   margin-right: 0.3em;
   content: "\e821";
+  font-family: "petermolnar";
 }
 /* DESKTOP */
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5), (min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi), (min-width: 2400px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.9), (min-width: 2400px) and (orientation: landscape) and (max-resolution: 290dpi) {

@@ -7,3 +7,6 @@
 [submodule "lib/featherlight"]
 	path = lib/featherlight
 	url = https://github.com/noelboss/featherlight.git
+[submodule "lib/openwebicons"]
+	path = lib/openwebicons
+	url = https://github.com/pfefferle/openwebicons

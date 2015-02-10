@@ -12,7 +12,7 @@ get_header();
 
 	<section class="content-body content-light">
 
-		<h2><?php _e( "Displaying results for:" ); echo '"'. get_query_var('s'). '"'; ?></h2>
+		<h1><?php _e( "Displaying results for:" ); echo '"'. get_query_var('s'). '"'; ?></h1>
 		<?php
 			if ( have_posts() ) {
 				while ( have_posts() ) {

@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		8.29
+Version:		8.45
 */
 
 @color-bg-dark: #2D333A;
@@ -96,13 +96,12 @@ Version:		8.29
 }
 
 .iconstyle() {
-	font-family: "petermolnar";
 	font-style: normal;
 	font-weight: normal;
 	speak: none;
 	display: inline-block;
 	text-decoration: inherit;
-	width: 1em;
+	/*width: 1em;*/
 	text-align: center;
 
 	/* For safety - reset parent styles, that can break glyph codes*/
@@ -139,6 +138,7 @@ Version:		8.29
 	display: none;
 	visibility: hidden;
 }
+
 
 /********
 * RESET *
@@ -225,62 +225,74 @@ input, select, submit {
 *********/
 @font-face {
 	font-family: 'petermolnar';
-	src: url('assets/font/petermolnar.eot?89917930');
+	src: url('fonts/petermolnar.eot?89917930');
 	src: local('petermolnar'),
-		 url('assets/font/petermolnar.eot#iefix') format('embedded-opentype'),
-		 url('assets/font/petermolnar.woff') format('woff'),
-		 url('assets/font/petermolnar.ttf') format('truetype'),
-		 url('assets/font/petermolnar.svg#petermolnar') format('svg');
+		 url('fonts/petermolnar.eot#iefix') format('embedded-opentype'),
+		 url('fonts/petermolnar.woff') format('woff'),
+		 url('fonts/petermolnar.ttf') format('truetype'),
+		 url('fonts/petermolnar.svg#petermolnar') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: 'Liberation Sans';
-	src: url('assets/font/LiberationSans-Regular-webfont.eot');
+	src: url('fonts/LiberationSans-Regular-webfont.eot');
 	src: local('Liberation Sans'),
-		 url('assets/font/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/LiberationSans-Regular-webfont.woff') format('woff'),
-		 url('assets/font/LiberationSans-Regular-webfont.ttf') format('truetype'),
-		 url('assets/font/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
+		 url('fonts/LiberationSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('fonts/LiberationSans-Regular-webfont.woff') format('woff'),
+		 url('fonts/LiberationSans-Regular-webfont.ttf') format('truetype'),
+		 url('fonts/LiberationSans-Regular-webfont.svg#liberation_sansregular') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: 'Liberation Sans';
-	src: url('assets/font/LiberationSans-Bold-webfont.eot');
-	src: local('Liberation Sans'),
-		 url('assets/font/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/LiberationSans-Bold-webfont.woff') format('woff'),
-		 url('assets/font/LiberationSans-Bold-webfont.ttf') format('truetype'),
-		 url('assets/font/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
+	src: url('fonts/LiberationSans-Bold-webfont.eot');
+	src: local('Liberation Sans Bold'),
+		 url('fonts/LiberationSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('fonts/LiberationSans-Bold-webfont.woff') format('woff'),
+		 url('fonts/LiberationSans-Bold-webfont.ttf') format('truetype'),
+		 url('fonts/LiberationSans-Bold-webfont.svg#liberation_sansbold') format('svg');
 	font-weight: bold;
 	font-style: normal;
 }
 
 @font-face {
 	font-family: 'Liberation Sans';
-	src: url('assets/font/LiberationSans-Italic-webfont.eot');
-	src: local('Liberation Sans'),
-		 url('assets/font/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/LiberationSans-Italic-webfont.woff') format('woff'),
-		 url('assets/font/LiberationSans-Italic-webfont.ttf') format('truetype'),
-		 url('assets/font/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
+	src: url('fonts/LiberationSans-Italic-webfont.eot');
+	src: local('Liberation Sans Italic'),
+		 url('fonts/LiberationSans-Italic-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('fonts/LiberationSans-Italic-webfont.woff') format('woff'),
+		 url('fonts/LiberationSans-Italic-webfont.ttf') format('truetype'),
+		 url('fonts/LiberationSans-Italic-webfont.svg#liberation_sansitalic') format('svg');
 	font-weight: normal;
 	font-style: italic;
 }
 
 @font-face {
 	font-family: 'Liberation Sans';
-	src: url('assets/font/LiberationSans-BoldItalic-webfont.eot');
-	src: local('Liberation Sans'),
-		 url('assets/font/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'),
-		 url('assets/font/LiberationSans-BoldItalic-webfont.woff') format('woff'),
-		 url('assets/font/LiberationSans-BoldItalic-webfont.ttf') format('truetype'),
-		 url('assets/font/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
+	src: url('fonts/LiberationSans-BoldItalic-webfont.eot');
+	src: local('Liberation Sans Bold Italic'),
+		 url('fonts/LiberationSans-BoldItalic-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('fonts/LiberationSans-BoldItalic-webfont.woff') format('woff'),
+		 url('fonts/LiberationSans-BoldItalic-webfont.ttf') format('truetype'),
+		 url('fonts/LiberationSans-BoldItalic-webfont.svg#liberation_sansbold_italic') format('svg');
 	font-weight: bold;
 	font-style: italic;
+}
+
+@font-face {
+	font-family: 'OpenWeb Icons';
+	src: url("lib/openwebicons/font/openwebicons.eot");
+	src: url("lib/openwebicons/font/openwebicons.eot?#iefix") format("embedded-opentype"),
+		url("lib/openwebicons/font/openwebicons.woff2") format("woff2"),
+		url("lib/openwebicons/font/openwebicons.woff") format("woff"),
+		url("lib/openwebicons/font/openwebicons.ttf") format("truetype"),
+		url("lib/openwebicons/font/openwebicons.svg#openweb_iconsregular") format("svg");
+	font-weight: normal;
+	font-style: normal;
 }
 
 /*************
@@ -380,7 +392,7 @@ body {
 
 .content-inner,
 .content-limit {
-	max-width:40em;
+	max-width:42em;
 	width:98%;
 	margin:0 auto @font-xlarge auto;
 	padding: @padding-large;
@@ -470,8 +482,8 @@ dd {
 }
 
 pre {
-	font-size: 0.9em;
-	line-height: 1.2em;
+	font-size: @font-small;
+	line-height: @font-xlarge;
 	font-family: monospace;
 	margin: @padding-normal 0 @padding-normal 0;
 	padding: @padding-normal;
@@ -483,7 +495,8 @@ pre {
 [class^="icon-"]:before, [class*=" icon-"]:before,
 [class^="x-"]:before, [class*=" x-"]:before,
 .tel:before, .email:before {
-	.iconstyle()
+	.iconstyle();
+	font-family: "petermolnar";
 }
 
 .icon-aperture:before { content: '\e81a'; } /* '' */
@@ -533,6 +546,15 @@ pre {
 .x-twitter:before,.icon-twitter:before { content: '\e804'; } /* '' */
 .icon-wordpress:before { content: '\e837'; } /* '' */
 .icon-youtube:before { content: '\e806'; } /* '' */
+.icon-500px:before { content: '\e81e'; } /* '' */
+
+[class^="openwebicon-"]:before, [class*=" openwebicon-"]:before {
+	.iconstyle();
+	font-family: "OpenWeb Icons";
+}
+
+.openwebicon-webmention:before { content: "\f04d"; }
+.openwebicon-indieweb:before { content: "\f08b \f08c"; }
 
 /* HEADER */
 .content-header {
@@ -623,9 +645,12 @@ pre {
 		*/
 	}
 
-	.e-content a {
-		border-bottom: @thinborder dotted @color-text-light;
-		line-height: @font-normal;
+	.e-content {
+		a {
+			border-bottom: @thinborder dotted @color-text-light;
+			line-height: @font-normal;
+		}
+
 	}
 }
 
@@ -782,6 +807,7 @@ pre {
 
 		&:before {
 			.iconstyle();
+			font-family: "petermolnar";
 			font-size: @font-large;
 			padding:  0 @padding-large 0 @padding-large;
 		}
@@ -796,8 +822,8 @@ pre {
 
 .h-entry {
 	.meta {
-		font-size: 0.9em;
-		opacity: 0.9;
+		font-size: @font-small;
+		opacity: 0.7;
 	}
 }
 
@@ -937,6 +963,7 @@ pre {
 
 	&:before {
 		.iconstyle();
+		font-family: "petermolnar";
 		content: "\e833";
 		display: block;
 		line-height: 1em;
@@ -1011,6 +1038,7 @@ pre {
 				&:before {
 					.iconstyle();
 					content: "\e821";
+					font-family: "petermolnar";
 				}
 
 			}

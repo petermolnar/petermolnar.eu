@@ -49,10 +49,10 @@ class petermolnareu {
 
 		$this->base_url = pmlnr_utils::replace_if_ssl( get_bloginfo("url") );
 		$this->theme_url = pmlnr_utils::replace_if_ssl( get_bloginfo("stylesheet_directory") );
-		$this->js_url = $this->theme_url . '/assets/js/';
-		$this->css_url = $this->theme_url . '/assets/css/';
-		$this->font_url = $this->theme_url . '/assets/font/';
-		$this->image_url = $this->theme_url . '/assets/image/';
+		$this->js_url = $this->theme_url . '/js/';
+		$this->css_url = $this->theme_url . '/css/';
+		$this->font_url = $this->theme_url . '/fonts/';
+		$this->image_url = $this->theme_url . '/images/';
 
 		$this->adaptive_images = new adaptive_images( $this );
 
@@ -104,6 +104,14 @@ class petermolnareu {
 		add_theme_support( 'html5', array(
 			'search-form', 'comment-form', 'comment-list'
 		) );
+
+		/*
+		add_theme_support( 'infinite-scroll', array(
+			'container' => 'infinite-content',
+			'footer' => 'infinite-footer',
+			'type' => 'scroll'
+		) );
+		*/
 
 		/* add main menus */
 		register_nav_menus( array(

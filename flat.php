@@ -10,10 +10,10 @@ if ( empty($format)) $format = 'article';
 
 $tags = get_the_tags();
 if ( !empty( $tags )) {
-	foreach ( $tags as $tag ) {
-		$taglist[$tag->slug] = $tag->name;
-	}
-	$taglist = '['. join (', ', $taglist) . ']';
+    foreach ( $tags as $tag ) {
+        $taglist[$tag->slug] = $tag->name;
+    }
+    $taglist = '['. join (', ', $taglist) . ']';
 }
 
 $category = get_the_category( $id );
@@ -42,39 +42,39 @@ $description = trim ( str_replace( $search, $replace, $excerpt), "'\"" );
 
 preg_match_all('/((https:\/\/petermolnar.eu)?\/files\/[0-9]{4}\/[0-9]{2}\/)(.*)-([0-9]{1,4})×([0-9]{1,4})\.([a-zA-Z]{2,4})/', $content, $resized_images );
 if ( !empty ( $resized_images[0]  )) {
-	//print_r ( $resized_images);
+    //print_r ( $resized_images);
 
-	foreach ( $resized_images[0] as $cntr=>$imgstr ) {
-		//$location = $resized_images[1][$cntr];
-		$done_images[ $resized_images[2][$cntr] ] = 1;
-		$fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
-		$width = $resized_images[3][$cntr];
-		$height = $resized_images[4][$cntr];
-		$r = $fname . '?resize=' . $width . ',' . $height;
-		$content = str_replace ( $imgstr, $r, $content );
-	}
+    foreach ( $resized_images[0] as $cntr=>$imgstr ) {
+        //$location = $resized_images[1][$cntr];
+        $done_images[ $resized_images[2][$cntr] ] = 1;
+        $fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
+        $width = $resized_images[3][$cntr];
+        $height = $resized_images[4][$cntr];
+        $r = $fname . '?resize=' . $width . ',' . $height;
+        $content = str_replace ( $imgstr, $r, $content );
+    }
 
 }
 
 preg_match_all('/(https?:\/\/petermolnar.eu)?\/files\/[0-9]{4}\/[0-9]{2}\/(.*?)\.([a-zA-Z]{2,4})/', $content, $images );
 if ( !empty ( $images[0]  )) {
-	foreach ( $images[0] as $cntr=>$imgstr ) {
-		//$location = $resized_images[1][$cntr];
-		if ( !isset($done_images[ $images[1][$cntr] ]) ){
-			if ( strstr($images[1][$cntr], 'http'))
-				$fname = $images[2][$cntr] . '.' . $images[3][$cntr];
-			else
-				$fname = $images[1][$cntr] . '.' . $images[2][$cntr];
-			$content = str_replace ( $imgstr, $fname, $content );
-		}
-	}
+    foreach ( $images[0] as $cntr=>$imgstr ) {
+        //$location = $resized_images[1][$cntr];
+        if ( !isset($done_images[ $images[1][$cntr] ]) ){
+            if ( strstr($images[1][$cntr], 'http'))
+                $fname = $images[2][$cntr] . '.' . $images[3][$cntr];
+            else
+                $fname = $images[1][$cntr] . '.' . $images[2][$cntr];
+            $content = str_replace ( $imgstr, $fname, $content );
+        }
+    }
 }
 
 $linkmeta = '';
 if ( $format == 'link' ) {
-	$linkurl = get_post_meta( $post->ID, '_format_link_url', true );
-	if ( !empty ( $linkurl ))
-	$linkmeta = '
+    $linkurl = get_post_meta( $post->ID, '_format_link_url', true );
+    if ( !empty ( $linkurl ))
+    $linkmeta = '
     sourceurl: '. $linkurl ."\n";
 }
 
@@ -116,10 +116,28 @@ taxonomy:<?php echo "\n"; ?>
     $syn = getRelSyndicationFromSNAP( false, true );
     if ( !empty($syn) ) {
          foreach ( $syn as $silo => $url ) {
-            $syndicated[] = '        ' . $silo . ': ' . $url;
+            $syndicated[strtolower($silo)] = $url;
         }
-        echo "syndicated: \n" . join ( "\n", $syndicated ) . "\n";
     }
+    /* old twitter */
+    if ( ! isset($syndicated['twitter']) ) {
+    $tweet_id = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
+        if ( !empty($tweet_id) ) {
+            $syndicated['twitter'] = "https://twitter.com/petermolnar/status/" . $tweet_id;
+        }
+    }
+
+    if ( !empty ($syndicated ) ) {
+		$syn = array();
+        foreach ( $syndicated as $silo => $url ) {
+            $syn[] = '        ' . $silo . ': ' . $url;
+        }
+        echo "syndicated: \n" . join ( "\n", $syn ) . "\n";
+
+        //update_post_meta ( $post->ID, 'syndicated', join(',',array_map('trim', $syn) ));
+    }
+
+
 
     //$comments = get_comments ( array(
         //'post_id' => $post->ID,
@@ -136,8 +154,8 @@ taxonomy:<?php echo "\n"; ?>
 ?>---
 <?php
 if($post->post_excerpt):
-	echo $excerpt;
-	echo "\n\n";
+    echo $excerpt;
+    echo "\n\n";
 endif;
 ?>
 ===

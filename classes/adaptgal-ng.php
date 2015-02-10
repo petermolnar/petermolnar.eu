@@ -26,6 +26,7 @@ class adaptive_images {
 	const prefix = 'adaptive_';
 	const wprefix = 'adaptive_w_';
 	const hprefix = 'adaptive_h_';
+	const sprefix = 'adaptive_s_';
 
 	protected $sizes = array();
 	protected $imgdata = array();
@@ -33,9 +34,9 @@ class adaptive_images {
 	public function __construct ( ) {
 		/* display width => image size */
 		$this->dpix = array (
-			1 => 700,
-			2 => 900,
-			3 => 1080
+			1 => 540,
+			2 => 980,
+			3 => 1920,
 		);
 	}
 
@@ -47,6 +48,8 @@ class adaptive_images {
 			add_image_size ( self::wprefix . $dpix, $size, 0, false );
 			// height dependent: prefix, no width, max height set, no crop
 			add_image_size ( self::hprefix . $dpix, 0, $size, false );
+			// restrict both: prefix, max width set, max height set, no crop
+			//add_image_size ( self::sprefix . $dpix, $size, $size, false );
 		}
 
 		add_shortcode('adaptimg', array ( &$this, 'adaptimg' ) );
@@ -75,17 +78,16 @@ class adaptive_images {
 		}
 
 		$img = $this->get_imagemeta( $aid );
+
 		if ( !empty($title)) $img['title'] = $title;
 
-		$keys = array_keys ( $img['src']['w'] );
-		$fallback = $img['src']['w'][ $keys[0] ][0];
-		/*
-		if ( is_user_logged_in() ) {
-			print_r ( $img );
-		}*/
+		$type = 'w';
+		$keys = array_keys ( $img['src'][$type] );
+		$fallback = $img['src'][$type][ $keys[0] ][0];
 
-		foreach ( $img['src']['w'] as $dpix => $src ) {
-			$srcset[] = $src[0] . ' ' . $dpix . "x";
+		foreach ( $img['src'][$type] as $dpix => $src ) {
+			$srcset[] = $src[0] . ' ' . $dpix . "w";
+			//$srcset[] = $src[0] . ' ' . $dpix . "x";
 			//$srcset[] = '<source media="(min-width: '.$this->viewport[$key].'px)" srcset="'. $im[0] .'">';
 		}
 
@@ -94,7 +96,8 @@ class adaptive_images {
 			$l = get_permalink ( $img['parent'] );
 		}
 		else {
-			$l = end( $img['src']['h']);
+			// get the largest generated
+			$l = end( $img['src']['s']);
 			$l = $l[0];
 		}
 
@@ -134,8 +137,9 @@ class adaptive_images {
 		}
 
 		foreach ( $this->dpix as $dpix => $size ) {
-			$img['src']['w'][$dpix] = wp_get_attachment_image_src( $imgid, self::wprefix . $dpix );
-			$img['src']['h'][$dpix] = wp_get_attachment_image_src( $imgid, self::hprefix . $dpix );
+			$img['src']['w'][$size] = wp_get_attachment_image_src( $imgid, self::wprefix . $dpix );
+			$img['src']['h'][$size] = wp_get_attachment_image_src( $imgid, self::hprefix . $dpix );
+			$img['src']['s'][$size] = wp_get_attachment_image_src( $imgid, self::sprefix . $dpix );
 		}
 
 		$img['src']['o'] = wp_get_attachment_image_src( $imgid, 'full' );

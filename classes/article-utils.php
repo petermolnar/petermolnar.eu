@@ -299,6 +299,11 @@ class pmlnr_article {
 		if ( !empty($tweet_id) )
 			$syndicates['TW'] = sprintf ( '<li><a class="link-twitter icon-twitter" href="https://twitter.com/intent/tweet?in_reply_to=%s" target="_blank">Twitter</a></li>', $tweet_id );
 
+		/* short url */
+		$url = wp_get_shortlink();
+		$txt = $url;
+		$syndicates[] = '<li><a class="openwebicon-webmention" href="' . $url . '">'. $txt .'</a></li>';
+
 		if (!empty($syndicates)) {
 			$r = sprintf('<indie-action do="reply" with="%s" class="share"><h5>%s</h5><ul>%s</ul></indie-action>', get_permalink(), __('Reply'), implode ( "\n", $syndicates ));
 		}
@@ -430,6 +435,8 @@ class pmlnr_article {
 
 		$r .= sprintf ('<indie-action do="post" with="%s" class="share"><h5>%s</h5><ul><li>%s</li></ul></indie-action>', $plink, __('Share' ), implode( '</li><li>', $shlist ) );
 
+		$r .= '<p class="">Want to like, respond share? Be part of the <a class="spacer" href="http://indiewebcamp.com/" rel="nofollow"><i class="openwebicon-indieweb"></i>indieweb</a> and use <a class="spacer" href="http://indiewebcamp.com/webmentions" rel="nofollow"><i class="openwebicon-webmention"></i>webmentions</a>.</p>';
+
 		return $r;
 	}
 
@@ -438,6 +445,8 @@ class pmlnr_article {
 	 */
 	public static function meta ( ) {
 		global $post;
+		$r = '';
+
 		$reply = get_post_meta( $post->ID, 'u-in-reply-to', true );
 		if ( !empty($reply)) {
 			$l = sprintf ( "%s: [%s](%s){.u-in-reply-to}\n", __("This is a reply to"), $reply, $reply );
