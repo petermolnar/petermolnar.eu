@@ -29,6 +29,8 @@
 		headerBar = headerBar[0];
 
 		menuButton.addEventListener('click', function(e) {
+			e.preventDefault();
+
 			var bClass = ( menuButton.className ) ? menuButton.className : '';
 			var hClass = ( headerBar.className ) ? headerBar.className : '';
 
@@ -45,15 +47,22 @@
 
 	</script>
 	<!-- end toggle menu -->
-	</footer>
 
-
-
-	<?php /* if ( is_user_logged_in()) { ?>
-	<script>
-		window.navigator.registerProtocolHandler('indie+action', 'https://petermolnar.eu/indie-config.html?handler=%s', 'Peter Molnar');
+	<!-- Piwik
+	<script type="text/javascript">
+		var _paq = _paq || [];
+		_paq.push(['trackPageView']);
+		_paq.push(['enableLinkTracking']);
+		(function() {
+			var u="//petermolnar.eu/piwik/";
+			_paq.push(['setTrackerUrl', u+'piwik.php']);
+			_paq.push(['setSiteId', 1]);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+		})();
 	</script>
-	<?php } */ ?>
+	<noscript><p><img src="//petermolnar.eu/piwik.php?idsite=1" style="border:0;" alt="" /></p></noscript>
+	-->
 
 </body>
 </html>

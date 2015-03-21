@@ -29,7 +29,13 @@ class pmlnr_utils {
 		$img['url'] = self::absolute_url($aimg[0]);
 
 		$aimg = wp_get_attachment_image_src( $aid, 'medium' );
-		$img['mediumurl'] = self::absolute_url($aimg[0]);
+		$img['medium'] = self::absolute_url($aimg[0]);
+
+		$aimg = wp_get_attachment_image_src( $aid, 'thumbnail' );
+		$img['thumbnail'] = self::absolute_url($aimg[0]);
+
+		$aimg = wp_get_attachment_image_src( $aid, 'large' );
+		$img['large'] = self::absolute_url($aimg[0]);
 
 		return $img;
 	}
@@ -122,7 +128,7 @@ class pmlnr_utils {
 
 	/**
 	 * the built-in WordPress EXIF shutter speed is not human-readable, this parses it
-	 */
+	 *
 	public static function shutter_speed ( $num ) {
 		if ( (1 / $num) > 1) {
 			$r = "1/";
@@ -138,5 +144,20 @@ class pmlnr_utils {
 		}
 		return $r;
 	}
+	*/
+	/*
+	public static function clean_urls($urls) {
+		$array = array_map('pmlnr_utils::clean_url', $urls);
+		return array_filter(array_unique($array));
+	}
+	*/
+	public static function clean_url($string) {
+		$url = trim($string);
 
+		if ( !filter_var($url, FILTER_VALIDATE_URL) )
+			return false;
+
+		$url = esc_url_raw($url);
+			return $url;
+	}
 }

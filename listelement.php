@@ -52,7 +52,7 @@ $excerpt = ob_get_clean();
 		<header>
 			<div class="meta">
 			<?php
-				echo pmlnr_article::commentcntr();
+				//echo pmlnr_article::commentcntr();
 
 				if ( $meta['show']['excerpt'] ) {
 					echo pmlnr_article::minstoread( $content );
@@ -74,7 +74,7 @@ $excerpt = ob_get_clean();
 			</div>
 			<?php echo pmlnr_article::title( $title ); ?>
 		</header>
-		<!-- end article meta ->
+		<!-- end article meta -->
 
 		<!-- article content -->
 		<?php if ( $meta['show']['excerpt'] ):

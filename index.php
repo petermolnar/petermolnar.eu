@@ -44,6 +44,8 @@ get_header();
 <section class="content-body content-<?php echo $theme; ?>">
 
 <?php
+	//if( function_exists('wp_paginate') ) wp_paginate();
+
 	if ( have_posts() ) {
 		while ( have_posts() ) {
 			get_template_part('listelement');

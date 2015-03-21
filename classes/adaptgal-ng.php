@@ -96,8 +96,12 @@ class adaptive_images {
 			$l = get_permalink ( $img['parent'] );
 		}
 		else {
-			// get the largest generated
-			$l = end( $img['src']['s']);
+			$t = end( $img['src']['w']);
+			if ( $t[1] > $t[2] )
+				$l = end( $img['src']['w']);
+			else
+				$l = end( $img['src']['h']);
+
 			$l = $l[0];
 		}
 
@@ -261,7 +265,42 @@ class adaptive_images {
 		return $html;
 	}
 
+	static public function sharpen( $resized ) {
+
+		if (!class_exists('Imagick'))
+			return $resized;
+		/*
+		preg_match ( '/(.*)-([0-9]+)x([0-9]+)\.([0-9A-Za-z]{2,4})/', $resized, $details );
+
+		 * 0 => original var
+		 * 1 => full original file path without extension
+		 * 2 => resized size w
+		 * 3 => resized size h
+		 * 4 => extension
+		 */
+
+		$size = @getimagesize($resized);
+
+		if ( !$size )
+			return $resized;
+
+		if ($size[2] != IMAGETYPE_JPEG)
+			return $resized;
+
+		error_log(  __CLASS__ . ": adaptive sharpen starting on " . $resized );
+		$imagick = new Imagick($resized);
+		$imagick->adaptiveSharpenImage(0, 1);
+		$imagick->setImageFormat("jpg");
+		$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
+		$imagick->setImageCompressionQuality(94);
+		$imagick->writeImage($resized);
+		$imagick->destroy();
+		error_log(  __CLASS__ . ": adaptive sharpen done on " . $resized );
+
+		return $resized;
+	}
+
+	static public function cachedimage ( $image ) {
+
+	}
 }
-
-?>
-

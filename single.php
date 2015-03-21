@@ -20,7 +20,7 @@ $hstyle = '';
 
 $meta['post_format'] = get_post_format();
 
-$meta['webactions'] = pmlnr_md::parsedown ( pmlnr_article::meta() );
+//$meta['webactions'] = pmlnr_md::parsedown ( pmlnr_article::meta() );
 
 //$meta['theme'] = ( $meta['post_format'] == 'image' ) ? 'dark' : 'light';
 $meta['theme'] = 'light';
@@ -83,7 +83,7 @@ switch ( $meta['post_format'] ) {
 			?>
 			</div>
 		</header>
-		<!-- end article meta ->
+		<!-- end article meta -->
 
 		<!-- article content -->
 		<div class="e-content">
@@ -105,6 +105,7 @@ switch ( $meta['post_format'] ) {
 					echo pmlnr_article::reply();
 					echo pmlnr_article::share();
 					echo pmlnr_article::siblings();
+					//echo do_shortcode( '[jetpack-related-posts]' );
 				}
 			?>
 			</div>
