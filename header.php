@@ -8,8 +8,8 @@
 	<link rel="shortcut icon" href="<?php echo get_bloginfo('template_directory') . '/images/favicon.png' ?>" />
 	<link rel="icon" href="<?php echo get_bloginfo('template_directory') . '/images/favicon.png' ?>" />
 	<link rel="apple-touch-icon-precomposed" href="<?php echo get_bloginfo('template_directory') . '/images/favicon.png' ?>" />
-	<?php petermolnareu::graphmeta(); ?>
 	<?php wp_head(); ?>
+	<?php petermolnareu::graphmeta(); ?>
 </head>
 
 <body>

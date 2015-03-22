@@ -52,7 +52,7 @@ get_header();
 		}
 	}
 
-	if( function_exists('wp_paginate') ) wp_paginate();
+	petermolnareu::paginate();
 
 ?>
 </section>

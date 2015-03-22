@@ -24,7 +24,7 @@ get_header();
 
 <?php
 
-if( function_exists('wp_paginate')) wp_paginate();
+petermolnareu::paginate();
 
 get_footer();
 ?>

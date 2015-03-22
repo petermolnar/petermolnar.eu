@@ -1021,7 +1021,8 @@ pre {
 }
 
 /* PAGINATION */
-.wp-paginate {
+.wp-paginate,
+ul.page-numbers {
 	clear:both;
 	display:block;
 	margin: 0;
@@ -1034,12 +1035,9 @@ pre {
 		padding: @padding-normal;
 	}
 
-	.title {
-		display: none;
-	}
-
 	.current,
-	a {
+	a,
+	span {
 		padding: @padding-normal @padding-large @padding-normal @padding-large;
 	}
 

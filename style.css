@@ -1092,7 +1092,8 @@ pre {
   -webkit-transition: all 0.3s ease;
 }
 /* PAGINATION */
-.wp-paginate {
+.wp-paginate,
+ul.page-numbers {
   clear: both;
   display: block;
   margin: 0;
@@ -1100,18 +1101,21 @@ pre {
   font-size: 1.1em;
   padding: 0.6em 0 0.6em 0;
 }
-.wp-paginate li {
+.wp-paginate li,
+ul.page-numbers li {
   display: inline;
   padding: 0.3em;
 }
-.wp-paginate .title {
-  display: none;
-}
 .wp-paginate .current,
-.wp-paginate a {
+ul.page-numbers .current,
+.wp-paginate a,
+ul.page-numbers a,
+.wp-paginate span,
+ul.page-numbers span {
   padding: 0.3em 0.6em 0.3em 0.6em;
 }
-.wp-paginate .current {
+.wp-paginate .current,
+ul.page-numbers .current {
   opacity: 0.5;
 }
 /* SIDEBAR */

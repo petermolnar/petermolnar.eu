@@ -13,6 +13,7 @@ class pmlnr_article {
 	 */
 	public static function author ( $hide = false ) {
 		global $post;
+		$r = '';
 		$aid =  get_the_author_meta( 'ID' );
 		$aemail = get_the_author_meta ( 'user_email' , $aid );
 		$aname = get_the_author_meta ( 'display_name' , $aid );
@@ -33,6 +34,7 @@ class pmlnr_article {
 	 *  vcard
 	 */
 	public static function vcard ( $uid = false, $show_name = true, $show_avatar = true, $linebreak = false ) {
+		$r = '';
 		$aid = ( $uid==false ) ? 1 : $uid;
 		$aemail = get_the_author_meta ( 'user_email' , $aid );
 		$aname = get_the_author_meta ( 'display_name' , $aid );
@@ -41,13 +43,6 @@ class pmlnr_article {
 		$show_name = $show_name ? '' : ' hide';
 		$show_avatar = $show_avatar ? '' : ' hide';
 		$class = 'h-card vcard';
-
-		$r = sprintf ('
-		<span class="h-card vcard">
-			<a class="fn p-name url u-url%s" href="%s">%s</a>
-			<img class="photo avatar u-photo u-avatar%s" src="https://s.gravatar.com/avatar/%s?s=64" style="width:12px; height:12px;" alt="Photo of %s" />
-			<a rel="me" class="u-email email icon-mail" href="mailto:%s" title="%s email address">%s</a>
-		', $show_name, $aurl, $aname, $show_avatar, $gravatar, $aname, $aemail, $aname, $aemail );
 
 		/* social */
 		$socials = array (
@@ -72,6 +67,7 @@ class pmlnr_article {
 				'url' => 'https://500px.com/%s',
 			),
 		);
+
 		$c = 2;
 		foreach ( $socials as $nw => $social ) {
 			$socialmeta = get_the_author_meta ( $nw , $aid );
@@ -84,11 +80,17 @@ class pmlnr_article {
 		}
 
 		if ( !empty($socials)) {
-			//$r .= sprintf ( '<span class="spacer">%s</span>', __('Find me:') );
-			$r .= join ( " ", $s);
+			$socials = join ( " ", $s);
 		}
 
-		$r .= '</span>';
+		$r = sprintf ('
+		<span class="h-card vcard">
+			<a class="fn p-name url u-url%s" href="%s">%s</a>
+			<img class="photo avatar u-photo u-avatar%s" src="https://s.gravatar.com/avatar/%s?s=64" style="width:12px; height:12px;" alt="Photo of %s" />
+			<a rel="me" class="u-email email icon-mail" href="mailto:%s" title="%s email address">%s</a>
+			%s
+		</span>', $show_name, $aurl, $aname, $show_avatar, $gravatar, $aname, $aemail, $aname, $aemail, $socials );
+
 		return $r;
 	}
 
@@ -96,11 +98,11 @@ class pmlnr_article {
 	 * Get URL for an author
 	 *
 	 * @return string Auther website
-	 */
+	 *
 	public static function author_url ( ) {
 		global $post;
 		return get_the_author_meta ( 'user_url' , get_the_author_meta( 'ID' ) );
-	}
+	}*/
 
 
 	/**
@@ -111,7 +113,8 @@ class pmlnr_article {
 		if ( !has_post_thumbnail () )
 			return false;
 
-		$img = pmlnr_utils::imagewithmeta( get_post_thumbnail_id( $post->ID ) );
+		$r = '';
+		$img = adaptive_images::imagewithmeta( get_post_thumbnail_id( $post->ID ) );
 		$h = ( $hide ) ? ' hide' : '';
 		$r = sprintf ( '<img class="u-photo%s" src="%s" />' , $h, $img['mediumurl'] );
 		//$r = sprintf ( '![%s](%s "%s"){.u-photo%s}' , $img['alt'], $img['mediumurl'], $img['title'], $h );
@@ -126,7 +129,10 @@ class pmlnr_article {
 	 */
 	public static function pubdate () {
 		global $post;
+		$r = '';
+
 		$r = sprintf ( '<time class="dt-published" datetime="%s">%s %s</time>', get_the_time( 'c', $post->ID ), get_the_time( get_option('date_format'), $post->ID ), get_the_time( get_option('time_format'), $post->ID ) );
+
 		$r .= sprintf ( '<time class="dt-updated hide" datetime="%s">%s %s</time>', get_the_modified_time( 'c', $post->ID ), get_the_modified_time( get_option('date_format'), $post->ID ), get_the_modified_time( get_option('time_format'), $post->ID ) );
 
 		return $r;
@@ -143,6 +149,7 @@ class pmlnr_article {
 		$shortlink = wp_get_shortlink();
 		$permalink = get_permalink();
 		$title = get_the_title();
+		$r = '';
 
 		switch ( $type ) {
 			case 'link':
@@ -183,7 +190,8 @@ class pmlnr_article {
 			break;
 		}
 
-		$r = sprintf ( $s, $permalink, $title, $title ) . sprintf ('<span class="u-uid hide">%s</span>', $shortlink);
+		$r = sprintf ( $s, $permalink, $title, $title );
+		$r .= sprintf ('<span class="u-uid hide">%s</span>', $shortlink);
 
 		return $r;
 	}
@@ -196,15 +204,12 @@ class pmlnr_article {
 		if ( $title )
 			$r = sprintf ('<h5>%s</h5>', __('Tagged as:') );
 
-
 		$tags = get_the_tags();
 		if ( $tags ) {
-			$r .= '<div class="p-category">';
-
 			foreach( $tags as $tag )
 				$t[] = sprintf ( '<a href="%s" class="icon-tag">%s</a>', get_tag_link( $tag->term_id ), $tag->name );
 
-			$r .= join( ', ', $t ) . '</div>';
+			$r .= sprintf ('<div class="p-category">%s</div>', join( ' ', $t ) );
 		}
 
 		return $r;
@@ -215,9 +220,13 @@ class pmlnr_article {
 	 * @return string structured string for sibling articles
 	 */
 	public static function siblings( $title = true ) {
+		$r = '';
+
+		if ( $title )
+			$r = sprintf ('<h5>%s</h5>', __('Read more:') );
+
 		/* thank you WordPress for not having get_(previous|next)_post_link */
 		ob_start();
-		if ( $title ) printf ('<h5>%s</h5>', __('Read more:') );
 
 		?><nav class="siblings">
 			<ul>
@@ -225,82 +234,9 @@ class pmlnr_article {
 				<li><?php next_post_link( '%link' , '%title' , true ); ?></li>
 			</ul>
 		</nav>
-		<?php $r = ob_get_clean();
-		return $r;
-	}
+		<?php
 
-	/**
-	 *
-	 * @return string structured string for sibling articles
-	 */
-	public static function related( $title = true, $max = 4 ) {
-		global $post;
-		$tags = wp_get_post_tags($post->ID);
-		$list = array();
-		$r = '';
-		$exclude = array($post->ID);
-		if ($tags) {
-			$tag_ids = array();
-			foreach($tags as $tag) {
-				$tag_ids[] = $tag->term_id;
-				//$tags_names[] = $tag->name;
-			}
-
-			$numolder = ceil($max / 2);
-			$numnewer = $max - $numolder;
-
-			$baseargs=array(
-				'tag__in'             => $tag_ids,
-				'post__not_in'        => $exclude,
-				'ignore_sticky_posts' => 1,
-				'caller_get_posts'    => 1,
-			);
-
-			# older
-			$args = $baseargs;
-			$args['posts_per_page'] = $numolder;
-			$args['date_query'] =array(array( 'before' => $post->post_date ));
-			$_query = new wp_query( $args );
-
-			while( $_query->have_posts() ) {
-				$_query->the_post();
-				array_push($exclude, $post->ID);
-				$img = '';
-				if (has_post_thumbnail($post->ID)) {
-					$thid = get_post_thumbnail_id( $post->ID );
-					$src = wp_get_attachment_image_src($thid, 'thumbnail');
-					$img = sprintf ('<img src="%s" class="related-post" />', $src[0]);
-				}
-
-				$list[] = sprintf('<li class="related"><a href="%s" title="%s">%s%s</a></li>', get_permalink(), $post->post_title, $img,$post->post_title);
-			}
-
-			# newer
-			$args = $baseargs;
-			$args['posts_per_page'] = $numnewer;
-			$args['date_query'] = array(array( 'after' => $post->post_date ));
-			$args['post__not_in'] = $exclude;
-			$_query = new wp_query( $args );
-
-			while( $_query->have_posts() ) {
-				$_query->the_post();
-				$img = '';
-				if (has_post_thumbnail($post->ID)) {
-					$thid = get_post_thumbnail_id( $post->ID );
-					$src = wp_get_attachment_image_src($thid, 'thumbnail');
-					$img = sprintf ('<img src="%s" class="related-post" />', $src[0]);
-				}
-
-				$list[] = sprintf('<li class="related"><a href="%s" title="%s">%s%s</a></li>', get_permalink(), $post->post_title, $img,$post->post_title);
-			}
-
-			wp_reset_postdata();
-		}
-
-		if (!empty( $list )) {
-			if ( $title ) $r .= sprintf ('<h5>%s</h5>', __('Read more:') );
-			$r .= sprintf( '<nav class="siblings"><ul>%s</ul></nav>', join ("<br />\n", $list) );
-		}
+		$r .= ob_get_clean();
 
 		return $r;
 	}
@@ -313,7 +249,8 @@ class pmlnr_article {
 	 *
 	 */
 	public static function minstoread ( &$content ) {
-		$r = sprintf ( '<span class="right spacer icon-clock">%d %s</span>', round( str_word_count( strip_tags($content), 0 ) / 300 ), __('mins to read') );
+		$r = '';
+		$r = sprintf ( '<span class="right spacer icon-clock">%d %s</span>', ceil( str_word_count( strip_tags($content), 0 ) / 300 ), __('mins to read') );
 		return $r;
 	}
 
@@ -325,7 +262,9 @@ class pmlnr_article {
 	 */
 	public static function commentcntr ( ) {
 		global $post;
-		return sprintf ( '<a class="u-url right icon-comment spacer" href="%s#comments">%s</a>', get_the_permalink(), get_comments_number( '', '1', '%' )  );
+		$r = '';
+		$r = sprintf ( '<a class="u-url right icon-comment spacer" href="%s#comments">%s</a>', get_the_permalink(), get_comments_number( '', '1', '%' )  );
+		return $r;
 	}
 
 	/**
@@ -336,43 +275,13 @@ class pmlnr_article {
 	 */
 	public static function syndicates ( ) {
 		global $post;
-
 		$syndicated = array();
-
-		/* SNAP data *
-		$_syndicates = self::getRelSyndicationFromSNAP( false, true );
-		if ( !empty($_syndicates) )
-			foreach ( $_syndicates as $silo => $url )
-				$syndicated[ $url ] = 1;
-
-		/* Syndication URLs data *
-		$_syndicates = get_post_meta ( get_the_ID(), 'syndication_urls', true );
-		if ( $_syndicates ) {
-			$_syndicates = explode( "\n", $_syndicates );
-			//$syndicated = array_merge ( $syndicated, $_syndicates );
-		}
-
-		/* manually imported twitter *
-		$tweet_id = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
-		if ( !empty($tweet_id) ) {
-			$syndicated[ "https://twitter.com/petermolnar/status/" . $tweet_id ] = 1;
-		}
-
-		/* 500px *
-		$fivehpx_id = get_post_meta( get_the_ID(), '500px_photo_id', true );
-		if ( !empty($fivehpx_id) ) {
-			$syndicated[ 'https://500px.com/photo/' . $fivehpx_id ] = 1;
-		}
-
-		$syndicated = array_keys($syndicated);
-		*/
 
 		$_syndicates = get_post_meta ( get_the_ID(), 'syndication_urls', true );
 		if ( $_syndicates ) {
 			$_syndicates = explode( "\n", $_syndicates );
 			$syndicated = array_merge ( $syndicated, $_syndicates );
 		}
-
 
 		return $syndicated;
 	}
@@ -390,61 +299,26 @@ class pmlnr_article {
 		$syndicates = self::syndicates();
 		$reply = array();
 
-		/* twitter */
-		// "PHP Strict Standards:  Only variables should be passed by reference"
-		$arr = preg_grep ( '/twitter\.com/', $syndicates );
-		$twitter = array_pop( $arr );
-		if ( !empty($twitter)) {
-			// "PHP Strict Standards:  Only variables should be passed by reference"
-			$arr = explode("/", $twitter);
-			$arr = end ( $arr );
-			$reply[] = sprintf ( '<li><a class="link-twitter icon-twitter" href="https://twitter.com/intent/tweet?in_reply_to=%s" target="_blank">Twitter</a></li>', $arr );
+		foreach ($syndicates as $syndicate ) {
+			/* match = '/http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\//' */
+			preg_match ( '/http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\//', $syndicate, $split);
+			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3])) {
+				$silo = $split[2];
+
+				if ( $silo == 'twitter' ) {
+					$tweet_id = trim(end((explode('/', rtrim($syndicate, '/')))));
+					$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s', $tweet_id);
+				}
+				else {
+					$rurl = $syndicate;
+				}
+
+				$reply[] = sprintf ( '<li><a class="link-%s icon-%s" href="%s" target="_blank">%s</a></li>', $silo, $silo, $rurl, ucfirst($silo) );
+			}
 		}
 
-		$normals = array ( 'facebook', 'flickr', '500px' );
-		foreach ( $normals as $silo ):
-			$arr = preg_grep ( "/{$silo}/", $syndicates );
-			// "PHP Strict Standards:  Only variables should be passed by reference"
-			$url = array_pop( $arr );
-
-			if ( !empty($url))
-				$reply[] = sprintf ( '<li><a class="link-%s icon-%s" href="%s" target="_blank">%s</a></li>', $silo, $silo, $url, ucfirst($silo) );
-		endforeach;
-
-		/* short url */
+		// short url / webmention
 		$reply[] = sprintf ( '<li><a class="openwebicon-webmention" href="%s" target="_blank">%s</a></li>', wp_get_shortlink(), __('Webmentions') );
-
-
-		//$r = '';
-		//if ( function_exists('getRelSyndicationFromSNAP'))
-			//$syndicates = getRelSyndicationFromSNAP( true );
-
-		///* Twitter */
-		//if ( !empty ($syndicates['TW'])) {
-			//preg_match('/href="(.*?)"/', $syndicates['TW'], $twurls );
-			//if (!empty($twurls[1]))
-				//$tweet_id = substr(strrchr($twurls[1], "/"), 1);
-		//}
-
-		//if ( empty ( $tweet_id ))
-			//$tweet_id = get_post_meta( get_the_ID(), 'twitter_tweet_id', true );
-
-		//if ( empty ( $tweet_id ))
-			//$tweet_id = get_post_meta( get_the_ID(), 'twitter_id', true );
-
-		//if ( !empty($tweet_id) )
-			//$syndicates['TW'] = sprintf ( '<li><a class="link-twitter icon-twitter" href="https://twitter.com/intent/tweet?in_reply_to=%s" target="_blank">Twitter</a></li>', $tweet_id );
-
-		///* 500px */
-		//$fivehpx_id = get_post_meta( get_the_ID(), '500px_photo_id', true );
-
-		//if ( !empty($fivehpx_id) )
-			//$syndicates['500px'] = sprintf ( '<li><a class="link-500px icon-500px" href="https://500px.com/photo/%s" target="_blank">500px</a></li>', $fivehpx_id );
-
-		///* short url */
-		//$url = wp_get_shortlink();
-		//$txt = $url;
-		//$syndicates[] = sprintf ( '<li><a class="openwebicon-webmention" href="%s" target="_blank">%s</a></li>', $url, __('Webmentions') );
 
 		if (!empty($reply)) {
 			$r = sprintf('<indie-action do="reply" with="%s" class="share"><h5>%s</h5><ul>%s</ul></indie-action>', get_permalink(), __('Reply'), implode ( "\n", $reply ));
@@ -607,193 +481,109 @@ class pmlnr_article {
 			$r[] = $l;
 		}
 
-		/*
-		$pinged = empty($post->pinged) ? array() : explode ("\n", $post->pinged);
-		if ( !empty($pinged) && is_array($pinged)) {
-			foreach ( $pinged as $url ) {
-				if ( !empty($url) && !strstr( $url, 'indiewebcamp.com/webmentions' ) ) {
-					$l = sprintf ( "%s: [%s](%s){.u-in-reply-to}\n", __("This is a reply to"), $url, $url );
-					$r[] = $l;
-				}
-			}
-
-		}*/
-
 		return join("\n",$r);
 	}
 
 
-	public static function featured_image ( $src ) {
-		global $post;
-		$thid = get_post_thumbnail_id( $post->ID );
-		if ( ! $thid )
-			return $src;
+	//public static function getRelSyndicationFromSNAP( $return_array_only = false, $return_raw = false ) {
+		//global $nxs_snapAvNts;
+		//global $post;
 
-		if ( $kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) )) {
-			if(is_array($kind)) $kind = array_pop( $kind );
-			if (is_object($kind)) $kind = $kind->slug;
-		}
+		//$see_on_social = "";
+		//$broadcasts = null;
 
-		$format = get_post_format ( $post->ID );
+		//$snap_options = get_option('NS_SNAutoPoster');
+		//$urlmap = array (
+			//'AP' => array(),
+			//'BG' => array(),
+			//// 'DA' => array(), /* DeviantArt will use postURL */
+			//'DI' => array(),
+			//'DL' => array(),
+			//'FB' => array( 'url' => '%BASE%/posts/%pgID%' ),
+			////'FF' => array(), /* FriendFeed should be using postURL */
+			//'FL' => array(),
+			//'FP' => array(),
+			//'GP' => array(),
+			//'IP' => array(),
+			//'LI' => array( 'url' => '%pgID%' ),
+			//'LJ' => array(),
+			//'PK' => array(),
+			//'PN' => array(),
+			//'SC' => array(),
+			//'ST' => array(),
+			//'SU' => array(),
+			//'TR' => array( 'url'=>'%BASE%/post/%pgID%' ), /* even if Tumblr has postURL set as well, it's buggy and missing a */
+			//'TW' => array( 'url'=>'%BASE%/status/%pgID%' ),
+			//'VB' => array(),
+			//'VK' => array(),
+			//'WP' => array(),
+			//'YT' => array(),
+		//);
 
-		if (!empty($format) && $format != 'standard' ) {
-			$img = pmlnr_utils::imagewithmeta( $thid );
-			$a = sprintf ( '![%s](%s "%s"){.adaptimg #%s}' , $img['alt'], $img['url'], $img['title'], $thid );
-			$src = $src . "\n" . $a;
-
-			if ( $kind == 'photo' or $format == 'image')
-				$src = $src . self::photo_exif( $post, $thid );
-		}
-
-		return adaptive_images::adaptive_embedded( $src );
-	}
-
-
-	public static function photo_exif ( &$post, &$thid ) {
-		$thmeta = wp_get_attachment_metadata( $thid );
-		if ( isset( $thmeta['image_meta'] ) && !empty($thmeta['image_meta']) &&
-			 isset($thmeta['image_meta']['camera']) && !empty($thmeta['image_meta']['camera']) ):
-			$thmeta = $thmeta['image_meta'];
-
-			//shutter speed
-			if ( (1 / $thmeta['shutter_speed'] ) > 1) {
-				$shutter_speed = "1/";
-				if ((number_format((1 / $thmeta['shutter_speed']), 1)) == 1.3 or
-					 number_format((1 / $thmeta['shutter_speed']), 1) == 1.5 or
-					 number_format((1 / $thmeta['shutter_speed']), 1) == 1.6 or
-					 number_format((1 / $thmeta['shutter_speed']), 1) == 2.5)
-						$shutter_speed .= number_format((1 / $thmeta['shutter_speed']), 1, '.', '');
-
-				else
-					$shutter_speed .= number_format((1 / $thmeta['shutter_speed']), 0, '.', '');
-			}
-			else {
-				$shutter_speed = $thmeta['shutter_speed'];
-			}
-
-			$displaymeta = array (
-				//'created_timestamp' => sprintf ( __('Taken at: %s'), str_replace('T', ' ', date("c", $thmeta['created_timestamp']))),
-				'camera' => '<i class="icon-camera spacer"></i>'. $thmeta['camera'],
-				'iso' => sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $thmeta['iso'] ),
-				'focal_length' => sprintf (__('<i class="icon-focallength spacer"></i>%smm'), $thmeta['focal_length'] ),
-				'aperture' => sprintf ( __('<i class="icon-aperture spacer"></i>f/%s'), $thmeta['aperture']),
-				'shutter_speed' => sprintf( __('<i class="icon-clock spacer"></i>%s sec'), $shutter_speed),
-			);
-
-			$cc = get_post_meta ( $post->ID, 'cc', true );
-			if ( empty ( $cc ) ) $cc = 'by';
-
-			$ccicons = explode('-', $cc);
-			$cci[] = '<i class="icon-cc"></i>';
-			foreach ( $ccicons as $ccicon ) {
-				$cci[] = '<i class="icon-cc-'. strtolower($ccicon) . '"></i>';
-			}
-
-			$cc = '<a href="http://creativecommons.org/licenses/'. $cc .'/4.0/">'. join( $cci,'' ) .'</a>';
-
-			return '<div class="inlinelist">' . $cc . join( ', ', $displaymeta ) .'</div>';
-		endif;
-	}
-
-	public static function getRelSyndicationFromSNAP( $return_array_only = false, $return_raw = false ) {
-		global $nxs_snapAvNts;
-		global $post;
-
-		$see_on_social = "";
-		$broadcasts = null;
-
-		$snap_options = get_option('NS_SNAutoPoster');
-		$urlmap = array (
-			'AP' => array(),
-			'BG' => array(),
-			// 'DA' => array(), /* DeviantArt will use postURL */
-			'DI' => array(),
-			'DL' => array(),
-			'FB' => array( 'url' => '%BASE%/posts/%pgID%' ),
-			//'FF' => array(), /* FriendFeed should be using postURL */
-			'FL' => array(),
-			'FP' => array(),
-			'GP' => array(),
-			'IP' => array(),
-			'LI' => array( 'url' => '%pgID%' ),
-			'LJ' => array(),
-			'PK' => array(),
-			'PN' => array(),
-			'SC' => array(),
-			'ST' => array(),
-			'SU' => array(),
-			'TR' => array( 'url'=>'%BASE%/post/%pgID%' ), /* even if Tumblr has postURL set as well, it's buggy and missing a */
-			'TW' => array( 'url'=>'%BASE%/status/%pgID%' ),
-			'VB' => array(),
-			'VK' => array(),
-			'WP' => array(),
-			'YT' => array(),
-		);
-
-		/* all SNAP entries are in separate meta entries for the post based on the service name's "code" */
-		if ( !empty($nxs_snapAvNts)):
-		foreach ( $nxs_snapAvNts as $key => $serv ) {
-			$mkey = 'snap'. $serv['code'];
-			$urlkey = $serv['lcode'].'URL';
-			$okey = $serv['lcode'];
-			$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
+		///* all SNAP entries are in separate meta entries for the post based on the service name's "code" */
+		//if ( !empty($nxs_snapAvNts)):
+		//foreach ( $nxs_snapAvNts as $key => $serv ) {
+			//$mkey = 'snap'. $serv['code'];
+			//$urlkey = $serv['lcode'].'URL';
+			//$okey = $serv['lcode'];
+			//$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
 
 
-			if ( !empty( $metas ) && is_array ( $metas ) ) {
-				foreach ( $metas as $cntr => $m ) {
-					$url = false;
+			//if ( !empty( $metas ) && is_array ( $metas ) ) {
+				//foreach ( $metas as $cntr => $m ) {
+					//$url = false;
 
-					if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
-						/* postURL entry will only be used if there's no urlmap set for the service above
-						 * this is due to either missing postURL values or buggy entries */
-						if ( isset( $m['postURL'] ) && !empty( $m['postURL'] ) && empty( $urlmap[ $serv['code'] ] ) ) {
-							$url = $m['postURL'];
-						}
-						else {
-							$base = (isset( $urlmap[ $serv['code'] ]['url'])) ? $urlmap[ $serv['code'] ]['url'] : false;
+					//if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
+						///* postURL entry will only be used if there's no urlmap set for the service above
+						 //* this is due to either missing postURL values or buggy entries */
+						//if ( isset( $m['postURL'] ) && !empty( $m['postURL'] ) && empty( $urlmap[ $serv['code'] ] ) ) {
+							//$url = $m['postURL'];
+						//}
+						//else {
+							//$base = (isset( $urlmap[ $serv['code'] ]['url'])) ? $urlmap[ $serv['code'] ]['url'] : false;
 
-							if ( $base != false ) {
-								/* Facebook exception, why not */
-								if ( $serv['code'] == 'FB' ) {
-									$pos = strpos( $m['pgID'],'_' );
-									$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
-								}
-								else {
-									$pgID = $m['pgID'];
-								}
+							//if ( $base != false ) {
+								///* Facebook exception, why not */
+								//if ( $serv['code'] == 'FB' ) {
+									//$pos = strpos( $m['pgID'],'_' );
+									//$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
+								//}
+								//else {
+									//$pgID = $m['pgID'];
+								//}
 
-								$o = $snap_options[ $okey ][$cntr];
-								$search = array('%BASE%', '%pgID%' );
-								$replace = array ( $o[ $urlkey ], $pgID );
-								$url = str_replace ( $search, $replace, $base );
-							}
-						}
+								//$o = $snap_options[ $okey ][$cntr];
+								//$search = array('%BASE%', '%pgID%' );
+								//$replace = array ( $o[ $urlkey ], $pgID );
+								//$url = str_replace ( $search, $replace, $base );
+							//}
+						//}
 
-						if ( $url != false ) {
-							/* trim all the double slashes, some sites cannot coope with them */
-							$url = preg_replace('~(^|[^:])//+~', '\\1/', $url);
-							$classname = sanitize_title ( $serv['name'], $serv['lcode'] );
-							$broadcasts[ $serv['code'] ] = '<li><a class="u-syndication link-'. $classname .' icon-'. $classname .'" rel="syndication" href="'. $url .'" target="_blank">'. $serv['name'] .'</a></li>';
+						//if ( $url != false ) {
+							///* trim all the double slashes, some sites cannot coope with them */
+							//$url = preg_replace('~(^|[^:])//+~', '\\1/', $url);
+							//$classname = sanitize_title ( $serv['name'], $serv['lcode'] );
+							//$broadcasts[ $serv['code'] ] = '<li><a class="u-syndication link-'. $classname .' icon-'. $classname .'" rel="syndication" href="'. $url .'" target="_blank">'. $serv['name'] .'</a></li>';
 
-							$raw[ $classname ] = $url;
-						}
+							//$raw[ $classname ] = $url;
+						//}
 
-					}
-				}
-			}
-		}
+					//}
+				//}
+			//}
+		//}
 
-		endif;
+		//endif;
 
-		if (count($broadcasts) != 0 ) {
-			$see_on_social = '<ul>'.implode("\n", $broadcasts).'</ul>';
-		}
+		//if (count($broadcasts) != 0 ) {
+			//$see_on_social = '<ul>'.implode("\n", $broadcasts).'</ul>';
+		//}
 
-		if ( $return_raw )
-			return $raw;
-		elseif ( $return_array_only )
-			return $broadcasts;
-		else
-			return $see_on_social;
-	}
+		//if ( $return_raw )
+			//return $raw;
+		//elseif ( $return_array_only )
+			//return $broadcasts;
+		//else
+			//return $see_on_social;
+	//}
 }
