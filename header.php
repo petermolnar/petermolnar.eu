@@ -13,17 +13,3 @@
 </head>
 
 <body>
-	<header class="content-header">
-		<div class="limit">
-			<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
-			<!-- <a href="<?php bloginfo( 'url' ) ?>" class="content-logo">
-				<img src="<?php echo $logo_img; ?>" title="<?php bloginfo( 'name' ) ?>" alt="<?php bloginfo( 'name' ) ?>" />
-			</a> -->
-			<nav class="content-navigation">
-				<?php wp_nav_menu( array( 'container' => '' , 'theme_location' => 'header'  ) ); ?>
-			</nav>
-			<?php /*echo pmlnr_article::vcard(false,false,false,2); */ ?>
-		</div>
-	</header>
-
-

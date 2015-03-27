@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		9.2
+Version:		9.4
 */
 
 @color-bg-dark: #2D333A;
@@ -42,9 +42,10 @@ Version:		9.2
 @font-large: 1.1em;
 @font-normal: 1em;
 @font-small: 0.9em;
-@font-xsmall: 0.7em;
+@font-xsmall: 0.8em;
 
 @line-height: 1.4em;
+@line-height-medium: 1.8em;
 @line-height-small: 1.2em;
 @line-height-large: 3.6em;
 
@@ -457,6 +458,20 @@ h1 {
 	margin: @padding-large 0 @padding-large 0;
 	line-height: 1em;
 	text-align: center;
+
+	a {
+		&:link, &:visited, &active {
+			color: @color-link-light;
+		}
+
+		color: @color-link-light;
+		/*text-shadow: 0 0 2em @color-link-dark;*/
+		background: rgba(0,0,0,0.4);
+		box-shadow: @padding-large 0 0 rgba(0,0,0,0.4), -@padding-large 0 0 rgba(0,0,0,0.4);
+		line-height: @line-height;
+		border: none;
+	}
+
 }
 
 h2 {
@@ -778,6 +793,7 @@ pre {
 }
 
 /* SHARE */
+.tags,
 .share,
 .reply,
 .usyndication,
@@ -786,24 +802,18 @@ pre {
 	margin: 2em 0 2em 0;
 
 	ul {
-	font-size: @font-xlarge;
-	.navul();
+		font-size: @font-xlarge;
+		.navul();
 
 		li {
-			margin: 0 0 @padding-normal 0;
+			margin: 0 0 @padding-small 0;
+			line-height: @line-height-medium;
 
 			a {
 				.linkopacity();
-			}
-		}
-
-		li.related {
-			line-height: @line-height;
-			img {
-				width: auto;
-				height: @line-height;
-				padding-right: @padding-large;
-				vertical-align:middle;
+				border: @border-thin;
+				border-radius: @padding-small;
+				padding: @padding-small @padding-large @padding-small @padding-large;
 			}
 		}
 	}
@@ -890,18 +900,6 @@ pre {
 		}
 	}*/
 
-
-	h1 {
-		a {
-			color: @color-link-light;
-			/*text-shadow: 0 0 2em @color-link-dark;*/
-			background: rgba(0,0,0,0.4);
-			box-shadow: @padding-large 0 0 rgba(0,0,0,0.4), -@padding-large 0 0 rgba(0,0,0,0.4);
-			line-height: @line-height;
-			border: none;
-		}
-	}
-
 	h2 {
 		margin: 0;
 		padding: 0;
@@ -955,38 +953,14 @@ pre {
 }
 
 
-/* sibling links */
+/* sibling links *
 .siblings {
-/*
-	display: block;
-	margin-top: @padding-sxlarge;
 
-	a {
-		display: block;
-		margin: 0;
-		vertical-align: mi
-		color: darken(@color-link-light,30%);
-
-		&:hover {
-			color: darken(@color-link-light,50%);
-		}
-	}
-*/
-
-	a[rel="next"]:before,
-	a[rel="prev"]:before {
+	a:before {
 		.iconstyle();
+		content: '\e814';
 	}
-
-	a[rel="next"]:before {
-		content: ' ';
-	}
-
-	a[rel="prev"]:before {
-		content: ' ';
-	}
-
-}
+}*/
 
 /* ADAPTGAL */
 .adaptlink {
@@ -1106,25 +1080,23 @@ ul.page-numbers {
 	}
 
 
+	.tags,
 	.share,
 	.usyndication,
 	.siblings {
 		margin: 1em 0 0 0;
+		font-size: @font-small;
 		ul {
-			font-size: @font-normal;
 			.flatul();
 
 			li {
+				font-size: @font-xsmall;
 				display:inline-block;
-				margin: 0 @padding-large 0 0;
+				margin: 0 0 @padding-large 0;
 
 				a {
 					display: block;
 				}
-			}
-
-			li.related {
-				margin-bottom:@padding-small;
 			}
 		}
 	}

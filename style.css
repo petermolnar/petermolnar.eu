@@ -4,7 +4,7 @@ Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
 Author:			Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		9.2
+Version:		9.4
 */
 .spacer {
   display: inline-block;
@@ -278,7 +278,7 @@ img.left {
   height: 0;
 }
 .small {
-  font-size: 0.7em;
+  font-size: 0.8em;
 }
 /**********
 * GENERAL *
@@ -364,6 +364,19 @@ h1 {
   margin: 0.6em 0 0.6em 0;
   line-height: 1em;
   text-align: center;
+}
+h1 a {
+  color: #dddddd;
+  /*text-shadow: 0 0 2em @color-link-dark;*/
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0.6em 0 0 rgba(0, 0, 0, 0.4), -0.6em 0 0 rgba(0, 0, 0, 0.4);
+  line-height: 1.4em;
+  border: none;
+}
+h1 a:link,
+h1 a:visited,
+h1 aactive {
+  color: #dddddd;
 }
 h2 {
   font-size: 1.1em;
@@ -820,6 +833,7 @@ pre {
   color: rgba(0, 0, 0, 0.6);
 }
 /* SHARE */
+.tags,
 .share,
 .reply,
 .usyndication,
@@ -827,6 +841,7 @@ pre {
   display: block;
   margin: 2em 0 2em 0;
 }
+.tags ul,
 .share ul,
 .reply ul,
 .usyndication ul,
@@ -836,6 +851,7 @@ pre {
   padding: 0;
   margin: 0;
 }
+.tags ul li,
 .share ul li,
 .reply ul li,
 .usyndication ul li,
@@ -844,38 +860,30 @@ pre {
   padding: 0;
   margin: 0;
 }
+.tags ul li,
 .share ul li,
 .reply ul li,
 .usyndication ul li,
 .siblings ul li {
-  margin: 0 0 0.3em 0;
+  margin: 0 0 0.2em 0;
+  line-height: 1.8em;
 }
+.tags ul li a,
 .share ul li a,
 .reply ul li a,
 .usyndication ul li a,
 .siblings ul li a {
   opacity: 0.6;
+  border: 1px solid #777777;
+  border-radius: 0.2em;
+  padding: 0.2em 0.6em 0.2em 0.6em;
 }
+.tags ul li a:hover,
 .share ul li a:hover,
 .reply ul li a:hover,
 .usyndication ul li a:hover,
 .siblings ul li a:hover {
   opacity: 0.99;
-}
-.share ul li.related,
-.reply ul li.related,
-.usyndication ul li.related,
-.siblings ul li.related {
-  line-height: 1.4em;
-}
-.share ul li.related img,
-.reply ul li.related img,
-.usyndication ul li.related img,
-.siblings ul li.related img {
-  width: auto;
-  height: 1.4em;
-  padding-right: 0.6em;
-  vertical-align: middle;
 }
 .p-category a {
   opacity: 0.6;
@@ -959,14 +967,6 @@ pre {
 		}
 	}*/
 }
-.article-header h1 a {
-  color: #dddddd;
-  /*text-shadow: 0 0 2em @color-link-dark;*/
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: 0.6em 0 0 rgba(0, 0, 0, 0.4), -0.6em 0 0 rgba(0, 0, 0, 0.4);
-  line-height: 1.4em;
-  border: none;
-}
 .article-header h2 {
   margin: 0;
   padding: 0;
@@ -1012,46 +1012,14 @@ pre {
   margin: 1em 0 0 0;
   text-align: left;
 }
-/* sibling links */
+/* sibling links *
 .siblings {
-  /*
-	display: block;
-	margin-top: @padding-sxlarge;
 
-	a {
-		display: block;
-		margin: 0;
-		vertical-align: mi
-		color: darken(@color-link-light,30%);
-
-		&:hover {
-			color: darken(@color-link-light,50%);
-		}
+	a:before {
+		.iconstyle();
+		content: '\e814';
 	}
-*/
-}
-.siblings a[rel="next"]:before,
-.siblings a[rel="prev"]:before {
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  text-decoration: inherit;
-  /*width: 1em;*/
-  text-align: center;
-  /* For safety - reset parent styles, that can break glyph codes*/
-  font-variant: normal;
-  text-transform: none;
-  /* fix buttons height, for twitter bootstrap */
-  line-height: 1em;
-  margin-right: 0.3em;
-}
-.siblings a[rel="next"]:before {
-  content: ' ';
-}
-.siblings a[rel="prev"]:before {
-  content: ' ';
-}
+}*/
 /* ADAPTGAL */
 .adaptlink {
   border: none;
@@ -1180,19 +1148,22 @@ ul.page-numbers .current {
   .content-comments {
     margin-left: 12em;
   }
+  .tags,
   .share,
   .usyndication,
   .siblings {
     margin: 1em 0 0 0;
+    font-size: 0.9em;
   }
+  .tags ul,
   .share ul,
   .usyndication ul,
   .siblings ul {
-    font-size: 1em;
     list-style-type: none;
     padding: 0;
     margin: 0;
   }
+  .tags ul li,
   .share ul li,
   .usyndication ul li,
   .siblings ul li {
@@ -1200,21 +1171,19 @@ ul.page-numbers .current {
     padding: 0;
     margin: 0;
   }
+  .tags ul li,
   .share ul li,
   .usyndication ul li,
   .siblings ul li {
+    font-size: 0.8em;
     display: inline-block;
-    margin: 0 0.6em 0 0;
+    margin: 0 0 0.6em 0;
   }
+  .tags ul li a,
   .share ul li a,
   .usyndication ul li a,
   .siblings ul li a {
     display: block;
-  }
-  .share ul li.related,
-  .usyndication ul li.related,
-  .siblings ul li.related {
-    margin-bottom: 0.2em;
   }
 }
 /* COMMENTS */
@@ -1239,7 +1208,7 @@ ul.page-numbers .current {
 .comment-list li .comment-reply-link,
 .comment-list li .comment-edit-link,
 .comment-list li time {
-  font-size: 0.7em;
+  font-size: 0.8em;
 }
 .comment-list li .comment-reply-title,
 .comment-list li time {
@@ -1251,8 +1220,8 @@ ul.page-numbers .current {
   margin: 0 0.3em 0 0;
 }
 .comment-list li li {
-  margin: 0 0 0.6em 0.7em;
-  padding: 0 0 0 0.7em;
+  margin: 0 0 0.6em 0.8em;
+  padding: 0 0 0 0.8em;
   border-left: 2px solid #777777;
 }
 .comment-list li .says {

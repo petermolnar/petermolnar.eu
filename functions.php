@@ -2,13 +2,16 @@
 
 $dirname = dirname(__FILE__);
 
-
-include_once ($dirname . '/classes/adaptgal-ng.php');
-include_once ($dirname . '/classes/article-utils.php');
-include_once ($dirname . '/classes/utils.php');
 include_once ($dirname . '/lib/parsedown/Parsedown.php');
 include_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
 
+include_once ($dirname . '/classes/adaptgal-ng.php');
+include_once ($dirname . '/classes/utils.php');
+
+
+/**
+ *
+ */
 if ( !function_exists ( 'preg_value' ) ) {
 	function preg_value ( $string, $pattern, $index = 1 ) {
 		preg_match( $pattern, $string, $results );
@@ -19,6 +22,10 @@ if ( !function_exists ( 'preg_value' ) ) {
 	}
 }
 
+
+/**
+ *
+ */
 class petermolnareu {
 	public $theme_constant = 'petermolnareu';
 	const menu_header = 'header';
@@ -34,7 +41,7 @@ class petermolnareu {
 
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
-		//add_action( 'init', array( &$this->adaptive_images, 'init'));
+		add_action( 'init', array( &$this->adaptive_images, 'init'));
 		//add_action( 'init', array( &$this, 'rewrites'));
 
 		// add css & js
@@ -110,10 +117,11 @@ class petermolnareu {
 
 		// markdown
 
-		if ( pmlnr_utils::islocalhost() )
-			add_filter( 'the_content', array( &$this, 'parsedown'), 10 );
-		else
-			add_filter( 'the_content', 'html_entity_decode', 9 );
+		//if ( pmlnr_utils::islocalhost() )
+		//	add_filter( 'the_content', 'html_entity_decode', 9 );
+		//else
+		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
+		add_filter( 'the_content', array( &$this, 'post_remote_relation'), 1 );
 
 		// sanitize content before saving
 		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
@@ -258,7 +266,8 @@ class petermolnareu {
 	 *
 	 */
 	public function shortlink () {
-		printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
+		if (is_singular())
+			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
 	}
 
 	/**
@@ -267,11 +276,12 @@ class petermolnareu {
 	public function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
 		global $post;
 
-		if (!is_singular())
+		if (empty($post) || !isset($post->ID) || empty($post->ID)) {
 			return $shortlink;
+		}
 
-		if ( self::shorturl_enabled ) {
-			$r = self::shortdomain . $post->ID;
+		if ( static::shorturl_enabled ) {
+			$r = static::shortdomain . $post->ID;
 		}
 		else {
 			$url = rtrim( get_bloginfo('url'), '/' ) . '/';
@@ -345,7 +355,9 @@ class petermolnareu {
 		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
 	}
 
-
+	/**
+	 *
+	 */
 	public static function graphmeta () {
 		global $post;
 		$og = array();
@@ -431,6 +443,186 @@ class petermolnareu {
 		);
 		echo paginate_links( $pargs );
 	}
+
+	/**
+	 * new utils - no formatting, no html, just data
+	 */
+
+	public static function author_social ( $author_id = 1 ) {
+		$list = [];
+
+		$socials = array (
+			'github'   => 'https://github.com/%s',
+			'linkedin' => 'https://www.linkedin.com/in/%s',
+			'twitter'  => 'https://twitter.com/%s',
+			'flickr'   => 'https://www.flickr.com/people/%s',
+			'500px'    => 'https://500px.com/%s',
+		);
+
+		foreach ( $socials as $silo => $pattern ) {
+			$socialmeta = get_the_author_meta ( $silo , $author_id );
+
+			if ( !empty($socialmeta) )
+				$list[ $silo ] = sprintf ( $pattern, $socialmeta );
+
+		}
+
+		return $list;
+	}
+
+	/**
+	 *
+	 */
+	public static function post_get_tags_array ( ) {
+		$r = [];
+
+		$tags = get_the_tags();
+		if ( $tags )
+			foreach( $tags as $tag )
+				$r[ $tag->name ] = get_tag_link( $tag->term_id );
+
+		return $r;
+	}
+
+	/**
+	 *
+	 */
+	public static function post_get_syndicates ( ) {
+		global $post;
+		$parsed = [];
+
+		$syndicates = get_post_meta ( get_the_ID(), 'syndication_urls', true );
+
+		if ( !$syndicates )
+			return $parsed;
+
+		$syndicates = explode( "\n", $syndicates );
+
+		foreach ($syndicates as $syndicate ) {
+			// example https://(www.)(facebook).(com)/(...)/(post_id)
+			preg_match ( '/^http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\/(.*)\/(.*)$/', $syndicate, $split);
+
+			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3]))
+				$parsed[$split[2]] = $split;
+		}
+
+		return $parsed;
+	}
+
+	/**
+	 *
+	 */
+	public static function post_get_replylist ( ) {
+
+		$syndicates = static::post_get_syndicates();
+		$reply = [];
+
+		if (empty($syndicates))
+			return $reply;
+
+		foreach ($syndicates as $silo => $syndicate ) {
+			switch ($silo) {
+				case 'twitter':
+					$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
+					break;
+				default:
+					$rurl = $syndicate[0];
+					break;
+			}
+			$reply[ $silo ] = $rurl;
+		}
+
+		return $reply;
+	}
+
+	/**
+	 *
+	 */
+	public static function post_get_sharelist ( ) {
+		global $post;
+
+		$share = [];
+
+		$syndicates = static::post_get_syndicates();
+		if (empty($syndicates))
+			return $share;
+
+		$url = urlencode( get_permalink() );
+		$title = urlencode( get_the_title() );
+		$desciption = urlencode( get_the_excerpt() );
+
+		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
+		$media_url = ( ! $media ) ? false : urlencode($media[0]);
+
+		foreach ($syndicates as $silo => $syndicate ) {
+			switch ($silo) {
+				case 'twitter':
+					$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
+					break;
+				case 'facebook':
+					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
+					break;
+				default:
+					$rurl = false;
+					break;
+			}
+
+			if ($rurl)
+				$share[$silo] = $rurl;
+		}
+
+		if (!isset($share['facebook']))
+			$share['facebook'] = sprintf ('https://www.facebook.com/share.php?u=%s', $url );
+
+		if (!isset($share['twitter']))
+			$share['twitter'] = sprintf('https://twitter.com/share?url=%s&text=%s', $url, $title );
+
+		$share['googleplus'] = sprintf('https://plus.google.com/share?url=%s', $url );
+
+		$share['tumblr'] = sprintf('http://www.tumblr.com/share/link?url=%s&title=%s&description=%s', $url, $title, $description );
+
+		$share['pinterest'] = sprintf('https://pinterest.com/pin/create/bookmarklet/?media=%s&url=%s&description=%s&is_video=false', $media_url, $url, $title );
+
+		// short url / webmention
+		$share['webmention'] = $url;
+
+		return $share;
+	}
+
+	/**
+	 *
+	 */
+	public static function post_remote_relation ( $content ) {
+		global $post;
+		$r = array();
+
+		$to_check = array (
+			'u-in-reply-to' => __("This is a reply to"),
+			'u-repost-of' => __("This is a repost of"),
+		);
+
+		foreach ($to_check as $relation => $title ) {
+			$rel = get_post_meta( $post->ID, $relation, true );
+			if ( $rel ) {
+				if ( strstr($rel, "\n" ))
+					$rel = explode ("\n", $rel);
+				else
+					$rel = explode (" ", $rel);
+
+				foreach ( $rel as $url ) {
+					$url = trim($url);
+					$l = sprintf ( "%s: [%s](%s){%s}\n", $title, $url, $url, $relation );
+					$r[] = $l;
+				}
+			}
+		}
+
+		if (!empty($r))
+			$content = join("\n",$r) . $content;
+
+		return $content;
+	}
+
 
 }
 

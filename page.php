@@ -15,11 +15,8 @@ $content = ob_get_clean();
 
 		<!-- article meta -->
 		<header class="hide">
-			<?php
-				echo pmlnr_article::pubdate();
-				echo pmlnr_article::photo();
-				echo pmlnr_article::author();
-			?>
+			<?php require_once (dirname(__FILE__) . '/partials/ameta_author.php'); ?>
+			<?php require_once (dirname(__FILE__) . '/partials/ameta_pubdate.php'); ?>
 		</header>
 		<!-- end article meta ->
 

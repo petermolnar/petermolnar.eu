@@ -30,8 +30,6 @@ class adaptive_images {
 			2 => 980,
 			3 => 1920,
 		);
-
-		add_action('init', array(&$this, 'init'));
 	}
 
 
@@ -61,7 +59,7 @@ class adaptive_images {
 	 * better jpgs
 	 */
 	public static function jpeg_quality () {
-		$jpeg_quality = (int)96;
+		$jpeg_quality = (int)92;
 		return $jpeg_quality;
 	}
 
@@ -109,6 +107,53 @@ class adaptive_images {
 				<img src="%s" id="%s" class="adaptimg" title="%s" alt="%s" srcset="%s" />
 			</picture>
 		</a>', $l, $fallback, $img['slug'], $img['title'], $img['alttext'], join ( ', ', $srcset ) );
+
+		return $r;
+	}
+
+	/**
+	 * adaptive image shortcode function
+	 */
+	public function srcset( $aid ) {
+
+		if ( empty ( $aid ) )
+			return false;
+
+		$__post = get_post( $aid );
+
+		foreach ( $this->dpix as $dpix => $size ) {
+			$img['src']['w'][$size] = wp_get_attachment_image_src( $aid, self::wprefix . $dpix );
+			$img['src']['h'][$size] = wp_get_attachment_image_src( $aid, self::hprefix . $dpix );
+			$img['src']['s'][$size] = wp_get_attachment_image_src( $aid, self::sprefix . $dpix );
+		}
+		$type = 'w';
+		$keys = array_keys ( $img['src'][$type] );
+
+		$fallback = $img['src'][$type][ $keys[0] ][0];
+
+		foreach ( $img['src'][$type] as $dpix => $src )
+			$srcset[] = $src[0] . ' ' . $dpix . "w";
+
+
+		if ( isset($__post->post_parent) && !empty ( $__post->post_parent ) && $__post->post_parent != $aid ) {
+			$l= get_permalink ( $__post->post_parent );
+		}
+		else {
+			$t = end( $img['src']['w']);
+
+			if ( $t[1] > $t[2] )
+				$l = end( $img['src']['w']);
+			else
+				$l = end( $img['src']['h']);
+
+			$l = $l[0];
+		}
+
+		$r = array (
+			'srcset' => $srcset,
+			'fallback' => $fallback,
+			'target' => $l,
+		);
 
 		return $r;
 	}
@@ -222,15 +267,20 @@ class adaptive_images {
 		if ($size[2] != IMAGETYPE_JPEG)
 			return $resized;
 
+
 		error_log(  __CLASS__ . ": adaptive sharpen starting on " . $resized );
+
 		$imagick = new Imagick($resized);
-		$imagick->adaptiveSharpenImage(0, 1);
+		//$imagick->adaptiveSharpenImage(0, 0.6);
+		//$imagick->sharpenImage(0, 1);
+		$imagick->unsharpMaskImage(0,0.5,1,0);
 		$imagick->setImageFormat("jpg");
 		$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
 		$imagick->setImageCompressionQuality(static::jpeg_quality());
 		$imagick->writeImage($resized);
 		$imagick->destroy();
 		error_log(  __CLASS__ . ": adaptive sharpen done on " . $resized );
+
 
 		return $resized;
 	}
@@ -250,6 +300,7 @@ class adaptive_images {
 		$__post = get_post( $aid );
 		$img = array ();
 
+		$img['id'] = $aid;
 		$img['title'] = esc_attr($__post->post_title);
 		$img['alt'] = strip_tags ( get_post_meta($__post->id, '_wp_attachment_image_alt', true) );
 		if ( empty ($img['alt'])) $img['alt'] = $img['title'];
@@ -292,7 +343,7 @@ class adaptive_images {
 				if(is_array($kind)) $kind = array_pop( $kind );
 				if (is_object($kind)) $kind = $kind->slug;
 
-				if (($kind) == 'photo')
+				if ($kind == 'photo')
 					$format = 'image';
 				else
 					$format = $kind;
