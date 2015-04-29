@@ -12,4 +12,4 @@ if ( $_SERVER['SERVER_ADDR'] == $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR
 <section class="content-body content-<?php echo $meta['theme'] ?>">
 	<?php require (dirname(__FILE__) . '/partials/element-singular.php'); ?>
 </section>
-<?php get_footer(); ?>
+<?php get_footer();

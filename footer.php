@@ -1,4 +1,4 @@
-<?php if ( is_single() )	comments_template( ); ?>
+<?php if ( is_singular() ) comments_template( ); ?>
 
 <!-- main menu -->
 <header class="content-header">
@@ -28,6 +28,22 @@
 			}
 			return false;
 		});
+
+		jQuery(function(){
+			jQuery('.e-content').magnificPopup({
+				delegate: 'a.adaptlink',
+				type: 'image',
+				image: {
+					cursor: null,
+					titleSrc: 'title'
+				},
+				gallery: {
+					enabled: true,
+					////preload: [0,1], // Will preload 0 - before current, and 1 after the current image
+					navigateByImgClick: true
+				}
+			});
+		});
 	</script>
 	<!-- end toggle menu -->
 </header>
@@ -36,7 +52,7 @@
 <!-- main footer -->
 <footer class="content-footer aligncenter">
 	<div class="limit">
-		<a rel="license" href="/licence" title="Licence"><i class="icon-cc"></i></a> 1999-<?php echo date('Y'); ?> by <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); /* echo pmlnr_article::vcard(); */ ?>
+		<a rel="license" href="/licence" title="Licence">&copy;</a> 1999-<?php echo date('Y'); ?> by <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); /* echo pmlnr_article::vcard(); */ ?>
 		<span class="spacer"></span>
 		<a class="spacer" href="http://wordpress.org" rel="nofollow" title="Powered by WordPress"><i class="icon-wordpress"></i></a>
 		<a class="spacer" href="<?php echo bloginfo('rss2_url'); ?>" rel="nofollow" title="RSS"><i class="icon-rss"></i></a>

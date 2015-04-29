@@ -10,3 +10,9 @@
 [submodule "lib/openwebicons"]
 	path = lib/openwebicons
 	url = https://github.com/pfefferle/openwebicons
+[submodule "lib/Magnific-Popup"]
+	path = lib/Magnific-Popup
+	url = https://github.com/dimsemenov/Magnific-Popup
+[submodule "lib/sprint"]
+	path = lib/sprint
+	url = https://github.com/bendc/sprint.git

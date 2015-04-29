@@ -39,6 +39,8 @@ class petermolnareu {
 		//$this->parsedown = new pmlnr_md();
 		//$this->utils = new pmlnr_utils();
 
+		add_image_size ( 'headerbg', 720, 0, false );
+
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
@@ -72,8 +74,8 @@ class petermolnareu {
 		remove_action('wp_head', 'rel_canonical');
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
-		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
-		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
+		//add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
+		//add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
 	}
 
@@ -131,6 +133,7 @@ class petermolnareu {
 
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
+		add_filter( 'jetpack_implode_frontend_css', '__return_false' );
 	}
 
 	/**
@@ -146,6 +149,11 @@ class petermolnareu {
 		wp_enqueue_style( 'style' );
 		// $this->css_version ( dirname(__FILE__) . '/style.css' ) );
 
+		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
+		wp_enqueue_style( 'magnific-popup' );
+		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
+		wp_enqueue_script ('magnific-popup');
+
 		/* syntax highlight */
 		wp_register_style( 'prism', $css_url . '/prism.css', false, null );
 		wp_enqueue_style( 'prism' );
@@ -156,11 +164,14 @@ class petermolnareu {
 		wp_deregister_script( 'jquery' );
 		wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
 		wp_enqueue_script( 'jquery' );
+
+
+		//jetpack.css?ver=3.4.2'
 	}
 
 	/**
 	 * add cc field
-	 */
+	 *
 	public function post_meta_add () {
 		add_meta_box(
 			'cc_licence',
@@ -170,11 +181,11 @@ class petermolnareu {
 			'normal',
 			'default'
 		);
-	}
+	}*/
 
 	/**
 	 * meta field for CC licence
-	 */
+	 *
 	public function post_meta_display_cc ( $object, $box ) {
 		wp_nonce_field( basename( __FILE__ ), $this->theme_constant );
 		$meta = get_post_meta( $object->ID, 'cc', true );
@@ -194,17 +205,17 @@ class petermolnareu {
 				foreach ($cc as $licence => $name ) {
 					$selected = ($licence == $default ) ? ' checked="checked"' : '';
 					$ccid = 'cc-' . $licence;
-					printf ( '<input class="post-format" id="%s" type="radio" value="%s" name="cc"%s></input>', $ccid, $licence, $selected );
+					printf ( '<input class="post-format" id="%s" type="radio" value="%s" name="cc"></input>', $ccid, $licence, $selected );
 					printf ('<label class="post-format-icon" for="%s">%s</label><br />', $ccid, $name );
 				}
 			?>
 		</p>
 		<?php
-	}
+	}/
 
 	/**
 	 * handle additional post meta
-	 */
+	 *
 	public function post_meta_save ( $post_id ) {
 		if ( !isset( $_POST[ $this->theme_constant ] ))
 			return $post_id;
@@ -232,7 +243,7 @@ class petermolnareu {
 			elseif ( empty($new) && !empty($curr) )
 				$r = delete_post_meta( $post_id, $key );
 		}
-	}
+	}*/
 
 	/**
 	 * extend allowed mime types
@@ -256,7 +267,8 @@ class petermolnareu {
 		$profile_fields['linkedin'] = __('LinkedIn username', $this->theme_constant);
 		$profile_fields['flickr'] = __('Flickr username', $this->theme_constant);
 		$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
-		$profile_fields['500px'] = __('500px username', $this->theme_constant);
+		//$profile_fields['500px'] = __('500px username', $this->theme_constant);
+		$profile_fields['instagram'] = __('instagram username', $this->theme_constant);
 
 
 		return $profile_fields;
@@ -325,8 +337,14 @@ class petermolnareu {
 		$wpid = preg_value ( $str, '/wp-image-(\d*)/' );
 		$src = preg_value ( $str, '/src="([^"]+)"/' );
 		$cl = preg_value ( $str, '/class="([^"]+)?(align(left|right|center))([^"]+)?"/', 2 );
+		if (!empty($cl)) $cl = ' .' . $cl;
 
-		$img = '!['.$alt.']('. $src .' '. $title .'){#img-'. $wpid .' .'.$cl.'}';
+		if (!empty($title)) $title = ' ' . $title;
+		if (!empty($wpid)) $imgid = '#img-' . $wpid;
+
+
+		$img = sprintf ('![%s](%s%s){%s%s}', $alt, $src, $title, $imgid, $cl);
+		//$img = '!['.$alt.']('. $src .''. $title .'){#img-'. $wpid .''.$cl.'}';
 		return $img;
 	}
 
@@ -360,27 +378,22 @@ class petermolnareu {
 	 */
 	public static function graphmeta () {
 		global $post;
+		global $wp;
 		$og = array();
 
-		$locale = get_post_meta( $post->ID, 'locale' );
-		if (!$locale) $locale = get_bloginfo( 'language' );
-		$og['og:locale'] = $locale;
-
+		$og['og:locale'] = get_bloginfo( 'language' );
+		$og['og:site_name'] = get_bloginfo('name');
+		$og['og:type'] = 'website';
 		$og['twitter:card'] = 'summary_large_image';
 
-		$title = get_the_title();
-		$og['og:title'] = $title;
-		$og['twitter:title'] = $title;
-
-		$type = ( is_singular()) ? 'article' : 'website';
-		$og['og:type'] = $type;
-
-		$url = ( is_home() ) ? get_bloginfo('siteurl') : get_permalink();
-		$og['og:url'] = $url;
-
-		$og['og:site_name'] = get_bloginfo('name');
-
 		if (is_singular()) {
+			$og['og:type'] = 'article';
+			$og['og:url'] = get_permalink();
+			$og['og:title'] = $og['twitter:title'] = get_the_title();
+
+			$loc = get_post_meta( $post->ID, 'locale' );
+			if ($loc) $og['og:locale'] = $loc;
+
 			$author = get_the_author();
 			if ( $tw = get_the_author_meta( 'twitter' ) )
 				$og['twitter:site'] = '@' . $tw;
@@ -407,14 +420,19 @@ class petermolnareu {
 				$img = adaptive_images::imagewithmeta( $thid );
 				$og['og:image'] = $img['largeurl'];
 				$og['twitter:image:src'] = $img['largeurl'];
-
 			}
-
 		}
 		else {
 			$img = get_bloginfo('template_directory') . '/images/favicon.png';
 			$og['og:image'] = $img;
 			$og['twitter:image:src'] = $img;
+			$og['og:url'] = home_url(add_query_arg(array(),$wp->request));
+			if ( is_category())
+				$og['og:title'] = $og['twitter:title'] = single_cat_title( '', false );
+			elseif (is_tag())
+				$og['og:title'] = $og['twitter:title'] = single_cat_title( '', false );
+			else
+				$og['og:title'] = $og['twitter:title'] = get_bloginfo('name');
 		}
 
 		ksort($og);
@@ -453,10 +471,11 @@ class petermolnareu {
 
 		$socials = array (
 			'github'   => 'https://github.com/%s',
-			'linkedin' => 'https://www.linkedin.com/in/%s',
-			'twitter'  => 'https://twitter.com/%s',
+			//'linkedin' => 'https://www.linkedin.com/in/%s',
+			//'twitter'  => 'https://twitter.com/%s',
 			'flickr'   => 'https://www.flickr.com/people/%s',
-			'500px'    => 'https://500px.com/%s',
+			//'500px'    => 'https://500px.com/%s',
+			//'instagram'=> 'https://instagram.com/%s',
 		);
 
 		foreach ( $socials as $silo => $pattern ) {
@@ -544,8 +563,6 @@ class petermolnareu {
 		$share = [];
 
 		$syndicates = static::post_get_syndicates();
-		if (empty($syndicates))
-			return $share;
 
 		$url = urlencode( get_permalink() );
 		$title = urlencode( get_the_title() );
@@ -554,21 +571,23 @@ class petermolnareu {
 		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
 		$media_url = ( ! $media ) ? false : urlencode($media[0]);
 
-		foreach ($syndicates as $silo => $syndicate ) {
-			switch ($silo) {
-				case 'twitter':
-					$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
-					break;
-				case 'facebook':
-					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
-					break;
-				default:
-					$rurl = false;
-					break;
-			}
+		if (!empty($syndicates)) {
+			foreach ($syndicates as $silo => $syndicate ) {
+				switch ($silo) {
+					case 'twitter':
+						$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
+						break;
+					case 'facebook':
+						$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
+						break;
+					default:
+						$rurl = false;
+						break;
+				}
 
-			if ($rurl)
-				$share[$silo] = $rurl;
+				if ($rurl)
+					$share[$silo] = $rurl;
+			}
 		}
 
 		if (!isset($share['facebook']))
@@ -623,7 +642,120 @@ class petermolnareu {
 		return $content;
 	}
 
+	public static function makesyndication () {
+		global $nxs_snapAvNts;
+		global $post;
 
+		$_syndicated = $_syndicated_original = get_post_meta ( $post->ID, 'syndication_urls', true );
+		if ($_syndicated && strstr($_syndicated, "\n" )) {
+				$_syndicated = explode("\n", $_syndicated);
+				foreach ($_syndicated as $key => $url ) {
+					$_syndicated[$key] = rtrim(trim($url), '/');
+				}
+		}
+		else {
+			$_syndicated = array( $_syndicated );
+		}
+
+		$snap = array();
+		$snap_options = get_option('NS_SNAutoPoster');
+		$urlmap = array (
+			'AP' => array(),
+			'BG' => array(),
+			// 'DA' => array(), /* DeviantArt will use postURL */
+			'DI' => array(),
+			'DL' => array(),
+			'FB' => array( 'url' => '%BASE%/posts/%pgID%' ),
+			//'FF' => array(), /* FriendFeed should be using postURL */
+			//'FL' => array(), /* Flickr should be using postURL */
+			'FP' => array(),
+			'GP' => array(),
+			'IP' => array(),
+			'LI' => array( 'url' => '%pgID%' ),
+			'LJ' => array(),
+			'PK' => array(),
+			'PN' => array(),
+			'SC' => array(),
+			'ST' => array(),
+			'SU' => array(),
+			'TR' => array( 'url'=>'%BASE%/post/%pgID%' ), /* even if Tumblr has postURL set as well, it's buggy and missing a */
+			'TW' => array( 'url'=>'%BASE%/status/%pgID%' ),
+			'VB' => array(),
+			'VK' => array(),
+			'WP' => array(),
+			'YT' => array(),
+		);
+
+		if ( $nxs_snapAvNts && is_array($nxs_snapAvNts) && !empty($nxs_snapAvNts)) {
+			foreach ( $nxs_snapAvNts as $key => $serv ) {
+				$mkey = 'snap'. $serv['code'];
+				$urlkey = $serv['lcode'].'URL';
+				$okey = $serv['lcode'];
+				$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
+				if ( !empty( $metas ) && is_array ( $metas ) ) {
+					foreach ( $metas as $cntr => $m ) {
+						$url = false;
+
+						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
+							/* postURL entry will only be used if there's no urlmap set for the service above
+							 * this is due to either missing postURL values or buggy entries */
+							if ( isset( $m['postURL'] ) && !empty( $m['postURL'] ) && !isset( $urlmap[ $serv['code'] ] ) ) {
+								$url = $m['postURL'];
+
+							}
+							else {
+								$base = (isset( $urlmap[ $serv['code'] ]['url'])) ? $urlmap[ $serv['code'] ]['url'] : false;
+
+								if ( $base != false ) {
+									/* Facebook exception, why not */
+									if ( $serv['code'] == 'FB' ) {
+										$pos = strpos( $m['pgID'],'_' );
+										$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
+									}
+									else {
+										$pgID = $m['pgID'];
+									}
+
+									$o = $snap_options[ $okey ][$cntr];
+									$search = array('%BASE%', '%pgID%' );
+									$replace = array ( $o[ $urlkey ], $pgID );
+									$url = str_replace ( $search, $replace, $base );
+								}
+							}
+
+							if ( $url != false && !empty($url)) {
+								/* trim all the double slashes, some sites cannot coope with them */
+								$url = preg_replace('~(^|[^:])//+~', '\\1/', $url);
+								$snap[] = $url;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		foreach ($snap as $url ) {
+			$url = rtrim($url, '/');
+			if (!in_array($url, $_syndicated)) {
+				array_push($_syndicated, $url);
+			}
+		}
+
+		$insta = get_post_meta( $post->ID, 'instagram_url', true);
+
+		if ( $insta && !empty($insta))
+			if ( !in_array($insta, $_syndicated))
+				array_push($_syndicated, $insta);
+
+		foreach ($_syndicated as $url ) {
+			if (!strstr($url, '500px.com'))
+				$synds[] = $url;
+		}
+
+		$_syndicated = join("\n", $synds);
+		update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
+
+	}
 }
 
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {

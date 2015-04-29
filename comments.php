@@ -1,105 +1,81 @@
+<?php global $post; ?>
+<?php if ( post_password_required() ) return; ?>
 <?php
-return;
-
-global $post;
-
-if ( post_password_required() ) return;
-
-	if ( have_comments() ) { ?>
-		<!-- comments -->
-		<section class="content-comments">
-			<div class="content-inner">
-				<p><a id="comments" /></a></p>
-
-				<!-- comment-list -->
-				<ol class="comment-list">
-					<?php
-						wp_list_comments( array(
-							'style'      => 'ol',
-							'short_ping' => false,
-							'avatar_size'=> 42,
-						) );
-					?>
-				</ol>
-				<!-- end comment-list -->
-			</div>
-		</section>
-		<!-- comments end --><?php
-	}
-
-
-/*
-if ( have_comments() ) {
-	$plink = get_permalink( $post->ID );
-?>
-<section class="content-comments">
-	<div class="content-inner">
-		<p><a id="comments" /></a></p>
-		<ol class="comment-list">
-<?php
-
-	$commargs = array(
-		'status' => 'approve',
+	$comments = get_comments ( array(
 		'post_id' => $post->ID,
+		)
 	);
 
-	$comments = get_comments($commargs);
-		foreach($comments as $comment) : ?>
-			<li class="comment p-comment">
-				<?php
-				$an = sprintf ( '<a name="comment-%s"></a>', $comment->comment_ID);
-				echo $an;
-				?>
-				<article class="comment-body">
-					<header class="comment-meta">
-						<?php
-							$rto = sprintf ('<a class="u-in-reply-to hide" href="%s">%s</a>', $plink, $plink );
-							echo $rto;
-						?>
-						<span class="p-author h-card vcard">
-							<?php
-								$gravatar = md5( strtolower( trim( $comment->comment_author_email )));
-								$img = sprintf ('<img src="https://secure.gravatar.com/avatar/%s?s=42" class="photo avatar u-photo u-avatar" />', $gravatar );
-								echo $img;
-							?>
-							<span class="fn p-name">
-							<?php
-								if ( !empty($comment->comment_author_url ) )
-									$u = sprintf ( '<a href="%s" rel="external nofollow" class="url u-url">%s</a>', $comment->comment_author_url, $comment->comment_author );
-								else
-									$u = $comment->comment_author;
+	global $c;
 
-								echo $u;
-							?>
-							</span>
+	$c = array(
+		'comments' => [],
+		'likes' => [],
+		'favs' => [],
+		'pings' => [],
+	);
 
-						</span>
-						<?php
-							$pdate = date('c', strtotime($comment->comment_date_gmt ));
-							$date = date(get_option('date_format'), strtotime($comment->comment_date_gmt ));
-							$time = date(get_option('time_format'), strtotime($comment->comment_date_gmt ));
+	if ( $comments ):
+		foreach ($comments as $comment):
+			if ($comment->comment_approved == 1 ):
+				switch (strtolower($comment->comment_type)):
+					case 'pingback':
+					case 'trackback':
+						array_push( $c['pings'], $comment);
+						break;
+					case 'like':
+						array_push( $c['likes'], $comment);
+						break;
+					case 'favorite':
+						array_push( $c['favs'], $comment);
+						break;
+					//case 'webmention':
+					//	$type = get_comment_meta ();
+					default:
+						array_push( $c['comments'], $comment);
+						break;
+				endswitch;
+			endif;
+		endforeach;
+	endif;
+?>
 
-							$ctime = sprintf ('<time class="dt-published" datetime="%s">%s %s</time>', $pdate, $date, $time);
+<?php if ( have_comments() ): ?>
 
-							$clink = sprintf ( '<a href="%s#comment-%s" class="u-url">%s</a>', $plink, $comment->comment_ID, $ctime);
+<section class="content-comments">
+	<div class="content-inner">
 
-							echo $clink;
-						?>
-					</header>
-					<div class="comment-content e-content">
-						<?php echo pmlnr_md::parsedown( pmlnr_utils::tweetify ( pmlnr_utils::facebookify ( $comment->comment_content ))); ?>
-					</div>
-				</article>
-			</li> <?php
-		endforeach; ?>
+	<?php if (!empty($c['likes'])): ?>
+		<h5><a name="likes"><?php _e('Likes') ?></a></h5>
+		<ol class="likes comment-list">
+		<?php foreach ($c['likes'] as $like): ?>
+			<?php require (dirname(__FILE__) . '/partials/comment_like.php'); ?>
+		<?php endforeach; ?>
 		</ol>
+		<br class="clear" />
+	<?php endif; ?>
+
+	<?php if (!empty($c['favs'])): ?>
+		<h5><?php _e('Favorites') ?></h5>
+		<ol class="favs comment-list">
+		<?php foreach ($c['favs'] as $fav): ?>
+			<?php require (dirname(__FILE__) . '/partials/comment_fav.php'); ?>
+		<?php endforeach; ?>
+		</ol>
+		<br class="clear" />
+	<?php endif; ?>
+
+	<?php if (!empty($c['comments'])): ?>
+		<h5><a name="comments"><?php _e('Comments') ?></a></h5>
+		<ol class="comment-list">
+		<?php foreach ($c['comments'] as $comment): ?>
+			<?php require (dirname(__FILE__) . '/partials/comment_comment.php'); ?>
+		<?php endforeach; ?>
+		</ol>
+		<br class="clear" />
+	<?php endif; ?>
+
 	</div>
-</section><?php
-}
-/*
-}
-else {
-*/
-// }
+</section>
 
-
+<?php endif;

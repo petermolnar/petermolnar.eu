@@ -30,8 +30,10 @@ class adaptive_images {
 			2 => 980,
 			3 => 1920,
 		);
-	}
 
+		// adaptimg shortcode
+		add_shortcode('adaptimg', array ( &$this, 'adaptimg' ) );
+	}
 
 	/* init function, should be used in the theme init loop */
 	public function init (  ) {
@@ -45,7 +47,7 @@ class adaptive_images {
 		}
 
 		// adaptimg shortcode
-		add_shortcode('adaptimg', array ( &$this, 'adaptimg' ) );
+		add_filter('the_content', array ( &$this, 'adaptify' ), 2 );
 
 		// sharpen all the images
 		add_filter('image_make_intermediate_size',array ( &$this, 'sharpen' ),10);
@@ -211,12 +213,11 @@ class adaptive_images {
 		}
 
 		// match all markdown images
-		preg_match_all('/\!\[(.*?)\]\((.*?) "?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
+		preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
 
 		if ( !empty ( $markdown_images[0]  )) {
 			$excludes = array ( '.noadapt', '.alignleft', '.alignright' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
-				$adaptify = true;
 
 				$alt = $markdown_images[1][$cntr];
 				$url = $markdown_images[2][$cntr];
@@ -232,10 +233,8 @@ class adaptive_images {
 					if ( in_array($val, $excludes )) $adaptify = false;
 				}
 
-				if ( $adaptify ) {
-					$r = '[adaptimg aid=' . $id .' share=0 standalone=1]';
-					$html = str_replace ( $imgstr, $r, $html );
-				}
+				$r = '[adaptimg aid=' . $id .']';
+				$html = str_replace ( $imgstr, $r, $html );
 			}
 		}
 
@@ -395,9 +394,10 @@ class adaptive_images {
 				'aperture' => sprintf ( __('<i class="icon-aperture spacer"></i>f/%s'), $thmeta['aperture']),
 				'shutter_speed' => sprintf( __('<i class="icon-clock spacer"></i>%s sec'), $shutter_speed),
 			);
-
-			$cc = get_post_meta ( $post->ID, 'cc', true );
-			if ( empty ( $cc ) ) $cc = 'by';
+			/*
+			//$cc = get_post_meta ( $post->ID, 'cc', true );
+			//if ( empty ( $cc ) ) $cc = 'by';
+			$cc = 'by-nc-nd';
 
 			$ccicons = explode('-', $cc);
 			$cci[] = '<i class="icon-cc"></i>';
@@ -408,7 +408,23 @@ class adaptive_images {
 			$cc = sprintf('<div class="inlinelist"><a href="http://creativecommons.org/licenses/%s/4.0">%s</a>%s</div>', $cc, join( $cci,'' ), join( ', ', $displaymeta ));
 
 			return $cc;
+			*/
+			return join(',',$displaymeta);
 		endif;
+	}
+
+	/**
+	 *
+	 */
+	public static function adaptify ( $html ) {
+		global $post;
+
+		//$adaptify = get_post_meta ($post->ID, 'adaptify', true);
+
+		//if ( $adaptify && $adaptify == '1')
+		$html = static::adaptive_embedded($html);
+
+		return $html;
 	}
 
 }

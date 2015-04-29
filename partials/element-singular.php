@@ -4,11 +4,27 @@
 <?php $post_image = (empty($post_images)) ? false : $post_images['mediumurl'] ?>
 <?php $post_format = get_post_format($post->ID); ?>
 <?php
-		$setbg = ( empty($post_format)|| $post_format == 'standard' ) ? true : false;
+	$setbg = ( empty($post_format) || $post_format == 'standard' ) ? true : false;
 
-		$bgimg = (empty( $post_images) || !$setbg ) ? array() : wp_get_attachment_image_src(  $post_images['id'] , 'large');
+	$bgimg = (empty( $post_images) || !$setbg ) ? array() : wp_get_attachment_image_src(  $post_images['id'] , 'headerbg');
 
-		$hstyle = ( isset($bgimg[1]) && $bgimg[1] > 720 ) ? 'class="article-header" style="background-image:url('.$bgimg[0].');"' : '';
+	if ( !isset($bgimg[1]) or $bgimg[3] == false )
+		$bgimg = false;
+
+	$hstyle = ( $bgimg ) ? 'class="article-header" style="background-image:url('.$bgimg[0].');"' : '';
+
+?>
+
+<?php
+		petermolnareu::makesyndication();
+?>
+
+<?php
+// syndication cleaner
+$syn = [];
+$_syn = get_post_meta( $post->ID, 'syndication_urls', true);
+if ( $_syn && !empty($_syn))
+	$syn = explode ("\n", $_syn);
 ?>
 
 <article id="post-<?php the_ID(); ?>" class="h-entry">
