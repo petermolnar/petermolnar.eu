@@ -71,6 +71,8 @@ class adaptive_images {
 	public function adaptimg( $atts , $content=null ) {
 		global $post;
 
+		error_log ('DEBUG ' . json_encode($atts));
+
 		extract( shortcode_atts(array(
 			'aid' => false,
 			'title' => '',
@@ -85,12 +87,12 @@ class adaptive_images {
 
 		$type = 'w';
 		$keys = array_keys ( $img['src'][$type] );
-		$fallback = $img['src'][$type][ $keys[0] ][0];
+		$fallback = $img['src'][$type][ $keys[1] ][0];
 
 		foreach ( $img['src'][$type] as $dpix => $src )
 			$srcset[] = $src[0] . ' ' . $dpix . "w";
 
-		if ( isset($img['parent']) && !empty($img['parent']) && $img['parent'] != $post->ID ) {
+		if ( isset($img['parent']) && !empty($img['parent']) && ( $img['parent'] != $post->ID || !is_singular()) ) {
 			$l = get_permalink ( $img['parent'] );
 		}
 		else {
@@ -218,7 +220,7 @@ class adaptive_images {
 		if ( !empty ( $markdown_images[0]  )) {
 			$excludes = array ( '.noadapt', '.alignleft', '.alignright' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
-
+				$id = false;
 				$alt = $markdown_images[1][$cntr];
 				$url = $markdown_images[2][$cntr];
 				$title = $markdown_images[3][$cntr];
@@ -233,8 +235,10 @@ class adaptive_images {
 					if ( in_array($val, $excludes )) $adaptify = false;
 				}
 
-				$r = '[adaptimg aid=' . $id .']';
-				$html = str_replace ( $imgstr, $r, $html );
+				if ($id) {
+					$r = '[adaptimg aid=' . $id .']';
+					$html = str_replace ( $imgstr, $r, $html );
+				}
 			}
 		}
 
@@ -330,6 +334,9 @@ class adaptive_images {
 	 */
 	public static function featured_image ( $src ) {
 		global $post;
+		if (!is_object($post) || !isset($post->ID))
+			return $src;
+
 		$thid = get_post_thumbnail_id( $post->ID );
 		if ( ! $thid )
 			return $src;
@@ -338,14 +345,18 @@ class adaptive_images {
 		$format = get_post_format ( $post->ID );
 
 		if ( empty($format)) {
-			if ($kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) )) {
+			$kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) );
+			if (!is_wp_error($kind)) {
 				if(is_array($kind)) $kind = array_pop( $kind );
-				if (is_object($kind)) $kind = $kind->slug;
+				if (is_object($kind) && isset($kind->slug)) $kind = $kind->slug;
 
 				if ($kind == 'photo')
 					$format = 'image';
 				else
 					$format = $kind;
+			}
+			else {
+				$format = false;
 			}
 		}
 

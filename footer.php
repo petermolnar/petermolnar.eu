@@ -29,6 +29,8 @@
 			return false;
 		});
 
+
+		<?php if (is_singular()): ?>
 		jQuery(function(){
 			jQuery('.e-content').magnificPopup({
 				delegate: 'a.adaptlink',
@@ -44,6 +46,8 @@
 				}
 			});
 		});
+		<?php endif; ?>
+
 	</script>
 	<!-- end toggle menu -->
 </header>

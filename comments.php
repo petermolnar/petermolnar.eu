@@ -18,6 +18,10 @@
 	if ( $comments ):
 		foreach ($comments as $comment):
 			if ($comment->comment_approved == 1 ):
+
+				//if (is_user_logged_in())
+				//	print_r ($comment);
+
 				switch (strtolower($comment->comment_type)):
 					case 'pingback':
 					case 'trackback':
@@ -46,7 +50,7 @@
 	<div class="content-inner">
 
 	<?php if (!empty($c['likes'])): ?>
-		<h5><a name="likes"><?php _e('Likes') ?></a></h5>
+		<h5><a name="likes"><?php _e('Liked by:') ?></a></h5>
 		<ol class="likes comment-list">
 		<?php foreach ($c['likes'] as $like): ?>
 			<?php require (dirname(__FILE__) . '/partials/comment_like.php'); ?>
@@ -56,7 +60,7 @@
 	<?php endif; ?>
 
 	<?php if (!empty($c['favs'])): ?>
-		<h5><?php _e('Favorites') ?></h5>
+		<h5><?php _e('Favoured by:') ?></h5>
 		<ol class="favs comment-list">
 		<?php foreach ($c['favs'] as $fav): ?>
 			<?php require (dirname(__FILE__) . '/partials/comment_fav.php'); ?>

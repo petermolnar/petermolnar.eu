@@ -233,6 +233,7 @@ img.right,
 img.left {
   margin-bottom: 1em;
   /* border: @border-thin; */
+
 }
 img.alignright,
 img.right {
@@ -286,6 +287,7 @@ img.left {
 html {
   background-color: #efefef;
   /*background: url('assets/image/bg-noise.png') repeat scroll left top @color-bg-dark;*/
+
 }
 body {
   position: relative;
@@ -368,6 +370,7 @@ h1 {
 h1 a {
   color: #dddddd;
   /*text-shadow: 0 0 2em @color-link-dark;*/
+
   background: rgba(0, 0, 0, 0.4);
   box-shadow: 0.6em 0 0 rgba(0, 0, 0, 0.4), -0.6em 0 0 rgba(0, 0, 0, 0.4);
   line-height: 1.4em;
@@ -422,11 +425,14 @@ pre {
   display: inline-block;
   text-decoration: inherit;
   /*width: 1em;*/
+
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
+
   font-variant: normal;
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
+
   line-height: 1em;
   margin-right: 0.3em;
   font-family: "petermolnar";
@@ -632,11 +638,14 @@ pre {
   display: inline-block;
   text-decoration: inherit;
   /*width: 1em;*/
+
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
+
   font-variant: normal;
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
+
   line-height: 1em;
   margin-right: 0.3em;
   font-family: "OpenWeb Icons";
@@ -680,6 +689,7 @@ pre {
 
 	}
 */
+
 }
 .content-header.open {
   left: 0;
@@ -716,6 +726,7 @@ pre {
 .content-body {
   position: relative;
   /*padding: @toggle-size @padding-large @padding-large @padding-large;*/
+
   z-index: 2;
 }
 /*
@@ -751,6 +762,7 @@ pre {
 			border-bottom: @thinborder dotted @color-link-dark;
 		}
 		*/
+
 }
 .content-light .e-content a {
   border-bottom: 1px dotted #999999;
@@ -767,11 +779,13 @@ pre {
   font-size: 0em;
   letter-spacing: -1em;
   /*color: transparent;*/
+
   color: #4d4d4d;
 }
 .content-footer .h-card a[rel="me"]:before {
   font-size: 17px;
   /*color: @color-link-dark;*/
+
 }
 .content-footer .footer-forms form {
   display: inline;
@@ -924,6 +938,7 @@ pre {
   text-overflow: ellipsis;
   overflow: hidden;
   /*color: darken(@color-link-light, 20%);*/
+
   vertical-align: middle;
 }
 .vcard-page a:before {
@@ -933,11 +948,14 @@ pre {
   display: inline-block;
   text-decoration: inherit;
   /*width: 1em;*/
+
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
+
   font-variant: normal;
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
+
   line-height: 1em;
   margin-right: 0.3em;
   font-family: "petermolnar";
@@ -953,6 +971,10 @@ pre {
   font-size: 0.9em;
   opacity: 0.7;
 }
+.article-nostyle {
+  display: inline-block;
+  clear: none;
+}
 .article-header {
   position: relative;
   clear: both;
@@ -966,6 +988,7 @@ pre {
 			text-shadow: 0 0 2em @color-link-dark;
 		}
 	}*/
+
 }
 .article-header h2 {
   margin: 0;
@@ -987,12 +1010,16 @@ pre {
 .urel {
   display: inline-block;
   /*font-size: @font-small;*/
+
   font-weight: normal;
   letter-spacing: 0.06em;
   /*color: darken(@color-text-light,20%);*/
+
   /*font-family: monospace;*/
+
   /*padding:  0 0 0 @padding-normal;
 	margin: 0 0 @padding-large 0;*/
+
 }
 .article-thumbnail {
   display: block;
@@ -1007,6 +1034,7 @@ pre {
   height: auto;
   width: auto\9;
   /* ie8 fix */
+
 }
 .article-footer {
   margin: 1em 0 0 0;
@@ -1031,11 +1059,14 @@ pre {
   display: inline-block;
   text-decoration: inherit;
   /*width: 1em;*/
+
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
+
   font-variant: normal;
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
+
   margin-right: 0.3em;
   font-family: "petermolnar";
   content: "\e833";
@@ -1119,11 +1150,14 @@ ul.page-numbers .current {
   display: inline-block;
   text-decoration: inherit;
   /*width: 1em;*/
+
   text-align: center;
   /* For safety - reset parent styles, that can break glyph codes*/
+
   font-variant: normal;
   text-transform: none;
   /* fix buttons height, for twitter bootstrap */
+
   line-height: 1em;
   margin-right: 0.3em;
   content: "\e821";
@@ -1217,6 +1251,7 @@ ul.page-numbers .current {
 .comment-list li .avatar {
   float: left;
   /* margin: @padding-normal @padding-normal @padding-normal 0; */
+
   margin: 0 0.3em 0.3em 0;
 }
 .comment-list li li {

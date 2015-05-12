@@ -165,6 +165,13 @@ class petermolnareu {
 		wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
 		wp_enqueue_script( 'jquery' );
 
+		/* AutomaticMontage *
+		wp_register_style( 'montage', $css_url . '/jquery.montage.css', false );
+		wp_enqueue_style( 'montage' );
+		wp_register_script( 'montage' , $js_url . '/jquery.montage.min.js', array('jquery'), null, false );
+		wp_enqueue_script( 'montage' );
+		*/
+
 
 		//jetpack.css?ver=3.4.2'
 	}
@@ -540,15 +547,13 @@ class petermolnareu {
 			return $reply;
 
 		foreach ($syndicates as $silo => $syndicate ) {
-			switch ($silo) {
-				case 'twitter':
-					$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
-					break;
-				default:
-					$rurl = $syndicate[0];
-					break;
+			if ($silo == 'twitter') {
+				//$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
+				continue;
 			}
-			$reply[ $silo ] = $rurl;
+			else {
+				$reply[ $silo ] = $syndicate[0];
+			}
 		}
 
 		return $reply;
@@ -566,23 +571,21 @@ class petermolnareu {
 
 		$url = urlencode( get_permalink() );
 		$title = urlencode( get_the_title() );
-		$desciption = urlencode( get_the_excerpt() );
+		$description = urlencode( get_the_excerpt() );
 
 		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
 		$media_url = ( ! $media ) ? false : urlencode($media[0]);
 
 		if (!empty($syndicates)) {
 			foreach ($syndicates as $silo => $syndicate ) {
-				switch ($silo) {
-					case 'twitter':
-						$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
-						break;
-					case 'facebook':
-						$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
-						break;
-					default:
-						$rurl = false;
-						break;
+				//if ($silo == 'twitter') {
+					//$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
+				//}
+				if ($silo == 'facebook') {
+					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
+				}
+				else {
+					continue;
 				}
 
 				if ($rurl)
@@ -613,6 +616,10 @@ class petermolnareu {
 	 */
 	public static function post_remote_relation ( $content ) {
 		global $post;
+
+		if (!is_object($post) || !isset($post->ID))
+			return $content;
+
 		$r = array();
 
 		$to_check = array (
@@ -696,7 +703,7 @@ class petermolnareu {
 					foreach ( $metas as $cntr => $m ) {
 						$url = false;
 
-						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 ) {
+						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 && isset($snap_options[ $okey ][$cntr]) ) {
 							/* postURL entry will only be used if there's no urlmap set for the service above
 							 * this is due to either missing postURL values or buggy entries */
 							if ( isset( $m['postURL'] ) && !empty( $m['postURL'] ) && !isset( $urlmap[ $serv['code'] ] ) ) {
@@ -741,14 +748,15 @@ class petermolnareu {
 			}
 		}
 
-		$insta = get_post_meta( $post->ID, 'instagram_url', true);
+		/*$insta = get_post_meta( $post->ID, 'instagram_url', true);
 
 		if ( $insta && !empty($insta))
 			if ( !in_array($insta, $_syndicated))
 				array_push($_syndicated, $insta);
+		*/
 
 		foreach ($_syndicated as $url ) {
-			if (!strstr($url, '500px.com'))
+			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com'))
 				$synds[] = $url;
 		}
 
