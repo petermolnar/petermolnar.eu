@@ -168,6 +168,10 @@ submit {
   border: 1px solid #434c57;
   background-color: #efefef;
   color: #333333;
+  width: 6em;
+  transition: all 0.3s ease;
+  -webkit-transition: all 0.3s ease;
+  padding: 0.3em;
 }
 input:active,
 select:active,
@@ -177,6 +181,15 @@ select:focus,
 submit:focus {
   border: 1px solid #5a6673;
   background-color: #fcfcfc;
+  width: 10em;
+}
+input[type=submit] {
+  width: 2.8em;
+  padding: 0.2em;
+}
+input[type=submit]:active,
+input[type=submit]:focus {
+  width: 2.8em;
 }
 /********
 * FONTS *
@@ -437,6 +450,48 @@ pre {
   margin-right: 0.3em;
   font-family: "petermolnar";
 }
+.button-rss {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  /*width: 1em;*/
+
+  text-align: center;
+  /* For safety - reset parent styles, that can break glyph codes*/
+
+  font-variant: normal;
+  text-transform: none;
+  /* fix buttons height, for twitter bootstrap */
+
+  line-height: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  width: auto;
+  border: none;
+  background-color: #4d4d4d;
+  color: #b3b3b3;
+  border-radius: 0.2em;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  vertical-align: baseline;
+  line-height: 1.4em;
+}
+.button-rss:active,
+.button-rss:focus {
+  width: auto;
+}
+.subscribe .osd-subscribe-email-cont {
+  display: inline;
+}
+.subscribe h2 {
+  font-size: 1em;
+  font-weight: normal;
+  padding: 0;
+  margin: 0.6em 0 0 0;
+  line-height: 1.4em;
+}
 .icon-aperture:before {
   content: '\e81a';
 }
@@ -630,6 +685,10 @@ pre {
   content: '\e81e';
 }
 /* '' */
+.icon-deviantart:before {
+  content: '\e820';
+}
+/* '' */
 [class^="openwebicon-"]:before,
 [class*=" openwebicon-"]:before {
   font-style: normal;
@@ -696,6 +755,7 @@ pre {
   padding-right: 0;
   width: 17em;
   height: 100%;
+  box-shadow: 0 0 2.8em #333333;
 }
 .content-logo {
   margin: 1em 0 1em 0;
@@ -710,11 +770,12 @@ pre {
   -moz-osx-font-smoothing: grayscale;
   position: absolute;
   right: -1em;
-  top: 1em;
+  top: 0.2em;
   z-index: 999!important;
   transition: all 0.3s ease;
   -webkit-transition: all 0.3s ease;
   text-shadow: 1px 1px #333333;
+  outline: none;
 }
 .nav-toggle-button:hover {
   text-decoration: none;
@@ -728,6 +789,7 @@ pre {
   /*padding: @toggle-size @padding-large @padding-large @padding-large;*/
 
   z-index: 2;
+  margin-top: 2.8em;
 }
 /*
 .content-dark {
@@ -772,31 +834,40 @@ pre {
   padding: 1em 0 1em 0;
   font-size: 0.9em;
 }
-.content-footer .h-card img {
+.content-contact {
+  margin: 1em 2em 0;
+  font-size: 0.9em;
+}
+.content-contact .h-card img {
   margin: 0 0.6em 0 0.6em;
 }
-.content-footer .h-card a[rel="me"] {
+.content-contact .h-card a {
   font-size: 0em;
   letter-spacing: -1em;
   /*color: transparent;*/
 
   color: #4d4d4d;
 }
-.content-footer .h-card a[rel="me"]:before {
+.content-contact .h-card a:before {
   font-size: 17px;
   /*color: @color-link-dark;*/
 
 }
-.content-footer .footer-forms form {
+.content-contact .footer-forms {
+  /*
+		label {
+			display: inline-block;
+			padding: 0 @padding-normal 0 @padding-normal;
+		}
+		*/
+
+}
+.content-contact .footer-forms form {
   display: inline;
 }
-.content-footer .footer-forms p {
+.content-contact .footer-forms p {
   display: inline;
   margin: 0;
-}
-.content-footer .footer-forms label {
-  display: inline-block;
-  padding: 0 0.3em 0 0.3em;
 }
 .content-comments {
   padding: 0.6em 0 0 0;
@@ -811,13 +882,11 @@ pre {
   padding: 0;
   margin: 0;
 }
-.content-navigation ul li li a {
-  padding: 0.3em 1em 0.3em 1em;
-}
 .content-navigation ul li a {
   display: block;
-  line-height: 2.4em;
-  padding: 0.6em;
+  line-height: 2.8em;
+  margin-bottom: 0.6em;
+  padding: 0;
   font-weight: bold;
   color: #2a2a2a;
   border-bottom: 1px solid #efefef;
@@ -832,7 +901,7 @@ pre {
 .content-navigation ul li a:before {
   content: "»";
   padding-right: 1em;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(239, 239, 239, 0);
 }
 .content-navigation ul .current-menu-item a,
 .content-navigation ul .current-page-ancestor > a,
@@ -1176,6 +1245,7 @@ ul.page-numbers .current {
   }
   .content-body {
     padding: 0;
+    margin-top: 0;
   }
   .content-footer,
   .content-body,

@@ -5,6 +5,12 @@ class pmlnr_utils {
 	public function __construct () {
 	}
 
+	public static function absurl ( $url ) {
+		$surl = rtrim( get_bloginfo('url'), '/' );
+		$url = $surl . str_replace ( $surl, '', $url );
+		return str_replace ( array('http://', 'https://'), '//', $url );
+	}
+
 	/**
 	 * absolute_url - make relative urls absolute the safe way
 	 *

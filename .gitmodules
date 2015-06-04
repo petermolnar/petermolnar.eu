@@ -4,15 +4,12 @@
 [submodule "lib/parsedown-extra"]
 	path = lib/parsedown-extra
 	url = https://github.com/erusev/parsedown-extra.git
-[submodule "lib/featherlight"]
-	path = lib/featherlight
-	url = https://github.com/noelboss/featherlight.git
 [submodule "lib/openwebicons"]
 	path = lib/openwebicons
 	url = https://github.com/pfefferle/openwebicons
 [submodule "lib/Magnific-Popup"]
 	path = lib/Magnific-Popup
 	url = https://github.com/dimsemenov/Magnific-Popup
-[submodule "lib/sprint"]
-	path = lib/sprint
-	url = https://github.com/bendc/sprint.git
+[submodule "lib/Justified-Gallery"]
+	path = lib/Justified-Gallery
+	url = https://github.com/miromannino/Justified-Gallery

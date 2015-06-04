@@ -25,12 +25,11 @@
 		</header>
 
 		<div class="e-content">
-			<?php the_content(); ?>
-
 			<?php if ($post_format == 'link'): ?>
-			<p><?php echo $post_title ?></p>
+			<p><strong><?php echo $post_title ?></strong></p>
 			<?php endif; ?>
 
+			<?php the_content(); ?>
 			<br class="clear" />
 		</div>
 

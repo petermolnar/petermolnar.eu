@@ -31,7 +31,7 @@ class petermolnareu {
 	const menu_header = 'header';
 
 	const shortdomain = 'http://pmlnr.eu/';
-	const shorturl_enabled = true;
+	const shorturl_enabled = false;
 
 	public function __construct () {
 
@@ -53,6 +53,8 @@ class petermolnareu {
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
 		add_action( 'wp_head', array(&$this, 'shortlink'));
 
+		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
+
 		// cleanup
 		// no link to the Really Simple Discovery service endpoint, EditURI link
 		remove_action('wp_head', 'rsd_link');
@@ -73,9 +75,16 @@ class petermolnareu {
 		// no canonical link
 		remove_action('wp_head', 'rel_canonical');
 
+		// NO EMOJI FFS
+		remove_action( 'admin_print_styles', 'print_emoji_styles' );
+		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
+		remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+		remove_action( 'wp_print_styles', 'print_emoji_styles' );
+
 		// Add meta boxes on the 'add_meta_boxes' hook.
 		//add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
 		//add_action( 'save_post', array(&$this, 'post_meta_save' ) );
+		add_action( 'publish_post', array(&$this, 'doyaml' ) );
 
 	}
 
@@ -93,6 +102,15 @@ class petermolnareu {
 			'search-form', 'comment-form', 'comment-list'
 		) );
 
+		/*
+		add_theme_support( 'infinite-scroll', array(
+			'container' => 'main-content',
+			'render'	=> array($this, 'infinite_scroll_render'),
+			'posts_per_page' => 8,
+			'footer' => false,
+		));
+		*/
+
 		// add main menus
 		register_nav_menus( array(
 			self::menu_header => __( self::menu_header , $this->theme_constant ),
@@ -106,7 +124,7 @@ class petermolnareu {
 		add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
 		// auto-insert featured image
-		add_filter( 'the_content', 'adaptive_images::featured_image', 1 );
+		//add_filter( 'the_content', 'adaptive_images::featured_image', 1 );
 
 		// additional user meta fields
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
@@ -124,6 +142,7 @@ class petermolnareu {
 		//else
 		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
 		add_filter( 'the_content', array( &$this, 'post_remote_relation'), 1 );
+		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
 
 		// sanitize content before saving
 		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
@@ -134,6 +153,25 @@ class petermolnareu {
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
 		add_filter( 'jetpack_implode_frontend_css', '__return_false' );
+
+		add_filter( 'pre_option_link_manager_enabled', '__return_true' );
+
+		add_filter ( 'the_content_feed', array(&$this, 'feed_stats'), 1, 2 );
+
+		// NO EMOJI
+		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+
+		// filter to remove TinyMCE emojis
+		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
+	}
+
+	public function disable_emojicons_tinymce( $plugins ) {
+		if ( is_array( $plugins ) )
+			return array_diff( $plugins, array( 'wpemoji' ) );
+		else
+			return array();
 	}
 
 	/**
@@ -149,10 +187,19 @@ class petermolnareu {
 		wp_enqueue_style( 'style' );
 		// $this->css_version ( dirname(__FILE__) . '/style.css' ) );
 
+		/*
 		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
 		wp_enqueue_style( 'magnific-popup' );
 		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
 		wp_enqueue_script ('magnific-popup');
+		*/
+
+		/* justified gallery *
+		wp_register_style( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/css/justifiedGallery.min.css' , false );
+		wp_enqueue_style( 'Justified-Gallery' );
+		wp_register_script( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js' , array('jquery'), null, false );
+		wp_enqueue_script ('Justified-Gallery');
+		*/
 
 		/* syntax highlight */
 		wp_register_style( 'prism', $css_url . '/prism.css', false, null );
@@ -163,17 +210,14 @@ class petermolnareu {
 		/* CDN scripts */
 		wp_deregister_script( 'jquery' );
 		wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
-		wp_enqueue_script( 'jquery' );
-
-		/* AutomaticMontage *
-		wp_register_style( 'montage', $css_url . '/jquery.montage.css', false );
-		wp_enqueue_style( 'montage' );
-		wp_register_script( 'montage' , $js_url . '/jquery.montage.min.js', array('jquery'), null, false );
-		wp_enqueue_script( 'montage' );
-		*/
-
+		//wp_enqueue_script( 'jquery' );
 
 		//jetpack.css?ver=3.4.2'
+
+		wp_dequeue_script( 'mediaelement' );
+		wp_dequeue_script( 'wp-mediaelement' );
+		wp_dequeue_style ('wp-mediaelement');
+		wp_dequeue_script ('devicepx');
 	}
 
 	/**
@@ -273,9 +317,10 @@ class petermolnareu {
 		$profile_fields['mobile'] = __('Mobile phone number', $this->theme_constant);
 		$profile_fields['linkedin'] = __('LinkedIn username', $this->theme_constant);
 		$profile_fields['flickr'] = __('Flickr username', $this->theme_constant);
-		$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
+		//$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
 		//$profile_fields['500px'] = __('500px username', $this->theme_constant);
 		$profile_fields['instagram'] = __('instagram username', $this->theme_constant);
+		$profile_fields['skype'] = __('skype username', $this->theme_constant);
 
 
 		return $profile_fields;
@@ -299,6 +344,7 @@ class petermolnareu {
 			return $shortlink;
 		}
 
+		/*
 		if ( static::shorturl_enabled ) {
 			$r = static::shortdomain . $post->ID;
 		}
@@ -306,6 +352,10 @@ class petermolnareu {
 			$url = rtrim( get_bloginfo('url'), '/' ) . '/';
 			$r = $url.'?p='.$post->ID;
 		}
+		*/
+
+		$url = rtrim( get_bloginfo('url'), '/' ) . '/';
+		$r = $url.'?p='.$post->ID;
 
 		return $r;
 	}
@@ -456,15 +506,15 @@ class petermolnareu {
 		$wp_query->query_vars['paged'] > 1 ? $current = $wp_query->query_vars['paged'] : $current = 1;
 
 		$pargs = array(
-			'format'     => 'page/%#%',
-			'current'    => $current,
+			'format'	 => 'page/%#%',
+			'current'	=> $current,
 			'end_size'   => 1,
 			'mid_size'   => 2,
 			'prev_next'  => True,
 			'prev_text'  => __('«'),
 			'next_text'  => __('»'),
-			'type'       => 'list',
-			'total'      => $wp_query->max_num_pages,
+			'type'	   => 'list',
+			'total'	  => $wp_query->max_num_pages,
 		);
 		echo paginate_links( $pargs );
 	}
@@ -481,8 +531,9 @@ class petermolnareu {
 			//'linkedin' => 'https://www.linkedin.com/in/%s',
 			//'twitter'  => 'https://twitter.com/%s',
 			'flickr'   => 'https://www.flickr.com/people/%s',
-			//'500px'    => 'https://500px.com/%s',
+			//'500px'	=> 'https://500px.com/%s',
 			//'instagram'=> 'https://instagram.com/%s',
+			//'skype'=> 'callto:%s',
 		);
 
 		foreach ( $socials as $silo => $pattern ) {
@@ -761,9 +812,207 @@ class petermolnareu {
 		}
 
 		$_syndicated = join("\n", $synds);
-		update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
+		if (!empty($_syndicated))
+			update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
 
 	}
+
+	public function infinite_scroll_render() {
+		while( have_posts() ) {
+			the_post();
+			$post_id = get_the_ID();
+			$categories = get_the_terms( $post_id, 'category' );
+			$category = ( is_array($categories) ) ? array_pop($categories) : null;
+
+			if ( isset($category->slug) && !empty($category->slug) && file_exists( dirname(__FILE__) . '/partials/element-' . $category->slug . '.php' ))
+				get_template_part( '/partials/element-' . $category->slug );
+			else
+				get_template_part( '/partials/element-journal' );
+		}
+	}
+
+	public function feed_stats ( $content, $feed_type ) {
+		$content .= '<img src="https://petermolnar.eu/wp-content/plugins/simple-feed-stats/tracker.php?sfs_tracking=true&sfs_type=open" alt="" />';
+
+		return $content;
+	}
+
+	public function widgets_init () {
+		register_sidebar( array(
+			'name' => __( 'Subscribe', $this->theme_constant ),
+			'id' => 'subscribe',
+			'before_widget' => '',
+			'after_widget'  => '',
+			'before_title'  => '',
+			'after_title'   => '',
+		) );
+	}
+
+	public static function doyaml ( ) {
+		global $post;
+
+		//error_log ('Exporting starting #' . $post->ID . ', ' . $post->post_name . ' to YAML');
+
+		$cat = get_the_category( $post->ID );
+		$category = $cat[0]->cat_name;
+		$category_slug = $cat[0]->slug;
+
+		// setup flat directories
+		$flatpdir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'flat';
+		$flatcdir = $flatpdir . DIRECTORY_SEPARATOR . $category_slug;
+		$flatdir = $flatcdir . DIRECTORY_SEPARATOR . $post->post_name;
+		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
+
+		$post_timestamp = get_the_modified_time( 'U' );
+
+		// check file existance
+		if ( @file_exists($flatfile) ) {
+			// compare timestamps
+			$file_timestamp = @filemtime ( $flatfile );
+			// only do the rest if the post was modified since
+			// the last export
+			if ( $file_timestamp == $post_timestamp ) {
+				return;
+			}
+		}
+
+		// make directories, if neccessary
+		$mkdir = array ( $flatpdir, $flatcdir, $flatdir );
+		foreach ( $mkdir as $dir ) {
+			if ( !is_dir($dir)) {
+				if (!mkdir( $dir )) {
+					error_log('Failed to create ' . $flatdir . ', exiting YAML creation');
+					return false;
+				}
+			}
+		}
+
+
+		$parsedown = new ParsedownExtra();
+
+		$thid = ( has_post_thumbnail () ) ? get_post_thumbnail_id( $post->ID ) : false;
+		if ( $thid )
+			$img = pmlnr_utils::absolute_url(wp_get_attachment_url ( $thid ));
+
+		$format = get_post_format();
+		if ( empty($format)) $format = 'article';
+
+		$taglist = '';
+		$tags = get_the_tags();
+		if ( !empty( $tags )) {
+			foreach ( $tags as $tag ) {
+				$taglist[$tag->slug] = $tag->name;
+			}
+			$taglist = '['. join (', ', $taglist) . ']';
+		}
+
+		$content = $post->post_content;
+		$excerpt = $post->post_excerpt;
+
+		$search = array ( '”', '“', '’', '–', "\x0D" );
+		$replace = array ( '"', '"', "'", '-', '' );
+		$content = str_replace ( $search, $replace, $content );
+		$excerpt = str_replace ( $search, $replace, $excerpt );
+
+		$excerpt = strip_tags ( $parsedown->text ( $excerpt ) );
+		$search = array ("\n");
+		$replace = array ("");
+		$description = trim ( str_replace( $search, $replace, $excerpt), "'\"" );
+
+		$urlparts = parse_url(site_url());
+		$domain = $urlparts ['host'];
+		$wp_upload_dir = wp_upload_dir();
+		$uploadurl = str_replace( '/', "\\/", trim( str_replace( site_url(), '', $wp_upload_dir['url']), '/'));
+
+		$pregstr = "/((https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/)(.*)-([0-9]{1,4})×([0-9]{1,4})\.([a-zA-Z]{2,4})/";
+
+		preg_match_all( $pregstr, $content, $resized_images );
+
+		if ( !empty ( $resized_images[0]  )) {
+			foreach ( $resized_images[0] as $cntr => $imgstr ) {
+				//$location = $resized_images[1][$cntr];
+				$done_images[ $resized_images[2][$cntr] ] = 1;
+				$fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
+				$width = $resized_images[3][$cntr];
+				$height = $resized_images[4][$cntr];
+				$r = $fname . '?resize=' . $width . ',' . $height;
+				$content = str_replace ( $imgstr, $r, $content );
+			}
+		}
+
+		$pregstr = "/(https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/(.*?)\.([a-zA-Z]{2,4})/";
+
+		preg_match_all( $pregstr, $content, $images );
+		if ( !empty ( $images[0]  )) {
+
+			foreach ( $images[0] as $cntr=>$imgstr ) {
+				//$location = $resized_images[1][$cntr];
+				if ( !isset($done_images[ $images[1][$cntr] ]) ){
+					if ( !strstr($images[1][$cntr], 'http'))
+						$fname = $images[2][$cntr] . '.' . $images[3][$cntr];
+					else
+						$fname = $images[1][$cntr] . '.' . $images[2][$cntr];
+
+					$content = str_replace ( $imgstr, $fname, $content );
+				}
+			}
+		}
+
+		$twsummary = (empty($thid)) ? 'summary' : 'summary_large_image';
+
+		$out = "---\n";
+		$out .=  "title: " . str_replace( '–', '-', get_the_title()) . "\n";
+		$out .=  "slug: " . $post->post_name . "\n";
+		$out .=  "date: " . get_the_time('c') . "\n";
+		$out .=  "id: " . $post->ID  . "\n";
+		$out .=  "permalink: " . get_the_permalink() . "\n";
+		$out .=  "shortlink: " . wp_get_shortlink() . "\n";
+		$out .=  "taxonomy: \n";
+		$out .=  "    category: " . $category . "\n";
+		$out .=  "    tag: " .  $taglist . "\n";
+		$out .=  "    format: " .  $format . "\n";
+
+		$attachments = get_children( array (
+			'post_parent'=>$post->ID,
+			'post_type'=>'attachment',
+			'post_mime_type'=>'image',
+			'orderby'=>'menu_order',
+			'order'=>'asc'
+		));
+
+		if ( !empty($attachments) ) {
+			foreach ( $attachments as $aid => $attachment ) {
+				$attachment_path = get_attached_file( $aid );
+				$attachment_file = basename( $attachment_path);
+				copy( $attachment_path, $flatdir . DIRECTORY_SEPARATOR . $attachment_file );
+				//$a[] = pmlnr_utils::absolute_url( wp_get_attachment_url( $aid ) );
+			}
+			//$out .=  "attachments: " . '['. join (', ', $a) . ']' . "\n";
+		}
+
+		$_syndicated = get_post_meta ( $post->ID, 'syndication_urls', true );
+		if ( !empty ($_syndicated ) ) {
+			$synlinks = join (', ', explode("\n", $_syndicated));
+			$out .=  "syndicated: [{$synlinks}]\n";
+		}
+
+		$out .= "---\n";
+
+		if($post->post_excerpt)
+			$out .= $excerpt . "\n\n";
+
+		$out .= "===\n";
+
+		$out .= $content;
+
+		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to YAML');
+		file_put_contents ($flatfile, $out);
+		touch ( $flatfile, $post_timestamp );
+
+		$date = date('c');
+		exec( "cd ${flatpdir}; git add *; git commit -m 'adding ${flatfile} @ ${date}'" );
+	}
+
 }
 
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {

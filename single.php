@@ -9,7 +9,7 @@ if ( $_SERVER['SERVER_ADDR'] == $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR
 <?php the_post(); ?>
 <?php get_header(); ?>
 
-<section class="content-body content-light">
+<section class="content-body content-light" id="main-content">
 	<?php require (dirname(__FILE__) . '/partials/element-singular.php'); ?>
 </section>
 <?php get_footer();

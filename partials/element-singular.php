@@ -54,8 +54,11 @@ if ( $_syn && !empty($_syn))
 		<div class="content-inner">
 		<?php
 			require_once (dirname(__FILE__) . '/list_tag.php');
-			require_once (dirname(__FILE__) . '/list_reply.php');
-			require_once (dirname(__FILE__) . '/list_share.php');
+
+			//if (is_user_logged_in())
+			//	require_once (dirname(__FILE__) . '/list_reply.php');
+
+			//require_once (dirname(__FILE__) . '/list_share.php');
 			require_once (dirname(__FILE__) . '/list_siblings.php');
 		?>
 		</div>

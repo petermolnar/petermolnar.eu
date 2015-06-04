@@ -17,7 +17,8 @@
 
 	if ( $comments ):
 		foreach ($comments as $comment):
-			if ($comment->comment_approved == 1 ):
+
+			if ($comment->comment_approved == 1 && !strstr($comment->comment_agent, 'Facebook') ):
 
 				//if (is_user_logged_in())
 				//	print_r ($comment);
@@ -42,9 +43,11 @@
 			endif;
 		endforeach;
 	endif;
+
+
 ?>
 
-<?php if ( have_comments() ): ?>
+<?php if ( have_comments() /* && is_user_logged_in() */ ): ?>
 
 <section class="content-comments">
 	<div class="content-inner">

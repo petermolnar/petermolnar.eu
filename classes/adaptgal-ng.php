@@ -4,57 +4,41 @@ include_once ( dirname(__FILE__) . '/utils.php' );
 
 class adaptive_images {
 
-	/*
-	 * here I define a matrix of desired picture sizes for
-	 * a specific minimal screen width pixel number
-	 *
-	 * the exact numbers are mostly outcome of experiments and
-	 * calculations
-	 *
-	 * the actual size is always scaled, these are only important
-	 * not to strech scaling too much
-	 *
-	 */
 	const prefix = 'adaptive_';
-	const wprefix = 'adaptive_w_';
-	const hprefix = 'adaptive_h_';
-	const sprefix = 'adaptive_s_';
 
 	protected $sizes = array();
 	protected $imgdata = array();
+	protected $dpx = array();
+
+	protected $extra_exif = array();
 
 	public function __construct ( ) {
-		/* display width => image size */
 		$this->dpix = array (
-			1 => 540,
-			2 => 980,
-			3 => 1920,
+			1 => 360,
+			2 => 540,
+			3 => 980,
+			4 => 1280,
 		);
 
-		// adaptimg shortcode
+		$this->extra_exif = array (
+			'lens' => 'LensID',
+		);
+
 		add_shortcode('adaptimg', array ( &$this, 'adaptimg' ) );
 	}
 
 	/* init function, should be used in the theme init loop */
 	public function init (  ) {
-		foreach ( $this->dpix as $dpix => $size ) {
-			// width dependent: prefix, max width, no height set, no crop
-			add_image_size ( self::wprefix . $dpix, $size, 0, false );
-			// height dependent: prefix, no width, max height set, no crop
-			add_image_size ( self::hprefix . $dpix, 0, $size, false );
-			// restrict both: prefix, max width set, max height set, no crop
-			//add_image_size ( self::sprefix . $dpix, $size, $size, false );
-		}
+		foreach ( $this->dpix as $dpix => $size )
+			add_image_size ( self::prefix . $dpix, $size, $size, false );
 
-		// adaptimg shortcode
-		add_filter('the_content', array ( &$this, 'adaptify' ), 2 );
-
-		// sharpen all the images
-		add_filter('image_make_intermediate_size',array ( &$this, 'sharpen' ),10);
-
-		// set jpeg quality a littlebit better
+		add_filter( 'the_content', array ( &$this, 'adaptify' ), 2 );
+		add_filter( 'the_content', array( &$this, 'featured_image'), 1 );
+		add_filter( 'image_make_intermediate_size',array ( &$this, 'sharpen' ),10);
 		add_filter( 'jpeg_quality', array( &$this, 'jpeg_quality' ) );
 		add_filter( 'wp_editor_set_quality', array( &$this, 'jpeg_quality' ) );
+
+		add_filter('wp_read_image_metadata', array(&$this, 'extra_exif'), 1, 3 );
 	}
 
 	/**
@@ -71,7 +55,7 @@ class adaptive_images {
 	public function adaptimg( $atts , $content=null ) {
 		global $post;
 
-		error_log ('DEBUG ' . json_encode($atts));
+		//error_log ('DEBUG ' . json_encode($atts));
 
 		extract( shortcode_atts(array(
 			'aid' => false,
@@ -85,24 +69,32 @@ class adaptive_images {
 
 		if ( !empty($title)) $img['title'] = $title;
 
-		$type = 'w';
-		$keys = array_keys ( $img['src'][$type] );
-		$fallback = $img['src'][$type][ $keys[1] ][0];
+		$fallback = $img['src']['a'][1];
+		$try = array ( 'm', 2, 3 );
 
-		foreach ( $img['src'][$type] as $dpix => $src )
-			$srcset[] = $src[0] . ' ' . $dpix . "w";
+		foreach ( $try as $test ) {
+
+			if (isset($img['src']['a'][ $test ]))
+				$t = $img['src']['a'][ $test ];
+			elseif (isset($img['src'][ $test ]))
+				$t = $img['src'][ $test ];
+			else
+				continue;
+
+			if ( $t != $img['src']['o'] )
+				$fallback = $t;
+		}
+
+		$as = $this->dpix;
+		foreach ( $img['src']['a'] as $dpix => $src ) {
+			$srcset[] = static::fix_url($src) . ' ' . $as[$dpix] . "w";
+		}
 
 		if ( isset($img['parent']) && !empty($img['parent']) && ( $img['parent'] != $post->ID || !is_singular()) ) {
-			$l = get_permalink ( $img['parent'] );
+			$target = get_permalink ( $img['parent'] );
 		}
 		else {
-			$t = end( $img['src']['w']);
-			if ( $t[1] > $t[2] )
-				$l = end( $img['src']['w']);
-			else
-				$l = end( $img['src']['h']);
-
-			$l = $l[0];
+			$target = end( $img['src']['a']);
 		}
 
 		$r = sprintf('
@@ -110,62 +102,16 @@ class adaptive_images {
 			<picture class="adaptive">
 				<img src="%s" id="%s" class="adaptimg" title="%s" alt="%s" srcset="%s" />
 			</picture>
-		</a>', $l, $fallback, $img['slug'], $img['title'], $img['alttext'], join ( ', ', $srcset ) );
+		</a>', $target, $fallback, $img['slug'], $img['title'], $img['alttext'], join ( ', ', $srcset ) );
 
 		return $r;
 	}
 
-	/**
-	 * adaptive image shortcode function
-	 */
-	public function srcset( $aid ) {
-
-		if ( empty ( $aid ) )
-			return false;
-
-		$__post = get_post( $aid );
-
-		foreach ( $this->dpix as $dpix => $size ) {
-			$img['src']['w'][$size] = wp_get_attachment_image_src( $aid, self::wprefix . $dpix );
-			$img['src']['h'][$size] = wp_get_attachment_image_src( $aid, self::hprefix . $dpix );
-			$img['src']['s'][$size] = wp_get_attachment_image_src( $aid, self::sprefix . $dpix );
-		}
-		$type = 'w';
-		$keys = array_keys ( $img['src'][$type] );
-
-		$fallback = $img['src'][$type][ $keys[0] ][0];
-
-		foreach ( $img['src'][$type] as $dpix => $src )
-			$srcset[] = $src[0] . ' ' . $dpix . "w";
-
-
-		if ( isset($__post->post_parent) && !empty ( $__post->post_parent ) && $__post->post_parent != $aid ) {
-			$l= get_permalink ( $__post->post_parent );
-		}
-		else {
-			$t = end( $img['src']['w']);
-
-			if ( $t[1] > $t[2] )
-				$l = end( $img['src']['w']);
-			else
-				$l = end( $img['src']['h']);
-
-			$l = $l[0];
-		}
-
-		$r = array (
-			'srcset' => $srcset,
-			'fallback' => $fallback,
-			'target' => $l,
-		);
-
-		return $r;
-	}
 
 	/*
 	 *
 	 */
-	private function get_imagemeta ( $imgid ) {
+	public function get_imagemeta ( $imgid ) {
 		$img = array();
 		$__post = get_post( $imgid );
 
@@ -184,12 +130,21 @@ class adaptive_images {
 		}
 
 		foreach ( $this->dpix as $dpix => $size ) {
-			$img['src']['w'][$size] = wp_get_attachment_image_src( $imgid, self::wprefix . $dpix );
-			$img['src']['h'][$size] = wp_get_attachment_image_src( $imgid, self::hprefix . $dpix );
-			$img['src']['s'][$size] = wp_get_attachment_image_src( $imgid, self::sprefix . $dpix );
+			//$img['src']['w'][$size] = wp_get_attachment_image_src( $imgid, self::wprefix . $dpix );
+			//$img['src']['h'][$size] = wp_get_attachment_image_src( $imgid, self::hprefix . $dpix );
+			//$img['src']['s'][$size] = wp_get_attachment_image_src( $imgid, self::sprefix . $dpix );
+			$size = wp_get_attachment_image_src( $imgid, self::prefix . $dpix );
+			$img['src']['a'][$dpix] = static::fix_url($size[0]);
 		}
 
-		$img['src']['o'] = wp_get_attachment_image_src( $imgid, 'full' );
+		$size = wp_get_attachment_image_src( $imgid, 'full' );
+		$img['src']['o'] = static::fix_url($size[0]);
+
+		$size = wp_get_attachment_image_src( $imgid, 'medium' );
+		$img['src']['m'] = static::fix_url($size[0]);
+
+		$size = wp_get_attachment_image_src( $imgid, 'large' );
+		$img['src']['l'] = static::fix_url($size[0]);
 
 		return $img;
 	}
@@ -197,7 +152,7 @@ class adaptive_images {
 	/**
 	 * adaptify all images
 	 */
-	public static function adaptive_embedded( $html ) {
+	public function adaptive_embedded( $html ) {
 		if (pmlnr_utils::islocalhost())
 			return ($html);
 
@@ -221,6 +176,7 @@ class adaptive_images {
 			$excludes = array ( '.noadapt', '.alignleft', '.alignright' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
 				$id = false;
+				$adaptify = true;
 				$alt = $markdown_images[1][$cntr];
 				$url = $markdown_images[2][$cntr];
 				$title = $markdown_images[3][$cntr];
@@ -235,7 +191,7 @@ class adaptive_images {
 					if ( in_array($val, $excludes )) $adaptify = false;
 				}
 
-				if ($id) {
+				if ($id && $adaptify) {
 					$r = '[adaptimg aid=' . $id .']';
 					$html = str_replace ( $imgstr, $r, $html );
 				}
@@ -267,31 +223,41 @@ class adaptive_images {
 		if ( !$size )
 			return $resized;
 
-		if ($size[2] != IMAGETYPE_JPEG)
-			return $resized;
+		$fname = basename( $resized );
+		$cachedir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'cache';
+		$cached = $cachedir . DIRECTORY_SEPARATOR . $fname;
 
-
-		error_log(  __CLASS__ . ": adaptive sharpen starting on " . $resized );
-
-		$imagick = new Imagick($resized);
-		//$imagick->adaptiveSharpenImage(0, 0.6);
-		//$imagick->sharpenImage(0, 1);
-		$imagick->unsharpMaskImage(0,0.5,1,0);
-		$imagick->setImageFormat("jpg");
-		$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
-		$imagick->setImageCompressionQuality(static::jpeg_quality());
-		$imagick->writeImage($resized);
-		$imagick->destroy();
-		error_log(  __CLASS__ . ": adaptive sharpen done on " . $resized );
-
+		if ( $size[2] != IMAGETYPE_JPEG ) {
+			error_log(  __CLASS__ . ": moving " . $cached );
+			if (copy( $resized, $cached)) {
+				error_log(  __CLASS__ . ": removing " . $resized );
+				unlink( $resized );
+				error_log(  __CLASS__ . ": creating symlink " . $resized );
+				symlink ( $cached, $resized );
+			}
+			else {
+				error_log(  __CLASS__ . ": could not remove " . $resized );
+			}
+		}
+		else {
+			error_log(  __CLASS__ . ": adaptive sharpen " . $resized );
+			$imagick = new Imagick($resized);
+			//$imagick->adaptiveSharpenImage(0, 0.6);
+			//$imagick->sharpenImage(0, 1);
+			$imagick->unsharpMaskImage(0,0.5,1,0);
+			$imagick->setImageFormat("jpg");
+			$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
+			$imagick->setImageCompressionQuality(static::jpeg_quality());
+			$imagick->writeImage($cached);
+			$imagick->destroy();
+			error_log(  __CLASS__ . ": removing " . $resized );
+			unlink ($resized);
+			error_log(  __CLASS__ . ": creating symlink " . $resized );
+			symlink ( $cached, $resized );
+		}
 
 		return $resized;
 	}
-
-	static public function cachedimage ( $image ) {
-
-	}
-
 
 	/**
 	 *
@@ -315,16 +281,18 @@ class adaptive_images {
 				$img['slug'] = 'img-' . $img['slug'];
 
 		$aimg = wp_get_attachment_image_src( $aid, 'full' );
-		$img['url'] = pmlnr_utils::absolute_url($aimg[0]);
+		$img['url'] = static::fix_url($aimg[0]);
 
 		$aimg = wp_get_attachment_image_src( $aid, 'medium' );
-		$img['mediumurl'] = pmlnr_utils::absolute_url($aimg[0]);
+		$img['mediumurl'] = static::fix_url($aimg[0]);
 
 		$aimg = wp_get_attachment_image_src( $aid, 'large' );
-		$img['largeurl'] = pmlnr_utils::absolute_url($aimg[0]);
+		$img['largeurl'] = static::fix_url($aimg[0]);
 
 		$aimg = wp_get_attachment_image_src( $aid, 'thumbnail' );
-		$img['thumbnail'] = pmlnr_utils::absolute_url($aimg[0]);
+		$img['thumbnail'] = static::fix_url($aimg[0]);
+
+
 
 		return $img;
 	}
@@ -332,7 +300,7 @@ class adaptive_images {
 	/**
 	 *
 	 */
-	public static function featured_image ( $src ) {
+	public function featured_image ( $src ) {
 		global $post;
 		if (!is_object($post) || !isset($post->ID))
 			return $src;
@@ -340,7 +308,6 @@ class adaptive_images {
 		$thid = get_post_thumbnail_id( $post->ID );
 		if ( ! $thid )
 			return $src;
-
 
 		$format = get_post_format ( $post->ID );
 
@@ -369,17 +336,37 @@ class adaptive_images {
 				$src = $src . static::photo_exif( $post, $thid );
 		}
 
-		return static::adaptive_embedded( $src );
+		return $this->adaptive_embedded( $src );
 	}
 
 	/**
 	 *
 	 */
-	public static function photo_exif ( &$post, &$thid ) {
-		$thmeta = wp_get_attachment_metadata( $thid );
-		if ( isset( $thmeta['image_meta'] ) && !empty($thmeta['image_meta']) &&
-			 isset($thmeta['image_meta']['camera']) && !empty($thmeta['image_meta']['camera']) ):
-			$thmeta = $thmeta['image_meta'];
+	public function photo_exif ( &$post, &$thid ) {
+		$rawmeta = wp_get_attachment_metadata( $thid );
+		$file = get_attached_file ($thid );
+
+		/*
+		$extra = $this->extra_exif;
+		$regenerate = false;
+		foreach ( array_keys($extra) as $metakey ) {
+			if (!isset($rawmeta['image_meta'][$metakey])) {
+				$regenerate = true;
+			}
+		}
+
+		if ($regenerate) {
+			if (!function_exists('wp_generate_attachment_metadata')) {
+				include( ABSPATH . 'wp-admin/includes/image.php' );
+			}
+			$rawmeta = wp_generate_attachment_metadata( $thid, $file );
+			wp_update_attachment_metadata( $thid,  $rawmeta );
+		}
+		*/
+
+		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta']) &&
+			 isset($rawmeta['image_meta']['camera']) && !empty($rawmeta['image_meta']['camera']) ):
+			$thmeta = $rawmeta['image_meta'];
 
 			//shutter speed
 			if ( (1 / $thmeta['shutter_speed'] ) > 1) {
@@ -404,6 +391,7 @@ class adaptive_images {
 				'focal_length' => sprintf (__('<i class="icon-focallength spacer"></i>%smm'), $thmeta['focal_length'] ),
 				'aperture' => sprintf ( __('<i class="icon-aperture spacer"></i>f/%s'), $thmeta['aperture']),
 				'shutter_speed' => sprintf( __('<i class="icon-clock spacer"></i>%s sec'), $shutter_speed),
+				//'lens' => sprintf( __('<i class="icon-aperture spacer"></i>%s'), $thmeta['lens']),
 			);
 			/*
 			//$cc = get_post_meta ( $post->ID, 'cc', true );
@@ -420,6 +408,9 @@ class adaptive_images {
 
 			return $cc;
 			*/
+			//static::extra_exif ( $thmeta, $file );
+
+
 			return join(',',$displaymeta);
 		endif;
 	}
@@ -427,15 +418,70 @@ class adaptive_images {
 	/**
 	 *
 	 */
-	public static function adaptify ( $html ) {
+	public function adaptify ( $html ) {
 		global $post;
 
 		//$adaptify = get_post_meta ($post->ID, 'adaptify', true);
 
 		//if ( $adaptify && $adaptify == '1')
-		$html = static::adaptive_embedded($html);
+		$html = $this->adaptive_embedded($html);
 
 		return $html;
+	}
+
+	/**
+	 *
+	 */
+	public static function fix_url ( $url ) {
+		$surl = rtrim( get_bloginfo('url'), '/' );
+		$url = $surl . str_replace ( $surl, '', $url );
+		$url = str_replace ( array('http://', 'https://'), '//', $url );
+		//$url = str_replace ('/files/', '/cache/', $url );
+
+		return $url;
+	}
+
+	/**
+	 *
+	 */
+	public function extra_exif ( $meta, $filepath ='', $sourceImageType = '' ) {
+
+		if (empty($filepath) || !is_file($filepath) || !is_readable($filepath))
+			return $meta;
+
+		if ( $sourceImageType != IMAGETYPE_JPEG )
+			return $meta;
+
+		$extra = $this->extra_exif;
+		$rextra = array_flip($extra);
+
+		$args = $metaextra = array();
+
+		foreach ($extra as $metaid => $exiftoolID ) {
+			if (!isset($meta[ $metaid ])) {
+				$args[] = $exiftoolID;
+			}
+		}
+
+		if (!empty($args)) {
+			error_log('Extracting extra EXIF for ' . $filepath );
+			$cmd = 'exiftool -s -' . join(' -', $args) . ' ' . $filepath;
+
+			exec( $cmd, $exif, $retval);
+
+			if ($retval == 0 ) {
+				error_log ('EXIF: ' . json_encode($exif));
+				foreach ( $exif as $cntr => $data ) {
+					$data = explode (' : ', $data );
+					$data = array_map('trim', $data);
+					$metaextra[ $rextra[ $data[0] ] ] = $data[1];
+				}
+			}
+		}
+
+		$meta = array_merge($meta, $metaextra);
+
+		return $meta;
 	}
 
 }
