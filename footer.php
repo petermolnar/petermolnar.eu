@@ -45,45 +45,44 @@
 
 	<!-- toggle menu -->
 	<script>
-		var menuButton = document.getElementById('showContentHeader');
-		var headerBar = document.getElementsByClassName('content-header');
-		headerBar = headerBar[0];
+		window.addEventListener('load', function() {
+			var menuButton = document.getElementById('showContentHeader');
+			var headerBar = document.getElementsByClassName('content-header');
+			headerBar = headerBar[0];
 
-		menuButton.addEventListener('click', function(e) {
-			e.preventDefault();
+			menuButton.addEventListener('click', function(e) {
+				e.preventDefault();
 
-			var bClass = ( menuButton.className ) ? menuButton.className : '';
-			var hClass = ( headerBar.className ) ? headerBar.className : '';
+				var bClass = ( menuButton.className ) ? menuButton.className : '';
+				var hClass = ( headerBar.className ) ? headerBar.className : '';
 
-			if ( bClass.indexOf("active") > -1 || hClass.indexOf("open") > -1 ) {
-				menuButton.className = bClass.replace(/\ ?active/, '');
-				headerBar.className = hClass.replace(/\ ?open/, '');
-			}
-			else {
-				menuButton.className += ' active';
-				headerBar.className += ' open';
-			}
-			return false;
+				if ( bClass.indexOf("active") > -1 || hClass.indexOf("open") > -1 ) {
+					menuButton.className = bClass.replace(/\ ?active/, '');
+					headerBar.className = hClass.replace(/\ ?open/, '');
+				}
+				else {
+					menuButton.className += ' active';
+					headerBar.className += ' open';
+				}
+				return false;
+			});
+
+			//var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+			var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+
+			var adaptimg = document.getElementsByClassName('adaptimg');
+			[].forEach.call(adaptimg, function (el) {
+				//var w = el.offsetWidth;
+				var h = el.offsetHeight;
+
+				if ( h > vh ) {
+					el.style.height = vh + 'px';
+					el.style.width = 'auto';
+				}
+			});
+			//document.getElementById('note').style.fontWeight = 'bold';
+
 		});
-
-		//var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
-		var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
-
-		var adaptimg = document.getElementsByClassName('adaptimg');
-		[].forEach.call(adaptimg, function (el) {
-			//var w = el.offsetWidth;
-			var h = el.offsetHeight;
-
-			if ( h > vh ) {
-				el.style.height = vh + 'px';
-				el.style.width = 'auto';
-			}
-
-			/*height: auto;
-			width: 100%;*/
-		});
-		//document.getElementById('note').style.fontWeight = 'bold';
-
 	</script>
 	<!-- end toggle menu -->
 </header>
