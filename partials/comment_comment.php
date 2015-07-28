@@ -6,9 +6,12 @@
 <?php $comment_id = $comment->comment_ID;  ?>
 <?php $comment_text = get_comment_text( $comment_id ); ?>
 <?php $comment_link = esc_url( get_comment_link( $comment->comment_ID ) ); ?>
-<li id="comment-<?php echo $comment_id; ?>" class="comment">
+<?php $post_url = get_the_permalink(); ?>
+<?php $post_title = get_the_title(); ?>
+<li id="comment-<?php echo $comment_id; ?>" class="p-comment h-entry comment">
 	<header class="comment-meta">
-		<div class="comment-author vcard">
+		<p class="hide"><a class="u-in-reply-to" href="<?php echo $post_url ?>"><?php echo $post_title ?></a></p>
+		<div class="comment-author p-author h-card vcard">
 			<a href="<?php echo $comment_author_url; ?>" title="<?php echo $comment_author;?>"><?php echo $comment_avatar; ?></a>
 			<b class="fn">
 				<a href="<?php echo $comment_author_url; ?>" rel="external nofollow" class="url">

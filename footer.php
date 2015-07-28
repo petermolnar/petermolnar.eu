@@ -1,6 +1,6 @@
 <?php $lang = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : ''; ?>
 
-<?php /* if ( is_singular() ) comments_template( ); */ ?>
+<?php if ( is_singular() ) comments_template( ); ?>
 
 <!-- main menu -->
 <header class="content-header" id="main-header">
@@ -10,7 +10,7 @@
 	<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
 
 	<div class="limit content-contact">
-		<a rel="license" href="/licence" title="Licence" class="spacer">&copy;</a> <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); /* echo pmlnr_article::vcard(); */ ?><a class="icon-rss" title="RSS feed" href="<?php bloginfo('rss2_url'); ?>"></a><a class="icon-rss spacer" href="<?php bloginfo('atom_url'); ?>" title="Atom feed"></a>
+		<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a> <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); /* echo pmlnr_article::vcard(); */ ?><a class="icon-rss" title="RSS feed" href="<?php bloginfo('rss2_url'); ?>"></a>
 		<br />
 		<?php /*<label for="button-rss" class="hide"><?php __('Follow this site'); ?></label>
 		<input type="button" class="button-rss" id="button-rss" name="button-rss" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-feeds="<?php bloginfo('rss2_url'); ?>" data-subtome-resource="<?php echo home_url(); ?>" value="&#xE80B; follow petermolnar.eu" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" /><br /> */ ?>

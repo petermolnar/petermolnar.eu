@@ -8,7 +8,6 @@ include_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
 include_once ($dirname . '/classes/adaptgal-ng.php');
 include_once ($dirname . '/classes/utils.php');
 
-
 /**
  *
  */
@@ -33,7 +32,23 @@ class petermolnareu {
 	const shortdomain = 'http://pmlnr.eu/';
 	const shorturl_enabled = false;
 
+	public $webmention_types = null;
+
 	public function __construct () {
+		// compile theme file if needed
+		$dirname = dirname(__FILE__);
+
+		$lessfile = $dirname . '/style.less';
+		$lessmtime = filemtime( $lessfile );
+		$cssfile = $dirname . '/style.css';
+		$cssmtime = filemtime( $cssfile );
+
+		if ($cssmtime < $lessmtime ) {
+			include_once ($dirname . '/lib/lessphp/lessc.inc.php');
+			$less = new lessc;
+			$less->compileFile( $lessfile, $cssfile );
+			touch ( $cssfile, $lessmtime );
+		}
 
 		$this->adaptive_images = new adaptive_images();
 		//$this->parsedown = new pmlnr_md();
@@ -41,10 +56,10 @@ class petermolnareu {
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
+
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
-		//add_action( 'init', array( &$this, 'rewrites'));
 
 		// add css & js
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
@@ -74,6 +89,11 @@ class petermolnareu {
 		remove_action('wp_head', 'wp_generator');
 		// no canonical link
 		remove_action('wp_head', 'rel_canonical');
+		// rss will be added by hand
+		remove_action( 'wp_head', 'feed_links', 2 );
+		remove_action( 'wp_head','feed_links_extra', 3);
+		//
+		add_action('wp_head',array(&$this, 'graphmeta'));
 
 		// NO EMOJI FFS
 		remove_action( 'admin_print_styles', 'print_emoji_styles' );
@@ -82,10 +102,14 @@ class petermolnareu {
 		remove_action( 'wp_print_styles', 'print_emoji_styles' );
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
-		//add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
-		//add_action( 'save_post', array(&$this, 'post_meta_save' ) );
-		add_action( 'publish_post', array(&$this, 'doyaml' ) );
+		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
+		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
+		//$statuses = array('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
+		//foreach ($statuses as $status) {
+			//add_action("{$status}_to_publish", array(&$this, "publish"));
+		//}
+		//add_action( 'publish_future_post', array(&$this, "publish"));
 	}
 
 	public function init () {
@@ -93,23 +117,9 @@ class petermolnareu {
 		add_theme_support( 'menus' );
 		add_theme_support( 'automatic-feed-links' );
 
-		// http://codex.wordpress.org/Post_Formats
-		add_theme_support( 'post-formats', array(
-			'image', 'aside', 'video', 'audio', 'quote', 'link',
-		) );
-
 		add_theme_support( 'html5', array(
 			'search-form', 'comment-form', 'comment-list'
 		) );
-
-		/*
-		add_theme_support( 'infinite-scroll', array(
-			'container' => 'main-content',
-			'render'	=> array($this, 'infinite_scroll_render'),
-			'posts_per_page' => 8,
-			'footer' => false,
-		));
-		*/
 
 		// add main menus
 		register_nav_menus( array(
@@ -119,12 +129,11 @@ class petermolnareu {
 		// cleanup
 		remove_filter( 'the_content', 'wpautop' );
 		remove_filter( 'the_excerpt', 'wpautop' );
+		remove_filter( 'the_content', 'make_clickable', 12 );
+		remove_filter( 'comment_text', 'make_clickable', 9);
 
 		// enable custom uploads
 		add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
-
-		// auto-insert featured image
-		//add_filter( 'the_content', 'adaptive_images::featured_image', 1 );
 
 		// additional user meta fields
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
@@ -136,27 +145,14 @@ class petermolnareu {
 		add_filter( 'image_send_to_editor', array( &$this, 'rebuild_media_string'), 10 );
 
 		// markdown
-
-		//if ( pmlnr_utils::islocalhost() )
-		//	add_filter( 'the_content', 'html_entity_decode', 9 );
-		//else
 		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
-		add_filter( 'the_content', array( &$this, 'post_remote_relation'), 1 );
 		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
 
 		// sanitize content before saving
 		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
 
-		// remove x-pingback
-		add_filter('wp_headers', array(&$this, 'remove_x_pingback'));
 
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
-
-		add_filter( 'jetpack_implode_frontend_css', '__return_false' );
-
-		add_filter( 'pre_option_link_manager_enabled', '__return_true' );
-
-		add_filter ( 'the_content_feed', array(&$this, 'feed_stats'), 1, 2 );
 
 		// NO EMOJI
 		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
@@ -165,14 +161,30 @@ class petermolnareu {
 
 		// filter to remove TinyMCE emojis
 		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
+
+		add_filter ('webmention_links', array(&$this, 'webmention_links'), 8, 2);
+
+		// my own post formats
+		register_taxonomy( 'kind', 'post', array (
+			'label' => 'Type',
+			'public' => true,
+			'show_ui' => true,
+			'hierarchical' => true,
+			'show_admin_column' => true,
+			'rewrite' => array( 'slug' => 'metatype' ),
+		));
 	}
 
+	/**
+	 * Bloody emojis
+	 */
 	public function disable_emojicons_tinymce( $plugins ) {
 		if ( is_array( $plugins ) )
 			return array_diff( $plugins, array( 'wpemoji' ) );
 		else
 			return array();
 	}
+
 
 	/**
 	 * register & queue css & js
@@ -187,19 +199,18 @@ class petermolnareu {
 		wp_enqueue_style( 'style' );
 		// $this->css_version ( dirname(__FILE__) . '/style.css' ) );
 
-		/*
+		/* Magnific popup */
 		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
-		wp_enqueue_style( 'magnific-popup' );
+		//wp_enqueue_style( 'magnific-popup' );
 		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
-		wp_enqueue_script ('magnific-popup');
-		*/
+		//wp_enqueue_script ('magnific-popup');
 
-		/* justified gallery *
+
+		/* justified gallery */
 		wp_register_style( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/css/justifiedGallery.min.css' , false );
-		wp_enqueue_style( 'Justified-Gallery' );
+		//wp_enqueue_style( 'Justified-Gallery' );
 		wp_register_script( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js' , array('jquery'), null, false );
-		wp_enqueue_script ('Justified-Gallery');
-		*/
+		//wp_enqueue_script ('Justified-Gallery');
 
 		/* syntax highlight */
 		wp_register_style( 'prism', $css_url . '/prism.css', false, null );
@@ -212,61 +223,65 @@ class petermolnareu {
 		wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
 		//wp_enqueue_script( 'jquery' );
 
-		//jetpack.css?ver=3.4.2'
-
+		// cleanup
 		wp_dequeue_script( 'mediaelement' );
 		wp_dequeue_script( 'wp-mediaelement' );
 		wp_dequeue_style ('wp-mediaelement');
 		wp_dequeue_script ('devicepx');
+		wp_dequeue_style ('open-sans-css');
+		//wp_deregister_style ('open-sans-css');
 	}
 
 	/**
 	 * add cc field
-	 *
+	 */
 	public function post_meta_add () {
 		add_meta_box(
-			'cc_licence',
-			esc_html__( 'Creative Commons', 'petermolnareu' ),
-			array(&$this, 'post_meta_display_cc'),
+			'webmention',
+			esc_html__( 'Webmention', 'petermolnareu' ),
+			array(&$this, 'post_meta_display_webmention'),
 			'post',
 			'normal',
 			'default'
 		);
-	}*/
+
+	}
 
 	/**
-	 * meta field for CC licence
-	 *
-	public function post_meta_display_cc ( $object, $box ) {
+	 * meta field display
+	 */
+	public function post_meta_display_webmention ( $object, $box ) {
 		wp_nonce_field( basename( __FILE__ ), $this->theme_constant );
-		$meta = get_post_meta( $object->ID, 'cc', true );
-		$default = $meta ? $meta : 'by';
-		$cc  = array (
-			'by' => __('Attribution'),
-			'by-sa' => __('Attribution-ShareAlike'),
-			'by-nd' => __('Attribution-NoDerivatives'),
-			'by-nc' => __('Attribution-NonCommercial'),
-			'by-nc-sa' => __('Attribution-NonCommercial-ShareAlike'),
-			'by-nc-nd' => __('Attribution-NonCommercial-NoDerivatives'),
+		$urlfield = 'webmention_url';
+		$webmention_url = get_post_meta( $object->ID, $urlfield, true );
+
+		$typefield = 'webmention_type';
+		$webmention_type = get_post_meta( $object->ID, $typefield, true );
+
+		$types = array (
+			'u-in-reply-to' => __('Reply'),
+			'u-like-of' => __('Like'),
+			'u-repost-of' => __('Repost'),
 		);
 
 		?>
 		<p>
-			<?php
-				foreach ($cc as $licence => $name ) {
-					$selected = ($licence == $default ) ? ' checked="checked"' : '';
-					$ccid = 'cc-' . $licence;
-					printf ( '<input class="post-format" id="%s" type="radio" value="%s" name="cc"></input>', $ccid, $licence, $selected );
-					printf ('<label class="post-format-icon" for="%s">%s</label><br />', $ccid, $name );
-				}
-			?>
+			<label for="<?php echo $urlfield ?>"><?php _e('URL to poke'); ?></label><br />
+			<input class="attachmentlinks" type="url" name="<?php echo $urlfield ?>" id="<?php echo $urlfield ?>" value="<?php echo $webmention_url ?>" />
+		</p>
+		<p>
+			<label for="<?php echo $typefield ?>"><?php _e('Webmention type'); ?></label><br />
+			<?php foreach ( $types as $type => $label ): ?>
+			<span><input type="radio" name="<?php echo $typefield ?>" value="<?php echo $type ?>" <?php checked( $webmention_type, $type, 1 ); ?>><?php echo $label; ?></span>
+			<?php endforeach; ?>
 		</p>
 		<?php
-	}/
+	}
+
 
 	/**
 	 * handle additional post meta
-	 *
+	 */
 	public function post_meta_save ( $post_id ) {
 		if ( !isset( $_POST[ $this->theme_constant ] ))
 			return $post_id;
@@ -282,7 +297,9 @@ class petermolnareu {
 
 		// sanitize
 		$san = array (
-			'cc' => FILTER_SANITIZE_STRING,
+			'metacontent' => FILTER_SANITIZE_STRING,
+			'webmention_url' =>FILTER_SANITIZE_URL,
+			'webmention_type' => FILTER_SANITIZE_STRING,
 		);
 
 		foreach ($san as $key => $filter) {
@@ -294,7 +311,34 @@ class petermolnareu {
 			elseif ( empty($new) && !empty($curr) )
 				$r = delete_post_meta( $post_id, $key );
 		}
-	}*/
+	}
+
+	/**
+	 *
+	 */
+	public function webmention_links ( $links, $postid ) {
+
+		if (empty($postid))
+			return $links;
+
+		$post = get_post( $postid );
+		if (!$post || empty($post) || !is_object($post))
+			return $links;
+
+
+		// Find all external links in the source
+		if (preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#]*/i", $post->post_content, $matches)) {
+			$xlinks = $matches[0];
+			$links = array_merge($links, $xlinks);
+		}
+
+		// additional meta content links
+		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
+		if (!empty($metacontent))
+			array_unshift($links, $webmention_url);
+
+		return $links;
+	}
 
 	/**
 	 * extend allowed mime types
@@ -313,14 +357,16 @@ class petermolnareu {
 	 */
 	public function add_user_meta_fields ($profile_fields) {
 
+		$profile_fields['pgp'] = __('URL to PGP key for the email address above', $this->theme_constant);
 		$profile_fields['github'] = __('Github username', $this->theme_constant);
 		$profile_fields['mobile'] = __('Mobile phone number', $this->theme_constant);
 		$profile_fields['linkedin'] = __('LinkedIn username', $this->theme_constant);
 		$profile_fields['flickr'] = __('Flickr username', $this->theme_constant);
-		//$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
-		//$profile_fields['500px'] = __('500px username', $this->theme_constant);
+		$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
+		$profile_fields['500px'] = __('500px username', $this->theme_constant);
 		$profile_fields['instagram'] = __('instagram username', $this->theme_constant);
 		$profile_fields['skype'] = __('skype username', $this->theme_constant);
+		$profile_fields['twitter'] = __('twitter username', $this->theme_constant);
 
 
 		return $profile_fields;
@@ -343,16 +389,6 @@ class petermolnareu {
 		if (empty($post) || !isset($post->ID) || empty($post->ID)) {
 			return $shortlink;
 		}
-
-		/*
-		if ( static::shorturl_enabled ) {
-			$r = static::shortdomain . $post->ID;
-		}
-		else {
-			$url = rtrim( get_bloginfo('url'), '/' ) . '/';
-			$r = $url.'?p='.$post->ID;
-		}
-		*/
 
 		$url = rtrim( get_bloginfo('url'), '/' ) . '/';
 		$r = $url.'?p='.$post->ID;
@@ -662,44 +698,6 @@ class petermolnareu {
 		return $share;
 	}
 
-	/**
-	 *
-	 */
-	public static function post_remote_relation ( $content ) {
-		global $post;
-
-		if (!is_object($post) || !isset($post->ID))
-			return $content;
-
-		$r = array();
-
-		$to_check = array (
-			'u-in-reply-to' => __("This is a reply to"),
-			'u-repost-of' => __("This is a repost of"),
-		);
-
-		foreach ($to_check as $relation => $title ) {
-			$rel = get_post_meta( $post->ID, $relation, true );
-			if ( $rel ) {
-				if ( strstr($rel, "\n" ))
-					$rel = explode ("\n", $rel);
-				else
-					$rel = explode (" ", $rel);
-
-				foreach ( $rel as $url ) {
-					$url = trim($url);
-					$l = sprintf ( "%s: [%s](%s){%s}\n", $title, $url, $url, $relation );
-					$r[] = $l;
-				}
-			}
-		}
-
-		if (!empty($r))
-			$content = join("\n",$r) . $content;
-
-		return $content;
-	}
-
 	public static function makesyndication () {
 		global $nxs_snapAvNts;
 		global $post;
@@ -817,26 +815,9 @@ class petermolnareu {
 
 	}
 
-	public function infinite_scroll_render() {
-		while( have_posts() ) {
-			the_post();
-			$post_id = get_the_ID();
-			$categories = get_the_terms( $post_id, 'category' );
-			$category = ( is_array($categories) ) ? array_pop($categories) : null;
-
-			if ( isset($category->slug) && !empty($category->slug) && file_exists( dirname(__FILE__) . '/partials/element-' . $category->slug . '.php' ))
-				get_template_part( '/partials/element-' . $category->slug );
-			else
-				get_template_part( '/partials/element-journal' );
-		}
-	}
-
-	public function feed_stats ( $content, $feed_type ) {
-		$content .= '<img src="https://petermolnar.eu/wp-content/plugins/simple-feed-stats/tracker.php?sfs_tracking=true&sfs_type=open" alt="" />';
-
-		return $content;
-	}
-
+	/**
+	 *
+	 */
 	public function widgets_init () {
 		register_sidebar( array(
 			'name' => __( 'Subscribe', $this->theme_constant ),
@@ -848,12 +829,21 @@ class petermolnareu {
 		) );
 	}
 
-	public static function doyaml ( ) {
-		global $post;
+	/**
+	 * export to yaml on the fly
+	 */
+	public static function doyaml ( $postid = false ) {
+		if (!$postid)
+			return;
+
+		$post = get_post($postid);
 
 		//error_log ('Exporting starting #' . $post->ID . ', ' . $post->post_name . ' to YAML');
 
 		$cat = get_the_category( $post->ID );
+		if ( empty($cat) || !isset($cat[0]) || empty($cat[0]) || !is_object($cat[0]) )
+			return false;
+
 		$category = $cat[0]->cat_name;
 		$category_slug = $cat[0]->slug;
 
@@ -908,6 +898,9 @@ class petermolnareu {
 
 		$content = $post->post_content;
 		$excerpt = $post->post_excerpt;
+		$metacontent = get_post_meta ( $post->ID, 'metacontent', true);
+		if ( !empty($metacontent))
+			$content = $metacontent . $content;
 
 		$search = array ( '”', '“', '’', '–', "\x0D" );
 		$replace = array ( '"', '"', "'", '-', '' );
@@ -975,19 +968,23 @@ class petermolnareu {
 		$attachments = get_children( array (
 			'post_parent'=>$post->ID,
 			'post_type'=>'attachment',
-			'post_mime_type'=>'image',
+			//'post_mime_type'=>'image',
 			'orderby'=>'menu_order',
 			'order'=>'asc'
 		));
 
-		if ( !empty($attachments) ) {
+		if ( !empty($attachments) && count($attachments) < 20 ) {
 			foreach ( $attachments as $aid => $attachment ) {
 				$attachment_path = get_attached_file( $aid );
 				$attachment_file = basename( $attachment_path);
-				copy( $attachment_path, $flatdir . DIRECTORY_SEPARATOR . $attachment_file );
-				//$a[] = pmlnr_utils::absolute_url( wp_get_attachment_url( $aid ) );
+				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
+				error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
+				if ( !is_file($target_file))
+					link( $attachment_path, $target_file );
 			}
-			//$out .=  "attachments: " . '['. join (', ', $a) . ']' . "\n";
+		}
+		elseif ( !empty($attachments) ) {
+			error_log ('something is messed up; #' . $post->ID . ' wanted to save all this: ' . json_encode($attachments) );
 		}
 
 		$_syndicated = get_post_meta ( $post->ID, 'syndication_urls', true );
@@ -1005,12 +1002,76 @@ class petermolnareu {
 
 		$out .= $content;
 
-		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to YAML');
+		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
 		file_put_contents ($flatfile, $out);
 		touch ( $flatfile, $post_timestamp );
 
-		$date = date('c');
-		exec( "cd ${flatpdir}; git add *; git commit -m 'adding ${flatfile} @ ${date}'" );
+		//$date = date('c');
+		//exec( "cd ${flatpdir}; git add *; git commit -m 'adding ${flatfile} @ ${date}'" );
+	}
+
+	/**
+	 * my own format manager because the built-in sucks
+	 */
+	public static function get_type ( $postid = false ) {
+		if (empty($postid) || !is_numeric($postid))
+			global $post;
+		else
+			$post = get_post( $postid );
+
+		if (!$post || empty($post) || !is_object($post))
+			return false;
+
+		$kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) );
+
+		if (is_wp_error($kind))
+				return false;
+
+		if(is_array($kind))
+			$kind = array_pop( $kind );
+
+		if (is_object($kind) && isset($kind->slug))
+			$kind = $kind->slug;
+
+		return $kind;
+	}
+
+	/**
+	 * display meta content
+	 */
+	public static function get_metacontent ( $postid = false ) {
+		if (empty($postid) || !is_numeric($postid))
+			global $post;
+		else
+			$post = get_post( $postid );
+
+		if (!$post || empty($post) || !is_object($post))
+			return false;
+
+		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
+		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
+
+		if ( empty($webmention_url) )
+			return false;
+
+		switch ($webmention_type) {
+			case 'u-like-of':
+				$r = sprintf(__('This is a like of: [%s](%s){.%s}'), $webmention_url, $webmention_url, $webmention_type);
+				break;
+			case 'u-repost-of':
+				$r = sprintf(__('This is a repost of: [%s](%s){.%s}'), $webmention_url, $webmention_url, $webmention_type);
+				break;
+			default:
+				$r = sprintf(__('This is a reply to: [%s](%s){.u-in-reply-to}'), $webmention_url, $webmention_url);
+
+			break;
+		}
+
+		$parsedown = new ParsedownExtra();
+		$parsedown->setBreaksEnabled(true);
+		$meta = $parsedown->text ( $r );
+
+		return $meta;
 	}
 
 }

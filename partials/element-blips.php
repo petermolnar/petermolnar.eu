@@ -4,7 +4,7 @@
 <?php $post_images = adaptive_images::imagewithmeta( get_post_thumbnail_id( $post->ID ) ) ?>
 <?php $post_image = (empty($post_images)) ? false : $post_images['mediumurl'] ?>
 <?php $post_thumbnail = (empty($post_images)) ? false : $post_images['thumbnail'] ?>
-<?php $post_format = get_post_format() ?>
+<?php $post_format = petermolnareu::get_type($post->ID); ?>
 
 <div class="content-inner">
 	<article id="post-<?php the_ID(); ?>" class="h-entry article-list-element">
@@ -25,7 +25,7 @@
 		</header>
 
 		<div class="e-content">
-			<?php if ($post_format == 'link'): ?>
+			<?php if ($post_format == 'bookmark'): ?>
 			<p><strong><?php echo $post_title ?></strong></p>
 			<?php endif; ?>
 

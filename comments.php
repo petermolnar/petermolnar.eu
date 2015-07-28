@@ -1,6 +1,7 @@
 <?php global $post; ?>
 <?php if ( post_password_required() ) return; ?>
 <?php
+
 	$comments = get_comments ( array(
 		'post_id' => $post->ID,
 		)
@@ -47,11 +48,22 @@
 
 ?>
 
-<?php if ( have_comments() /* && is_user_logged_in() */ ): ?>
-
 <section class="content-comments">
 	<div class="content-inner">
 
+
+	<?php
+	/*
+	$args = array(
+		'comment_notes_before' => '',
+		'comment_notes_after' => '',
+
+	);
+	comment_form( $args, $post->ID );
+	*/
+	?>
+
+<?php if ( have_comments() /* && is_user_logged_in() */ ): ?>
 	<?php if (!empty($c['likes'])): ?>
 		<h5><a name="likes"><?php _e('Liked by:') ?></a></h5>
 		<ol class="likes comment-list">
@@ -81,8 +93,9 @@
 		</ol>
 		<br class="clear" />
 	<?php endif; ?>
+<?php endif; ?>
 
 	</div>
 </section>
 
-<?php endif;
+

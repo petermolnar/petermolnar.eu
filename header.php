@@ -7,9 +7,9 @@
 	<title><?php wp_title( ); ?></title>
 	<link rel="shortcut icon" href="<?php echo get_bloginfo('template_directory') . '/images/favicon.png' ?>" />
 	<link rel="icon" href="<?php echo get_bloginfo('template_directory') . '/images/favicon.png' ?>" />
-	<link rel="apple-touch-icon-precomposed" href="<?php echo get_bloginfo('template_directory') . '/images/favicon.png' ?>" />
+	<link rel="alternate" type="application/rss+xml" title="<?php bloginfo('name'); ?> RSS Feed" href="<?php bloginfo('rss2_url'); ?>" />
+	<link rel="pgpkey" href="/pgp.asc">
 	<?php wp_head(); ?>
-	<?php petermolnareu::graphmeta(); ?>
 </head>
 
 <body>

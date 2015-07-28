@@ -5,10 +5,25 @@ class pmlnr_utils {
 	public function __construct () {
 	}
 
+	public static function fix_url ( $url, $absolute = true ) {
+		// move to generic scheme
+		$url = str_replace ( array('http://', 'https://'), '//', $url );
+
+		$domain = parse_url(get_bloginfo('url'), PHP_URL_HOST);
+		// relative to absolute
+		if ($absolute && !stristr($url, $domain)) {
+			$url = '//' . $domain . '/' . ltrim($url, '/');
+		}
+
+		return $url;
+	}
+
 	public static function absurl ( $url ) {
-		$surl = rtrim( get_bloginfo('url'), '/' );
-		$url = $surl . str_replace ( $surl, '', $url );
-		return str_replace ( array('http://', 'https://'), '//', $url );
+		return static::fix_url($url);
+
+		//$surl = rtrim( get_bloginfo('url'), '/' );
+		//$url = $surl . str_replace ( $surl, '', $url );
+		//return str_replace ( array('http://', 'https://'), '//', $url );
 	}
 
 	/**
@@ -18,9 +33,11 @@ class pmlnr_utils {
 	 * @return string: appended url
 	 */
 	public static function absolute_url ( $url ) {
-		$surl = rtrim( get_bloginfo('url'), '/' );
-		$url = $surl . str_replace ( $surl, '', $url );
-		return self::replace_if_ssl( $url );
+		return static::fix_url($url);
+
+		//$surl = rtrim( get_bloginfo('url'), '/' );
+		//$url = $surl . str_replace ( $surl, '', $url );
+		//return self::replace_if_ssl( $url );
 	}
 
 	/**
@@ -30,13 +47,15 @@ class pmlnr_utils {
 	 * @return string: url checked
 	 */
 	public static function replace_if_ssl ( $url ) {
-		if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
-			$_SERVER['HTTPS'] = 'on';
+		return static::fix_url($url);
 
-		if ( isset($_SERVER['HTTPS']) && (( strtolower($_SERVER['HTTPS']) == 'on' )  || ( $_SERVER['HTTPS'] == '1' ) ))
-			$url = str_replace ( 'http://' , 'https://' , $url );
+		//if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
+			//$_SERVER['HTTPS'] = 'on';
 
-		return $url;
+		//if ( isset($_SERVER['HTTPS']) && (( strtolower($_SERVER['HTTPS']) == 'on' )  || ( $_SERVER['HTTPS'] == '1' ) ))
+			//$url = str_replace ( 'http://' , 'https://' , $url );
+
+		//return $url;
 	}
 
 	/**

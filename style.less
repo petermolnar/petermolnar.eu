@@ -7,6 +7,7 @@ Author URI:		http://petermolnar.eu/
 Version:		9.4
 */
 
+
 @color-bg-dark: #2D333A;
 @color-bg-light: #EFEFEF;
 @color-text-light: #999;
@@ -17,6 +18,21 @@ Version:		9.4
 @color-activemenu: #fff;
 @color-header: #888;
 @color-table: #777;
+
+
+/*
+@color-bg-dark: #2D333A;
+@color-bg-light: #424747;
+@color-text-light: #BBBBBB;
+@color-text-dark: #BBBBBB;
+@color-link-light: #ddd;
+@color-link-dark: #eeeeee;
+@color-menu: #aaa;
+@color-activemenu: #fff;
+@color-header: #888;
+@color-table: #777;
+*/
+
 
 @thickborder: 2px;
 @thinborder: 1px;
@@ -213,15 +229,15 @@ table {
 input, select, submit {
 	vertical-align:middle;
 	border: @thinborder solid lighten(@color-bg-dark,10%);
-	background-color: @color-bg-light;
-	color: @color-text-dark;
+	background-color: darken(@color-bg-dark,5%);
+	color: lighten(@color-header,5%);
 	width: 6em;
 	.animate();
 	padding: @padding-normal;
 
 	&:active, &:focus {
 		border: @thinborder solid lighten(@color-bg-dark,20%);
-		background-color: lighten(@color-bg-light,5%);
+		background-color: darken(@color-bg-dark,10%);
 		width: 10em;
 	}
 }
@@ -525,6 +541,8 @@ pre {
 /* FONT ICONS */
 [class^="icon-"]:before, [class*=" icon-"]:before,
 [class^="x-"]:before, [class*=" x-"]:before,
+[class*="u-in-reply-to"]:before,
+[class*="u-like-of"]:before,
 .tel:before, .email:before {
 	.iconstyle();
 	font-family: "petermolnar";
@@ -567,6 +585,7 @@ pre {
 .icon-aperture:before { content: '\e81a'; } /* '' */
 .icon-calendar:before { content: '\e810'; } /* '' */
 .icon-camera:before { content: '\e819'; } /* '' */
+.icon-copyright:before { content: '\e81f'; } /* '' */
 .icon-cc:before { content: '\e827'; } /* '' */
 .icon-cc-by:before { content: '\e828'; } /* '' */
 .icon-cc-nc:before { content: '\e829'; } /* '' */
@@ -613,6 +632,11 @@ pre {
 .icon-youtube:before { content: '\e806'; } /* '' */
 .icon-500px:before { content: '\e81e'; } /* '' */
 .icon-deviantart:before { content: '\e820'; } /* '' */
+.icon-reply:before { content: '\e821'; } /* '' */
+.icon-lock:before { content: '\e826'; }
+
+.u-in-reply-to:before { content: '\e821'; }
+.u-like-of:before { content: '\e822'; }
 
 [class^="openwebicon-"]:before, [class*=" openwebicon-"]:before {
 	.iconstyle();
@@ -632,28 +656,7 @@ pre {
 	left: -( @panel-width );
 	padding: 0 0 0 0;
 	.animate();
-	background-color: @color-bg-light;
-/*
-	background: url('assets/image/bg-noise.png') repeat scroll left top darken(@color-bg-dark,12%);
-*
-
-	.h-card {
-		display:block;
-		margin-left: @font-xxlarge;
-		a[rel="me"] {
-			font-size: 0em;
-			letter-spacing: -1em;
-
-			color: lighten(@color-link-dark,30%);
-
-			&:before {
-				margin: 0 @padding-normal @padding-normal 0;
-				font-size: @font-gigantic;
-			}
-		}
-
-	}
-*/
+	background-color: @color-bg-dark;
 }
 
 .content-header.open {
@@ -753,22 +756,27 @@ pre {
 	margin: @font-normal 2em 0;
 	font-size:  @font-small;
 
+	a {
+		font-size: 0em;
+		letter-spacing: -1em;
+		/*color: transparent;*/
+		color: @color-header;
+
+		&:before {
+			font-size: @font-base;
+			/*color: @color-link-dark;*/
+		}
+
+		&:hover {
+			color: lighten(@color-header,10%);
+		}
+	}
+
+
 	.h-card {
 
 		img {
 			margin: 0 @padding-large 0 @padding-large;
-		}
-
-		a {
-			font-size: 0em;
-			letter-spacing: -1em;
-			/*color: transparent;*/
-			color: lighten(@color-link-dark,30%);
-
-			&:before {
-				font-size: @font-base;
-				/*color: @color-link-dark;*/
-			}
 		}
 
 	}
@@ -809,14 +817,18 @@ pre {
 				margin-bottom: @padding-large;
 				padding:0;
 				font-weight: bold;
+/*
 				color:darken(@color-menu,50%);
 				border-bottom: 1px solid @color-bg-light;
+*/
+				color: @color-header;
+
 
 				&:hover {
 					.animate();
 
 					&:before {
-						color: rgba(0,0,0,0.6);
+						color: @color-header;
 					}
 
 				}
@@ -824,6 +836,7 @@ pre {
 				&:before {
 					content: "»";
 					padding-right: @font-normal;
+					padding-left: 0.1em;
 					color: rgba(239,239,239,0);
 				}
 
@@ -838,7 +851,7 @@ pre {
 			opacity: 0.99;
 
 			&:before {
-				color: rgba(0,0,0,0.6);
+				color: @color-header;
 			}
 		}
 	}
@@ -1206,4 +1219,37 @@ ul.page-numbers {
 		}
 
 	}
+}
+
+.comment-form {
+	label {
+		padding: @padding-small @padding-large @padding-small @padding-large;
+		display: inline-block;
+		width: 20%;
+		vertical-align:top;
+	}
+
+	input[type=submit] {
+		border: @border-thin;
+		border-radius: @padding-small;
+		padding: @padding-small @padding-large @padding-small @padding-large;
+		display: inline-block;
+		width: 20%;
+		font-size: @font-normal;
+	}
+	input[type=text], input[type=email], input[type=url] {
+		padding: @padding-small @padding-large @padding-small @padding-large;
+		margin-left: 4%;
+		width: 75%;
+		display: inline-block;
+		font-size: @font-large;
+	}
+	textarea {
+		padding: @padding-small @padding-large @padding-small @padding-large;
+		margin-left: 4%;
+		width: 75%;
+		display: inline-block;
+		font-size: @font-large;
+	}
+
 }
