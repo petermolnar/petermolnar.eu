@@ -29,8 +29,8 @@ class petermolnareu {
 	public $theme_constant = 'petermolnareu';
 	const menu_header = 'header';
 
-	const shortdomain = 'http://pmlnr.eu/';
-	const shorturl_enabled = false;
+	//const shortdomain = 'http://pmlnr.eu/';
+	//const shorturl_enabled = false;
 
 	public $webmention_types = null;
 
@@ -38,6 +38,7 @@ class petermolnareu {
 		// compile theme file if needed
 		$dirname = dirname(__FILE__);
 
+		// autocompile LESS to CSS
 		$lessfile = $dirname . '/style.less';
 		$lessmtime = filemtime( $lessfile );
 		$cssfile = $dirname . '/style.css';
@@ -56,7 +57,6 @@ class petermolnareu {
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
-
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
@@ -65,45 +65,42 @@ class petermolnareu {
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
 
 		// replace shortlink
-		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
-		add_action( 'wp_head', array(&$this, 'shortlink'));
+		//remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
+		//add_action( 'wp_head', array(&$this, 'shortlink'));
 
 		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 
 		// cleanup
-		// no link to the Really Simple Discovery service endpoint, EditURI link
 		remove_action('wp_head', 'rsd_link');
-		// no link to the Windows Live Writer manifest file.
 		remove_action('wp_head', 'wlwmanifest_link');
-		// no index link
 		remove_action('wp_head', 'index_rel_link'); // Index link
-		// no parent post link
 		remove_action('wp_head', 'parent_post_rel_link', 10, 0); // Prev link
-		// no start post link
 		remove_action('wp_head', 'start_post_rel_link', 10, 0);
-		//
 		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
-		// no relational links for the posts adjacent to the current post.
 		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0);
-		// no generator
 		remove_action('wp_head', 'wp_generator');
-		// no canonical link
 		remove_action('wp_head', 'rel_canonical');
-		// rss will be added by hand
+		remove_action('admin_print_styles', 'print_emoji_styles' );
+		remove_action('wp_head', 'print_emoji_detection_script', 7 );
+		remove_action('admin_print_scripts', 'print_emoji_detection_script' );
+		remove_action('wp_print_styles', 'print_emoji_styles' );
+
+		// RSS will be added by hand
 		remove_action( 'wp_head', 'feed_links', 2 );
 		remove_action( 'wp_head','feed_links_extra', 3);
-		//
+
+		// add graphmeta, because world
 		add_action('wp_head',array(&$this, 'graphmeta'));
 
-		// NO EMOJI FFS
-		remove_action( 'admin_print_styles', 'print_emoji_styles' );
-		remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
-		remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
-		remove_action( 'wp_print_styles', 'print_emoji_styles' );
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
 		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
 		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
+
+		// export yaml + md format
+		//add_action( 'save_post', array(&$this, 'exportyaml' ) );
+
+		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
 
 		//$statuses = array('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
 		//foreach ($statuses as $status) {
@@ -113,56 +110,57 @@ class petermolnareu {
 	}
 
 	public function init () {
-		add_theme_support( 'post-thumbnails' );
-		add_theme_support( 'menus' );
-		add_theme_support( 'automatic-feed-links' );
-
-		add_theme_support( 'html5', array(
-			'search-form', 'comment-form', 'comment-list'
-		) );
-
-		// add main menus
-		register_nav_menus( array(
-			self::menu_header => __( self::menu_header , $this->theme_constant ),
-		) );
 
 		// cleanup
 		remove_filter( 'the_content', 'wpautop' );
 		remove_filter( 'the_excerpt', 'wpautop' );
 		remove_filter( 'the_content', 'make_clickable', 12 );
 		remove_filter( 'comment_text', 'make_clickable', 9);
+		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
+
+
+		add_theme_support( 'post-thumbnails' );
+		add_theme_support( 'menus' );
+		add_theme_support( 'automatic-feed-links' );
+		add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list') );
+
+		// add main menus
+		register_nav_menus( array(
+			self::menu_header => __( self::menu_header , $this->theme_constant ),
+		) );
 
 		// enable custom uploads
-		add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
+		//add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
 		// additional user meta fields
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
 
 		// shortlink replacement
-		add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
+		//add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
 
 		// replace img inserts with Markdown
-		add_filter( 'image_send_to_editor', array( &$this, 'rebuild_media_string'), 10 );
+		add_filter( 'image_send_to_editor', array( &$this, 'media_string_html2md'), 10 );
 
 		// markdown
 		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
 		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
 
-		// sanitize content before saving
+		//
 		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
 
-
+		// replace shitty default <title></title>
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
-		// NO EMOJI
-		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
-		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
-		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+		// add webmention box
+		add_filter( 'the_content', array( &$this, 'insert_post_relations'), 7, 1 );
 
-		// filter to remove TinyMCE emojis
-		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
+		// add the webmention box value to the webmention links list
+		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
 
-		add_filter ('webmention_links', array(&$this, 'webmention_links'), 8, 2);
+		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
 
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
@@ -199,14 +197,14 @@ class petermolnareu {
 		wp_enqueue_style( 'style' );
 		// $this->css_version ( dirname(__FILE__) . '/style.css' ) );
 
-		/* Magnific popup */
+		/* Magnific popup *
 		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
 		//wp_enqueue_style( 'magnific-popup' );
 		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
 		//wp_enqueue_script ('magnific-popup');
 
 
-		/* justified gallery */
+		/* justified gallery *
 		wp_register_style( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/css/justifiedGallery.min.css' , false );
 		//wp_enqueue_style( 'Justified-Gallery' );
 		wp_register_script( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js' , array('jquery'), null, false );
@@ -219,8 +217,8 @@ class petermolnareu {
 		wp_enqueue_script( 'prism' );
 
 		/* CDN scripts */
-		wp_deregister_script( 'jquery' );
-		wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
+		//wp_deregister_script( 'jquery' );
+		//wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
 		//wp_enqueue_script( 'jquery' );
 
 		// cleanup
@@ -258,11 +256,17 @@ class petermolnareu {
 		$typefield = 'webmention_type';
 		$webmention_type = get_post_meta( $object->ID, $typefield, true );
 
+		$rsvpfield = 'webmention_rsvp';
+		$webmention_rsvp = get_post_meta( $object->ID, $rsvpfield, true );
+
+
 		$types = array (
 			'u-in-reply-to' => __('Reply'),
 			'u-like-of' => __('Like'),
 			'u-repost-of' => __('Repost'),
 		);
+
+		$rsvps = array ( 'no', 'yes', 'maybe' );
 
 		?>
 		<p>
@@ -275,6 +279,13 @@ class petermolnareu {
 			<span><input type="radio" name="<?php echo $typefield ?>" value="<?php echo $type ?>" <?php checked( $webmention_type, $type, 1 ); ?>><?php echo $label; ?></span>
 			<?php endforeach; ?>
 		</p>
+		<p>
+			<label for="<?php echo $rsvpfield ?>"><?php _e('RSVP'); ?></label><br />
+			<?php foreach ( $rsvps as $data ): ?>
+			<span><input type="radio" name="<?php echo $rsvpfield ?>" value="<?php echo $data ?>" <?php checked( $webmention_rsvp, $data, 1 ); ?>><?php echo $data; ?></span>
+			<?php endforeach; ?>
+		</p>
+
 		<?php
 	}
 
@@ -297,9 +308,9 @@ class petermolnareu {
 
 		// sanitize
 		$san = array (
-			'metacontent' => FILTER_SANITIZE_STRING,
 			'webmention_url' =>FILTER_SANITIZE_URL,
 			'webmention_type' => FILTER_SANITIZE_STRING,
+			'webmention_rsvp' => FILTER_SANITIZE_STRING,
 		);
 
 		foreach ($san as $key => $filter) {
@@ -307,14 +318,18 @@ class petermolnareu {
 			$curr = get_post_meta( $post_id, $key, true );
 
 			if ( !empty($new) )
-				$r = update_post_meta( $post_id, $key, $new );
+				$r = update_post_meta( $post_id, $key, $new, $curr );
 			elseif ( empty($new) && !empty($curr) )
 				$r = delete_post_meta( $post_id, $key );
 		}
 	}
 
 	/**
+	 * filter links to webmentions
 	 *
+	 * this is needed because markdown
+	 * and because of the special fields the to be poked webmention
+	 * url is stored in
 	 */
 	public function webmention_links ( $links, $postid ) {
 
@@ -337,6 +352,9 @@ class petermolnareu {
 		if (!empty($metacontent))
 			array_unshift($links, $webmention_url);
 
+		//$links = array_unique( $links );
+		//pingback(join(' ', $links), $post->ID);
+
 		return $links;
 	}
 
@@ -344,7 +362,7 @@ class petermolnareu {
 	 * extend allowed mime types
 	 *
 	 * @param array $existing_mimes Array containing existing mime types
-	 */
+	 *
 	public function custom_upload_mimes ( $existing_mimes=array() ) {
 		$existing_mimes['svg'] = 'image/svg+xml';
 		$existing_mimes['webp'] = 'image/webp';
@@ -374,7 +392,7 @@ class petermolnareu {
 
 	/**
 	 *
-	 */
+	 *
 	public function shortlink () {
 		if (is_singular())
 			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
@@ -382,7 +400,7 @@ class petermolnareu {
 
 	/**
 	 * replace original shortlink
-	 */
+	 *
 	public function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
 		global $post;
 
@@ -409,7 +427,7 @@ class petermolnareu {
 
 	/**
 	 * pingback should die
-	 */
+	 *
 	function remove_x_pingback($headers) {
 		unset($headers['X-Pingback']);
 		return $headers;
@@ -418,7 +436,7 @@ class petermolnareu {
 	/**
 	 * replace HTML img insert with Markdown Extra syntax
 	 */
-	public static function rebuild_media_string( $str ) {
+	public static function media_string_html2md( $str ) {
 		if ( !strstr ( $str, '<img' ) )
 			return $str;
 
@@ -535,27 +553,6 @@ class petermolnareu {
 	}
 
 	/**
-	 * pagination
-	 */
-	public static function paginate() {
-		global $wp_query;
-		$wp_query->query_vars['paged'] > 1 ? $current = $wp_query->query_vars['paged'] : $current = 1;
-
-		$pargs = array(
-			'format'	 => 'page/%#%',
-			'current'	=> $current,
-			'end_size'   => 1,
-			'mid_size'   => 2,
-			'prev_next'  => True,
-			'prev_text'  => __('«'),
-			'next_text'  => __('»'),
-			'type'	   => 'list',
-			'total'	  => $wp_query->max_num_pages,
-		);
-		echo paginate_links( $pargs );
-	}
-
-	/**
 	 * new utils - no formatting, no html, just data
 	 */
 
@@ -581,6 +578,53 @@ class petermolnareu {
 		}
 
 		return $list;
+	}
+
+	/**
+	 *
+	 */
+	public static function insert_post_relations( $content ) {
+		global $post;
+
+		if (empty($post) || !is_object($post))
+			return $content;
+
+		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
+		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
+		$webmention_rsvp = get_post_meta ( $post->ID, 'webmention_rsvp', true);
+
+		switch ($webmention_type) {
+			case 'u-like-of':
+				$h = __('This is a like of:');
+				$cl = 'u-like-of';
+				break;
+			case 'u-repost-of':
+				$h = __('This is a repost of:');
+				$cl = 'u-repost-of';
+				break;
+			default:
+				$h = __('This is a reply to:');
+				$cl = 'u-in-reply-to';
+				break;
+		}
+
+		$rsvps = array (
+			'no' => __("Sorry, can't make it."),
+			'yes' => __("I'll be there."),
+			'maybe' => __("I'll do my best, but don't count on me for sure."),
+		);
+
+		if ( !empty($webmention_url)):
+			$rel = str_replace('u-', '', $cl );
+			//$add = "\n##### $h";
+			$add = "\n[$webmention_url]($webmention_url){.$cl}\n";
+			if (!empty($webmention_rsvp))
+				$add .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
+
+			$content .= $add;
+		endif;
+
+		return $content;
 	}
 
 	/**
@@ -831,15 +875,15 @@ class petermolnareu {
 
 	/**
 	 * export to yaml on the fly
-	 */
+	 *
 	public static function doyaml ( $postid = false ) {
+
 		if (!$postid)
 			return;
 
 		$post = get_post($postid);
 
-		//error_log ('Exporting starting #' . $post->ID . ', ' . $post->post_name . ' to YAML');
-
+		// this is for structural reasons
 		$cat = get_the_category( $post->ID );
 		if ( empty($cat) || !isset($cat[0]) || empty($cat[0]) || !is_object($cat[0]) )
 			return false;
@@ -853,6 +897,7 @@ class petermolnareu {
 		$flatdir = $flatcdir . DIRECTORY_SEPARATOR . $post->post_name;
 		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
 
+		// current timestamp in DB
 		$post_timestamp = get_the_modified_time( 'U' );
 
 		// check file existance
@@ -877,41 +922,44 @@ class petermolnareu {
 			}
 		}
 
-
-		$parsedown = new ParsedownExtra();
-
+		// check for featured image
 		$thid = ( has_post_thumbnail () ) ? get_post_thumbnail_id( $post->ID ) : false;
 		if ( $thid )
 			$img = pmlnr_utils::absolute_url(wp_get_attachment_url ( $thid ));
 
-		$format = get_post_format();
+		// getting format
+		$format = self::get_type($post->ID);
 		if ( empty($format)) $format = 'article';
 
+		// building taglist
 		$taglist = '';
 		$tags = get_the_tags();
 		if ( !empty( $tags )) {
 			foreach ( $tags as $tag ) {
 				$taglist[$tag->slug] = $tag->name;
 			}
-			$taglist = '['. join (', ', $taglist) . ']';
+			$taglist = join ("\n      - ", $taglist);
 		}
+
+		// parsing excerpt & building content
+		$parsedown = new ParsedownExtra();
 
 		$content = $post->post_content;
 		$excerpt = $post->post_excerpt;
-		$metacontent = get_post_meta ( $post->ID, 'metacontent', true);
-		if ( !empty($metacontent))
-			$content = $metacontent . $content;
 
 		$search = array ( '”', '“', '’', '–', "\x0D" );
 		$replace = array ( '"', '"', "'", '-', '' );
-		$content = str_replace ( $search, $replace, $content );
-		$excerpt = str_replace ( $search, $replace, $excerpt );
 
+		$content = str_replace ( $search, $replace, $content );
+
+		$excerpt = str_replace ( $search, $replace, $excerpt );
 		$excerpt = strip_tags ( $parsedown->text ( $excerpt ) );
+
 		$search = array ("\n");
 		$replace = array ("");
 		$description = trim ( str_replace( $search, $replace, $excerpt), "'\"" );
 
+		// fix all image attachments: resized -> original
 		$urlparts = parse_url(site_url());
 		$domain = $urlparts ['host'];
 		$wp_upload_dir = wp_upload_dir();
@@ -953,27 +1001,48 @@ class petermolnareu {
 
 		$twsummary = (empty($thid)) ? 'summary' : 'summary_large_image';
 
+		// this is where the actual output starts
 		$out = "---\n";
 		$out .=  "title: " . str_replace( '–', '-', get_the_title()) . "\n";
+		$out .=  "published: true\n";
+		$out .=  "modified_date: " . get_the_modified_time('Y-m-d H:i') . "\n";
+		$out .=  "publish_date: " . get_the_time('Y-m-d H:i') . "\n";
 		$out .=  "slug: " . $post->post_name . "\n";
-		$out .=  "date: " . get_the_time('c') . "\n";
 		$out .=  "id: " . $post->ID  . "\n";
 		$out .=  "permalink: " . get_the_permalink() . "\n";
 		$out .=  "shortlink: " . wp_get_shortlink() . "\n";
 		$out .=  "taxonomy: \n";
-		$out .=  "    category: " . $category . "\n";
-		$out .=  "    tag: " .  $taglist . "\n";
-		$out .=  "    format: " .  $format . "\n";
+		$out .=  "    tag: \n";
+		$out .=  "      - " .$taglist . "\n";
 
+		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
+		if (!empty($webmention_url)) {
+			$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
+			switch ($webmention_type) {
+				case 'u-like-of':
+					$out .=  "    u-like-of: " .  $webmention_url . "\n";
+					break;
+				case 'u-repost-of':
+					$out .=  "    u-repost-of: " .  $webmention_url . "\n";
+					break;
+				default:
+					$out .=  "    u-in-reply-to: " .  $webmention_url . "\n";
+					break;
+			}
+		}
+
+		// get all the attachments
 		$attachments = get_children( array (
 			'post_parent'=>$post->ID,
 			'post_type'=>'attachment',
-			//'post_mime_type'=>'image',
 			'orderby'=>'menu_order',
 			'order'=>'asc'
 		));
 
-		if ( !empty($attachments) && count($attachments) < 20 ) {
+		// 100 is there for sanity
+		// hardlink all the attachments; no need for copy
+		// unless you're on a filesystem that does not support hardlinks
+		if ( !empty($attachments) && count($attachments) < 100 ) {
 			foreach ( $attachments as $aid => $attachment ) {
 				$attachment_path = get_attached_file( $aid );
 				$attachment_file = basename( $attachment_path);
@@ -987,27 +1056,201 @@ class petermolnareu {
 			error_log ('something is messed up; #' . $post->ID . ' wanted to save all this: ' . json_encode($attachments) );
 		}
 
+		// syndication links
 		$_syndicated = get_post_meta ( $post->ID, 'syndication_urls', true );
 		if ( !empty ($_syndicated ) ) {
-			$synlinks = join (', ', explode("\n", $_syndicated));
+			$synlinks = join (', ', explode("\n", trim($_syndicated)));
 			$out .=  "syndicated: [{$synlinks}]\n";
 		}
 
+		// excerpt separator
 		$out .= "---\n";
 
-		if($post->post_excerpt)
-			$out .= $excerpt . "\n\n";
-
-		$out .= "===\n";
+		if($post->post_excerpt) {
+			$out .= $excerpt . "\n\n===\n";
+		}
 
 		$out .= $content;
 
+		// write log
 		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
 		file_put_contents ($flatfile, $out);
 		touch ( $flatfile, $post_timestamp );
 
 		//$date = date('c');
 		//exec( "cd ${flatpdir}; git add *; git commit -m 'adding ${flatfile} @ ${date}'" );
+	}
+	*/
+
+	public static function exportyaml ( $postid = false ) {
+
+		if (!$postid)
+			return;
+
+		$post = get_post($postid);
+
+		$filename = $post->post_name;
+
+		$flatroot = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'flat';
+		$flatdir = $flatroot . DIRECTORY_SEPARATOR . $filename;
+		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
+
+		$post_timestamp = get_the_modified_time( 'U' );
+		if ( @file_exists($flatfile) ) {
+			$file_timestamp = @filemtime ( $flatfile );
+			if ( $file_timestamp == $post_timestamp ) {
+				return;
+			}
+		}
+
+		$mkdir = array ( $flatroot, $flatdir );
+		foreach ( $mkdir as $dir ) {
+			if ( !is_dir($dir)) {
+				if (!mkdir( $dir )) {
+					error_log('Failed to create ' . $dir . ', exiting YAML creation');
+					return false;
+				}
+			}
+		}
+
+		$cat = get_the_category( $post->ID );
+		if ( !empty($cat) && isset($cat[0])) {
+			$category = $cat[0];
+		}
+
+		$format = self::get_type($post->ID);
+
+		$taglist = '';
+		$t = get_the_tags();
+		$tags = array();
+		if ( !empty( $t ))
+			foreach ( $t as $tag )
+				array_push($tags, $tag->name);
+		$tags = array_unique($tags);
+
+
+		$parsedown = new ParsedownExtra();
+		$excerpt = $post->post_excerpt;
+		$content = $post->post_content;
+		$search = array ( '”', '“', '’', '–', "\x0D" );
+		$replace = array ( '"', '"', "'", '-', '' );
+		$excerpt = str_replace ( $search, $replace, $excerpt );
+		$excerpt = strip_tags ( $parsedown->text ( $excerpt ) );
+		$content = str_replace ( $search, $replace, $content );
+
+		//$search = array ("\n");
+		//$replace = array ("");
+		//$description = trim ( str_replace( $search, $replace, $excerpt), "'\"" );
+
+		// fix all image attachments: resized -> original
+		$urlparts = parse_url(site_url());
+		$domain = $urlparts ['host'];
+		$wp_upload_dir = wp_upload_dir();
+		$uploadurl = str_replace( '/', "\\/", trim( str_replace( site_url(), '', $wp_upload_dir['url']), '/'));
+
+		$pregstr = "/((https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/)(.*)-([0-9]{1,4})×([0-9]{1,4})\.([a-zA-Z]{2,4})/";
+
+		preg_match_all( $pregstr, $content, $resized_images );
+
+		if ( !empty ( $resized_images[0]  )) {
+			foreach ( $resized_images[0] as $cntr => $imgstr ) {
+				//$location = $resized_images[1][$cntr];
+				$done_images[ $resized_images[2][$cntr] ] = 1;
+				$fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
+				$width = $resized_images[3][$cntr];
+				$height = $resized_images[4][$cntr];
+				$r = $fname . '?resize=' . $width . ',' . $height;
+				$content = str_replace ( $imgstr, $r, $content );
+			}
+		}
+
+		$pregstr = "/(https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/(.*?)\.([a-zA-Z]{2,4})/";
+
+		preg_match_all( $pregstr, $content, $images );
+		if ( !empty ( $images[0]  )) {
+
+			foreach ( $images[0] as $cntr=>$imgstr ) {
+				//$location = $resized_images[1][$cntr];
+				if ( !isset($done_images[ $images[1][$cntr] ]) ){
+					if ( !strstr($images[1][$cntr], 'http'))
+						$fname = $images[2][$cntr] . '.' . $images[3][$cntr];
+					else
+						$fname = $images[1][$cntr] . '.' . $images[2][$cntr];
+
+					$content = str_replace ( $imgstr, $fname, $content );
+				}
+			}
+		}
+
+		$out = array (
+			'title' => str_replace( '–', '-', get_the_title()),
+			'modified_date' => get_the_modified_time('c'),
+			'date' => get_the_time('c'),
+			'slug' => $post->post_name,
+			'id' => $post->ID,
+			'permalink' => get_the_permalink(),
+			'shortlink' => wp_get_shortlink(),
+			'taxonomy' => array (
+				'tag' => $tags,
+				'category' => $category->name,
+				'type' => $format,
+			),
+
+		);
+
+		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
+		if (!empty($webmention_url)) {
+			$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
+			if ($webmention_type != 'u-like-of' && $webmention_type != 'u-repost-of')
+				$webmention_type = 'u-in-reply-to';
+
+			$out['webmention'] = array (
+				'type' => $webmention_type,
+				'url' => $webmention_url,
+			);
+		}
+
+		// get all the attachments
+		$attachments = get_children( array (
+			'post_parent'=>$post->ID,
+			'post_type'=>'attachment',
+			'orderby'=>'menu_order',
+			'order'=>'asc'
+		));
+
+		// 100 is there for sanity
+		// hardlink all the attachments; no need for copy
+		// unless you're on a filesystem that does not support hardlinks
+		if ( !empty($attachments) && count($attachments) < 100 ) {
+			$out['attachments'] = array();
+			foreach ( $attachments as $aid => $attachment ) {
+				$attachment_path = get_attached_file( $aid );
+				$attachment_file = basename( $attachment_path);
+				array_push($out['attachments'], $attachment_file);
+				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
+				error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
+				if ( !is_file($target_file))
+					link( $attachment_path, $target_file );
+			}
+		}
+
+		// syndication links
+		$_syndicated = get_post_meta ( $post->ID, 'syndication_urls', true );
+		if ( !empty ($_syndicated ) ) {
+			$out['syndicated'] = explode("\n", trim($_syndicated));
+		}
+
+		$out = yaml_emit($out,  YAML_UTF8_ENCODING );
+		if($post->post_excerpt) {
+			$out .= "\n" . $excerpt . "\n";
+		}
+
+		$out .= "---\n" . $content;
+
+		// write log
+		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
+		file_put_contents ($flatfile, $out);
+		touch ( $flatfile, $post_timestamp );
 	}
 
 	/**
@@ -1022,56 +1265,55 @@ class petermolnareu {
 		if (!$post || empty($post) || !is_object($post))
 			return false;
 
+		$return = 'article';
 		$kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) );
 
 		if (is_wp_error($kind))
-				return false;
+			return false;
 
 		if(is_array($kind))
 			$kind = array_pop( $kind );
 
 		if (is_object($kind) && isset($kind->slug))
-			$kind = $kind->slug;
+			$return = $kind->slug;
 
-		return $kind;
+		return $return;
 	}
 
 	/**
-	 * display meta content
+	 *
 	 */
-	public static function get_metacontent ( $postid = false ) {
-		if (empty($postid) || !is_numeric($postid))
-			global $post;
-		else
-			$post = get_post( $postid );
+	public function type_dropdown() {
+		global $typenow;
+		$post_type = 'post';
+		$taxonomy = 'kind'; // change HERE
+		if ($typenow == $post_type) {
+			$selected = isset($_GET[$taxonomy]) ? $_GET[$taxonomy] : '';
+			$info_taxonomy = get_taxonomy($taxonomy);
+			wp_dropdown_categories(array(
+				'show_option_all' => __("Show All {$info_taxonomy->label}"),
+				'taxonomy' => $taxonomy,
+				'name' => $taxonomy,
+				'orderby' => 'name',
+				'selected' => $selected,
+				'show_count' => true,
+				'hide_empty' => true,
+			));
+		};
+	}
 
-		if (!$post || empty($post) || !is_object($post))
-			return false;
-
-		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
-		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
-
-		if ( empty($webmention_url) )
-			return false;
-
-		switch ($webmention_type) {
-			case 'u-like-of':
-				$r = sprintf(__('This is a like of: [%s](%s){.%s}'), $webmention_url, $webmention_url, $webmention_type);
-				break;
-			case 'u-repost-of':
-				$r = sprintf(__('This is a repost of: [%s](%s){.%s}'), $webmention_url, $webmention_url, $webmention_type);
-				break;
-			default:
-				$r = sprintf(__('This is a reply to: [%s](%s){.u-in-reply-to}'), $webmention_url, $webmention_url);
-
-			break;
+	/**
+	 *
+	 */
+	public function convert_id_to_term_in_query($query) {
+		global $pagenow;
+		$post_type = 'post'; // change HERE
+		$taxonomy = 'kind'; // change HERE
+		$q_vars = &$query->query_vars;
+		if ($pagenow == 'edit.php' && isset($q_vars['post_type']) && $q_vars['post_type'] == $post_type && isset($q_vars[$taxonomy]) && is_numeric($q_vars[$taxonomy]) && $q_vars[$taxonomy] != 0) {
+			$term = get_term_by('id', $q_vars[$taxonomy], $taxonomy);
+			$q_vars[$taxonomy] = $term->slug;
 		}
-
-		$parsedown = new ParsedownExtra();
-		$parsedown->setBreaksEnabled(true);
-		$meta = $parsedown->text ( $r );
-
-		return $meta;
 	}
 
 }

@@ -13,9 +13,9 @@
 				<?php require ( dirname(__FILE__) . '/ameta_pubdate.php' ); ?>
 				<?php require ( dirname(__FILE__) . '/ameta_readtime.php' ); ?>
 				<div class="hide">
-					<?php if (!empty($post_image)): ?>
+					<?php /* if (!empty($post_image)): ?>
 					<img class="u-photo" src="<?php echo $post_image ?>" />
-					<?php endif; ?>
+					<?php endif; */ ?>
 					<?php require ( dirname(__FILE__) . '/ameta_author.php' ); ?>
 				</div>
 			</div>

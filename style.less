@@ -567,9 +567,6 @@ pre {
 }
 
 .subscribe {
-	.osd-subscribe-email-cont {
-		display: inline;
-	}
 
 	h2 {
 		font-size: @font-normal;
@@ -634,6 +631,9 @@ pre {
 .icon-deviantart:before { content: '\e820'; } /* '' */
 .icon-reply:before { content: '\e821'; } /* '' */
 .icon-lock:before { content: '\e826'; }
+.icon-search:before { content: '\e835'; } /* '' */
+.icon-right-hand:before { content: '\e834'; } /* '' */
+.icon-ok-squared:before { content: '\e832'; } /* '' */
 
 .u-in-reply-to:before { content: '\e821'; }
 .u-like-of:before { content: '\e822'; }
@@ -755,6 +755,7 @@ pre {
 .content-contact {
 	margin: @font-normal 2em 0;
 	font-size:  @font-small;
+	color: @color-header;
 
 	a {
 		font-size: 0em;
@@ -771,7 +772,6 @@ pre {
 			color: lighten(@color-header,10%);
 		}
 	}
-
 
 	.h-card {
 
@@ -791,12 +791,9 @@ pre {
 			margin: 0;
 		}
 
-		/*
 		label {
-			display: inline-block;
-			padding: 0 @padding-normal 0 @padding-normal;
 		}
-		*/
+
 	}
 }
 

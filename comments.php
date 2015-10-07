@@ -1,3 +1,5 @@
+<?php return; /* I really don't need this nowadays, except for myself, but that can be viewed on the admin interface */ ?>
+
 <?php global $post; ?>
 <?php if ( post_password_required() ) return; ?>
 <?php
@@ -53,14 +55,14 @@
 
 
 	<?php
-	/*
-	$args = array(
-		'comment_notes_before' => '',
-		'comment_notes_after' => '',
 
-	);
-	comment_form( $args, $post->ID );
-	*/
+	//$args = array(
+		//'comment_notes_before' => '',
+		//'comment_notes_after' => '',
+
+	//);
+	//comment_form( $args, $post->ID );
+
 	?>
 
 <?php if ( have_comments() /* && is_user_logged_in() */ ): ?>

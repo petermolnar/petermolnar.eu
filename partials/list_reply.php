@@ -1,5 +1,4 @@
-<?php //$reply = petermolnareu::post_get_replylist(); ?>
-<?php $reply = array(); ?>
+<?php $reply = petermolnareu::post_get_replylist(); ?>
 
 <indie-action do="reply" with="<?php echo get_permalink(); ?>" class="share">
 	<h5><?php _e('Reply') ?></h5>

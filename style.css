@@ -439,9 +439,6 @@ pre {
 .button-rss:focus {
   width: auto;
 }
-.subscribe .osd-subscribe-email-cont {
-  display: inline;
-}
 .subscribe h2 {
   font-size: 1em;
   font-weight: normal;
@@ -607,6 +604,15 @@ pre {
 .icon-lock:before {
   content: '\e826';
 }
+.icon-search:before {
+  content: '\e835';
+}
+.icon-right-hand:before {
+  content: '\e834';
+}
+.icon-ok-squared:before {
+  content: '\e832';
+}
 .u-in-reply-to:before {
   content: '\e821';
 }
@@ -702,6 +708,7 @@ pre {
 .content-contact {
   margin: 1em 2em 0;
   font-size: 0.9em;
+  color: #888;
 }
 .content-contact a {
   font-size: 0em;

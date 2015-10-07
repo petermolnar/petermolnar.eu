@@ -2,10 +2,9 @@
 <?php $post_title = get_the_title(); ?>
 <?php $post_images = adaptive_images::imagewithmeta( get_post_thumbnail_id( $post->ID ) ) ?>
 <?php $post_image = (empty($post_images)) ? false : $post_images['mediumurl'] ?>
-<?php $meta_content = petermolnareu::get_metacontent( $post->ID); ?>
 <?php $post_format = petermolnareu::get_type($post->ID); ?>
 <?php
-	$setbg = ( empty($post_format) or $post_format == 'standard' ) ? true : false;
+	$setbg = ( empty($post_format) or $post_format == 'article' ) ? true : false;
 
 	$bgimg = (empty( $post_images) or !$setbg ) ? array() : wp_get_attachment_image_src(  $post_images['id'] , 'headerbg');
 
@@ -15,7 +14,7 @@
 	$hstyle = ( $bgimg ) ? 'class="article-header" style="background-image:url('.$bgimg[0].');"' : '';
 
 
-	petermolnareu::doyaml($post->ID);
+	petermolnareu::exportyaml($post->ID);
 ?>
 
 <?php
@@ -41,6 +40,9 @@ if ( $_syn && !empty($_syn))
 				</a>
 			</h1>
 			<div class="hide">
+				<?php if (!empty($post_image) && ( $post_format == 'image' || $post_format == 'photo' ) ): ?>
+				<img class="u-photo" src="<?php echo $post_image ?>" />
+				<?php endif; ?>
 				<?php require_once (dirname(__FILE__) . '/ameta_author.php'); ?>
 			</div>
 		</div>
@@ -58,7 +60,7 @@ if ( $_syn && !empty($_syn))
 	<footer>
 		<div class="content-inner">
 		<?php
-			require_once (dirname(__FILE__) . '/ameta_relations.php');
+			//require_once (dirname(__FILE__) . '/ameta_relations.php');
 			require_once (dirname(__FILE__) . '/ameta_imported.php');
 			require_once (dirname(__FILE__) . '/list_tag.php');
 			require_once (dirname(__FILE__) . '/list_reply.php');

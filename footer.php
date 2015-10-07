@@ -14,7 +14,8 @@
 		<br />
 		<?php /*<label for="button-rss" class="hide"><?php __('Follow this site'); ?></label>
 		<input type="button" class="button-rss" id="button-rss" name="button-rss" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-feeds="<?php bloginfo('rss2_url'); ?>" data-subtome-resource="<?php echo home_url(); ?>" value="&#xE80B; follow petermolnar.eu" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" /><br /> */ ?>
-		<label for="email"><?php
+		<aside class="footer-forms">
+		<i class='icon-right-hand'></i><label for="email"><?php
 			switch ($lang) {
 				case 'hu':
 					_e('Feliratkozás frissítésekre' );
@@ -25,9 +26,8 @@
 			}
 		?></label><br />
 		<?php dynamic_sidebar( 'subscribe' ); ?>
-		<aside class="footer-forms">
 			<form role="search" method="get" class="search-form" action="<?php echo pmlnr_utils::absurl(get_bloginfo('url')); ?>">
-				<label for="search"><?php
+				<i class="icon-search"></i><label for="search"><?php
 					switch ($lang) {
 						case 'hu':
 							_e('Keresés' );
@@ -38,7 +38,7 @@
 					}
 				?></label><br />
 				<input type="search" class="search-field" placeholder="Search …" value="" name="s" title="<?php _e('Search for:' ); ?>">
-				<input type="submit" class="search-submit" value="<?php _e('Go' ); ?>">
+				<input type="submit" class="search-submit" value="<?php _e('OK' ); ?>">
 			</form>
 		</aside>
 	</div>

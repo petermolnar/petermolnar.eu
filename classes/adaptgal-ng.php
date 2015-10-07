@@ -247,12 +247,12 @@ class adaptive_images {
 			if (copy( $resized, $cached)) {
 				static::debug_log(  "removing " . $resized );
 				unlink( $resized );
-				static::debug_log( "creating symlink " . $resized );
-				symlink ( $cached, $resized );
+				//static::debug_log( "creating symlink " . $resized );
+				//symlink ( $cached, $resized );
 			}
-			else {
-				static::debug_log(  "could not remove " . $resized );
-			}
+			//else {
+			//	static::debug_log(  "could not remove " . $resized );
+			//}
 		}
 		else {
 			static::debug_log( "adaptive sharpen " . $resized );
@@ -265,7 +265,7 @@ class adaptive_images {
 			$imagick->destroy();
 			static::debug_log( "removing " . $resized );
 			unlink ($resized);
-			symlink ( $cached, $resized );
+			//symlink ( $cached, $resized );
 		}
 
 		return $resized;

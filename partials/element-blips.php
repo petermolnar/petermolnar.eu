@@ -16,7 +16,7 @@
 				</a>
 				<div class="hide">
 					<span class="p-name more"><?php echo $post_title ?></span>
-					<?php if (!empty($post_image)): ?>
+					<?php if (!empty($post_image) && ( $post_format == 'image' || $post_format == 'photo' ) ): ?>
 					<img class="u-photo" src="<?php echo $post_image ?>" />
 					<?php endif; ?>
 					<?php require ( dirname(__FILE__) . '/ameta_author.php' ); ?>
