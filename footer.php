@@ -1,6 +1,6 @@
 <?php $lang = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : ''; ?>
 
-<?php if ( is_singular() ) comments_template( ); ?>
+<?php //if ( is_singular() ) comments_template( ); ?>
 
 <!-- main menu -->
 <header class="content-header" id="main-header">
@@ -18,10 +18,10 @@
 		<i class='icon-right-hand'></i><label for="email"><?php
 			switch ($lang) {
 				case 'hu':
-					_e('Feliratkozás frissítésekre' );
+					_e('Feliratkozás' );
 					break;
 				default:
-					_e('Subscribe with email' );
+					_e('Subscribe' );
 					break;
 			}
 		?></label><br />

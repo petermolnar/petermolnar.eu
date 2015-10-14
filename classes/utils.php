@@ -5,6 +5,11 @@ class pmlnr_utils {
 	public function __construct () {
 	}
 
+	public static function is_post ( &$post ) {
+		if ( !empty($post) && is_object($post) && isset($post->ID) && !empty($post->ID) )
+			return true;
+	}
+
 	public static function fix_url ( $url, $absolute = true ) {
 		// move to generic scheme
 		$url = str_replace ( array('http://', 'https://'), '//', $url );
@@ -12,7 +17,7 @@ class pmlnr_utils {
 		$domain = parse_url(get_bloginfo('url'), PHP_URL_HOST);
 		// relative to absolute
 		if ($absolute && !stristr($url, $domain)) {
-			$url = '//' . $domain . '/' . ltrim($url, '/');
+			$url = 'https://' . $domain . '/' . ltrim($url, '/');
 		}
 
 		return $url;

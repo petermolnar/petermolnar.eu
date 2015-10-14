@@ -1,9 +1,18 @@
+<?php
+/*
+this is for all articles longer than ARTICLE_MIN_LENGTH (set in functions.php)
+*/
 
-<?php $post_url = get_the_permalink(); ?>
-<?php $post_title = get_the_title(); ?>
-<?php $post_images = adaptive_images::imagewithmeta( get_post_thumbnail_id( $post->ID ) ) ?>
-<?php $post_image = (empty($post_images)) ? false : $post_images['mediumurl'] ?>
-<?php $post_thumbnail = (empty($post_images)) ? false : $post_images['thumbnail'] ?>
+$post_url = get_the_permalink();
+$post_title = get_the_title();
+$thid = get_post_thumbnail_id( $post->ID );
+$post_thumbnail = false;
+if ( $thid ) {
+	$thumbnail = wp_get_attachment_image_src($thid,'thumbnail');
+	if ( isset($thumbnail[1]) && $thumbnail[3] != false )
+		$post_thumbnail = pmlnr_utils::fix_url($thumbnail[0]);
+}
+?>
 
 <div class="content-inner">
 	<article id="post-<?php the_ID(); ?>" class="h-entry article-list-element">
@@ -13,9 +22,6 @@
 				<?php require ( dirname(__FILE__) . '/ameta_pubdate.php' ); ?>
 				<?php require ( dirname(__FILE__) . '/ameta_readtime.php' ); ?>
 				<div class="hide">
-					<?php /* if (!empty($post_image)): ?>
-					<img class="u-photo" src="<?php echo $post_image ?>" />
-					<?php endif; */ ?>
 					<?php require ( dirname(__FILE__) . '/ameta_author.php' ); ?>
 				</div>
 			</div>

@@ -1,6 +1,13 @@
 <?php $reply = petermolnareu::post_get_replylist(); ?>
 
 <indie-action do="reply" with="<?php echo get_permalink(); ?>" class="share">
+</indie-action>
+
+
+
+
+<?php /*
+<indie-action do="reply" with="<?php echo get_permalink(); ?>" class="share">
 	<h5><?php _e('Reply') ?></h5>
 	<ul>
 	<?php if ( !empty($reply)): ?>
@@ -15,5 +22,4 @@
 		</li>
 	</ul>
 </indie-action>
-
-
+*/

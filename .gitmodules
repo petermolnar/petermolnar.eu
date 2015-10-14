@@ -16,9 +16,3 @@
 [submodule "lib/lessphp"]
 	path = lib/lessphp
 	url = https://github.com/leafo/lessphp.git
-[submodule "lib/bling.js"]
-	path = lib/bling.js
-	url = https://gist.github.com/12fb951a8b893a454b32.git
-[submodule "lib/dindent"]
-	path = lib/dindent
-	url = https://github.com/gajus/dindent.git

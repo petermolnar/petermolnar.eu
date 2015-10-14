@@ -16,11 +16,11 @@ get_header();
 
 		<?php
 			the_post();
-			get_template_part( '/partials/element-journal' );
+			get_template_part( '/partials/element-long' );
 		?>
 		<?php endwhile; ?>
 	<?php endif; ?>
-	<?php petermolnareu::paginate(); ?>
+	<?php get_template_part( '/partials/paginate' ); ?>
 </section>
 
 <?php get_footer(); ?>

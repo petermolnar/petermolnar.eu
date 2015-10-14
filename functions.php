@@ -1,12 +1,14 @@
 <?php
 
+define('ARTICLE_MIN_LENGTH', 1000);
+
 $dirname = dirname(__FILE__);
 
-include_once ($dirname . '/lib/parsedown/Parsedown.php');
-include_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
+require_once ($dirname . '/lib/parsedown/Parsedown.php');
+require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
 
-include_once ($dirname . '/classes/adaptgal-ng.php');
-include_once ($dirname . '/classes/utils.php');
+require_once ($dirname . '/classes/adaptgal-ng.php');
+require_once ($dirname . '/classes/utils.php');
 
 /**
  *
@@ -35,10 +37,9 @@ class petermolnareu {
 	public $webmention_types = null;
 
 	public function __construct () {
-		// compile theme file if needed
-		$dirname = dirname(__FILE__);
 
-		// autocompile LESS to CSS
+		// autocompile LESS to CSS {{{
+		$dirname = dirname(__FILE__);
 		$lessfile = $dirname . '/style.less';
 		$lessmtime = filemtime( $lessfile );
 		$cssfile = $dirname . '/style.css';
@@ -50,25 +51,15 @@ class petermolnareu {
 			$less->compileFile( $lessfile, $cssfile );
 			touch ( $cssfile, $lessmtime );
 		}
+		// }}}
 
 		$this->adaptive_images = new adaptive_images();
-		//$this->parsedown = new pmlnr_md();
-		//$this->utils = new pmlnr_utils();
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
 		add_action( 'init', array( &$this->adaptive_images, 'init'));
-
-		// add css & js
-		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
-
-		// replace shortlink
-		//remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
-		//add_action( 'wp_head', array(&$this, 'shortlink'));
-
-		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 
 		// cleanup
 		remove_action('wp_head', 'rsd_link');
@@ -79,39 +70,43 @@ class petermolnareu {
 		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
 		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0);
 		remove_action('wp_head', 'wp_generator');
-		remove_action('wp_head', 'rel_canonical');
+		//remove_action('wp_head', 'rel_canonical');
 		remove_action('admin_print_styles', 'print_emoji_styles' );
 		remove_action('wp_head', 'print_emoji_detection_script', 7 );
 		remove_action('admin_print_scripts', 'print_emoji_detection_script' );
 		remove_action('wp_print_styles', 'print_emoji_styles' );
 
+		// replace shortlink
+		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
+		add_action( 'wp_head', array(&$this, 'shortlink'));
+
 		// RSS will be added by hand
 		remove_action( 'wp_head', 'feed_links', 2 );
 		remove_action( 'wp_head','feed_links_extra', 3);
 
+		// add css & js
+		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+
 		// add graphmeta, because world
 		add_action('wp_head',array(&$this, 'graphmeta'));
-
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
 		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
 		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
-		// export yaml + md format
-		//add_action( 'save_post', array(&$this, 'exportyaml' ) );
-
 		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
+		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 
-		//$statuses = array('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
-		//foreach ($statuses as $status) {
-			//add_action("{$status}_to_publish", array(&$this, "publish"));
-		//}
-		//add_action( 'publish_future_post', array(&$this, "publish"));
+		if (is_admin() && !defined('DOING_AJAX')) {
+			$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
+			foreach ($statuses as $status) {
+				add_action("{$status}_to_publish", array(&$this, "checkshorturl"));
+			}
+		}
 	}
 
 	public function init () {
 
-		// cleanup
 		remove_filter( 'the_content', 'wpautop' );
 		remove_filter( 'the_excerpt', 'wpautop' );
 		remove_filter( 'the_content', 'make_clickable', 12 );
@@ -121,7 +116,6 @@ class petermolnareu {
 		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
 		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
 
-
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
 		add_theme_support( 'automatic-feed-links' );
@@ -129,38 +123,41 @@ class petermolnareu {
 
 		// add main menus
 		register_nav_menus( array(
-			self::menu_header => __( self::menu_header , $this->theme_constant ),
+			self::menu_header => __( self::menu_header , 'petermolnareu' ),
 		) );
-
-		// enable custom uploads
-		//add_filter('upload_mimes', array( &$this, 'custom_upload_mimes' ) );
 
 		// additional user meta fields
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
 
-		// shortlink replacement
-		//add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
-
 		// replace img inserts with Markdown
 		add_filter( 'image_send_to_editor', array( &$this, 'media_string_html2md'), 10 );
+
+		// remove too special chars
+		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
 
 		// markdown
 		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
 		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
 
-		//
-		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
-
-		// replace shitty default <title></title>
+		// replace default <title></title>
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
 		// add webmention box
-		add_filter( 'the_content', array( &$this, 'insert_post_relations'), 7, 1 );
+		add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
 
 		// add the webmention box value to the webmention links list
 		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
 
+		//
 		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
+
+		// shortlink replacement
+		add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
+
+		add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
+		//add_filter('the_excerpt_rss', array(&$this, 'add_featured_image_to_feed'), 10, 1);
+		//add_filter('the_content_feed', array(&$this, 'add_featured_image_to_feed'), 10, 1);
+
 
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
@@ -192,17 +189,14 @@ class petermolnareu {
 		$js_url = $base_url . '/js';
 		$css_url = $base_url . '/css';
 
-		/* enqueue CSS */
 		wp_register_style( 'style', $base_url . '/style.css' , false );
 		wp_enqueue_style( 'style' );
-		// $this->css_version ( dirname(__FILE__) . '/style.css' ) );
 
 		/* Magnific popup *
 		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
 		//wp_enqueue_style( 'magnific-popup' );
 		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
 		//wp_enqueue_script ('magnific-popup');
-
 
 		/* justified gallery *
 		wp_register_style( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/css/justifiedGallery.min.css' , false );
@@ -216,18 +210,13 @@ class petermolnareu {
 		wp_register_script( 'prism' , $js_url . '/prism.js', false, null, true );
 		wp_enqueue_script( 'prism' );
 
-		/* CDN scripts */
-		//wp_deregister_script( 'jquery' );
-		//wp_register_script( 'jquery', 'https://code.jquery.com/jquery-1.11.0.min.js', false, null, false );
-		//wp_enqueue_script( 'jquery' );
-
 		// cleanup
 		wp_dequeue_script( 'mediaelement' );
 		wp_dequeue_script( 'wp-mediaelement' );
 		wp_dequeue_style ('wp-mediaelement');
 		wp_dequeue_script ('devicepx');
 		wp_dequeue_style ('open-sans-css');
-		//wp_deregister_style ('open-sans-css');
+
 	}
 
 	/**
@@ -249,7 +238,7 @@ class petermolnareu {
 	 * meta field display
 	 */
 	public function post_meta_display_webmention ( $object, $box ) {
-		wp_nonce_field( basename( __FILE__ ), $this->theme_constant );
+		wp_nonce_field( basename( __FILE__ ), 'petermolnareu' );
 		$urlfield = 'webmention_url';
 		$webmention_url = get_post_meta( $object->ID, $urlfield, true );
 
@@ -294,10 +283,10 @@ class petermolnareu {
 	 * handle additional post meta
 	 */
 	public function post_meta_save ( $post_id ) {
-		if ( !isset( $_POST[ $this->theme_constant ] ))
+		if ( !isset( $_POST[ 'petermolnareu' ] ))
 			return $post_id;
 
-		 if (!wp_verify_nonce( $_POST[ $this->theme_constant ], basename( __FILE__ ) ) )
+		 if (!wp_verify_nonce( $_POST[ 'petermolnareu' ], basename( __FILE__ ) ) )
 			return $post_id;
 
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
@@ -359,59 +348,22 @@ class petermolnareu {
 	}
 
 	/**
-	 * extend allowed mime types
-	 *
-	 * @param array $existing_mimes Array containing existing mime types
-	 *
-	public function custom_upload_mimes ( $existing_mimes=array() ) {
-		$existing_mimes['svg'] = 'image/svg+xml';
-		$existing_mimes['webp'] = 'image/webp';
-
-		return $existing_mimes;
-	}
-
-	/**
 	 * additional user fields
 	 */
 	public function add_user_meta_fields ($profile_fields) {
 
-		$profile_fields['pgp'] = __('URL to PGP key for the email address above', $this->theme_constant);
-		$profile_fields['github'] = __('Github username', $this->theme_constant);
-		$profile_fields['mobile'] = __('Mobile phone number', $this->theme_constant);
-		$profile_fields['linkedin'] = __('LinkedIn username', $this->theme_constant);
-		$profile_fields['flickr'] = __('Flickr username', $this->theme_constant);
-		$profile_fields['tubmlr'] = __('Tumblr blog URL', $this->theme_constant);
-		$profile_fields['500px'] = __('500px username', $this->theme_constant);
-		$profile_fields['instagram'] = __('instagram username', $this->theme_constant);
-		$profile_fields['skype'] = __('skype username', $this->theme_constant);
-		$profile_fields['twitter'] = __('twitter username', $this->theme_constant);
-
+		$profile_fields['pgp'] = __('URL to PGP key for the email address above', 'petermolnareu');
+		$profile_fields['github'] = __('Github username', 'petermolnareu');
+		$profile_fields['mobile'] = __('Mobile phone number', 'petermolnareu');
+		$profile_fields['linkedin'] = __('LinkedIn username', 'petermolnareu');
+		$profile_fields['flickr'] = __('Flickr username', 'petermolnareu');
+		$profile_fields['tubmlr'] = __('Tumblr blog URL', 'petermolnareu');
+		$profile_fields['500px'] = __('500px username', 'petermolnareu');
+		$profile_fields['instagram'] = __('instagram username', 'petermolnareu');
+		$profile_fields['skype'] = __('skype username', 'petermolnareu');
+		$profile_fields['twitter'] = __('twitter username', 'petermolnareu');
 
 		return $profile_fields;
-	}
-
-	/**
-	 *
-	 *
-	public function shortlink () {
-		if (is_singular())
-			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
-	}
-
-	/**
-	 * replace original shortlink
-	 *
-	public function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
-		global $post;
-
-		if (empty($post) || !isset($post->ID) || empty($post->ID)) {
-			return $shortlink;
-		}
-
-		$url = rtrim( get_bloginfo('url'), '/' ) . '/';
-		$r = $url.'?p='.$post->ID;
-
-		return $r;
 	}
 
 	/**
@@ -423,14 +375,6 @@ class petermolnareu {
 
 		$content = str_replace( $search, $replace, $content );
 		return $content;
-	}
-
-	/**
-	 * pingback should die
-	 *
-	function remove_x_pingback($headers) {
-		unset($headers['X-Pingback']);
-		return $headers;
 	}
 
 	/**
@@ -455,7 +399,6 @@ class petermolnareu {
 
 
 		$img = sprintf ('![%s](%s%s){%s%s}', $alt, $src, $title, $imgid, $cl);
-		//$img = '!['.$alt.']('. $src .''. $title .'){#img-'. $wpid .''.$cl.'}';
 		return $img;
 	}
 
@@ -469,6 +412,7 @@ class petermolnareu {
 
 		$parsedown = new ParsedownExtra();
 		$parsedown->setBreaksEnabled(true);
+		$parsedown->setUrlsLinked(true);
 		$md = $parsedown->text ( $md );
 
 		return $md;
@@ -528,9 +472,12 @@ class petermolnareu {
 
 			$thid = get_post_thumbnail_id( $post->ID );
 			if ( $thid ) {
-				$img = adaptive_images::imagewithmeta( $thid );
-				$og['og:image'] = $img['largeurl'];
-				$og['twitter:image:src'] = $img['largeurl'];
+				$src = wp_get_attachment_image_src( $thid, 'large');
+				if ( !empty($src[0])) {
+					$src = pmlnr_utils::fix_url($src[0]);
+					$og['og:image'] = $src;
+					$og['twitter:image:src'] = $src;
+				}
 			}
 		}
 		else {
@@ -562,7 +509,7 @@ class petermolnareu {
 		$socials = array (
 			'github'   => 'https://github.com/%s',
 			//'linkedin' => 'https://www.linkedin.com/in/%s',
-			//'twitter'  => 'https://twitter.com/%s',
+			'twitter'  => 'https://twitter.com/%s',
 			'flickr'   => 'https://www.flickr.com/people/%s',
 			//'500px'	=> 'https://500px.com/%s',
 			//'instagram'=> 'https://instagram.com/%s',
@@ -583,8 +530,9 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public static function insert_post_relations( $content ) {
-		global $post;
+	public static function insert_post_relations( $content, $post = null ) {
+		if ( $post == null )
+			global $post;
 
 		if (empty($post) || !is_object($post))
 			return $content;
@@ -617,7 +565,7 @@ class petermolnareu {
 		if ( !empty($webmention_url)):
 			$rel = str_replace('u-', '', $cl );
 			//$add = "\n##### $h";
-			$add = "\n[$webmention_url]($webmention_url){.$cl}\n";
+			$add = "\n\n[$webmention_url]($webmention_url){.$cl}\n\n";
 			if (!empty($webmention_rsvp))
 				$add .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
 
@@ -864,7 +812,7 @@ class petermolnareu {
 	 */
 	public function widgets_init () {
 		register_sidebar( array(
-			'name' => __( 'Subscribe', $this->theme_constant ),
+			'name' => __( 'Subscribe', 'petermolnareu' ),
 			'id' => 'subscribe',
 			'before_widget' => '',
 			'after_widget'  => '',
@@ -872,215 +820,6 @@ class petermolnareu {
 			'after_title'   => '',
 		) );
 	}
-
-	/**
-	 * export to yaml on the fly
-	 *
-	public static function doyaml ( $postid = false ) {
-
-		if (!$postid)
-			return;
-
-		$post = get_post($postid);
-
-		// this is for structural reasons
-		$cat = get_the_category( $post->ID );
-		if ( empty($cat) || !isset($cat[0]) || empty($cat[0]) || !is_object($cat[0]) )
-			return false;
-
-		$category = $cat[0]->cat_name;
-		$category_slug = $cat[0]->slug;
-
-		// setup flat directories
-		$flatpdir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'flat';
-		$flatcdir = $flatpdir . DIRECTORY_SEPARATOR . $category_slug;
-		$flatdir = $flatcdir . DIRECTORY_SEPARATOR . $post->post_name;
-		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
-
-		// current timestamp in DB
-		$post_timestamp = get_the_modified_time( 'U' );
-
-		// check file existance
-		if ( @file_exists($flatfile) ) {
-			// compare timestamps
-			$file_timestamp = @filemtime ( $flatfile );
-			// only do the rest if the post was modified since
-			// the last export
-			if ( $file_timestamp == $post_timestamp ) {
-				return;
-			}
-		}
-
-		// make directories, if neccessary
-		$mkdir = array ( $flatpdir, $flatcdir, $flatdir );
-		foreach ( $mkdir as $dir ) {
-			if ( !is_dir($dir)) {
-				if (!mkdir( $dir )) {
-					error_log('Failed to create ' . $flatdir . ', exiting YAML creation');
-					return false;
-				}
-			}
-		}
-
-		// check for featured image
-		$thid = ( has_post_thumbnail () ) ? get_post_thumbnail_id( $post->ID ) : false;
-		if ( $thid )
-			$img = pmlnr_utils::absolute_url(wp_get_attachment_url ( $thid ));
-
-		// getting format
-		$format = self::get_type($post->ID);
-		if ( empty($format)) $format = 'article';
-
-		// building taglist
-		$taglist = '';
-		$tags = get_the_tags();
-		if ( !empty( $tags )) {
-			foreach ( $tags as $tag ) {
-				$taglist[$tag->slug] = $tag->name;
-			}
-			$taglist = join ("\n      - ", $taglist);
-		}
-
-		// parsing excerpt & building content
-		$parsedown = new ParsedownExtra();
-
-		$content = $post->post_content;
-		$excerpt = $post->post_excerpt;
-
-		$search = array ( '”', '“', '’', '–', "\x0D" );
-		$replace = array ( '"', '"', "'", '-', '' );
-
-		$content = str_replace ( $search, $replace, $content );
-
-		$excerpt = str_replace ( $search, $replace, $excerpt );
-		$excerpt = strip_tags ( $parsedown->text ( $excerpt ) );
-
-		$search = array ("\n");
-		$replace = array ("");
-		$description = trim ( str_replace( $search, $replace, $excerpt), "'\"" );
-
-		// fix all image attachments: resized -> original
-		$urlparts = parse_url(site_url());
-		$domain = $urlparts ['host'];
-		$wp_upload_dir = wp_upload_dir();
-		$uploadurl = str_replace( '/', "\\/", trim( str_replace( site_url(), '', $wp_upload_dir['url']), '/'));
-
-		$pregstr = "/((https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/)(.*)-([0-9]{1,4})×([0-9]{1,4})\.([a-zA-Z]{2,4})/";
-
-		preg_match_all( $pregstr, $content, $resized_images );
-
-		if ( !empty ( $resized_images[0]  )) {
-			foreach ( $resized_images[0] as $cntr => $imgstr ) {
-				//$location = $resized_images[1][$cntr];
-				$done_images[ $resized_images[2][$cntr] ] = 1;
-				$fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
-				$width = $resized_images[3][$cntr];
-				$height = $resized_images[4][$cntr];
-				$r = $fname . '?resize=' . $width . ',' . $height;
-				$content = str_replace ( $imgstr, $r, $content );
-			}
-		}
-
-		$pregstr = "/(https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/(.*?)\.([a-zA-Z]{2,4})/";
-
-		preg_match_all( $pregstr, $content, $images );
-		if ( !empty ( $images[0]  )) {
-
-			foreach ( $images[0] as $cntr=>$imgstr ) {
-				//$location = $resized_images[1][$cntr];
-				if ( !isset($done_images[ $images[1][$cntr] ]) ){
-					if ( !strstr($images[1][$cntr], 'http'))
-						$fname = $images[2][$cntr] . '.' . $images[3][$cntr];
-					else
-						$fname = $images[1][$cntr] . '.' . $images[2][$cntr];
-
-					$content = str_replace ( $imgstr, $fname, $content );
-				}
-			}
-		}
-
-		$twsummary = (empty($thid)) ? 'summary' : 'summary_large_image';
-
-		// this is where the actual output starts
-		$out = "---\n";
-		$out .=  "title: " . str_replace( '–', '-', get_the_title()) . "\n";
-		$out .=  "published: true\n";
-		$out .=  "modified_date: " . get_the_modified_time('Y-m-d H:i') . "\n";
-		$out .=  "publish_date: " . get_the_time('Y-m-d H:i') . "\n";
-		$out .=  "slug: " . $post->post_name . "\n";
-		$out .=  "id: " . $post->ID  . "\n";
-		$out .=  "permalink: " . get_the_permalink() . "\n";
-		$out .=  "shortlink: " . wp_get_shortlink() . "\n";
-		$out .=  "taxonomy: \n";
-		$out .=  "    tag: \n";
-		$out .=  "      - " .$taglist . "\n";
-
-		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
-		if (!empty($webmention_url)) {
-			$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
-			switch ($webmention_type) {
-				case 'u-like-of':
-					$out .=  "    u-like-of: " .  $webmention_url . "\n";
-					break;
-				case 'u-repost-of':
-					$out .=  "    u-repost-of: " .  $webmention_url . "\n";
-					break;
-				default:
-					$out .=  "    u-in-reply-to: " .  $webmention_url . "\n";
-					break;
-			}
-		}
-
-		// get all the attachments
-		$attachments = get_children( array (
-			'post_parent'=>$post->ID,
-			'post_type'=>'attachment',
-			'orderby'=>'menu_order',
-			'order'=>'asc'
-		));
-
-		// 100 is there for sanity
-		// hardlink all the attachments; no need for copy
-		// unless you're on a filesystem that does not support hardlinks
-		if ( !empty($attachments) && count($attachments) < 100 ) {
-			foreach ( $attachments as $aid => $attachment ) {
-				$attachment_path = get_attached_file( $aid );
-				$attachment_file = basename( $attachment_path);
-				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
-				error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
-				if ( !is_file($target_file))
-					link( $attachment_path, $target_file );
-			}
-		}
-		elseif ( !empty($attachments) ) {
-			error_log ('something is messed up; #' . $post->ID . ' wanted to save all this: ' . json_encode($attachments) );
-		}
-
-		// syndication links
-		$_syndicated = get_post_meta ( $post->ID, 'syndication_urls', true );
-		if ( !empty ($_syndicated ) ) {
-			$synlinks = join (', ', explode("\n", trim($_syndicated)));
-			$out .=  "syndicated: [{$synlinks}]\n";
-		}
-
-		// excerpt separator
-		$out .= "---\n";
-
-		if($post->post_excerpt) {
-			$out .= $excerpt . "\n\n===\n";
-		}
-
-		$out .= $content;
-
-		// write log
-		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
-		file_put_contents ($flatfile, $out);
-		touch ( $flatfile, $post_timestamp );
-
-		//$date = date('c');
-		//exec( "cd ${flatpdir}; git add *; git commit -m 'adding ${flatfile} @ ${date}'" );
-	}
-	*/
 
 	public static function exportyaml ( $postid = false ) {
 
@@ -1131,7 +870,10 @@ class petermolnareu {
 
 		$parsedown = new ParsedownExtra();
 		$excerpt = $post->post_excerpt;
+
 		$content = $post->post_content;
+		$content = self::insert_post_relations($content, $post);
+
 		$search = array ( '”', '“', '’', '–', "\x0D" );
 		$replace = array ( '"', '"', "'", '-', '' );
 		$excerpt = str_replace ( $search, $replace, $excerpt );
@@ -1182,6 +924,22 @@ class petermolnareu {
 			}
 		}
 
+		$meta = array();
+		$slugs = get_post_meta($post->ID, '_wp_old_slug', false);
+		foreach ($slugs as $slug ) {
+			if ( strlen($slug) > 6 )
+				$meta['slugs'][] = $slug;
+		}
+
+		$meta_to_store = array('geo_latitude','geo_longitude','snapFL','twitter_tweet_id', 'twitter_rt_id', 'twitter_rt_user_id', 'twitter_rt_time', 'twitter_reply_id', 'twitter_reply_user_id', 'instagram_id', 'instagram_url', 'raw_import_data', 'twitter_id', 'twitter_permalink', 'twitter_in_reply_to_user_id', 'twitter_in_reply_to_screen_name','twitter_in_reply_to_status_id','fbpostid','webmention_url', 'webmention_type');
+
+		foreach ( $meta_to_store as $meta_key ) {
+			$meta_entry = get_post_meta($post->ID, $meta_key, true);
+			if ( !empty($meta_entry) && $meta_entry != false ) {
+				$meta[ $meta_key ] = $meta_entry;
+			}
+		}
+
 		$out = array (
 			'title' => str_replace( '–', '-', get_the_title()),
 			'modified_date' => get_the_modified_time('c'),
@@ -1195,7 +953,7 @@ class petermolnareu {
 				'category' => $category->name,
 				'type' => $format,
 			),
-
+			'postmeta' => $meta,
 		);
 
 		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
@@ -1314,6 +1072,123 @@ class petermolnareu {
 			$term = get_term_by('id', $q_vars[$taxonomy], $taxonomy);
 			$q_vars[$taxonomy] = $term->slug;
 		}
+	}
+
+	/**
+	 * convert UNIX EPOCH to short string
+	 *
+	* thanks to https://stackoverflow.com/questions/4964197/converting-a-number-base-10-to-base-62-a-za-z0-9
+	*/
+	public static function epoch2url($num, $b=62) {
+		$base='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$r = $num  % $b ;
+		$res = $base[$r];
+		$q = floor($num/$b);
+		while ($q) {
+			$r = $q % $b;
+			$q =floor($q/$b);
+			$res = $base[$r].$res;
+		}
+		/* most of the posts I'll make in my life will start with 1
+		 * so we can save a char by popping it off and re-adding them in
+		 * the decode function
+		 */
+		$res = ltrim($res,'1');
+		return $res;
+	}
+
+	/**
+	 * decode short string and covert it back to UNIX EPOCH
+	 *
+	 */
+	public static function url2epoch( $num, $b=62) {
+		/* this is the potential 1 I chopped off */
+		if ( !is_numeric($num[0]) || $num[0] != '1' )
+			$num = '1' . $num;
+
+		$base='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$limit = strlen($num);
+		$res=strpos($base,$num[0]);
+		for($i=1;$i<$limit;$i++) {
+			$res = $b * $res + strpos($base,$num[$i]);
+		}
+		$res = '1' . $res;
+		return $res;
+	}
+
+	/**
+	 * since WordPress has it's built-in rewrite engine, it's eaiser to use
+	 * that for adding the short urls
+	 */
+	public static function checkshorturl(&$post) {
+		if (empty($post) || !is_object($post) || !isset($post->ID) || empty($post->ID))
+			return $post;
+
+		$epoch = get_the_time('U', $post->ID);
+		$url = petermolnareu::epoch2url($epoch);
+
+		$meta = get_post_meta( $post->ID, '_wp_old_slug', false);
+		if ( !in_array($url,$meta))
+			add_post_meta($post->ID, '_wp_old_slug', $url);
+
+		return $post;
+	}
+
+	public function shortlink () {
+		if (is_singular())
+			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
+	}
+
+	/**
+	 * our very own shorturl function
+	 */
+	public static function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
+		global $post;
+		if (empty($post) || !isset($post->ID) || empty($post->ID))
+			return $shortlink;
+
+		$epoch = get_the_time('U', $post->ID);
+		$url = petermolnareu::epoch2url($epoch);
+
+		$base = rtrim( get_bloginfo('url'), '/' ) . '/';
+		return $base.$url;
+	}
+
+	public static function add_featured_image_to_feed($feed) {
+		global $post;
+
+		if (empty($post) || !is_object($post))
+			return $feed;
+
+		if ( has_post_thumbnail( $post->ID ) ){
+			$feed = '' . get_the_post_thumbnail( $post->ID, 'medium' ) . '' . $content;
+		}
+		return $feed;
+	}
+
+	//public static function is_short_entry () {
+		//global $post;
+
+		//if (empty($post) || !is_object($post))
+			//return false;
+
+		//if ( empty($post->post_title))
+			//return true;
+
+		//if ( strlen( $post->post_content ) < ARTICLE_MIN_LENGTH )
+			//return true;
+
+		//return false;
+	//}
+
+	public static function fix_youtube ( $cache, $url, $attr, $postid ) {
+		if ( strstr($url, 'youtube.com')) {
+			$search = 'watch?v=';
+			$id = substr( $url, strrpos($url,$search) + strlen($search) );
+			return '<iframe src="https://www.youtube.com/embed/'.$id.'?html5=1"></iframe>';
+		}
+
+		return $cache;
 	}
 
 }

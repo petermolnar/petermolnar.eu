@@ -1,5 +1,3 @@
-<?php return; /* I really don't need this nowadays, except for myself, but that can be viewed on the admin interface */ ?>
-
 <?php global $post; ?>
 <?php if ( post_password_required() ) return; ?>
 <?php

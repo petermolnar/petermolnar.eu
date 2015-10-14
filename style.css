@@ -284,6 +284,9 @@ body {
   background-color: #EFEFEF;
   color: #333;
 }
+hr {
+  color: #333;
+}
 .limit {
   max-width: 74em;
   width: 98%;
@@ -658,10 +661,6 @@ pre {
   height: 100%;
   box-shadow: 0 0 2.8em #333;
 }
-.content-logo {
-  margin: 1em 0 1em 0;
-  text-align: center;
-}
 .nav-toggle-button {
   font-size: 3em;
   text-decoration: none;
@@ -730,9 +729,6 @@ pre {
 .content-contact .footer-forms p {
   display: inline;
   margin: 0;
-}
-.content-comments {
-  padding: 0.6em 0 0 0;
 }
 .content-navigation ul {
   list-style-type: none;
@@ -835,9 +831,6 @@ pre {
 .p-category a:hover {
   opacity: 0.99;
 }
-.inlinelist {
-  opacity: 0.6;
-}
 .vcard-page {
   display: block;
   vertical-align: top;
@@ -886,10 +879,6 @@ pre {
 .h-entry .meta {
   font-size: 0.9em;
   opacity: 0.7;
-}
-.article-nostyle {
-  display: inline-block;
-  clear: none;
 }
 .article-header {
   position: relative;
@@ -994,45 +983,6 @@ ul.page-numbers span {
 ul.page-numbers .current {
   opacity: 0.5;
 }
-.sidebar h3 {
-  margin: 0 0 0.6em 0;
-}
-.sidebar ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-.sidebar ul li {
-  display: block;
-  padding: 0;
-  margin: 0;
-}
-.sidebar ul li {
-  margin: 0 0 1em 0;
-  padding: 0 0 0.3em 0;
-}
-.sidebar ul li a {
-  opacity: 0.6;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-.sidebar ul li a:hover {
-  opacity: 0.99;
-}
-.sidebar ul li a:before {
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  text-decoration: inherit;
-  text-align: center;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1em;
-  margin-right: 0.3em;
-  content: "\e821";
-  font-family: "petermolnar";
-}
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5),(min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi),(min-width: 2400px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.9),(min-width: 2400px) and (orientation: landscape) and (max-resolution: 290dpi) {
   .nav-toggle-button {
     display: none;
@@ -1089,76 +1039,4 @@ ul.page-numbers .current {
   .siblings ul li a {
     display: block;
   }
-}
-.comment-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-.comment-list li {
-  display: block;
-  padding: 0;
-  margin: 0;
-}
-.comment-list li {
-  margin: 0 0 1.6em 0;
-  padding: 0;
-}
-.comment-list li .fn {
-  display: block;
-}
-.comment-list li .comment-reply-title,
-.comment-list li .comment-reply-link,
-.comment-list li .comment-edit-link,
-.comment-list li time {
-  font-size: 0.8em;
-}
-.comment-list li .comment-reply-title,
-.comment-list li time {
-  color: #737373;
-}
-.comment-list li .avatar {
-  float: left;
-  margin: 0 0.3em 0.3em 0;
-}
-.comment-list li li {
-  margin: 0 0 0.6em 0.8em;
-  padding: 0 0 0 0.8em;
-  border-left: 2px solid #777;
-}
-.comment-list li .says {
-  display: none;
-}
-.comment-list li p {
-  margin: 1em 0 0 0;
-}
-.comment-form label {
-  padding: 0.2em 0.6em 0.2em 0.6em;
-  display: inline-block;
-  width: 20%;
-  vertical-align: top;
-}
-.comment-form input[type=submit] {
-  border: 1px solid #777;
-  border-radius: 0.2em;
-  padding: 0.2em 0.6em 0.2em 0.6em;
-  display: inline-block;
-  width: 20%;
-  font-size: 1em;
-}
-.comment-form input[type=text],
-.comment-form input[type=email],
-.comment-form input[type=url] {
-  padding: 0.2em 0.6em 0.2em 0.6em;
-  margin-left: 4%;
-  width: 75%;
-  display: inline-block;
-  font-size: 1.1em;
-}
-.comment-form textarea {
-  padding: 0.2em 0.6em 0.2em 0.6em;
-  margin-left: 4%;
-  width: 75%;
-  display: inline-block;
-  font-size: 1.1em;
 }

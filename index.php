@@ -10,25 +10,15 @@
 
 			$post_id = get_the_ID();
 
-			$format = petermolnareu::get_type( $post->ID );
+			$post_length = strlen( $post->post_content );
+			$is_photo = adaptive_images::is_u_photo($post);
 
-			if ( $format == 'article' )
-				get_template_part( '/partials/element-journal' );
-			elseif ( file_exists( dirname(__FILE__) . '/partials/element-' . $format . '.php' ))
-				get_template_part( '/partials/element-' . $format );
+			if ( $post_length > ARTICLE_MIN_LENGTH )
+				get_template_part( '/partials/element-long' );
+			elseif ( $is_photo )
+				get_template_part( '/partials/element-photo' );
 			else
-				get_template_part( '/partials/element-blips' );
-
-			/*
-			$categories = get_the_terms( $post_id, 'category' );
-			//$categories = get_the_category(get_the_ID());
-			$category = ( $categories ) ? array_pop($categories) : null;
-
-			if ( isset($category->slug) && !empty($category->slug) && file_exists( dirname(__FILE__) . '/partials/element-' . $category->slug . '.php' ))
-				get_template_part( '/partials/element-' . $category->slug );
-			else
-				get_template_part( '/partials/element-journal' );
-			*/
+				get_template_part( '/partials/element-short' );
 		}
 	}
 
