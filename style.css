@@ -396,26 +396,6 @@ pre {
   border: 1px solid #777;
   overflow: auto;
 }
-[class^="icon-"]:before,
-[class*=" icon-"]:before,
-[class^="x-"]:before,
-[class*=" x-"]:before,
-[class*="u-in-reply-to"]:before,
-[class*="u-like-of"]:before,
-.tel:before,
-.email:before {
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  text-decoration: inherit;
-  text-align: center;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1em;
-  margin-right: 0.3em;
-  font-family: "petermolnar";
-}
 .button-rss {
   font-style: normal;
   font-weight: normal;
@@ -426,6 +406,7 @@ pre {
   font-variant: normal;
   text-transform: none;
   line-height: 1em;
+  width: 1em;
   margin-right: 0.3em;
   font-family: "petermolnar";
   width: auto;
@@ -449,181 +430,7 @@ pre {
   margin: 0.6em 0 0 0;
   line-height: 1.4em;
 }
-.icon-aperture:before {
-  content: '\e81a';
-}
-.icon-calendar:before {
-  content: '\e810';
-}
 .icon-camera:before {
-  content: '\e819';
-}
-.icon-copyright:before {
-  content: '\e81f';
-}
-.icon-cc:before {
-  content: '\e827';
-}
-.icon-cc-by:before {
-  content: '\e828';
-}
-.icon-cc-nc:before {
-  content: '\e829';
-}
-.icon-cc-nc-eu:before {
-  content: '\e82a';
-}
-.icon-cc-nc-jp:before {
-  content: '\e82b';
-}
-.icon-cc-nd:before {
-  content: '\e82d';
-}
-.icon-cc-pd:before {
-  content: '\e831';
-}
-.icon-cc-remix:before {
-  content: '\e830';
-}
-.icon-cc-sa:before {
-  content: '\e82c';
-}
-.icon-cc-share:before {
-  content: '\e82f';
-}
-.icon-cc-zero:before {
-  content: '\e82e';
-}
-.icon-clock:before {
-  content: '\e817';
-}
-.icon-comment:before {
-  content: '\e80f';
-}
-.icon-facebook:before {
-  content: '\e808';
-}
-.icon-flickr:before {
-  content: '\e809';
-}
-.icon-focallength:before {
-  content: '\e81c';
-}
-.icon-folder:before {
-  content: '\e812';
-}
-.icon-frown:before {
-  content: '\e824';
-}
-.icon-github:before {
-  content: '\e802';
-}
-.icon-globe:before {
-  content: '\e80c';
-}
-.icon-googleplus:before,
-.icon-gplus:before {
-  content: '\e801';
-}
-.icon-hacker-news:before {
-  content: '\e80e';
-}
-.icon-hash:before {
-  content: '\e80a';
-}
-.icon-instagram:before {
-  content: '\e816';
-}
-.icon-lastfm:before {
-  content: '\e80d';
-}
-.icon-like:before {
-  content: '\e822';
-}
-.icon-linkedin:before {
-  content: '\e807';
-}
-.icon-link-ext-alt:before {
-  content: '\e814';
-}
-.icon-mail:before {
-  content: '\e815';
-}
-.icon-meh:before {
-  content: '\e823';
-}
-.icon-menu:before {
-  content: '\e81b';
-}
-.tel:before,
-.icon-phone:before {
-  content: '\e800';
-}
-.icon-picture:before {
-  content: '\e833';
-}
-.icon-pinterest:before {
-  content: '\e805';
-}
-.icon-qrcode:before {
-  content: '\e813';
-}
-.icon-rss:before {
-  content: '\e80b';
-}
-.icon-sensitivity:before {
-  content: '\e81d';
-}
-.icon-share:before {
-  content: '\e818';
-}
-.icon-smile:before {
-  content: '\e825';
-}
-.icon-tag:before {
-  content: '\e811';
-}
-.icon-tumblr:before {
-  content: '\e803';
-}
-.icon-twitter:before {
-  content: '\e804';
-}
-.icon-wordpress:before {
-  content: '\e837';
-}
-.icon-youtube:before {
-  content: '\e806';
-}
-.icon-500px:before {
-  content: '\e81e';
-}
-.icon-deviantart:before {
-  content: '\e820';
-}
-.icon-reply:before {
-  content: '\e821';
-}
-.icon-lock:before {
-  content: '\e826';
-}
-.icon-search:before {
-  content: '\e835';
-}
-.icon-right-hand:before {
-  content: '\e834';
-}
-.icon-ok-squared:before {
-  content: '\e832';
-}
-.u-in-reply-to:before {
-  content: '\e821';
-}
-.u-like-of:before {
-  content: '\e822';
-}
-[class^="openwebicon-"]:before,
-[class*=" openwebicon-"]:before {
   font-style: normal;
   font-weight: normal;
   speak: none;
@@ -633,14 +440,358 @@ pre {
   font-variant: normal;
   text-transform: none;
   line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '📷';
+}
+.icon-copyright:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '©';
+}
+.icon-focallength:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '↔';
+}
+.icon-globe:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '🌍';
+}
+.tel:before,
+.icon-phone:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '📞';
+}
+.icon-mail:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '✉';
+}
+.icon-search:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '🔎';
+}
+.icon-clock:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '🕕';
+}
+.icon-sensitivity:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '☼';
+}
+.icon-aperture:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '○';
+}
+.icon-lock:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '🔒';
+}
+.icon-subscribe:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '✍';
+}
+.u-like-of:before,
+.icon-like:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '👍';
+}
+.u-in-reply-to:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  content: '⇮';
+}
+.icon-rss:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e80b';
+}
+.icon-tag:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e811';
+}
+.icon-facebook:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e808';
+}
+.icon-flickr:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e809';
+}
+.icon-github:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e802';
+}
+.icon-instagram:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e816';
+}
+.icon-lastfm:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e80d';
+}
+.icon-linkedin:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e807';
+}
+.icon-twitter:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e804';
+}
+.icon-wordpress:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
+  margin-right: 0.3em;
+  font-family: "petermolnar";
+  content: '\e837';
+}
+.webmention:before {
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1em;
+  width: 1em;
   margin-right: 0.3em;
   font-family: "OpenWeb Icons";
-}
-.openwebicon-webmention:before {
   content: "\f04d";
-}
-.openwebicon-indieweb:before {
-  content: "\f08b \f08c";
 }
 .content-header {
   position: fixed;
@@ -867,6 +1018,7 @@ pre {
   font-variant: normal;
   text-transform: none;
   line-height: 1em;
+  width: 1em;
   margin-right: 0.3em;
   font-family: "petermolnar";
   font-size: 1.1em;
@@ -935,6 +1087,7 @@ pre {
   font-variant: normal;
   text-transform: none;
   line-height: 1em;
+  width: 1em;
   margin-right: 0.3em;
   font-family: "petermolnar";
   content: "\e833";

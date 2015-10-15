@@ -3,7 +3,7 @@
 
 <indie-action do="post" with="<?php echo get_permalink(); ?>" class="share">
 	<p>
-		<a href="<?php echo wp_get_shortlink(); ?>" class="openwebicon-webmention small"><?php echo wp_get_shortlink(); ?></a>
+		<a href="<?php echo wp_get_shortlink(); ?>" class="webmention small"><?php echo wp_get_shortlink(); ?></a>
 	</p>
 </indie-action>
 

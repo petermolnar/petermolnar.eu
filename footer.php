@@ -15,7 +15,7 @@
 		<?php /*<label for="button-rss" class="hide"><?php __('Follow this site'); ?></label>
 		<input type="button" class="button-rss" id="button-rss" name="button-rss" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-feeds="<?php bloginfo('rss2_url'); ?>" data-subtome-resource="<?php echo home_url(); ?>" value="&#xE80B; follow petermolnar.eu" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" /><br /> */ ?>
 		<aside class="footer-forms">
-		<i class='icon-right-hand'></i><label for="email"><?php
+		<i class='icon-subscribe'></i><label for="email"><?php
 			switch ($lang) {
 				case 'hu':
 					_e('Feliratkozás' );

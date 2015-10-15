@@ -1,4 +1,3 @@
-
 <?php $author_email =  get_the_author_meta ( 'user_email' , $author ); ?>
 <hr />
 	<p class="small">
