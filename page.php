@@ -10,7 +10,7 @@ the_content();
 $content = ob_get_clean();
 
 ?>
-<section class="content-body content-dark">
+<section class="content-body">
 	<article id="post-<?php the_ID(); ?>" class="h-entry">
 
 		<!-- article meta -->
@@ -21,7 +21,7 @@ $content = ob_get_clean();
 		<!-- end article meta ->
 
 		<!-- article content -->
-		<div class="article-content e-content">
+		<div class="e-content">
 			<div class="content-inner">
 				<?php echo $content; ?>
 				<br class="clear" />

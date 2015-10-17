@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<section class="content-body content-light h-feed" id="main-content">
+<section class="content-body h-feed" id="main-content">
 
 <?php
 

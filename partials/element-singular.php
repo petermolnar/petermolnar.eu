@@ -19,43 +19,44 @@ petermolnareu::makesyndication();
 petermolnareu::checkshorturl($post);
 
 ?>
+<section class="content-body" id="main-content">
+	<article class="h-entry" id="post-<?php the_ID(); ?>" >
+		<header <?php echo $hstyle; ?>>
+			<div class="content-inner">
+				<?php require_once (dirname(__FILE__) . '/ameta_readtime.php'); ?>
+				<?php require_once (dirname(__FILE__) . '/ameta_pubdate.php'); ?>
+				<h1>
+					<a class="u-url" href="<?php echo $post_url ?>" rel="bookmark" title="<?php echo $post_title ?>">
+						<span class="p-name"><?php echo $post_title ?></span>
+					</a>
+				</h1>
+				<div>
+					<?php require_once (dirname(__FILE__) . '/ameta_author.php'); ?>
+				</div>
+			</div>
+		</header>
 
-<article id="post-<?php the_ID(); ?>" class="h-entry" itemscope itemtype="http://schema.org/Article">
-	<header <?php echo $hstyle; ?>>
-		<div class="content-inner">
-			<?php require_once (dirname(__FILE__) . '/ameta_readtime.php'); ?>
-			<?php require_once (dirname(__FILE__) . '/ameta_pubdate.php'); ?>
-			<h1>
-				<a class="u-url" itemprop="url" href="<?php echo $post_url ?>" rel="bookmark" title="<?php echo $post_title ?>">
-					<span class="p-name" itemprop="name"><?php echo $post_title ?></span>
-				</a>
-			</h1>
-			<div>
-				<?php require_once (dirname(__FILE__) . '/ameta_author.php'); ?>
+		<div class="e-content">
+			<div class="content-inner">
+				<?php
+					the_content();
+				?>
+				<br class="clear" />
 			</div>
 		</div>
-	</header>
 
-	<div class="e-content" itemprop="articleBody">
-		<div class="content-inner">
+		<footer>
+			<div class="content-inner">
 			<?php
-				the_content();
+				//require_once (dirname(__FILE__) . '/ameta_relations.php');
+				require_once (dirname(__FILE__) . '/ameta_imported.php');
+				require_once (dirname(__FILE__) . '/list_tag.php');
+				require_once (dirname(__FILE__) . '/list_reply.php');
+				require_once (dirname(__FILE__) . '/list_share.php');
+				//require_once (dirname(__FILE__) . '/list_siblings.php');
+				require_once (dirname(__FILE__) . '/ameta_footer.php');
 			?>
-			<br class="clear" />
-		</div>
-	</div>
-
-	<footer>
-		<div class="content-inner">
-		<?php
-			//require_once (dirname(__FILE__) . '/ameta_relations.php');
-			require_once (dirname(__FILE__) . '/ameta_imported.php');
-			require_once (dirname(__FILE__) . '/list_tag.php');
-			require_once (dirname(__FILE__) . '/list_reply.php');
-			require_once (dirname(__FILE__) . '/list_share.php');
-			//require_once (dirname(__FILE__) . '/list_siblings.php');
-			require_once (dirname(__FILE__) . '/ameta_footer.php');
-		?>
-		</div>
-	</footer>
-</article>
+			</div>
+		</footer>
+	</article>
+</section>

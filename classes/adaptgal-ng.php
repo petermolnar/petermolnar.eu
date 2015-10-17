@@ -52,21 +52,23 @@ class adaptive_images {
 		if ( !pmlnr_utils::is_post($post))
 			global $post;
 
+		$meta = self::get_extended_meta($thid);
+		if (empty($meta['sizes']))
+			return false;
+
 		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$meta = self::get_extended_meta($thid);
-
-		$fallback = $meta['sizes']['medium']['src'];
+		$fallback = $meta['sizes']['medium'];
 		$try = array ( 'medium', self::prefix . '2', self::prefix . '3' );
 		foreach ( $try as $test ) {
 
 			if (isset($meta['sizes'][$test]['src']) && !empty($meta['sizes'][$test]['src']))
-				$t = $meta['sizes'][$test]['src'];
+				$t = $meta['sizes'][$test];
 			else
 				continue;
 
-			if ( $t != $meta['src'] )
+			if ( $t['src'] != $meta['src'] )
 				$fallback = $t;
 		}
 
@@ -93,13 +95,21 @@ class adaptive_images {
 			$class .=" u-photo";
 		}
 
-		if ( is_feed())
-			$r = sprintf('<img src="%s" title="%s" alt="%s" />', $fallback, $meta['image_meta']['title'], $meta['image_meta']['alt'] );
-		else
+		if ( is_feed()) {
+			$r = sprintf('<img src="%s" title="%s" alt="%s" />', $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'] );
+		}
+		elseif (pmlnr_utils::is_amp()) {
 			$r = sprintf('
-		<a class="adaptlink" href="%s">
-			<img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" itemprop="image" />
-		</a>', $target, $fallback, $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+		<a href="%s">
+			<amp-img src="%s" title="%s" alt="%s" srcset="%s" width="%s" height="%s" />
+		</a>', $target, $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ), $fallback['width'], $fallback['height'] );
+		}
+		else {
+			$r = sprintf('
+		<a href="%s">
+			<img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" />
+		</a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, self::expire );
 
@@ -233,7 +243,7 @@ class adaptive_images {
 			$src = $src . $adaptive;
 		}
 
-		if ( self::is_photo($thid) ) {
+		if ( self::is_photo($thid) && is_singular() ) {
 			$src = $src . static::photo_exif( $thid );
 		}
 
@@ -290,7 +300,7 @@ class adaptive_images {
 			if ( isset($meta['iso']) && !empty($meta['iso']))
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
 
-			$return = join(',',$r);
+			$return = '<div class="aligncenter">' . join(', ',$r) .'</div>';
 		}
 
 		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, self::expire );

@@ -15,7 +15,7 @@ if ( $thid ) {
 ?>
 
 <div class="content-inner">
-	<article id="post-<?php the_ID(); ?>" class="h-entry article-list-element">
+	<article class="h-entry" id="post-<?php the_ID(); ?>">
 
 		<header>
 			<div class="meta">

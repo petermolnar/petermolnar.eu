@@ -2,6 +2,5 @@
 
 <span class="right spacer icon-clock">
 	<?php echo $minstoread ?> <?php _e('mins to read') ?>
-	<span class="hide" itemprop="timeRequired">PT<?php echo $minstoread  ?>M</span>
 </span>
 

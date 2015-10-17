@@ -5,6 +5,16 @@ class pmlnr_utils {
 	public function __construct () {
 	}
 
+	public static function is_amp () {
+		global $wp_query;
+
+		if ( isset( $wp_query->query_vars[ 'amp' ]) )
+			return true;
+
+		return false;
+	}
+
+
 	public static function is_post ( &$post ) {
 		if ( !empty($post) && is_object($post) && isset($post->ID) && !empty($post->ID) )
 			return true;

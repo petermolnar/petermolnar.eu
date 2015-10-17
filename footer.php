@@ -10,10 +10,8 @@
 	<a href="#" id="showContentHeader" class="nav-toggle-button" > </a>
 
 	<div class="limit content-contact">
-		<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a> <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); /* echo pmlnr_article::vcard(); */ ?><a class="icon-rss" title="RSS feed" href="<?php bloginfo('rss2_url'); ?>"></a>
+		<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a> <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); ?><a class="icon-rss" title="RSS feed" href="<?php bloginfo('rss2_url'); ?>"></a>
 		<br />
-		<?php /*<label for="button-rss" class="hide"><?php __('Follow this site'); ?></label>
-		<input type="button" class="button-rss" id="button-rss" name="button-rss" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-feeds="<?php bloginfo('rss2_url'); ?>" data-subtome-resource="<?php echo home_url(); ?>" value="&#xE80B; follow petermolnar.eu" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" /><br /> */ ?>
 		<aside class="footer-forms">
 		<i class='icon-subscribe'></i><label for="email"><?php
 			switch ($lang) {
@@ -37,13 +35,12 @@
 							break;
 					}
 				?></label><br />
-				<input type="search" class="search-field" placeholder="Search …" value="" name="s" title="<?php _e('Search for:' ); ?>">
+				<input type="search" class="search-field" placeholder="🔎 search …" value="" name="s" title="<?php _e('Search for:' ); ?>">
 				<input type="submit" class="search-submit" value="<?php _e('OK' ); ?>">
 			</form>
 		</aside>
 	</div>
 
-	<!-- toggle menu -->
 	<script>
 		window.addEventListener('load', function() {
 			var menuButton = document.getElementById('showContentHeader');
@@ -84,12 +81,11 @@
 
 		});
 	</script>
-	<!-- end toggle menu -->
 </header>
 <!-- end main menu -->
 
 <!-- main footer -->
-<footer class="content-footer aligncenter" id="main-footer">
+<footer class="content-footer" id="main-footer">
 	<?php wp_footer(); ?>
 </footer>
 <!-- end main footer -->

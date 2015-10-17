@@ -30,6 +30,7 @@ if ( !function_exists ( 'preg_value' ) ) {
 class petermolnareu {
 	public $theme_constant = 'petermolnareu';
 	const menu_header = 'header';
+	private $endpoints = array('yaml');
 
 	//const shortdomain = 'http://pmlnr.eu/';
 	//const shorturl_enabled = false;
@@ -157,8 +158,6 @@ class petermolnareu {
 		add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
 		//add_filter('the_excerpt_rss', array(&$this, 'add_featured_image_to_feed'), 10, 1);
 		//add_filter('the_content_feed', array(&$this, 'add_featured_image_to_feed'), 10, 1);
-
-
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
 			'label' => 'Type',
@@ -168,6 +167,32 @@ class petermolnareu {
 			'show_admin_column' => true,
 			'rewrite' => array( 'slug' => 'metatype' ),
 		));
+
+		foreach ($this->endpoints as $endpoint ) {
+			add_rewrite_endpoint( $endpoint, EP_PERMALINK | EP_PAGES );
+		}
+
+		add_action( 'template_redirect', array(&$this, 'template_redirect') );
+	}
+
+	public function template_redirect() {
+		global $wp_query;
+
+		if (!is_singular())
+			return false;
+
+		foreach ($this->endpoints as $endpoint ) {
+			if ( isset( $wp_query->query_vars[ $endpoint ]) ) {
+
+				if ( method_exists ( $this , $endpoint ) )
+					echo $this->$endpoint();
+				elseif ( file_exists(dirname( __FILE__ ) . '/' . $endpoint . '.php')) {
+					include dirname( __FILE__ ) . '/' . $endpoint . '.php';
+				}
+
+				exit;
+			}
+		}
 	}
 
 	/**
@@ -824,9 +849,12 @@ class petermolnareu {
 	public static function exportyaml ( $postid = false ) {
 
 		if (!$postid)
-			return;
+			return false;
 
 		$post = get_post($postid);
+
+		if (!pmlnr_utils::is_post($post))
+			return false;
 
 		$filename = $post->post_name;
 
@@ -838,7 +866,7 @@ class petermolnareu {
 		if ( @file_exists($flatfile) ) {
 			$file_timestamp = @filemtime ( $flatfile );
 			if ( $file_timestamp == $post_timestamp ) {
-				return;
+				return true;
 			}
 		}
 
@@ -851,6 +879,112 @@ class petermolnareu {
 				}
 			}
 		}
+
+		// get all the attachments
+		$attachments = get_children( array (
+			'post_parent'=>$post->ID,
+			'post_type'=>'attachment',
+			'orderby'=>'menu_order',
+			'order'=>'asc'
+		));
+
+		// 100 is there for sanity
+		// hardlink all the attachments; no need for copy
+		// unless you're on a filesystem that does not support hardlinks
+		if ( !empty($attachments) && count($attachments) < 100 ) {
+			$out['attachments'] = array();
+			foreach ( $attachments as $aid => $attachment ) {
+				$attachment_path = get_attached_file( $aid );
+				$attachment_file = basename( $attachment_path);
+				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
+				error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
+				if ( !is_file($target_file))
+					link( $attachment_path, $target_file );
+			}
+		}
+
+		$out = self::yaml();
+
+		// write log
+		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
+		file_put_contents ($flatfile, $out);
+		touch ( $flatfile, $post_timestamp );
+		return true;
+	}
+
+	/**
+	 * show post in YAML format (Grav friendly version)
+	 */
+	public static function yaml ( $postid = false ) {
+
+		if (!$postid) {
+			global $post;
+		}
+		else {
+			$post = get_post($postid);
+		}
+
+		if (!pmlnr_utils::is_post($post))
+			return false;
+
+		$postdata = self::raw_post_data($post);
+
+		if (empty($postdata))
+			return false;
+
+		$excerpt = false;
+		if (isset($postdata['excerpt']) && !empty($postdata['excerpt'])) {
+			$excerpt = $postdata['excerpt'];
+			unset($postdata['excerpt']);
+		}
+
+		$content = $postdata['content'];
+		unset($postdata['content']);
+
+		$out = yaml_emit($postdata,  YAML_UTF8_ENCODING );
+		if($excerpt) {
+			$out .= "\n" . $excerpt . "\n";
+		}
+
+		$out .= "---\n" . $content;
+
+		return $out;
+	}
+
+	/**
+	 * show post in JSON format
+	 *
+	public static function json ( $postid = false ) {
+
+		if (!$postid) {
+			global $post;
+		}
+		else {
+			$post = get_post($postid);
+		}
+
+		if (!pmlnr_utils::is_post($post))
+			return false;
+
+		$postdata = self::raw_post_data($post);
+
+		if (empty($postdata))
+			return false;
+
+		return json_encode($postdata,JSON_PRETTY_PRINT);
+	}
+	*/
+
+	/**
+	 * raw data for various representations, like JSON or YAML
+	 */
+	public static function raw_post_data ( &$post ) {
+
+		if (!pmlnr_utils::is_post($post))
+			global $post;
+
+		if (!pmlnr_utils::is_post($post))
+			return false;
 
 		$cat = get_the_category( $post->ID );
 		if ( !empty($cat) && isset($cat[0])) {
@@ -866,7 +1000,6 @@ class petermolnareu {
 			foreach ( $t as $tag )
 				array_push($tags, $tag->name);
 		$tags = array_unique($tags);
-
 
 		$parsedown = new ParsedownExtra();
 		$excerpt = $post->post_excerpt;
@@ -924,6 +1057,10 @@ class petermolnareu {
 			}
 		}
 
+		$author_id = $post->post_author;
+		$author =  get_the_author_meta ( 'display_name' , $author_id );
+		//$author_url = get_the_author_meta ( 'user_url' , $author_id );
+
 		$meta = array();
 		$slugs = get_post_meta($post->ID, '_wp_old_slug', false);
 		foreach ($slugs as $slug ) {
@@ -931,14 +1068,18 @@ class petermolnareu {
 				$meta['slugs'][] = $slug;
 		}
 
-		$meta_to_store = array('geo_latitude','geo_longitude','snapFL','twitter_tweet_id', 'twitter_rt_id', 'twitter_rt_user_id', 'twitter_rt_time', 'twitter_reply_id', 'twitter_reply_user_id', 'instagram_id', 'instagram_url', 'raw_import_data', 'twitter_id', 'twitter_permalink', 'twitter_in_reply_to_user_id', 'twitter_in_reply_to_screen_name','twitter_in_reply_to_status_id','fbpostid','webmention_url', 'webmention_type');
+		$meta_to_store = array('author','geo_latitude','geo_longitude','twitter_tweet_id', 'twitter_rt_id', 'twitter_rt_user_id', 'twitter_rt_time', 'twitter_reply_id', 'twitter_reply_user_id', 'instagram_id', 'instagram_url', 'twitter_id', 'twitter_permalink', 'twitter_in_reply_to_user_id', 'twitter_in_reply_to_screen_name','twitter_in_reply_to_status_id','fbpost->ID','webmention_url', 'webmention_type');
 
 		foreach ( $meta_to_store as $meta_key ) {
 			$meta_entry = get_post_meta($post->ID, $meta_key, true);
 			if ( !empty($meta_entry) && $meta_entry != false ) {
 				$meta[ $meta_key ] = $meta_entry;
+				if ($meta_key == 'author' )
+					$author = $meta_entry;
 			}
 		}
+
+		if ( isset($meta))
 
 		$out = array (
 			'title' => str_replace( '–', '-', get_the_title()),
@@ -954,6 +1095,7 @@ class petermolnareu {
 				'type' => $format,
 			),
 			'postmeta' => $meta,
+			'author' => $author,
 		);
 
 		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
@@ -985,10 +1127,10 @@ class petermolnareu {
 				$attachment_path = get_attached_file( $aid );
 				$attachment_file = basename( $attachment_path);
 				array_push($out['attachments'], $attachment_file);
-				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
-				error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
-				if ( !is_file($target_file))
-					link( $attachment_path, $target_file );
+				//$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
+				//error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
+				//if ( !is_file($target_file))
+				//	link( $attachment_path, $target_file );
 			}
 		}
 
@@ -998,17 +1140,13 @@ class petermolnareu {
 			$out['syndicated'] = explode("\n", trim($_syndicated));
 		}
 
-		$out = yaml_emit($out,  YAML_UTF8_ENCODING );
 		if($post->post_excerpt) {
-			$out .= "\n" . $excerpt . "\n";
+			$out['excerpt'] = $excerpt;
 		}
 
-		$out .= "---\n" . $content;
+		$out['content'] = $content;
 
-		// write log
-		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
-		file_put_contents ($flatfile, $out);
-		touch ( $flatfile, $post_timestamp );
+		return $out;
 	}
 
 	/**

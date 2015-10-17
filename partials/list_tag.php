@@ -1,8 +1,8 @@
 <?php $tags = petermolnareu::post_get_tags_array(); ?>
 
 <?php if ( !empty($tags)): ?>
-<!-- <h5><?php _e('Tagged as:') ?></h5> -->
-<div class="tags" itemprop="keywords">
+<?php /* <h5><?php _e('Tagged as:') ?></h5> */?>
+<div class="tags">
 	<ul class="p-category">
 	<?php foreach ($tags as $name => $url ): ?>
 		<li>
