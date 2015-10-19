@@ -6,36 +6,19 @@ $dirname = dirname(__FILE__);
 
 require_once ($dirname . '/lib/parsedown/Parsedown.php');
 require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
+require_once ($dirname . '/lib/lessphp/lessc.inc.php');
 
-require_once ($dirname . '/classes/adaptgal-ng.php');
-require_once ($dirname . '/classes/utils.php');
+require_once ($dirname . '/classes/base.php');
+require_once ($dirname . '/classes/image.php');
+require_once ($dirname . '/classes/cleanup.php');
+require_once ($dirname . '/classes/markdown.php');
+require_once ($dirname . '/classes/post.php');
+require_once ($dirname . '/classes/author.php');
+//require_once ($dirname . '/classes/formats.php');
 
-/**
- *
- */
-if ( !function_exists ( 'preg_value' ) ) {
-	function preg_value ( $string, $pattern, $index = 1 ) {
-		preg_match( $pattern, $string, $results );
-		if ( isset ( $results[ $index ] ) && !empty ( $results [ $index ] ) )
-			return $results [ $index ];
-		else
-			return false;
-	}
-}
-
-
-/**
- *
- */
 class petermolnareu {
-	public $theme_constant = 'petermolnareu';
 	const menu_header = 'header';
-	private $endpoints = array('yaml');
-
-	//const shortdomain = 'http://pmlnr.eu/';
-	//const shorturl_enabled = false;
-
-	public $webmention_types = null;
+	private $endpoints = array ('yaml');
 
 	public function __construct () {
 
@@ -43,53 +26,37 @@ class petermolnareu {
 		$dirname = dirname(__FILE__);
 		$lessfile = $dirname . '/style.less';
 		$lessmtime = filemtime( $lessfile );
-		$cssfile = $dirname . '/style.css';
+		$cssfile = str_replace('less', 'css', $lessfile);
 		$cssmtime = filemtime( $cssfile );
 
 		if ($cssmtime < $lessmtime ) {
-			include_once ($dirname . '/lib/lessphp/lessc.inc.php');
+			//include_once ($dirname . '/lib/lessphp/lessc.inc.php');
 			$less = new lessc;
 			$less->compileFile( $lessfile, $cssfile );
 			touch ( $cssfile, $lessmtime );
 		}
 		// }}}
 
-		$this->adaptive_images = new adaptive_images();
+		new pmlnr_image();
+		new pmlnr_cleanup();
+		new pmlnr_markdown();
+		new pmlnr_post();
+		new pmlnr_author();
+		//new pmlnr_formats();
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
-		add_action( 'init', array( &$this->adaptive_images, 'init'));
-
-		// cleanup
-		remove_action('wp_head', 'rsd_link');
-		remove_action('wp_head', 'wlwmanifest_link');
-		remove_action('wp_head', 'index_rel_link'); // Index link
-		remove_action('wp_head', 'parent_post_rel_link', 10, 0); // Prev link
-		remove_action('wp_head', 'start_post_rel_link', 10, 0);
-		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
-		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0);
-		remove_action('wp_head', 'wp_generator');
-		//remove_action('wp_head', 'rel_canonical');
-		remove_action('admin_print_styles', 'print_emoji_styles' );
-		remove_action('wp_head', 'print_emoji_detection_script', 7 );
-		remove_action('admin_print_scripts', 'print_emoji_detection_script' );
-		remove_action('wp_print_styles', 'print_emoji_styles' );
 
 		// replace shortlink
-		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10, 0 );
 		add_action( 'wp_head', array(&$this, 'shortlink'));
-
-		// RSS will be added by hand
-		remove_action( 'wp_head', 'feed_links', 2 );
-		remove_action( 'wp_head','feed_links_extra', 3);
 
 		// add css & js
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
 
 		// add graphmeta, because world
-		add_action('wp_head',array(&$this, 'graphmeta'));
+		//add_action('wp_head',array(&$this, 'graphmeta'));
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
 		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
@@ -104,18 +71,15 @@ class petermolnareu {
 				add_action("{$status}_to_publish", array(&$this, "checkshorturl"));
 			}
 		}
+
+		add_action( 'template_redirect', array(&$this, 'template_redirect') );
+		foreach ($this->endpoints as $endpoint ) {
+			add_rewrite_endpoint( $endpoint, EP_PERMALINK | EP_PAGES );
+		}
+
 	}
 
 	public function init () {
-
-		remove_filter( 'the_content', 'wpautop' );
-		remove_filter( 'the_excerpt', 'wpautop' );
-		remove_filter( 'the_content', 'make_clickable', 12 );
-		remove_filter( 'comment_text', 'make_clickable', 9);
-		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
-		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
-		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
-		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
 
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
@@ -126,19 +90,6 @@ class petermolnareu {
 		register_nav_menus( array(
 			self::menu_header => __( self::menu_header , 'petermolnareu' ),
 		) );
-
-		// additional user meta fields
-		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
-
-		// replace img inserts with Markdown
-		add_filter( 'image_send_to_editor', array( &$this, 'media_string_html2md'), 10 );
-
-		// remove too special chars
-		add_filter( 'content_save_pre' , array(&$this, 'sanitize_content') , 10, 1);
-
-		// markdown
-		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
-		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
 
 		// replace default <title></title>
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
@@ -155,9 +106,8 @@ class petermolnareu {
 		// shortlink replacement
 		add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
 
-		add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
-		//add_filter('the_excerpt_rss', array(&$this, 'add_featured_image_to_feed'), 10, 1);
-		//add_filter('the_content_feed', array(&$this, 'add_featured_image_to_feed'), 10, 1);
+		//add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
+
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
 			'label' => 'Type',
@@ -167,44 +117,7 @@ class petermolnareu {
 			'show_admin_column' => true,
 			'rewrite' => array( 'slug' => 'metatype' ),
 		));
-
-		foreach ($this->endpoints as $endpoint ) {
-			add_rewrite_endpoint( $endpoint, EP_PERMALINK | EP_PAGES );
-		}
-
-		add_action( 'template_redirect', array(&$this, 'template_redirect') );
 	}
-
-	public function template_redirect() {
-		global $wp_query;
-
-		if (!is_singular())
-			return false;
-
-		foreach ($this->endpoints as $endpoint ) {
-			if ( isset( $wp_query->query_vars[ $endpoint ]) ) {
-
-				if ( method_exists ( $this , $endpoint ) )
-					echo $this->$endpoint();
-				elseif ( file_exists(dirname( __FILE__ ) . '/' . $endpoint . '.php')) {
-					include dirname( __FILE__ ) . '/' . $endpoint . '.php';
-				}
-
-				exit;
-			}
-		}
-	}
-
-	/**
-	 * Bloody emojis
-	 */
-	public function disable_emojicons_tinymce( $plugins ) {
-		if ( is_array( $plugins ) )
-			return array_diff( $plugins, array( 'wpemoji' ) );
-		else
-			return array();
-	}
-
 
 	/**
 	 * register & queue css & js
@@ -245,7 +158,7 @@ class petermolnareu {
 	}
 
 	/**
-	 * add cc field
+	 * add webmention field to admin
 	 */
 	public function post_meta_add () {
 		add_meta_box(
@@ -373,77 +286,6 @@ class petermolnareu {
 	}
 
 	/**
-	 * additional user fields
-	 */
-	public function add_user_meta_fields ($profile_fields) {
-
-		$profile_fields['pgp'] = __('URL to PGP key for the email address above', 'petermolnareu');
-		$profile_fields['github'] = __('Github username', 'petermolnareu');
-		$profile_fields['mobile'] = __('Mobile phone number', 'petermolnareu');
-		$profile_fields['linkedin'] = __('LinkedIn username', 'petermolnareu');
-		$profile_fields['flickr'] = __('Flickr username', 'petermolnareu');
-		$profile_fields['tubmlr'] = __('Tumblr blog URL', 'petermolnareu');
-		$profile_fields['500px'] = __('500px username', 'petermolnareu');
-		$profile_fields['instagram'] = __('instagram username', 'petermolnareu');
-		$profile_fields['skype'] = __('skype username', 'petermolnareu');
-		$profile_fields['twitter'] = __('twitter username', 'petermolnareu');
-
-		return $profile_fields;
-	}
-
-	/**
-	 * remove hidious quote chars and other exotic things
-	 */
-	function sanitize_content( $content ) {
-		$search = array( '”', '“', '’', '–' );
-		$replace = array ( '"', '"', "'", '-' );
-
-		$content = str_replace( $search, $replace, $content );
-		return $content;
-	}
-
-	/**
-	 * replace HTML img insert with Markdown Extra syntax
-	 */
-	public static function media_string_html2md( $str ) {
-		if ( !strstr ( $str, '<img' ) )
-			return $str;
-
-
-		$src = preg_value ( $str, '/src="([^"]+)"/' );
-		$title = preg_value ( $str, '/title="([^"]+)"/' );
-		$alt = preg_value ( $str, '/alt="([^"]+)"/' );
-		if ( empty ( $alt ) && !empty ( $title ) ) $alt = $title;
-		$wpid = preg_value ( $str, '/wp-image-(\d*)/' );
-		$src = preg_value ( $str, '/src="([^"]+)"/' );
-		$cl = preg_value ( $str, '/class="([^"]+)?(align(left|right|center))([^"]+)?"/', 2 );
-		if (!empty($cl)) $cl = ' .' . $cl;
-
-		if (!empty($title)) $title = ' ' . $title;
-		if (!empty($wpid)) $imgid = '#img-' . $wpid;
-
-
-		$img = sprintf ('![%s](%s%s){%s%s}', $alt, $src, $title, $imgid, $cl);
-		return $img;
-	}
-
-	/**
-	 * parsedown
-	 */
-	public static function parsedown ( $md ) {
-
-		if ( empty ( $md ) )
-			return false;
-
-		$parsedown = new ParsedownExtra();
-		$parsedown->setBreaksEnabled(true);
-		$parsedown->setUrlsLinked(true);
-		$md = $parsedown->text ( $md );
-
-		return $md;
-	}
-
-	/**
 	 *
 	 */
 	public function nice_title ( $title ) {
@@ -499,7 +341,7 @@ class petermolnareu {
 			if ( $thid ) {
 				$src = wp_get_attachment_image_src( $thid, 'large');
 				if ( !empty($src[0])) {
-					$src = pmlnr_utils::fix_url($src[0]);
+					$src = pmlnr_base::fix_url($src[0]);
 					$og['og:image'] = $src;
 					$og['twitter:image:src'] = $src;
 				}
@@ -522,34 +364,6 @@ class petermolnareu {
 
 		foreach ($og as $property => $content )
 			printf( '<meta property="%s" content="%s" />%s', $property, $content, "\n" );
-	}
-
-	/**
-	 * new utils - no formatting, no html, just data
-	 */
-
-	public static function author_social ( $author_id = 1 ) {
-		$list = [];
-
-		$socials = array (
-			'github'   => 'https://github.com/%s',
-			//'linkedin' => 'https://www.linkedin.com/in/%s',
-			'twitter'  => 'https://twitter.com/%s',
-			'flickr'   => 'https://www.flickr.com/people/%s',
-			//'500px'	=> 'https://500px.com/%s',
-			//'instagram'=> 'https://instagram.com/%s',
-			//'skype'=> 'callto:%s',
-		);
-
-		foreach ( $socials as $silo => $pattern ) {
-			$socialmeta = get_the_author_meta ( $silo , $author_id );
-
-			if ( !empty($socialmeta) )
-				$list[ $silo ] = sprintf ( $pattern, $socialmeta );
-
-		}
-
-		return $list;
 	}
 
 	/**
@@ -600,124 +414,14 @@ class petermolnareu {
 		return $content;
 	}
 
-	/**
-	 *
-	 */
-	public static function post_get_tags_array ( ) {
-		$r = [];
 
-		$tags = get_the_tags();
-		if ( $tags )
-			foreach( $tags as $tag )
-				$r[ $tag->name ] = get_tag_link( $tag->term_id );
+	public static function make_post_syndication ( &$post = null ) {
+		$post = pmlnr_base::fix_post($post);
 
-		return $r;
-	}
+		if ($post === false)
+			return false;
 
-	/**
-	 *
-	 */
-	public static function post_get_syndicates ( ) {
-		global $post;
-		$parsed = [];
-
-		$syndicates = get_post_meta ( get_the_ID(), 'syndication_urls', true );
-
-		if ( !$syndicates )
-			return $parsed;
-
-		$syndicates = explode( "\n", $syndicates );
-
-		foreach ($syndicates as $syndicate ) {
-			// example https://(www.)(facebook).(com)/(...)/(post_id)
-			preg_match ( '/^http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\/(.*)\/(.*)$/', $syndicate, $split);
-
-			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3]))
-				$parsed[$split[2]] = $split;
-		}
-
-		return $parsed;
-	}
-
-	/**
-	 *
-	 */
-	public static function post_get_replylist ( ) {
-
-		$syndicates = static::post_get_syndicates();
-		$reply = [];
-
-		if (empty($syndicates))
-			return $reply;
-
-		foreach ($syndicates as $silo => $syndicate ) {
-			if ($silo == 'twitter') {
-				//$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
-				continue;
-			}
-			else {
-				$reply[ $silo ] = $syndicate[0];
-			}
-		}
-
-		return $reply;
-	}
-
-	/**
-	 *
-	 */
-	public static function post_get_sharelist ( ) {
-		global $post;
-
-		$share = [];
-
-		$syndicates = static::post_get_syndicates();
-
-		$url = urlencode( get_permalink() );
-		$title = urlencode( get_the_title() );
-		$description = urlencode( get_the_excerpt() );
-
-		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
-		$media_url = ( ! $media ) ? false : urlencode($media[0]);
-
-		if (!empty($syndicates)) {
-			foreach ($syndicates as $silo => $syndicate ) {
-				//if ($silo == 'twitter') {
-					//$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
-				//}
-				if ($silo == 'facebook') {
-					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
-				}
-				else {
-					continue;
-				}
-
-				if ($rurl)
-					$share[$silo] = $rurl;
-			}
-		}
-
-		if (!isset($share['facebook']))
-			$share['facebook'] = sprintf ('https://www.facebook.com/share.php?u=%s', $url );
-
-		if (!isset($share['twitter']))
-			$share['twitter'] = sprintf('https://twitter.com/share?url=%s&text=%s', $url, $title );
-
-		$share['googleplus'] = sprintf('https://plus.google.com/share?url=%s', $url );
-
-		$share['tumblr'] = sprintf('http://www.tumblr.com/share/link?url=%s&title=%s&description=%s', $url, $title, $description );
-
-		$share['pinterest'] = sprintf('https://pinterest.com/pin/create/bookmarklet/?media=%s&url=%s&description=%s&is_video=false', $media_url, $url, $title );
-
-		// short url / webmention
-		$share['webmention'] = $url;
-
-		return $share;
-	}
-
-	public static function makesyndication () {
 		global $nxs_snapAvNts;
-		global $post;
 
 		$_syndicated = $_syndicated_original = get_post_meta ( $post->ID, 'syndication_urls', true );
 		if ($_syndicated && strstr($_syndicated, "\n" )) {
@@ -846,14 +550,120 @@ class petermolnareu {
 		) );
 	}
 
-	public static function exportyaml ( $postid = false ) {
+	/**
+	 *
+	 */
+	public function type_dropdown() {
+		global $typenow;
+		$post_type = 'post';
+		$taxonomy = 'kind'; // change HERE
+		if ($typenow == $post_type) {
+			$selected = isset($_GET[$taxonomy]) ? $_GET[$taxonomy] : '';
+			$info_taxonomy = get_taxonomy($taxonomy);
+			wp_dropdown_categories(array(
+				'show_option_all' => __("Show All {$info_taxonomy->label}"),
+				'taxonomy' => $taxonomy,
+				'name' => $taxonomy,
+				'orderby' => 'name',
+				'selected' => $selected,
+				'show_count' => true,
+				'hide_empty' => true,
+			));
+		};
+	}
 
+	/**
+	 *
+	 */
+	public function convert_id_to_term_in_query($query) {
+		global $pagenow;
+		$post_type = 'post'; // change HERE
+		$taxonomy = 'kind'; // change HERE
+		$q_vars = &$query->query_vars;
+		if ($pagenow == 'edit.php' && isset($q_vars['post_type']) && $q_vars['post_type'] == $post_type && isset($q_vars[$taxonomy]) && is_numeric($q_vars[$taxonomy]) && $q_vars[$taxonomy] != 0) {
+			$term = get_term_by('id', $q_vars[$taxonomy], $taxonomy);
+			$q_vars[$taxonomy] = $term->slug;
+		}
+	}
+
+	/**
+	 * since WordPress has it's built-in rewrite engine, it's eaiser to use
+	 * that for adding the short urls
+	 */
+	public static function check_shorturl(&$post = null) {
+		$post = pmlnr_base::fix_post($post);
+
+		if ($post === false)
+			return false;
+		$epoch = get_the_time('U', $post->ID);
+		$url = pmlnr_base::epoch2url($epoch);
+
+		$meta = get_post_meta( $post->ID, '_wp_old_slug', false);
+		if ( !in_array($url,$meta))
+			add_post_meta($post->ID, '_wp_old_slug', $url);
+
+		return $post;
+	}
+
+	public function shortlink () {
+		if (is_singular())
+			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
+	}
+
+	/**
+	 * our very own shorturl function
+	 */
+	public static function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
+		global $post;
+		if (empty($post) || !isset($post->ID) || empty($post->ID))
+			return $shortlink;
+
+		$epoch = get_the_time('U', $post->ID);
+		$url = pmlnr_base::epoch2url($epoch);
+
+		$base = rtrim( get_bloginfo('url'), '/' ) . '/';
+		return $base.$url;
+	}
+
+	/*
+	public static function fix_youtube ( $cache, $url, $attr, $postid ) {
+		if ( strstr($url, 'youtube.com')) {
+			$search = 'watch?v=';
+			$id = substr( $url, strrpos($url,$search) + strlen($search) );
+			return '<iframe src="https://www.youtube.com/embed/'.$id.'?html5=1"></iframe>';
+		}
+
+		return $cache;
+	}
+	*/
+
+	/**
+	 *
+	 */
+	public function template_redirect() {
+		global $wp_query;
+
+		if (!is_singular())
+			return false;
+
+		foreach ($this->endpoints as $endpoint ) {
+			if ( isset( $wp_query->query_vars[ $endpoint ]) && method_exists ( $this , $endpoint ) ) {
+				echo $this->$endpoint();
+				exit;
+			}
+		}
+
+		return true;
+	}
+
+	public static function export_yaml ( $postid = false ) {
+		//pmlnr_base::debug('exporting YAML');
 		if (!$postid)
 			return false;
 
 		$post = get_post($postid);
 
-		if (!pmlnr_utils::is_post($post))
+		if (!pmlnr_base::is_post($post))
 			return false;
 
 		$filename = $post->post_name;
@@ -861,12 +671,13 @@ class petermolnareu {
 		$flatroot = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'flat';
 		$flatdir = $flatroot . DIRECTORY_SEPARATOR . $filename;
 		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
+		//pmlnr_base::debug('YAML flat file: ' . $flatfile);
 
-		$post_timestamp = get_the_modified_time( 'U' );
+		$post_timestamp = get_the_modified_time( 'U', $post->ID );
 		if ( @file_exists($flatfile) ) {
 			$file_timestamp = @filemtime ( $flatfile );
 			if ( $file_timestamp == $post_timestamp ) {
-				return true;
+				//return true;
 			}
 		}
 
@@ -874,7 +685,7 @@ class petermolnareu {
 		foreach ( $mkdir as $dir ) {
 			if ( !is_dir($dir)) {
 				if (!mkdir( $dir )) {
-					error_log('Failed to create ' . $dir . ', exiting YAML creation');
+					static::debug_log('Failed to create ' . $dir . ', exiting YAML creation');
 					return false;
 				}
 			}
@@ -897,16 +708,16 @@ class petermolnareu {
 				$attachment_path = get_attached_file( $aid );
 				$attachment_file = basename( $attachment_path);
 				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
-				error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
+				pmlnr_base::debug ('should ' . $post->ID . ' have this attachment?: ' . $aid );
 				if ( !is_file($target_file))
 					link( $attachment_path, $target_file );
 			}
 		}
 
-		$out = self::yaml();
+		$out = static::yaml();
 
 		// write log
-		error_log ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
+		pmlnr_base::debug ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
 		file_put_contents ($flatfile, $out);
 		touch ( $flatfile, $post_timestamp );
 		return true;
@@ -924,11 +735,12 @@ class petermolnareu {
 			$post = get_post($postid);
 		}
 
-		if (!pmlnr_utils::is_post($post))
+		if (!pmlnr_base::is_post($post))
 			return false;
 
-		$postdata = self::raw_post_data($post);
 
+		$postdata = self::raw_post_data($post);
+		//pmlnr_base::debug('YAML raw data: . ' .  json_encode($postdata));
 		if (empty($postdata))
 			return false;
 
@@ -939,6 +751,7 @@ class petermolnareu {
 		}
 
 		$content = $postdata['content'];
+		//$content = wordwrap ( $content, 80, "\r\n", false);
 		unset($postdata['content']);
 
 		$out = yaml_emit($postdata,  YAML_UTF8_ENCODING );
@@ -952,38 +765,12 @@ class petermolnareu {
 	}
 
 	/**
-	 * show post in JSON format
-	 *
-	public static function json ( $postid = false ) {
-
-		if (!$postid) {
-			global $post;
-		}
-		else {
-			$post = get_post($postid);
-		}
-
-		if (!pmlnr_utils::is_post($post))
-			return false;
-
-		$postdata = self::raw_post_data($post);
-
-		if (empty($postdata))
-			return false;
-
-		return json_encode($postdata,JSON_PRETTY_PRINT);
-	}
-	*/
-
-	/**
 	 * raw data for various representations, like JSON or YAML
 	 */
-	public static function raw_post_data ( &$post ) {
+	public static function raw_post_data ( &$post = null ) {
+		$post = pmlnr_base::fix_post($post);
 
-		if (!pmlnr_utils::is_post($post))
-			global $post;
-
-		if (!pmlnr_utils::is_post($post))
+		if ($post === false)
 			return false;
 
 		$cat = get_the_category( $post->ID );
@@ -991,10 +778,10 @@ class petermolnareu {
 			$category = $cat[0];
 		}
 
-		$format = self::get_type($post->ID);
+		//$format = self::get_type($post);
 
 		$taglist = '';
-		$t = get_the_tags();
+		$t = get_the_tags( $post->ID );
 		$tags = array();
 		if ( !empty( $t ))
 			foreach ( $t as $tag )
@@ -1082,17 +869,17 @@ class petermolnareu {
 		if ( isset($meta))
 
 		$out = array (
-			'title' => str_replace( '–', '-', get_the_title()),
-			'modified_date' => get_the_modified_time('c'),
-			'date' => get_the_time('c'),
+			'title' => trim(get_the_title( $post->ID )),
+			'modified_date' => get_the_modified_time('c', $post->ID),
+			'date' => get_the_time('c', $post->ID),
 			'slug' => $post->post_name,
 			'id' => $post->ID,
-			'permalink' => get_the_permalink(),
-			'shortlink' => wp_get_shortlink(),
+			'permalink' => get_permalink( $post ),
+			'shortlink' => wp_get_shortlink( $post->ID ),
 			'taxonomy' => array (
 				'tag' => $tags,
 				'category' => $category->name,
-				'type' => $format,
+				//'type' => $format,
 			),
 			'postmeta' => $meta,
 			'author' => $author,
@@ -1147,186 +934,6 @@ class petermolnareu {
 		$out['content'] = $content;
 
 		return $out;
-	}
-
-	/**
-	 * my own format manager because the built-in sucks
-	 */
-	public static function get_type ( $postid = false ) {
-		if (empty($postid) || !is_numeric($postid))
-			global $post;
-		else
-			$post = get_post( $postid );
-
-		if (!$post || empty($post) || !is_object($post))
-			return false;
-
-		$return = 'article';
-		$kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) );
-
-		if (is_wp_error($kind))
-			return false;
-
-		if(is_array($kind))
-			$kind = array_pop( $kind );
-
-		if (is_object($kind) && isset($kind->slug))
-			$return = $kind->slug;
-
-		return $return;
-	}
-
-	/**
-	 *
-	 */
-	public function type_dropdown() {
-		global $typenow;
-		$post_type = 'post';
-		$taxonomy = 'kind'; // change HERE
-		if ($typenow == $post_type) {
-			$selected = isset($_GET[$taxonomy]) ? $_GET[$taxonomy] : '';
-			$info_taxonomy = get_taxonomy($taxonomy);
-			wp_dropdown_categories(array(
-				'show_option_all' => __("Show All {$info_taxonomy->label}"),
-				'taxonomy' => $taxonomy,
-				'name' => $taxonomy,
-				'orderby' => 'name',
-				'selected' => $selected,
-				'show_count' => true,
-				'hide_empty' => true,
-			));
-		};
-	}
-
-	/**
-	 *
-	 */
-	public function convert_id_to_term_in_query($query) {
-		global $pagenow;
-		$post_type = 'post'; // change HERE
-		$taxonomy = 'kind'; // change HERE
-		$q_vars = &$query->query_vars;
-		if ($pagenow == 'edit.php' && isset($q_vars['post_type']) && $q_vars['post_type'] == $post_type && isset($q_vars[$taxonomy]) && is_numeric($q_vars[$taxonomy]) && $q_vars[$taxonomy] != 0) {
-			$term = get_term_by('id', $q_vars[$taxonomy], $taxonomy);
-			$q_vars[$taxonomy] = $term->slug;
-		}
-	}
-
-	/**
-	 * convert UNIX EPOCH to short string
-	 *
-	* thanks to https://stackoverflow.com/questions/4964197/converting-a-number-base-10-to-base-62-a-za-z0-9
-	*/
-	public static function epoch2url($num, $b=62) {
-		$base='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$r = $num  % $b ;
-		$res = $base[$r];
-		$q = floor($num/$b);
-		while ($q) {
-			$r = $q % $b;
-			$q =floor($q/$b);
-			$res = $base[$r].$res;
-		}
-		/* most of the posts I'll make in my life will start with 1
-		 * so we can save a char by popping it off and re-adding them in
-		 * the decode function
-		 */
-		$res = ltrim($res,'1');
-		return $res;
-	}
-
-	/**
-	 * decode short string and covert it back to UNIX EPOCH
-	 *
-	 */
-	public static function url2epoch( $num, $b=62) {
-		/* this is the potential 1 I chopped off */
-		if ( !is_numeric($num[0]) || $num[0] != '1' )
-			$num = '1' . $num;
-
-		$base='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$limit = strlen($num);
-		$res=strpos($base,$num[0]);
-		for($i=1;$i<$limit;$i++) {
-			$res = $b * $res + strpos($base,$num[$i]);
-		}
-		$res = '1' . $res;
-		return $res;
-	}
-
-	/**
-	 * since WordPress has it's built-in rewrite engine, it's eaiser to use
-	 * that for adding the short urls
-	 */
-	public static function checkshorturl(&$post) {
-		if (empty($post) || !is_object($post) || !isset($post->ID) || empty($post->ID))
-			return $post;
-
-		$epoch = get_the_time('U', $post->ID);
-		$url = petermolnareu::epoch2url($epoch);
-
-		$meta = get_post_meta( $post->ID, '_wp_old_slug', false);
-		if ( !in_array($url,$meta))
-			add_post_meta($post->ID, '_wp_old_slug', $url);
-
-		return $post;
-	}
-
-	public function shortlink () {
-		if (is_singular())
-			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
-	}
-
-	/**
-	 * our very own shorturl function
-	 */
-	public static function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
-		global $post;
-		if (empty($post) || !isset($post->ID) || empty($post->ID))
-			return $shortlink;
-
-		$epoch = get_the_time('U', $post->ID);
-		$url = petermolnareu::epoch2url($epoch);
-
-		$base = rtrim( get_bloginfo('url'), '/' ) . '/';
-		return $base.$url;
-	}
-
-	public static function add_featured_image_to_feed($feed) {
-		global $post;
-
-		if (empty($post) || !is_object($post))
-			return $feed;
-
-		if ( has_post_thumbnail( $post->ID ) ){
-			$feed = '' . get_the_post_thumbnail( $post->ID, 'medium' ) . '' . $content;
-		}
-		return $feed;
-	}
-
-	//public static function is_short_entry () {
-		//global $post;
-
-		//if (empty($post) || !is_object($post))
-			//return false;
-
-		//if ( empty($post->post_title))
-			//return true;
-
-		//if ( strlen( $post->post_content ) < ARTICLE_MIN_LENGTH )
-			//return true;
-
-		//return false;
-	//}
-
-	public static function fix_youtube ( $cache, $url, $attr, $postid ) {
-		if ( strstr($url, 'youtube.com')) {
-			$search = 'watch?v=';
-			$id = substr( $url, strrpos($url,$search) + strlen($search) );
-			return '<iframe src="https://www.youtube.com/embed/'.$id.'?html5=1"></iframe>';
-		}
-
-		return $cache;
 	}
 
 }

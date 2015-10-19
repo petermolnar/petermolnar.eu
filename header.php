@@ -12,7 +12,6 @@ $favicon = get_bloginfo('template_directory') . '/images/favicon.png';
 	<link rel="apple-touch-icon" href="<?php echo $favicon;  ?>" />
 	<link rel="icon" href="<?php echo $favicon;  ?>" />
 	<link rel="alternate" type="application/rss+xml" title="<?php bloginfo('name'); ?> RSS Feed" href="<?php bloginfo('rss2_url'); ?>" />
-	<link rel="pgpkey" href="/pgp.asc">
 	<?php if (is_user_logged_in() && is_singular()) {
 		printf( '<link rel="amphtml" href="%s" />', get_the_permalink() . '/amp' );
 	} ?>

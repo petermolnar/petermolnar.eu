@@ -1,12 +1,10 @@
-<?php $tags = petermolnareu::post_get_tags_array(); ?>
-
-<?php if ( !empty($tags)): ?>
+<?php if ( !empty($post_tags)): ?>
 <?php /* <h5><?php _e('Tagged as:') ?></h5> */?>
 <div class="tags">
 	<ul class="p-category">
-	<?php foreach ($tags as $name => $url ): ?>
+	<?php foreach ($post_tags as $tname => $turl ): ?>
 		<li>
-			<a href="<?php echo $url ?>" class="icon-tag"><?php echo $name ?></a>
+			<a href="<?php echo $turl ?>" class="icon-tag"><?php echo $tname ?></a>
 		</li>
 	<?php endforeach; ?>
 	</ul>

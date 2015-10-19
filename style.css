@@ -1048,9 +1048,23 @@ ul.page-numbers .current {
   opacity: 0.5;
 }
 @media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5),(min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi),(min-width: 2400px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.9),(min-width: 2400px) and (orientation: landscape) and (max-resolution: 290dpi) {
+  .nav-toggle-button {
+    display: none;
+    visibility: hidden;
+  }
+  .content-header {
+    left: 0;
+    width: 12em;
+    height: 100%;
+  }
   .content-body {
     padding: 0;
     margin-top: 0;
+  }
+  .content-footer,
+  .content-body,
+  .content-comments {
+    margin-left: 12em;
   }
   .tags,
   .share,

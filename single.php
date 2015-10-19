@@ -1,7 +1,13 @@
-<?php the_post(); ?>
+<?php
+the_post();
+get_header();
 
-<?php get_header(); ?>
+extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
 
-<?php require (dirname(__FILE__) . '/partials/element-singular.php'); ?>
+petermolnareu::make_post_syndication ($post);
+petermolnareu::check_shorturl ($post);
+petermolnareu::export_yaml($post);
 
-<?php get_footer();
+include (dirname(__FILE__) . '/partials/element-singular.php');
+
+get_footer();

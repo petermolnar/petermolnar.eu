@@ -1,11 +1,11 @@
 <?php
-$author = get_the_author_meta( 'ID' );
-$author_name =  get_the_author_meta ( 'display_name' , $author );
-$author_email =  get_the_author_meta ( 'user_email' , $author );
-$author_gravatar = sprintf('https://s.gravatar.com/avatar/%s?=64', md5( strtolower( trim( $author_email ) ) ));
-$author_url = get_the_author_meta ( 'user_url' , $author );
-$author_socials = petermolnareu::author_social ( $author );
-$author_pgp = get_the_author_meta ( 'pgp' , $author );
+
+$data = pmlnr_author::template_vars( $post );
+
+if (is_array($data) && !empty($data))
+	extract($data, EXTR_PREFIX_ALL, 'author' );
+else
+	return;
 ?>
 
 <span class="p-author h-card vcard">
