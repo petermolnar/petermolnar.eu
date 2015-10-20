@@ -68,7 +68,7 @@ class petermolnareu {
 		if (is_admin() && !defined('DOING_AJAX')) {
 			$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
 			foreach ($statuses as $status) {
-				add_action("{$status}_to_publish", array(&$this, "checkshorturl"));
+				add_action("{$status}_to_publish", array(&$this, "check_shorturl"));
 			}
 		}
 

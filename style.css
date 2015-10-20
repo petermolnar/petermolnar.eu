@@ -351,6 +351,9 @@ dd {
   margin-left: 1em;
   clear: both;
 }
+code {
+  background-color: #e2e2e2;
+}
 pre {
   font-size: 0.9em;
   line-height: 1.2em;
@@ -359,6 +362,9 @@ pre {
   padding: 0.3em;
   border: 1px solid #777;
   overflow: auto;
+}
+pre code {
+  background-color: transparent;
 }
 input,
 select,

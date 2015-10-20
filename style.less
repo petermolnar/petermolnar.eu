@@ -464,6 +464,11 @@ dd {
 	clear: both;
 }
 
+code {
+	background-color: darken(@color-bg-light,5%);
+}
+
+
 pre {
 	font-size: @font-small;
 	line-height: @font-xlarge;
@@ -472,6 +477,10 @@ pre {
 	padding: @padding-normal;
 	border:@border-thin;
 	overflow:auto;
+
+	code {
+		background-color: transparent;
+	}
 }
 
 input, select, submit {
@@ -498,6 +507,7 @@ input[type=submit] {
 		width: @font-enormous;
 	}
 }
+
 
 .button-rss {
 	.iconstyle();

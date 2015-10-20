@@ -82,14 +82,14 @@ class pmlnr_image extends pmlnr_base {
 		$cached = $cachedir . DIRECTORY_SEPARATOR . $fname;
 
 		if ( $size[2] != IMAGETYPE_JPEG ) {
-			static::debug_log( "moving " . $cached );
+			static::debug( "moving " . $cached );
 			if (copy( $resized, $cached)) {
-				static::debug_log(  "removing " . $resized );
+				static::debug(  "removing " . $resized );
 				unlink( $resized );
 			}
 		}
 		else {
-			static::debug_log( "adaptive sharpen " . $resized );
+			static::debug( "adaptive sharpen " . $resized );
 			$imagick = new Imagick($resized);
 			$imagick->unsharpMaskImage(0,0.5,1,0);
 			$imagick->setImageFormat("jpg");
@@ -97,7 +97,7 @@ class pmlnr_image extends pmlnr_base {
 			$imagick->setImageCompressionQuality(static::jpeg_quality());
 			$imagick->writeImage($cached);
 			$imagick->destroy();
-			static::debug_log( "removing " . $resized );
+			static::debug( "removing " . $resized );
 			unlink ($resized);
 		}
 
@@ -127,7 +127,7 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 		if (!empty($args)) {
-			static::debug_log('Extracting extra EXIF for ' . $filepath );
+			static::debug('Extracting extra EXIF for ' . $filepath );
 			$cmd = 'exiftool -s -' . join(' -', $args) . ' ' . $filepath;
 
 			exec( $cmd, $exif, $retval);
