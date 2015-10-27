@@ -7,7 +7,6 @@ $favicon = get_bloginfo('template_directory') . '/images/favicon.png';
 	<base href="<?php bloginfo("url") ?>" />
 	<meta charset="<?php bloginfo('charset'); ?>" />
 	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
-	<title><?php wp_title( ); ?></title>
 	<link rel="shortcut icon" href="<?php echo $favicon; ?>" />
 	<link rel="apple-touch-icon" href="<?php echo $favicon;  ?>" />
 	<link rel="icon" href="<?php echo $favicon;  ?>" />

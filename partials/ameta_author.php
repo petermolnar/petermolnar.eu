@@ -12,8 +12,6 @@ by <span class="p-author h-card vcard">
 
 <?php else : ?>
 
-<span class="p-author h-card vcard">
-	by <span><?php echo $post_author_name ?></span>
-</span>
+<span>by <span class="p-author h-card vcard"><?php echo $post_author_name ?></span></span>
 
 <?php endif;

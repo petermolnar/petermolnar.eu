@@ -10,16 +10,17 @@
 
 			$post_id = get_the_ID();
 
-			$post_length = strlen( $post->post_content );
-			$is_photo = pmlnr_image::is_u_photo($post);
+			//$post_length = strlen( $post->post_content );
+			//$is_photo = pmlnr_image::is_u_photo($post);
+			$format = pmlnr_post::post_format_discovery($post);
 
 			extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
 			//extract($data );
 
-			if ( $post_length > ARTICLE_MIN_LENGTH )
-				include( dirname(__FILE__). '/partials/element-long.php' );
-			elseif ( $is_photo )
+			if (in_array($format, array('photo', 'image')))
 				include( dirname(__FILE__). '/partials/element-photo.php' );
+			elseif ( in_array($format, array('article')) )
+				include( dirname(__FILE__). '/partials/element-long.php' );
 			else
 				include( dirname(__FILE__). '/partials/element-short.php' );
 		}

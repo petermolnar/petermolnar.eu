@@ -1,12 +1,15 @@
 <?php
 
-define('ARTICLE_MIN_LENGTH', 1000);
+define('ARTICLE_MIN_LENGTH', 1100);
 
 $dirname = dirname(__FILE__);
 
 require_once ($dirname . '/lib/parsedown/Parsedown.php');
 require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
 require_once ($dirname . '/lib/lessphp/lessc.inc.php');
+require_once ($dirname . '/lib/simple_html_dom/simple_html_dom.php');
+//require_once ($dirname . '/lib/Twig/lib/Twig/Autoloader.php');
+//Twig_Autoloader::register();
 
 require_once ($dirname . '/classes/base.php');
 require_once ($dirname . '/classes/image.php');
@@ -14,11 +17,12 @@ require_once ($dirname . '/classes/cleanup.php');
 require_once ($dirname . '/classes/markdown.php');
 require_once ($dirname . '/classes/post.php');
 require_once ($dirname . '/classes/author.php');
-//require_once ($dirname . '/classes/formats.php');
 
 class petermolnareu {
 	const menu_header = 'header';
 	private $endpoints = array ('yaml');
+//	public $twig;
+//	public $twigloader;
 
 	public function __construct () {
 
@@ -43,6 +47,11 @@ class petermolnareu {
 		new pmlnr_post();
 		new pmlnr_author();
 		//new pmlnr_formats();
+
+		//$loader = new Twig_Loader_Filesystem(dirname(__FILE__) .'/twig');
+		//$twig = new Twig_Environment($loader, array(
+			    //'cache' => WP_CONTENT_DIR . '/cache',
+			//));
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
@@ -83,8 +92,9 @@ class petermolnareu {
 
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
-		add_theme_support( 'automatic-feed-links' );
-		add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list') );
+		//add_theme_support( 'automatic-feed-links' );
+		add_theme_support( 'html5', array( 'search-form' /*, 'comment-form', 'comment-list' */ ) );
+		add_theme_support( 'title-tag' );
 
 		// add main menus
 		register_nav_menus( array(
@@ -107,6 +117,8 @@ class petermolnareu {
 		add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
 
 		//add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
+
+		//add_filter ('blogroll2email_content', array(&$this,'flickr_larger_picture'));
 
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
@@ -269,7 +281,9 @@ class petermolnareu {
 
 
 		// Find all external links in the source
-		if (preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#]*/i", $post->post_content, $matches)) {
+		$matches = pmlnr_base::extract_urls($post->post_content);
+		//)if (preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#]*/i", $post->post_content, $matches)) {
+		if (!empty($matches)) {
 			$xlinks = $matches[0];
 			$links = array_merge($links, $xlinks);
 		}
@@ -648,6 +662,7 @@ class petermolnareu {
 
 		foreach ($this->endpoints as $endpoint ) {
 			if ( isset( $wp_query->query_vars[ $endpoint ]) && method_exists ( $this , $endpoint ) ) {
+				header('Content-Type: text/plain;charset=utf-8');
 				echo $this->$endpoint();
 				exit;
 			}
@@ -677,7 +692,7 @@ class petermolnareu {
 		if ( @file_exists($flatfile) ) {
 			$file_timestamp = @filemtime ( $flatfile );
 			if ( $file_timestamp == $post_timestamp ) {
-				//return true;
+				return true;
 			}
 		}
 
@@ -936,6 +951,56 @@ class petermolnareu {
 		return $out;
 	}
 
+
+	//public function flickr_larger_picture ( $content ) {
+		//// better flickr pictures
+		//preg_match_all('/farm[0-9]\.staticflickr.com\/[0-9]+\/[0-9]+_[0-9a-zA-Z]+_[a-z]{1}\.jpg/s', $content, $matches);
+
+		//if ( !empty ( $matches[0] ) ) {
+			//foreach ( $matches[0] as $to_replace ) {
+				//$clean = str_replace('_m.jpg', '_c.jpg', $to_replace);
+				//$content = str_replace ( $to_replace, $clean, $content );
+			//}
+		//}
+
+		//return $content;
+	//}
+
+
+	/**
+	 * Get the source's images and save them locally, for posterity, unless we can't.
+	 *
+	 */
+	public function side_load_md_images( $post_id, $content = '' ) {
+		$content = wp_unslash( $content );
+
+		// match all markdown images
+		if ( preg_match_all('/\!\[.*?\]\((.*?) ?"?.*?"?\)\{.*?\}/', $content, $matches) && current_user_can( 'upload_files' ) ) {
+
+			foreach ( $matches[0] as $cntr => $image ) {
+				$image_src = $matches[1][$cntr];
+
+				// Don't try to sideload a file without a file extension, leads to WP upload error.
+				if ( ! preg_match( '/[^\?]+\.(?:jpe?g|jpe|gif|png)(?:\?|$)/i', $image_src ) ) {
+					continue;
+				}
+
+				if ( !pmlnr_base::is_url_external($image_src) ) {
+					continue;
+				}
+
+				// Sideload image, which gives us a new image src.
+				$new_src = media_sideload_image( $image_src, $post_id, null, 'src' );
+
+				if ( ! is_wp_error( $new_src ) ) {
+					$content = str_replace( $image_src, $new_src, $content );
+				}
+			}
+		}
+
+		// Edxpected slashed
+		return wp_slash( $content );
+	}
 }
 
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {

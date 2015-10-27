@@ -1,6 +1,7 @@
 <?php
 /**
  * template for single post
+ *
  */
 ?>
 
@@ -15,9 +16,7 @@
 						<span class="p-name"><?php echo $post_title ?></span>
 					</a>
 				</h1>
-				<div>
-					<?php include (dirname(__FILE__) . '/ameta_author.php'); ?>
-				</div>
+				<?php include (dirname(__FILE__) . '/ameta_author.php'); ?>
 			</div>
 		</header>
 

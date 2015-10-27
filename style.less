@@ -194,9 +194,6 @@ table {
 	border-spacing: 0;
 }
 
-/********
-* FONTS *
-*********/
 @font-face {
 	font-family: 'petermolnar';
 	src: url('fonts/petermolnar.eot?89917930');
@@ -209,6 +206,10 @@ table {
 	font-style: normal;
 }
 
+/********
+* FONTS *
+*********/
+/*
 @font-face {
 	font-family: 'Liberation Sans';
 	src: url('fonts/LiberationSans-Regular-webfont.eot');
@@ -256,7 +257,7 @@ table {
 	font-weight: bold;
 	font-style: italic;
 }
-
+*/
 /*************
 * ALIGNMENTS *
 **************/
@@ -340,7 +341,7 @@ body {
 	overflow:auto;
 	margin: 0 auto 0t auto;
 	line-height: @line-height;
-	font-family: 'Liberation Sans', sans-serif;
+	font-family: "Liberation Sans", ".SFNSText-Regular", "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
 	font-size:@font-base;
 	letter-spacing:0.01em;
 	font-weight: normal;
@@ -472,7 +473,7 @@ code {
 pre {
 	font-size: @font-small;
 	line-height: @font-xlarge;
-	font-family: monospace;
+	font-family: "Liberation Mono", monospace;
 	margin: @padding-normal 0 @padding-normal 0;
 	padding: @padding-normal;
 	border:@border-thin;
@@ -539,82 +540,46 @@ input[type=submit] {
 
 }
 
-/*
-.icon-folder:before { .iconstyle();  content: '📁'; }
-.icon-cc:before { .iconstyle();  font-family: "petermolnar"; content: '\e827'; }
-.icon-cc-by:before { .iconstyle();  font-family: "petermolnar"; content: '\e828'; }
-.icon-cc-nc:before { .iconstyle();  font-family: "petermolnar"; content: '\e829'; }
-.icon-cc-nc-eu:before { .iconstyle();  font-family: "petermolnar"; content: '\e82a'; }
-.icon-cc-nc-jp:before { .iconstyle();  font-family: "petermolnar"; content: '\e82b'; }
-.icon-cc-nd:before { .iconstyle();  font-family: "petermolnar"; content: '\e82d'; }
-.icon-cc-pd:before { .iconstyle();  font-family: "petermolnar"; content: '\e831'; }
-.icon-cc-remix:before { .iconstyle();  font-family: "petermolnar"; content: '\e830'; }
-.icon-cc-sa:before { .iconstyle();  font-family: "petermolnar"; content: '\e82c'; }
-.icon-cc-share:before { .iconstyle();  font-family: "petermolnar"; content: '\e82f'; }
-.icon-cc-zero:before { .iconstyle();  font-family: "petermolnar"; content: '\e82e'; }
-
-.icon-calendar:before { .iconstyle();  content: '📅'; }
-.icon-comment:before { .iconstyle();  font-family: "petermolnar"; content: '\e80f'; }
-.icon-frown:before { .iconstyle();  font-family: "petermolnar"; content: '\e824'; }
-.icon-hash:before { .iconstyle();  font-family: "petermolnar"; content: '\e80a'; }
-.icon-link-ext-alt:before { .iconstyle();  font-family: "petermolnar"; content: '\e814'; }
-.icon-meh:before { .iconstyle();  font-family: "petermolnar"; content: '\e823'; }
-
-.icon-picture:before { .iconstyle();  font-family: "petermolnar"; content: '\e833'; }
-.icon-qrcode:before { .iconstyle();  font-family: "petermolnar"; content: '\e813'; }
-.icon-ok-squared:before { .iconstyle();  font-family: "petermolnar"; content: '\e832'; }
-
-.icon-share:before { .iconstyle();  font-family: "petermolnar"; content: '\e818'; }
-.icon-smile:before { .iconstyle();  font-family: "petermolnar"; content: '\e825'; }
-
-.icon-reply:before { .iconstyle();  font-family: "petermolnar"; content: '\e821'; }
-.icon-menu:before { .iconstyle();  font-family: "petermolnar"; content: '\e81b'; }
-.icon-googleplus:before,.icon-gplus:before { .iconstyle();  font-family: "petermolnar"; content: '\e801'; }
-.icon-hacker-news:before { .iconstyle();  font-family: "petermolnar"; content: '\e80e'; }
-.icon-pinterest:before { .iconstyle();  font-family: "petermolnar"; content: '\e805'; }
-.icon-tumblr:before { .iconstyle();  font-family: "petermolnar"; content: '\e803'; }
-
-.icon-youtube:before { .iconstyle();  font-family: "petermolnar"; content: '\e806'; }
-.icon-500px:before { .iconstyle();  font-family: "petermolnar"; content: '\e81e'; }
-.icon-deviantart:before { .iconstyle();  font-family: "petermolnar"; content: '\e820'; }
-
-[class^="openwebicon-"]:before, [class*=" openwebicon-"]:before {
+[class^="icon-"]:before, [class*=" icon-"]:before,
+[class^="x-"]:before, [class*=" x-"]:before,
+[class^="u-"]:before, [class*=" u-"]:before {
 	.iconstyle();
-}
+	font-family: "petermolnar";
+ }
 
-.openwebicon-indieweb:before { .iconstyle();  font-family: "OpenWeb Icons"; content: "\f08b \f08c"; }
-.icon-search:before { .iconstyle();  content: '🔎'; }
-.icon-subscribe:before { .iconstyle();  content: '✍'; }
-*/
-
-.icon-camera:before { .iconstyle();  content: '📷'; }
-.icon-copyright:before { .iconstyle();  content: '©'; }
-.icon-focallength:before { .iconstyle();  content: '↔'; }
-.icon-globe:before { .iconstyle();  content: '🌍'; }
-.tel:before, .icon-phone:before { .iconstyle();  content: '📞'; }
-.icon-mail:before { .iconstyle();  content: '✉'; }
-.icon-clock:before { .iconstyle();  content: '🕕'; }
-.icon-sensitivity:before { .iconstyle();  content: '☼'; }
-.icon-aperture:before { .iconstyle();  content: '○'; }
-.icon-lock:before { .iconstyle();  content: '🔒'; }
-
-.u-like-of:before, .icon-like:before { .iconstyle();  content: '👍'; }
-.u-in-reply-to:before { .iconstyle();  content: '➥'; }
-
-.icon-rss:before { .iconstyle();  font-family: "petermolnar"; content: '\e80b'; }
-.icon-tag:before { .iconstyle();  font-family: "petermolnar"; content: '\e811'; }
-
-.icon-facebook:before { .iconstyle();  font-family: "petermolnar"; content: '\e808'; }
-.icon-flickr:before { .iconstyle();  font-family: "petermolnar"; content: '\e809'; }
-.icon-github:before { .iconstyle();  font-family: "petermolnar"; content: '\e802'; }
-.icon-instagram:before { .iconstyle();  font-family: "petermolnar"; content: '\e816'; }
-.icon-lastfm:before { .iconstyle();  font-family: "petermolnar"; content: '\e80d'; }
-.icon-linkedin:before { .iconstyle();  font-family: "petermolnar"; content: '\e807'; }
-.icon-twitter:before { .iconstyle();  font-family: "petermolnar"; content: '\e804'; }
-.icon-wordpress:before { .iconstyle();  font-family: "petermolnar"; content: '\e837'; }
-
-.icon-webmention:before { .iconstyle();  font-family: "petermolnar"; content: "\e800"; }
-.icon-indiehosters:before { .iconstyle();  font-family: "petermolnar"; content: "\e806"; }
+.icon-github:before { content: '\47'; } /* 'G' */
+.icon-lastfm:before { content: '\4c'; } /* 'L' */
+.icon-webmention:before { content: '\57'; } /* 'W' */
+.icon-epub:before { content: '\65'; } /* 'e' */
+.icon-facebook:before { content: '\66'; } /* 'f' */
+.icon-gplus:before { content: '\67'; } /* 'g' */
+.icon-instagram:before { content: '\69'; } /* 'i' */
+.icon-linkedin:before { content: '\6c'; } /* 'l' */
+.icon-twitter:before { content: '\74'; } /* 't' */
+.icon-wordpress:before { content: '\77'; } /* 'w' */
+.icon-xmpp:before { content: '\78'; } /* 'x' */
+.icon-copyright:before { content: '\a9'; } /* '©' */
+.icon-copyleft:before { content: '\2184'; } /* 'ↄ' */
+.icon-focallength:before { content: '\2194'; } /* '↔' */
+.icon-aperture:before { content: '\25cb'; } /* '○' */
+.icon-share:before { content: '\260d'; } /* '☍' */
+.icon-menu:before { content: '\2630'; } /* '☰' */
+.icon-sensitivity:before { content: '\263c'; } /* '☼' */
+.icon-flickr:before { content: '\2689'; } /* '⚉' */
+.icon-mail:before { content: '\2709'; } /* '✉' */
+.u-in-reply-to:before, .icon-reply:before { content: '\27a5'; } /* '➥' */
+.icon-rss:before { content: '\e80b'; } /* '' */
+.icon-tag:before { content: '\1f3f7'; } /* 🏷 */
+.u-like-of:before, .icon-like:before { content: '\1f44d'; } /* 👍 */
+.icon-phone:before { content: '\1f4de'; } /* 📞 */
+.icon-camera:before { content: '\1f4f7'; } /* 📷 */
+.icon-search:before { content: '\1f50e'; } /* 🔎 */
+.icon-lock:before { content: '\1f512'; } /* 🔒 */
+.icon-clock:before { content: '\1f558'; } /* 🕘 */
+.icon-sitemap:before { content: '\1f5a7'; } /* 🖧 */
+.icon-picture:before { content: '\1f5bb'; } /* 🖻 */
+.icon-comment:before { content: '\1f5e9'; } /* 🗩 */
+.icon-chat:before { content: '\1f5ea'; } /* 🗪 */
 
 
 /* HEADER */
@@ -657,7 +622,7 @@ input[type=submit] {
 	}
 
 	&:before {
-		content: "☰";
+		content: '\2630'; /* ☰ */
 	}
 }
 

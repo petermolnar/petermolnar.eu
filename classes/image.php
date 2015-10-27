@@ -44,6 +44,7 @@ class pmlnr_image extends pmlnr_base {
 		add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
 
 		// insert featured image as adaptive
+		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
 	}
 
@@ -153,11 +154,6 @@ class pmlnr_image extends pmlnr_base {
 		if (empty($thid))
 			return false;
 
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
 		$meta = self::get_extended_meta($thid);
 		if (empty($meta['sizes']))
 			return false;
@@ -185,19 +181,29 @@ class pmlnr_image extends pmlnr_base {
 				$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $as[$dpix] . "w";
 		}
 
-		if ( isset($meta['parent']) && !empty($meta['parent']) && static::is_post($post) && ( $meta['parent'] != $post->ID || !is_singular()) ) {
+		if ( isset($meta['parent']) && !empty($meta['parent']) && $post != null && static::is_post($post) && ( $meta['parent'] != $post->ID || !is_singular()) ) {
 			$target = get_permalink ( $meta['parent'] );
 		}
 		else {
-			end($this->dpix);
-			$id = self::prefix . key($this->dpix);
-			$target = $meta['sizes'][$id]['src'];
+			//end($this->dpix);
+			//$id = self::prefix . key($this->dpix);
+			//$target = $meta['sizes'][$id]['src'];
+
+			$r = array_reverse($this->dpix,true);
+			foreach ( $r as $id => $size ) {
+				$n = self::prefix . $id;
+				if ( isset($meta['sizes'][$n]) && !empty($meta['sizes'][$n])) {
+					$target = $meta['sizes'][$n]['src'];
+					break;
+				}
+			}
+
 		}
 
-		$target = static::fix_url($target);
+		//$target = static::fix_url($target);
 
 		$class="adaptimg";
-		if ( self::is_u_photo($post)) {
+		if ( $post != null && self::is_u_photo($post)) {
 			$class .=" u-photo";
 		}
 
@@ -211,10 +217,7 @@ class pmlnr_image extends pmlnr_base {
 		</a>', $target, $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ), $fallback['width'], $fallback['height'] );
 		}
 		else {
-			$r = sprintf('
-		<a href="%s">
-			<img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" />
-		</a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, self::expire );

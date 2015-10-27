@@ -24,7 +24,7 @@ class pmlnr_base {
 			$message = json_encode($message);
 
 		if ( defined('WP_DEBUG') && WP_DEBUG == true )
-			error_log ( __FILE__ . '::' . __CLASS__ . '::' . __FUNCTION__ . ' => ' . $message);
+			error_log ( 'PMLNR DEBUG => ' . $message);
 	}
 
 	/**
@@ -43,7 +43,7 @@ class pmlnr_base {
 	 */
 	public static function fix_url ( $url, $absolute = true ) {
 		// move to generic scheme
-		$url = str_replace ( array('http://', 'https://'), '//', $url );
+		$url = str_replace ( array('http://', 'https://'), 'https://', $url );
 
 		$domain = parse_url(get_bloginfo('url'), PHP_URL_HOST);
 		// relative to absolute
@@ -118,12 +118,14 @@ class pmlnr_base {
 		$rawmeta = wp_get_attachment_metadata( $thid );
 
 		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta'])) {
+
+			if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) && ( stristr($rawmeta['image_meta']['copyright'], 'Peter Molnar') || stristr($rawmeta['image_meta']['copyright'], 'petermolnar.eu'))) {
+				$return = true;
+			}
+
 			$my_devs = array ( 'PENTAX K-5 II s', 'NIKON D80' );
 			if ( isset($rawmeta['image_meta']['camera']) && !empty($rawmeta['image_meta']['camera']) && in_array(trim($rawmeta['image_meta']['camera']), $my_devs)) {
 				$return = true;
-			}
-			elseif (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) && ( stristr($rawmeta['image_meta']['copyright'], 'Peter Molnar') || stristr($rawmeta['image_meta']['copyright'], 'petermolnar.eu'))) {
-					$return = true;
 			}
 		}
 
@@ -155,6 +157,56 @@ class pmlnr_base {
 			return true;
 
 		return false;
+	}
+
+	/**
+	 *
+	 */
+	public static function is_imported( &$post ) {
+		$post = static::fix_post($post);
+
+		if ($post === false )
+			return false;
+
+		$return = false;
+		$raw_import_data = get_post_meta ('raw_import_data', $post->ID, true);
+		if (!empty($raw_import_data)) {
+			$return = true;
+
+			$raw_import_data = json_decode($raw_import_data);
+
+			if (isset($raw_import_data['source']) && !empty($raw_import_data['source'])) {
+				if (stristr($raw_import_data['source'], 'twitter'))
+					$return = 'twitter';
+			}
+		}
+
+		return $return;
+	}
+
+	/**
+	 *
+	 */
+	public static function is_twitter_reply( &$post ) {
+		$post = static::fix_post($post);
+
+		if ($post === false )
+			return false;
+
+		$return = false;
+
+		if ( 'twitter' == static::is_imported($post)) {
+			$twitter_in_reply_to_screen_name = get_post_meta ('twitter_in_reply_to_screen_name', $post->ID, true);
+			if (!empty($twitter_in_reply_to_screen_name))
+				$return = true;
+		}
+		else {
+			$twitter_reply_id = get_post_meta ('twitter_reply_id', $post->ID, true);
+			if (!empty($twitter_reply_id))
+				$return = true;
+		}
+
+		return $return;
 	}
 
 	/**
@@ -281,5 +333,26 @@ class pmlnr_base {
 		 */
 		$res = ltrim($res,'1');
 		return $res;
+	}
+
+	/**
+	 *
+	 */
+	public static function extract_urls( &$text ) {
+		$matches = array();
+		preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#]*/i", $text, $matches);
+
+		return $matches;
+	}
+
+	public static function is_url_external ( &$url ) {
+		if (!stristr($url, 'http://') || !stristr($url, 'https://'))
+			return false;
+
+		$domain = parse_url(get_bloginfo('url'), PHP_URL_HOST);
+		if (stristr($url, $domain))
+			return false;
+
+		return true;
 	}
 }
