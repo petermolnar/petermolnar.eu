@@ -2,132 +2,6 @@
 
 class pmlnr_post extends pmlnr_base {
 
-	public static function post_format_discovery ( &$post ) {
-		$post = static::fix_post($post);
-
-		if ($post === false )
-			return false;
-
-		$slug = 'article';
-		$name = __('Article', 'petermolnareu');
-
-		$post_length = strlen( $post->post_content );
-
-		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
-		$webmention_rsvp = get_post_meta( $post->ID, 'webmention_rsvp', true );
-
-		$links = self::extract_urls($post->post_content);
-		$content = $post->post_content;
-		// one single link in the post, so it's most probably a bookmark
-		if (!empty($links) && count($links) == 1 && !empty($links[0])) {
-			$webmention_url = $links[0][0];
-			$content = str_replace($webmention_url, '', $content);
-			$content = trim($content);
-		}
-
-		$is_twitter_reply = static::is_twitter_reply($post);
-
-		// /m for multiline, so ^ means beginning of line
-		$has_quote = preg_match("/^> /m", $post->post_content);
-
-		// /m for multiline, so ^ means beginning of line
-		$has_code = preg_match("/^```(?:[a-z]+)?/m", $post->post_content);
-
-		$has_thumbnail = get_post_thumbnail_id( $post->ID );
-
-		$has_youtube = preg_match("/(?:www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]+/", $post->post_content);
-
-		$has_audio = preg_match("/\[audio.*\]/", $post->post_content);
-
-		$has_blips = has_category( 'blips', $post );
-
-
-		/**
-		 * Actual discovery
-		 */
-		if ( $has_code ) {
-			$slug = 'article';
-			$name = __('Article', 'petermolnareu');
-		}
-		elseif ( !empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to' && !empty($webmention_rsvp) ) {
-			$slug = 'rsvp';
-			$name =  __('Response to event','petermolnareu');
-		}
-		elseif ( (!empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to') || $is_twitter_reply ) {
-			$slug = 'reply';
-			$name = __('Reply','petermolnareu');
-		}
-		elseif ( !empty($webmention_url) && empty($content)) {
-			$slug = 'bookmark';
-			$name = __('Bookmark','petermolnareu');
-		}
-		/*
-		elseif ( !empty($webmention_type) && ($webmention_type == 'u-like-of') ) {
-			$slug = 'like';
-			$name = __('Like','petermolnareu');
-		}
-		elseif ( !empty($webmention_type) && ($webmention_type == 'u-repost-of') ) {
-			$slug = 'repost';
-			$name = __('Repost','petermolnareu');
-		}
-		*/
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_thumbnail && static::is_photo($has_thumbnail) ) {
-			$slug = 'photo';
-			$name =  __('Photo','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_thumbnail ) {
-			$slug = 'image';
-			$name = __('Image','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_youtube ) {
-			$slug = 'video';
-			$name = __('Video','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_audio ) {
-			$slug = 'audio';
-			$name = __('Audio','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_quote ) {
-			$slug = 'quote';
-			$name = __('Quote','petermolnareu');
-		}
-		elseif ( strlen($post->post_title) == 0 || $post_length < ARTICLE_MIN_LENGTH || $has_blips ) {
-			$slug = 'note';
-			$name = __('Note','petermolnareu');
-		}
-
-		if ($id = term_exists( $slug, 'kind')) {
-			$current = static::get_type( $post );
-			if ($current != $slug ) {
-				static::debug(sprintf('post type refresh for %s: kind is "%s", automatic says "%s"', $post->ID,$current, $slug));
-				wp_set_post_terms( $post->ID, $id, 'kind', false );
-			}
-		}
-
-		//$current = static::get_type( $post );
-
-		//if ( $current != $slug ) {
-		//	static::debug(sprintf('post type situation: kind is "%s", automatic says "%s"', $current, $slug));
-		//}
-		//else {
-			//}
-		//}
-
-		//$kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) );
-
-		//if (is_wp_error($kind))
-			//return false;
-
-		//if(is_array($kind))
-			//$kind = array_pop( $kind );
-
-		//if (is_object($kind) && isset($kind->slug))
-			//$return = $kind->slug;
-
-		return $slug;
-	}
-
 	public static function post_decode_format ( $format ) {
 
 	}
@@ -428,4 +302,40 @@ class pmlnr_post extends pmlnr_base {
 		return $r;
 	}
 
+
+	/**
+	 *
+	 */
+	public static function post_replace_title ( &$post, $new_title = '' ) {
+		$post = static::fix_post($post);
+
+		if ($post === false )
+			return false;
+
+		// store the old title, just in case
+		$current_title = $post->post_title;
+		update_post_meta ( $post->ID, '_wp_old_title', $current_title );
+
+		$_post = array(
+			'ID' => $post->ID,
+			'post_title' => sanitize_title($new_title),
+		);
+
+		$r = wp_update_post( $_post, true );
+
+		// something went wrong, log and revert
+		if (is_wp_error($r)) {
+			$errors = $r->get_error_messages();
+			foreach ($errors as $error) {
+				static::debug( $error );
+			}
+
+			$_post = array(
+				'ID' => $post->ID,
+				'post_title' => $current_title,
+			);
+			wp_update_post( $_post );
+			delete_post_meta($post->ID, '_wp_old_title', $current_title );
+		}
+	}
 }

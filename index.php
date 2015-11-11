@@ -12,7 +12,7 @@
 
 			//$post_length = strlen( $post->post_content );
 			//$is_photo = pmlnr_image::is_u_photo($post);
-			$format = pmlnr_post::post_format_discovery($post);
+			$format = pmlnr_post::post_format($post);
 
 			extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
 			//extract($data );

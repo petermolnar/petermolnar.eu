@@ -4,14 +4,14 @@
  */
 ?>
 
-<?php if (!empty($post_author_url)) : ?>
+<?php if (!empty($post_author_meta)) : ?>
+
+<span>by <span class="p-author h-card vcard"><?php echo $post_author_meta ?></span></span>
+
+<?php else : ?>
 
 by <span class="p-author h-card vcard">
 	<a class="fn p-name url u-url" href="<?php echo $post_author_url ?>"><?php echo $post_author_name ?></a>
 </span>
-
-<?php else : ?>
-
-<span>by <span class="p-author h-card vcard"><?php echo $post_author_name ?></span></span>
 
 <?php endif;

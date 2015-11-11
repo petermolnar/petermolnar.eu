@@ -1,0 +1,4 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="1500px" height="1500px" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<path transform="scale(1, -1) translate(0, -1500)" glyph-name="xmpp" unicode="&#x78;" d="m0 566q9-179 130-342t299-269q-80-62-177-88l-1-14q42 5 81 16l5 0q76 18 151 54 25-13 50-23 93-43 199-53v15q-51 12-98 37t-87 57q177 104 296 267t129 343l-127-49-44-15-127-38q1-10 1-21-1-108-51-222t-138-209q-86 93-134 206t-48 219q0 11 1 22l-127 38-41 14z" horiz-adv-x="1000" />
+</svg>

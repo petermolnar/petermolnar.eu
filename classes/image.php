@@ -161,8 +161,8 @@ class pmlnr_image extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$fallback = $meta['sizes']['medium'];
-		$try = array ( 'medium', self::prefix . '2', self::prefix . '3' );
+		$fallback = $meta['sizes']['thumbnail'];
+		$try = array ( self::prefix . '1', 'medium', self::prefix . '2' );
 		foreach ( $try as $test ) {
 
 			if (isset($meta['sizes'][$test]['src']) && !empty($meta['sizes'][$test]['src']))
@@ -175,10 +175,12 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 		$as = $this->dpix;
+		$srcset = array();
 		foreach ( $this->dpix as $dpix => $size ) {
 			$id = self::prefix . $dpix;
 			if (isset($meta['sizes'][$id]['src']) && !empty($meta['sizes'][$id]['src']))
 				$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $as[$dpix] . "w";
+				//$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $dpix ."x";
 		}
 
 		if ( isset($meta['parent']) && !empty($meta['parent']) && $post != null && static::is_post($post) && ( $meta['parent'] != $post->ID || !is_singular()) ) {
@@ -210,14 +212,16 @@ class pmlnr_image extends pmlnr_base {
 		if ( is_feed()) {
 			$r = sprintf('<img src="%s" title="%s" alt="%s" />', $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'] );
 		}
+		/*
 		elseif (static::is_amp()) {
 			$r = sprintf('
 		<a href="%s">
 			<amp-img src="%s" title="%s" alt="%s" srcset="%s" width="%s" height="%s" />
 		</a>', $target, $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ), $fallback['width'], $fallback['height'] );
 		}
+		*/
 		else {
-			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(min-width: 960px) 50vw, 100vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, self::expire );
@@ -237,7 +241,8 @@ class pmlnr_image extends pmlnr_base {
 			return $cached;
 
 		// match all wp inserted images
-		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
+		$inline_images = static::extract_wp_images( $html );
+		//preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
 
 		if ( !empty ( $inline_images[0]  )) {
 			foreach ( $inline_images[0] as $cntr => $imgstr ) {
@@ -249,10 +254,11 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 		// match all markdown images
-		preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
+		$markdown_images = static::extract_md_images( $html );
+		//preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
 
 		if ( !empty ( $markdown_images[0]  )) {
-			$excludes = array ( '.noadapt', '.alignleft', '.alignright' );
+			$excludes = array ( '.noadapt', '.alignleft', '.alignright', '.aligncenter', 'u-photo', 'avatar' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
 				$id = false;
 				$adaptify = true;
@@ -294,35 +300,43 @@ class pmlnr_image extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$meta = wp_get_attachment_metadata($thid);
 		$attachment = get_post( $thid );
 
-		if ( !empty ( $attachment->post_parent ) ) {
-			$parent = get_post( $attachment->post_parent );
-			$meta['parent'] = $parent->ID;
+		$meta = array();
+		if ( self::is_post($attachment)) {
+			$meta = wp_get_attachment_metadata($thid);
+
+			if ( !empty ( $attachment->post_parent ) ) {
+				$parent = get_post( $attachment->post_parent );
+				$meta['parent'] = $parent->ID;
+				$meta['image_meta']['geo_latitude'] = get_post_meta( $parent->ID, 'geo_latitude', true );
+				$meta['image_meta']['geo_longitude'] = get_post_meta( $parent->ID, 'geo_longitude', true );
+			}
+
+			$src = wp_get_attachment_image_src ($thid, 'full');
+			$meta['src'] = static::fix_url($src[0]);
+
+			if (isset($meta['sizes']) && !empty($meta['sizes'])) {
+				foreach ( $meta['sizes'] as $size => $data ) {
+					$src = wp_get_attachment_image_src ($thid, $size);
+					$src = static::fix_url($src[0]);
+					$meta['sizes'][$size]['src'] = $src;
+				}
+			}
+
+			if ( empty($meta['image_meta']['title']))
+				$meta['image_meta']['title'] = esc_attr($attachment->post_title);
+
+			$slug = sanitize_title ( $meta['image_meta']['title'] , $thid );
+			if ( is_numeric( substr( $slug, 0, 1) ) )
+				$slug = 'img-' . $slug;
+			$meta['image_meta']['slug'] = $slug;
+
+			$meta['image_meta']['alt'] = '';
+			$alt = get_post_meta($thid, '_wp_attachment_image_alt', true);
+			if ( !empty($alt))
+				$meta['image_meta']['alt'] = strip_tags($alt);
 		}
-
-		$src = wp_get_attachment_image_src ($thid, 'full');
-		$meta['src'] = static::fix_url($src[0]);
-
-		foreach ( $meta['sizes'] as $size => $data ) {
-			$src = wp_get_attachment_image_src ($thid, $size);
-			$src = static::fix_url($src[0]);
-			$meta['sizes'][$size]['src'] = $src;
-		}
-
-		if ( empty($meta['image_meta']['title']))
-			$meta['image_meta']['title'] = esc_attr($attachment->post_title);
-
-		$slug = sanitize_title ( $meta['image_meta']['title'] , $thid );
-		if ( is_numeric( substr( $slug, 0, 1) ) )
-			$slug = 'img-' . $slug;
-		$meta['image_meta']['slug'] = $slug;
-
-		$meta['image_meta']['alt'] = '';
-		$alt = get_post_meta($thid, '_wp_attachment_image_alt', true);
-		if ( !empty($alt))
-			$meta['image_meta']['alt'] = strip_tags($alt);
 
 		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, self::expire );
 
@@ -409,8 +423,14 @@ class pmlnr_image extends pmlnr_base {
 			if ( isset($meta['iso']) && !empty($meta['iso']))
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
 
+			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude']))
+				$r['location'] = sprintf ( __('<i class="icon-location spacer"></i><span class="h-geo"><span class="p-latitude">%s</span>,<span class="p-longitude">%s</span></span>'), $meta['geo_latitude'], ($meta['geo_longitude'] ));
+
 			$return = '<div class="aligncenter">' . join(', ',$r) .'</div>';
+
 		}
+
+
 
 		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, self::expire );
 

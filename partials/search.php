@@ -9,6 +9,6 @@
 				break;
 		}
 	?></label><br />
-	<input type="search" class="search-field" placeholder="🔎 search …" value="" name="s" title="<?php _e('Search for:' ); ?>">
+	<input type="search" class="search-field" placeholder="search..." value="" name="s" title="<?php _e('Search for:' ); ?>">
 	<input type="submit" class="search-submit" value="<?php _e('OK' ); ?>">
 </form>

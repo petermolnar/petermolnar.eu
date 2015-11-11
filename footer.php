@@ -11,9 +11,8 @@
 
 	<div class="limit content-contact">
 		<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a> <?php require ( dirname(__FILE__) . '/partials/vcard.php' ); ?><a class="icon-rss" title="RSS feed" href="<?php bloginfo('rss2_url'); ?>"></a>
-		<br />
 		<aside class="footer-forms">
-		<i class='icon-subscribe'></i><label for="email"><?php
+			<i class='icon-subscribe'></i><label for="email"><?php
 			switch ($lang) {
 				case 'hu':
 					_e('Feliratkozás' );
@@ -24,7 +23,22 @@
 			}
 		?></label><br />
 		<?php dynamic_sidebar( 'subscribe' ); ?>
-		<?php include (dirname(__FILE__) . '/partials/search.php'); ?>
+		<?php include (dirname(__FILE__) . '/partials/search.php');
+		/*
+		<br />
+		<a href="/wp-login.php?action=register"><i class="icon-subscribe"></i><?php
+			switch ($lang) {
+				case 'hu':
+					_e('Feliratkozás' );
+					break;
+				default:
+					_e('Subscribe' );
+					break;
+			}
+		?>
+		</a>
+		*/
+		?>
 		</aside>
 	</div>
 

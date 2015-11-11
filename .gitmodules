@@ -16,9 +16,6 @@
 [submodule "lib/lessphp"]
 	path = lib/lessphp
 	url = https://github.com/leafo/lessphp.git
-[submodule "lib/html-to-markdown"]
-	path = lib/html-to-markdown
-	url = https://github.com/thephpleague/html-to-markdown.git
-[submodule "lib/Twig"]
-	path = lib/Twig
-	url = git://github.com/twigphp/Twig.git
+[submodule "lib/picturefill"]
+	path = lib/picturefill
+	url = https://github.com/scottjehl/picturefill.git

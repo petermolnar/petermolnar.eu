@@ -421,13 +421,13 @@ input[type=submit]:focus {
   margin-right: 0.3em;
   font-family: "petermolnar";
 }
-.icon-github:before {
-  content: '\47';
+.icon-instagram:before {
+  content: '\49';
 }
-.icon-lastfm:before {
+.icon-linkedin:before {
   content: '\4c';
 }
-.icon-webmention:before {
+.icon-wordpress:before {
   content: '\57';
 }
 .icon-epub:before {
@@ -436,38 +436,33 @@ input[type=submit]:focus {
 .icon-facebook:before {
   content: '\66';
 }
-.icon-gplus:before {
+.icon-github:before {
   content: '\67';
 }
-.icon-instagram:before {
-  content: '\69';
-}
-.icon-linkedin:before {
-  content: '\6c';
+.icon-skype:before {
+  content: '\73';
 }
 .icon-twitter:before {
   content: '\74';
 }
-.icon-wordpress:before {
+.icon-webmention:before {
   content: '\77';
-}
-.icon-xmpp:before {
-  content: '\78';
 }
 .icon-copyright:before {
   content: '\a9';
 }
-.icon-copyleft:before {
-  content: '\2184';
-}
 .icon-focallength:before {
   content: '\2194';
 }
-.icon-aperture:before {
-  content: '\25cb';
+.icon-clock:before {
+  content: '\231a';
 }
-.icon-share:before {
-  content: '\260d';
+.icon-tag:before {
+  content: '\235d';
+}
+.u-like-of:before,
+.icon-like:before {
+  content: '\2605';
 }
 .icon-menu:before {
   content: '\2630';
@@ -475,52 +470,51 @@ input[type=submit]:focus {
 .icon-sensitivity:before {
   content: '\263c';
 }
+.icon-lastfm:before {
+  content: '\267e';
+}
 .icon-flickr:before {
-  content: '\2689';
+  content: '\2687';
+}
+.icon-lock:before {
+  content: '\26bf';
+}
+.icon-camera:before {
+  content: '\26f6';
+}
+.icon-phone:before {
+  content: '\2706';
 }
 .icon-mail:before {
   content: '\2709';
 }
+.icon-search:before {
+  content: '\2753';
+}
 .u-in-reply-to:before,
 .icon-reply:before {
-  content: '\27a5';
+  content: '\27a6';
+}
+.icon-repost:before {
+  content: '\27f3';
+}
+.icon-share:before {
+  content: '\2928';
 }
 .icon-rss:before {
-  content: '\e80b';
+  content: '\2980';
 }
-.icon-tag:before {
-  content: '\1f3f7';
-}
-.u-like-of:before,
-.icon-like:before {
-  content: '\1f44d';
-}
-.icon-phone:before {
-  content: '\1f4de';
-}
-.icon-camera:before {
-  content: '\1f4f7';
-}
-.icon-search:before {
-  content: '\1f50e';
-}
-.icon-lock:before {
-  content: '\1f512';
-}
-.icon-clock:before {
-  content: '\1f558';
-}
-.icon-sitemap:before {
-  content: '\1f5a7';
+.icon-aperture:before {
+  content: '\29be';
 }
 .icon-picture:before {
-  content: '\1f5bb';
+  content: '\29c8';
 }
 .icon-comment:before {
-  content: '\1f5e9';
+  content: '\2b2c';
 }
-.icon-chat:before {
-  content: '\1f5ea';
+.icon-subscribe:before {
+  content: '\2b2d';
 }
 .content-header {
   position: fixed;
@@ -586,13 +580,26 @@ input[type=submit]:focus {
   font-size: 0.9em;
   color: #888;
 }
-.content-contact a {
+.content-contact [class^="icon-"],
+.content-contact [class*=" icon-"],
+.content-contact [class^="x-"],
+.content-contact [class*=" x-"],
+.content-contact [class^="u-"],
+.content-contact [class*=" u-"] {
   font-size: 0em;
   letter-spacing: -1em;
   color: #888;
 }
-.content-contact a:before {
+.content-contact [class^="icon-"]:before,
+.content-contact [class*=" icon-"]:before,
+.content-contact [class^="x-"]:before,
+.content-contact [class*=" x-"]:before,
+.content-contact [class^="u-"]:before,
+.content-contact [class*=" u-"]:before {
   font-size: 17px;
+}
+.content-contact a {
+  color: #888;
 }
 .content-contact a:hover {
   color: #a2a2a2;

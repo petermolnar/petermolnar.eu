@@ -62,7 +62,7 @@ class petermolnareu {
 		add_action( 'wp_head', array(&$this, 'shortlink'));
 
 		// add css & js
-		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'));
+		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
 
 		// add graphmeta, because world
 		//add_action('wp_head',array(&$this, 'graphmeta'));
@@ -160,12 +160,26 @@ class petermolnareu {
 		wp_register_script( 'prism' , $js_url . '/prism.js', false, null, true );
 		wp_enqueue_script( 'prism' );
 
+
+		/* srcset fallback */
+		wp_register_script( 'picturefill' , $base_url . '/lib/picturefill/dist/picturefill.min.js', false, null, true );
+		wp_enqueue_script( 'picturefill' );
+
 		// cleanup
+		wp_dequeue_style ('wp-mediaelement');
+		wp_dequeue_style ('open-sans-css');
+		wp_deregister_style ('wp-mediaelement');
+		wp_deregister_style ('open-sans-css');
+
 		wp_dequeue_script( 'mediaelement' );
 		wp_dequeue_script( 'wp-mediaelement' );
-		wp_dequeue_style ('wp-mediaelement');
+		wp_dequeue_script ('wp-embed');
 		wp_dequeue_script ('devicepx');
-		wp_dequeue_style ('open-sans-css');
+
+		wp_deregister_script( 'mediaelement' );
+		wp_deregister_script( 'wp-mediaelement' );
+		wp_deregister_script ('wp-embed');
+		wp_deregister_script ('devicepx');
 
 	}
 
@@ -253,13 +267,15 @@ class petermolnareu {
 		);
 
 		foreach ($san as $key => $filter) {
-			$new = filter_var($_POST[$key], $san[$key]);
-			$curr = get_post_meta( $post_id, $key, true );
+			if (isset($_POST[$key])) {
+				$new = filter_var($_POST[$key], $san[$key]);
+				$curr = get_post_meta( $post_id, $key, true );
 
-			if ( !empty($new) )
-				$r = update_post_meta( $post_id, $key, $new, $curr );
-			elseif ( empty($new) && !empty($curr) )
-				$r = delete_post_meta( $post_id, $key );
+				if ( !empty($new) )
+					$r = update_post_meta( $post_id, $key, $new, $curr );
+				elseif ( empty($new) && !empty($curr) )
+					$r = delete_post_meta( $post_id, $key );
+			}
 		}
 	}
 
@@ -279,23 +295,18 @@ class petermolnareu {
 		if (!$post || empty($post) || !is_object($post))
 			return $links;
 
-
 		// Find all external links in the source
 		$matches = pmlnr_base::extract_urls($post->post_content);
-		//)if (preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#]*/i", $post->post_content, $matches)) {
+
 		if (!empty($matches)) {
-			$xlinks = $matches[0];
-			$links = array_merge($links, $xlinks);
+			$links = array_merge($links, $matches);
 		}
 
 		// additional meta content links
 		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		if (!empty($metacontent))
-			array_unshift($links, $webmention_url);
+		array_push($links, $webmention_url);
 
-		//$links = array_unique( $links );
-		//pingback(join(' ', $links), $post->ID);
-
+		pmlnr_base::debug ( 'Post ' . $post->ID . ' urls for webmentioning: ' . join(', ', $links) );
 		return $links;
 	}
 
@@ -415,15 +426,16 @@ class petermolnareu {
 			'maybe' => __("I'll do my best, but don't count on me for sure."),
 		);
 
-		if ( !empty($webmention_url)):
+		if ( !empty($webmention_url)) {
+			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
 			$rel = str_replace('u-', '', $cl );
 			//$add = "\n##### $h";
-			$add = "\n\n[$webmention_url]($webmention_url){.$cl}\n\n";
+			$add = "\n\n[$webmention_title]($webmention_url){.$cl}\n\n";
 			if (!empty($webmention_rsvp))
 				$add .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
 
 			$content .= $add;
-		endif;
+		}
 
 		return $content;
 	}
@@ -609,14 +621,56 @@ class petermolnareu {
 
 		if ($post === false)
 			return false;
+
 		$epoch = get_the_time('U', $post->ID);
-		$url = pmlnr_base::epoch2url($epoch);
+		$url36 = pmlnr_base::epoch2url($epoch);
+		$url62 = pmlnr_base::epoch2url($epoch,62);
+
+		pmlnr_base::debug($post->post_name . ': ' . $url36 . ', ' . $url62);
+
+		// if the generated url is the same as the current slug, walk away
+		if ( $url36 == $post->post_name || $url62 == $post->post_name )
+			return true;
 
 		$meta = get_post_meta( $post->ID, '_wp_old_slug', false);
-		if ( !in_array($url,$meta))
-			add_post_meta($post->ID, '_wp_old_slug', $url);
 
-		return $post;
+		// cleanup if url is the same as slug
+		if ( $key = array_search( $post->post_name, $meta)) {
+			delete_post_meta($post->ID, '_wp_old_slug', $slug);
+			unset($meta[$key]);
+		}
+
+		// 2 generated, 1 additional is still ok
+		if ( count($meta) > 3 ) {
+			foreach ($meta as $key => $slug ) {
+
+				// base62 matches
+				if (preg_match('/^[0-9a-zA-Z]{5}$/', $slug)) {
+					static::debug('deleting slug ' . $slug . ' from ' . $post->ID );
+					delete_post_meta($post->ID, '_wp_old_slug', $slug);
+					unset($meta[$key]);
+				}
+
+				// base36 matches
+				if (preg_match('/^[0-9a-z]{5}$/', $slug)) {
+					static::debug('deleting slug ' . $slug . ' from ' . $post->ID );
+					delete_post_meta($post->ID, '_wp_old_slug', $slug);
+					unset($meta[$key]);
+				}
+			}
+		}
+
+		if ( !in_array($url36,$meta)) {
+			static::debug('adding slug ' . $url36 . ' to ' . $post->ID );
+			add_post_meta($post->ID, '_wp_old_slug', $url36);
+		}
+
+		if ( !in_array($url62,$meta)) {
+			static::debug('adding slug ' . $url62 . ' to ' . $post->ID );
+			add_post_meta($post->ID, '_wp_old_slug', $url62);
+		}
+
+		return true;
 	}
 
 	public function shortlink () {

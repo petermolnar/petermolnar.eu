@@ -19,10 +19,10 @@ class pmlnr_markdown extends pmlnr_base {
 		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
 		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
 		//add_filter( 'press_this_suggested_html', array( &$this, 'html_to_markdown'), 8, 2 );
-		add_filter ('press_this_suggested_content', array (&$this, 'html2markdown'), 1);
-		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
+		//add_filter ('press_this_suggested_content', array (&$this, 'html2markdown'), 1);
+		//add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
 
-		add_filter ('press_this_save_post_content', array (&$this, 'html2markdown'), 1);
+		//add_filter ('press_this_save_post_content', array (&$this, 'html2markdown'), 1);
 
 	}
 
