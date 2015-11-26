@@ -1,0 +1,26 @@
+<div class="content-inner">
+	<article class="h-entry" id="post-{{ post_id }}">
+
+		<header>
+			<div class="meta">
+				{% include 'ameta_pubdate.html' %}
+				{% include 'ameta_author.html' %}
+				{% include 'ameta_readtime.html' %}
+			</div>
+			<h2>
+				<a class="u-url" href="{{ post_url }}" rel="bookmark" title="{{ post_title }}">
+					<span class="p-name more">{{ post_title }}</span>
+				</a>
+			</h2>
+		</header>
+
+		<div class="e-summary">
+			{% if post_thumbnail %}
+				<img class="article-thumbnail" src="{{ post_thumbnail }}" />
+			{% endif %}
+			{{ post_excerpt }}
+			<br class="clear" />
+		</div>
+
+	</article>
+</div>

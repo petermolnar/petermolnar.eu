@@ -1,0 +1,11 @@
+{% if post_author_meta|length > 0 %}
+<span>by <span class="p-author h-card vcard">{{ post_author_meta }}</span></span>
+
+{% elseif post_format in post_author_formats %}
+
+by <span class="p-author h-card vcard">
+	<a class="fn p-name url u-url" href="{{ post_author_url }}">{{ post_author_name }}</a>
+	<img class="u-photo u-avatar hide" src="{{ post_author_avatar }}" />
+</span>
+
+{% endif %}

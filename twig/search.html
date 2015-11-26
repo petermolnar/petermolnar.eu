@@ -1,0 +1,12 @@
+<form role="search" method="get" class="search-form" action="{{ site_url }}">
+	<i class="icon-search"></i>
+	<label for="search">
+	{% if site_user_lang == 'hu' %}
+		Keresés
+	{% else %}
+		Search
+	{% endif %}
+	</label><br />
+	<input type="search" class="search-field" placeholder="search..." value="" name="s" title="Search for:">
+	<input type="submit" class="search-submit" value="OK">
+</form>

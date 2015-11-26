@@ -1,0 +1,33 @@
+<section class="content-body" id="main-content">
+	<article class="h-entry" id="post-{{ post_id }}" >
+		<header {{ post_bgstyle }}>
+			<div class="content-inner">
+				{% include 'ameta_pubdate.html' %}
+				{% include 'ameta_author.html' %}
+				{% include 'ameta_readtime.html' %}
+				<h1>
+					<a class="u-url" href="{{ post_url }}" rel="bookmark" title="{{ post_title }}">
+						<span class="p-name">{{ post_title }}</span>
+					</a>
+				</h1>
+			</div>
+		</header>
+
+		<div class="e-content">
+			<div class="content-inner">
+				{{ post_content }}
+				<br class="clear" />
+			</div>
+		</div>
+
+		<footer>
+			<div class="content-inner">
+				{% include 'ameta_imported.html' %}
+				{% include 'list_tag.html' %}
+				{% include 'list_reply.html' %}
+				{% include 'list_share.html' %}
+				{% include 'ameta_footer.html' %}
+			</div>
+		</footer>
+	</article>
+</section>

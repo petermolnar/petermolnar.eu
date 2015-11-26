@@ -1,0 +1,11 @@
+{% if post_tags %}
+<div class="tags">
+	<ul class="p-category">
+		{% for tname, turl in post_tags %}
+			<li>
+				<a href="{{ turl }}" class="icon-tag">{{ tname }}</a>
+			</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endif %}

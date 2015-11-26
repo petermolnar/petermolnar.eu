@@ -1,0 +1,13 @@
+{% if post_twitter_repost|length > 0 %}
+<h5>Reposted from:</h5>
+<p>
+	<a href="{{ post_twitter_repost }}">{{ post_twitter_repost }}</a>
+</p>
+{% endif %}
+
+{% if post_twitter_reply|length > 0 %}
+<h5>In reply to:</h5>
+<p>
+	<a class="u-in-reply-to" href="{{ post_twitter_reply }}">{{ post_twitter_reply }}</a>
+</p>
+{% endif %}

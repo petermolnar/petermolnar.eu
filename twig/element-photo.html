@@ -1,0 +1,22 @@
+<div class="content-inner">
+	<article class="h-entry" id="post-{{ post_id }}" >
+
+		<header>
+			<div class="meta">
+				{% include 'ameta_pubdate.html' %}
+				{% include 'ameta_author.html' %}
+			</div>
+			<h2>
+				<a class="u-url" href="{{ post_url }}" rel="bookmark" title="{{ post_title }}">
+					<span class="p-name">{{ post_title }}</span>
+				</a>
+			</h2>
+		</header>
+
+		<div class="e-content">
+			{{ post_content }}
+			<br class="clear" />
+		</div>
+
+	</article>
+</div>

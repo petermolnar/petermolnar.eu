@@ -19,3 +19,6 @@
 [submodule "lib/picturefill"]
 	path = lib/picturefill
 	url = https://github.com/scottjehl/picturefill.git
+[submodule "lib/Twig"]
+	path = lib/Twig
+	url = git://github.com/twigphp/Twig.git
