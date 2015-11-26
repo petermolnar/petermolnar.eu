@@ -1,4 +1,12 @@
 <?php
+
+global $petermolnareu_theme;
+
+$tmpl = $petermolnareu_theme->twig->loadTemplate('header.html');
+echo $tmpl->render(pmlnr_site::template_vars());
+return;
+
+/*
 $favicon = get_bloginfo('template_directory') . '/images/favicon.png';
 
 ?><!DOCTYPE html>
@@ -18,3 +26,4 @@ $favicon = get_bloginfo('template_directory') . '/images/favicon.png';
 </head>
 
 <body>
+*/

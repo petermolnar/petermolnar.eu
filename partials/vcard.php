@@ -1,9 +1,14 @@
 <?php
 
-$data = pmlnr_author::template_vars( $post );
+$post = pmlnr_base::fix_post($post);
+
+if ($post === false )
+	return;
+
+$data = pmlnr_author::template_vars( $post->post_author );
 
 if (is_array($data) && !empty($data))
-	extract($data, EXTR_PREFIX_ALL, 'author' );
+	extract($data);
 else
 	return;
 ?>

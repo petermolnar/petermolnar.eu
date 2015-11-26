@@ -3,6 +3,8 @@ class pmlnr_cleanup extends pmlnr_base {
 
 	public function __construct ( ) {
 		add_action( 'init', array( &$this, 'init'));
+		add_action( 'wp_enqueue_scripts', array(&$this,'remove_enqueues'),10);
+
 		// cleanup
 		remove_action('wp_head', 'rsd_link');
 		remove_action('wp_head', 'wlwmanifest_link');
@@ -43,6 +45,24 @@ class pmlnr_cleanup extends pmlnr_base {
 		add_filter( 'content_save_pre' , array(&$this, '_sanitize_content') , 10, 1);
 
 		//add_filter( 'the_content' , array(&$this, '_sanitize_content') , 9, 1);
+	}
+
+	public function remove_enqueues () {
+		// cleanup
+		wp_dequeue_style ('wp-mediaelement');
+		wp_dequeue_style ('open-sans-css');
+		wp_deregister_style ('wp-mediaelement');
+		wp_deregister_style ('open-sans-css');
+
+		wp_dequeue_script( 'mediaelement' );
+		wp_dequeue_script( 'wp-mediaelement' );
+		wp_dequeue_script ('wp-embed');
+		wp_dequeue_script ('devicepx');
+
+		wp_deregister_script( 'mediaelement' );
+		wp_deregister_script( 'wp-mediaelement' );
+		wp_deregister_script ('wp-embed');
+		wp_deregister_script ('devicepx');
 	}
 
 	public function disable_emojicons_tinymce( $plugins ) {

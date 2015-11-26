@@ -10,19 +10,19 @@
 
 			$post_id = get_the_ID();
 
-			//$post_length = strlen( $post->post_content );
-			//$is_photo = pmlnr_image::is_u_photo($post);
 			$format = pmlnr_post::post_format($post);
-
-			extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
-			//extract($data );
+			$twigvars = pmlnr_post::template_vars( $post, 'post_' );
 
 			if (in_array($format, array('photo', 'image')))
-				include( dirname(__FILE__). '/partials/element-photo.php' );
+				$tmpl = 'element-photo.html';
 			elseif ( in_array($format, array('article')) )
-				include( dirname(__FILE__). '/partials/element-long.php' );
+				$tmpl = 'element-long.html';
 			else
-				include( dirname(__FILE__). '/partials/element-short.php' );
+				$tmpl = 'element-short.html';
+
+			$tmpl = $petermolnareu_theme->twig->loadTemplate($tmpl);
+			echo $tmpl->render($twigvars);
+
 		}
 	}
 

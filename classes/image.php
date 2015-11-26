@@ -150,9 +150,12 @@ class pmlnr_image extends pmlnr_base {
 	/**
 	 * adaptive image shortcode function
 	 */
-	public function adaptive( &$thid, &$post = null ) {
+	public function adaptive( &$thid, $post = null ) {
 		if (empty($thid))
 			return false;
+
+		if (!empty($post))
+			$post = static::fix_post($post);
 
 		$meta = self::get_extended_meta($thid);
 		if (empty($meta['sizes']))
@@ -200,6 +203,11 @@ class pmlnr_image extends pmlnr_base {
 				}
 			}
 
+		}
+
+		if (!isset($target) || empty($target)) {
+			static::debug('now, this should not happen: ' . $post->ID .' wanted adaptification and did not find $target');
+			return false;
 		}
 
 		//$target = static::fix_url($target);

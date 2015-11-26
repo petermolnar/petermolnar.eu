@@ -38,8 +38,8 @@ class pmlnr_author extends pmlnr_base {
 
 	public static function author_social ( $author_id = 1 ) {
 
-		if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
+		//if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
+			//return $cached;
 
 		$list = [];
 
@@ -61,31 +61,19 @@ class pmlnr_author extends pmlnr_base {
 
 		}
 
-		wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, self::expire );
+		//wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, self::expire );
 		return $list;
 	}
 
+	public static function template_vars ( $author_id = 1, $prefix = 'author_' ) {
 
-	public static function template_vars (&$post = null) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
-/*
-		$avatar_args = array (
-			'extra_attr' => 'style="width:1em; height: auto"',
-			'size' => 64,
-			'default' => 'gravatar_default'
-		);
-*/
 
-		$email = get_the_author_meta ( 'user_email' , $post->post_author );
-		$name = get_the_author_meta ( 'display_name' , $post->post_author );
+		$email = get_the_author_meta ( 'user_email' , $author_id );
+		$name = get_the_author_meta ( 'display_name' , $author_id );
 
-		$thid = get_user_option ( 'metronet_image_id', $post->post_author );
+		$thid = get_user_option ( 'metronet_image_id', $author_id );
 		if ( $thid ) {
 			$image = wp_get_attachment_image_src ($thid, 'thumbnail');
 			$avatar = static::fix_url($image[0]);
@@ -95,20 +83,25 @@ class pmlnr_author extends pmlnr_base {
 		}
 
 		$r = array (
-			'id' => $post->post_author,
+			'id' => $author_id,
 			'name' =>  $name,
 			'email' =>  $email,
 			'avatar' => $avatar,
-			//'gravatar' => sprintf('https://s.gravatar.com/avatar/%s?=64', md5( strtolower( trim( get_the_author_meta ( 'user_email' , $post->post_author ) ) ) )),
-			'url' => get_the_author_meta ( 'user_url' , $post->post_author ),
-			'socials' => static::author_social ( $post->post_author ),
-			'pgp' => get_the_author_meta ( 'pgp' , $post->post_author ),
+			'url' => get_the_author_meta ( 'user_url' , $author_id ),
+			'socials' => static::author_social ( $author_id ),
+			'pgp' => get_the_author_meta ( 'pgp' , $author_id ),
 		);
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		if (!empty($prefix)) {
+			foreach ($r as $key => $value ) {
+				$r[ $prefix . $key ] = $value;
+				unset($r[$key]);
+			}
+		}
+
+		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $r;
-
 
 	}
 }

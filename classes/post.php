@@ -2,8 +2,68 @@
 
 class pmlnr_post extends pmlnr_base {
 
-	public static function post_decode_format ( $format ) {
+	public function __construct () {
+		// add graphmeta, because world
+		add_action('wp_head',array(&$this, 'post_graphmeta'));
+	}
 
+
+	/**
+	 *
+	 */
+	public static function get_the_content( &$_post = null ){
+		global $post;
+		$prevpost = $post;
+
+		$post = static::fix_post($_post);
+
+		if ($post === false ) {
+			$post = $prevpost;
+			return false;
+		}
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		setup_postdata( $post );
+		ob_start();
+		the_content();
+		$r = ob_get_clean();
+		wp_reset_postdata( $post );
+		$post = $prevpost;
+
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+
+		return $r;
+	}
+
+	/**
+	 *
+	 */
+	public static function get_the_excerpt( &$_post = null ){
+		global $post;
+		$prevpost = $post;
+
+		$post = static::fix_post($_post);
+
+		if ($post === false ) {
+			$post = $prevpost;
+			return false;
+		}
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		setup_postdata( $post );
+		ob_start();
+		the_excerpt();
+		$r = ob_get_clean();
+		wp_reset_postdata( $post );
+		$post = $prevpost;
+
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+
+		return $r;
 	}
 
 	/**
@@ -262,50 +322,6 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function template_vars (&$post = null) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = array (
-			'author_name' => get_the_author_meta ( 'display_name' , $post->post_author ),
-			'author_url' => get_the_author_meta ( 'user_url' , $post->post_author ),
-			'author_email' => get_the_author_meta ( 'user_email' , $post->post_author ),
-			'author_meta' => get_post_meta ( $post->ID, 'author', true),
-			'pubdate_iso' => get_the_time( 'c', $post->ID ),
-			'pubdate_print' => sprintf ('%s %s', get_the_time( get_option('date_format'), $post->ID ), get_the_time( get_option('time_format'), $post->ID ) ),
-			'moddate_iso' => get_the_modified_time( 'c', $post->ID ),
-			'moddate_print' => sprintf ('%s %s', get_the_modified_time( get_option('date_format'), $post->ID ), get_the_modified_time( get_option('time_format'), $post->ID ) ),
-			'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
-			//'repost_of' => static::post_repost_of ( $post ),
-			'twitter_repost' => static::twitter_repost_of( $post ),
-			'twitter_reply' => static::twitter_reply_to( $post ),
-			//'webmention' =>
-			'url' => get_permalink( $post ),
-			'title' => trim(get_the_title( $post->ID )),
-			'shorturl' => wp_get_shortlink( $post->ID ),
-			//'thumbnail_id' => get_post_thumbnail_id( $post->ID ),
-			'thumbnail' => static::post_thumbnail ($post),
-			'bgstyle' => static::post_background ($post),
-			'content' => static::get_the_content($post),
-			'excerpt' => static::get_the_excerpt($post),
-			'id' => $post->ID,
-			'tags' => static::post_get_tags_array($post),
-		);
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
-
-		return $r;
-	}
-
-
-	/**
-	 *
-	 */
 	public static function post_replace_title ( &$post, $new_title = '' ) {
 		$post = static::fix_post($post);
 
@@ -338,4 +354,123 @@ class pmlnr_post extends pmlnr_base {
 			delete_post_meta($post->ID, '_wp_old_title', $current_title );
 		}
 	}
+
+	/**
+	 *
+	 */
+	public static function post_graphmeta () {
+		global $post;
+		$post = static::fix_post($post);
+
+		if ( $post === false )
+			return true;
+
+		if (!is_singular())
+			return true;
+
+		$og = array();
+
+		$og['og:locale'] = get_bloginfo( 'language' );
+		$og['og:site_name'] = get_bloginfo('name');
+		$og['og:type'] = 'website';
+		$og['twitter:card'] = 'summary_large_image';
+
+		$og['og:type'] = 'article';
+		$og['og:url'] = wp_get_shortlink( $post->ID );
+		$og['og:title'] = $og['twitter:title'] = trim(get_the_title( $post->ID ));
+
+		$loc = get_post_meta( $post->ID, 'locale', true );
+		if ($loc) $og['og:locale'] = $loc;
+
+		if ( $tw = get_the_author_meta( 'twitter', $post->post_author ) )
+			$og['twitter:site'] = '@' . $tw;
+
+		$og['og:updated_time'] = get_the_modified_time( 'c', $post->ID );
+		$og['article:published_time'] = get_the_time( 'c', $post->ID );
+		$og['article:modified_time'] = get_the_modified_time( 'c', $post->ID );
+
+		$desc = strip_tags(static::get_the_excerpt($post));
+		$og['og:description'] = $desc;
+		$og['twitter:description'] = $desc;
+
+		$tags = static::post_get_tags_array($post);
+
+		if ( !empty($tags) ) {
+			$tags = array_keys($tags);
+			$og['article:tag'] = join(",", $tags);
+		}
+
+		$thid = get_post_thumbnail_id( $post->ID );
+		if ( $thid ) {
+			$src = wp_get_attachment_image_src( $thid, 'large');
+			if ( !empty($src[0])) {
+				$src = pmlnr_base::fix_url($src[0]);
+				$og['og:image'] = $src;
+				$og['twitter:image:src'] = $src;
+			}
+		}
+
+		ksort($og);
+
+		foreach ($og as $property => $content )
+			printf( '<meta property="%s" content="%s" />%s', $property, $content, "\n" );
+	}
+
+	/**
+	 *
+	 */
+	public static function template_vars (&$post = null, $prefix = '' ) {
+		$post = static::fix_post($post);
+
+		if ($post === false)
+			return false;
+
+		if ( $cached = wp_cache_get ( $post->ID . $prefix, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = array (
+			//'author_name' => get_the_author_meta ( 'display_name' , $post->post_author ),
+			//'author_url' => get_the_author_meta ( 'user_url' , $post->post_author ),
+			//'author_email' => get_the_author_meta ( 'user_email' , $post->post_author ),
+			'author_meta' => get_post_meta ( $post->ID, 'author', true),
+			'pubdate_iso' => get_the_time( 'c', $post->ID ),
+			'pubdate_print' => sprintf ('%s %s', get_the_time( get_option('date_format'), $post->ID ), get_the_time( get_option('time_format'), $post->ID ) ),
+			'moddate_iso' => get_the_modified_time( 'c', $post->ID ),
+			'moddate_print' => sprintf ('%s %s', get_the_modified_time( get_option('date_format'), $post->ID ), get_the_modified_time( get_option('time_format'), $post->ID ) ),
+			'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
+			//'repost_of' => static::post_repost_of ( $post ),
+			'twitter_repost' => static::twitter_repost_of( $post ),
+			'twitter_reply' => static::twitter_reply_to( $post ),
+			//'webmention' =>
+			'url' => get_permalink( $post ),
+			'title' => trim(get_the_title( $post->ID )),
+			'shorturl' => wp_get_shortlink( $post->ID ),
+			//'thumbnail_id' => get_post_thumbnail_id( $post->ID ),
+			'thumbnail' => static::post_thumbnail ($post),
+			'bgstyle' => static::post_background ($post),
+			'content' => static::get_the_content($post),
+			'excerpt' => static::get_the_excerpt($post),
+			'id' => $post->ID,
+			'tags' => static::post_get_tags_array($post),
+			'format' => static::post_format($post),
+			'author_formats' => array('article','photo','reply','rsvp', 'note'),
+		);
+
+		$author_vars = pmlnr_author::template_vars( $post->post_author );
+		foreach ($author_vars as $key => $value ) {
+			$r[$key] = $value;
+		}
+
+		if (!empty($prefix)) {
+			foreach ($r as $key => $value ) {
+				$r[ $prefix . $key ] = $value;
+				unset($r[$key]);
+			}
+		}
+
+		wp_cache_set ( $post->ID . $prefix, $r, __CLASS__ . __FUNCTION__, self::expire );
+
+		return $r;
+	}
+
 }

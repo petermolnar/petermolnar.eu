@@ -15,8 +15,9 @@ get_header();
 		if ( have_posts() ):
 			while (have_posts()) :
 				the_post();
-				extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
-				include(dirname(__FILE__) . '/partials/element-long.php' );
+				$twigvars = pmlnr_post::template_vars( $post, 'post_' );
+				$tmpl = $petermolnareu_theme->twig->loadTemplate('element-long.html');
+				echo $tmpl->render($twigvars);
 			endwhile;
 
 		endif;

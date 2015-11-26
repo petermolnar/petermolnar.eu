@@ -5,6 +5,7 @@ get_header();
 the_post();
 
 extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
+//extract(pmlnr_author::template_vars( $post ), EXTR_PREFIX_ALL, 'post_author' );
 
 ?>
 <section class="content-body">

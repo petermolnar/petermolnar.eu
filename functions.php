@@ -8,8 +8,8 @@ require_once ($dirname . '/lib/parsedown/Parsedown.php');
 require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
 require_once ($dirname . '/lib/lessphp/lessc.inc.php');
 require_once ($dirname . '/lib/simple_html_dom/simple_html_dom.php');
-//require_once ($dirname . '/lib/Twig/lib/Twig/Autoloader.php');
-//Twig_Autoloader::register();
+require_once ($dirname . '/lib/Twig/lib/Twig/Autoloader.php');
+Twig_Autoloader::register();
 
 require_once ($dirname . '/classes/base.php');
 require_once ($dirname . '/classes/image.php');
@@ -17,10 +17,14 @@ require_once ($dirname . '/classes/cleanup.php');
 require_once ($dirname . '/classes/markdown.php');
 require_once ($dirname . '/classes/post.php');
 require_once ($dirname . '/classes/author.php');
+require_once ($dirname . '/classes/site.php');
 
 class petermolnareu {
 	const menu_header = 'header';
 	private $endpoints = array ('yaml');
+	public $twig = null;
+	public $twigloader = null;
+	private $twigcache = WP_CONTENT_DIR . '/cache/twig';
 //	public $twig;
 //	public $twigloader;
 
@@ -41,17 +45,23 @@ class petermolnareu {
 		}
 		// }}}
 
+		if (!is_dir($this->twigcache))
+			mkdir($this->twigcache);
+
+		$this->twigloader = new Twig_Loader_Filesystem( dirname(__FILE__) . '/twig');
+		$this->twig = new Twig_Environment($this->twigloader, array(
+			'cache' => $this->twigcache,
+			'auto_reload' => true,
+			'autoescape' => false,
+		));
+
 		new pmlnr_image();
 		new pmlnr_cleanup();
 		new pmlnr_markdown();
 		new pmlnr_post();
 		new pmlnr_author();
+		new pmlnr_site();
 		//new pmlnr_formats();
-
-		//$loader = new Twig_Loader_Filesystem(dirname(__FILE__) .'/twig');
-		//$twig = new Twig_Environment($loader, array(
-			    //'cache' => WP_CONTENT_DIR . '/cache',
-			//));
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
@@ -59,7 +69,7 @@ class petermolnareu {
 		add_action( 'init', array( &$this, 'init'));
 
 		// replace shortlink
-		add_action( 'wp_head', array(&$this, 'shortlink'));
+		//add_action( 'wp_head', array(&$this, 'shortlink'));
 
 		// add css & js
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
@@ -74,12 +84,12 @@ class petermolnareu {
 		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
 		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 
-		if (is_admin() && !defined('DOING_AJAX')) {
-			$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
-			foreach ($statuses as $status) {
-				add_action("{$status}_to_publish", array(&$this, "check_shorturl"));
-			}
-		}
+		//if (is_admin() && !defined('DOING_AJAX')) {
+			//$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
+			//foreach ($statuses as $status) {
+				//add_action("{$status}_to_publish", array(&$this, "fix_slug"));
+			//}
+		//}
 
 		add_action( 'template_redirect', array(&$this, 'template_redirect') );
 		foreach ($this->endpoints as $endpoint ) {
@@ -114,7 +124,7 @@ class petermolnareu {
 		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
 
 		// shortlink replacement
-		add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
+		//add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
 
 		//add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
 
@@ -165,21 +175,21 @@ class petermolnareu {
 		wp_register_script( 'picturefill' , $base_url . '/lib/picturefill/dist/picturefill.min.js', false, null, true );
 		wp_enqueue_script( 'picturefill' );
 
-		// cleanup
-		wp_dequeue_style ('wp-mediaelement');
-		wp_dequeue_style ('open-sans-css');
-		wp_deregister_style ('wp-mediaelement');
-		wp_deregister_style ('open-sans-css');
+		//// cleanup
+		//wp_dequeue_style ('wp-mediaelement');
+		//wp_dequeue_style ('open-sans-css');
+		//wp_deregister_style ('wp-mediaelement');
+		//wp_deregister_style ('open-sans-css');
 
-		wp_dequeue_script( 'mediaelement' );
-		wp_dequeue_script( 'wp-mediaelement' );
-		wp_dequeue_script ('wp-embed');
-		wp_dequeue_script ('devicepx');
+		//wp_dequeue_script( 'mediaelement' );
+		//wp_dequeue_script( 'wp-mediaelement' );
+		//wp_dequeue_script ('wp-embed');
+		//wp_dequeue_script ('devicepx');
 
-		wp_deregister_script( 'mediaelement' );
-		wp_deregister_script( 'wp-mediaelement' );
-		wp_deregister_script ('wp-embed');
-		wp_deregister_script ('devicepx');
+		//wp_deregister_script( 'mediaelement' );
+		//wp_deregister_script( 'wp-mediaelement' );
+		//wp_deregister_script ('wp-embed');
+		//wp_deregister_script ('devicepx');
 
 	}
 
@@ -615,7 +625,7 @@ class petermolnareu {
 	/**
 	 * since WordPress has it's built-in rewrite engine, it's eaiser to use
 	 * that for adding the short urls
-	 */
+	 *
 	public static function check_shorturl(&$post = null) {
 		$post = pmlnr_base::fix_post($post);
 
@@ -672,15 +682,18 @@ class petermolnareu {
 
 		return true;
 	}
+	*/
 
+	/*
 	public function shortlink () {
 		if (is_singular())
 			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
 	}
+	*/
 
 	/**
 	 * our very own shorturl function
-	 */
+	 *
 	public static function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
 		global $post;
 		if (empty($post) || !isset($post->ID) || empty($post->ID))
@@ -692,6 +705,7 @@ class petermolnareu {
 		$base = rtrim( get_bloginfo('url'), '/' ) . '/';
 		return $base.$url;
 	}
+	*/
 
 	/*
 	public static function fix_youtube ( $cache, $url, $attr, $postid ) {
