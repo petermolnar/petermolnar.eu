@@ -12,6 +12,9 @@
 					<span class="p-name more">{{ post_title }}</span>
 				</a>
 			</h2>
+			{% if post_webmention %}
+			{{ post_webmention }}
+			{% endif %}
 		</header>
 
 		<div class="e-summary">

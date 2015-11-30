@@ -84,12 +84,15 @@ class petermolnareu {
 		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
 		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 
-		//if (is_admin() && !defined('DOING_AJAX')) {
-			//$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
-			//foreach ($statuses as $status) {
-				//add_action("{$status}_to_publish", array(&$this, "fix_slug"));
-			//}
-		//}
+		/*
+		if (is_admin() && !defined('DOING_AJAX')) {
+			$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
+			foreach ($statuses as $status) {
+				add_action("{$status}_to_publish", array(&$this, "send_mail"));
+			}
+			add_action( 'publish_future_post', array(&$this, "send_mail"));
+		}
+		*/
 
 		add_action( 'template_redirect', array(&$this, 'template_redirect') );
 		foreach ($this->endpoints as $endpoint ) {
@@ -115,7 +118,7 @@ class petermolnareu {
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
 		// add webmention box
-		add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
+		//add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
 
 		// add the webmention box value to the webmention links list
 		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
@@ -129,6 +132,8 @@ class petermolnareu {
 		//add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
 
 		//add_filter ('blogroll2email_content', array(&$this,'flickr_larger_picture'));
+
+		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
 
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
@@ -403,7 +408,7 @@ class petermolnareu {
 
 	/**
 	 *
-	 */
+	 *
 	public static function insert_post_relations( $content, $post = null ) {
 		if ( $post == null )
 			global $post;
@@ -449,7 +454,7 @@ class petermolnareu {
 
 		return $content;
 	}
-
+	*/
 
 	public static function make_post_syndication ( &$post = null ) {
 		$post = pmlnr_base::fix_post($post);
@@ -757,11 +762,10 @@ class petermolnareu {
 		//pmlnr_base::debug('YAML flat file: ' . $flatfile);
 
 		$post_timestamp = get_the_modified_time( 'U', $post->ID );
+		$file_timestamp = 0;
+
 		if ( @file_exists($flatfile) ) {
 			$file_timestamp = @filemtime ( $flatfile );
-			if ( $file_timestamp == $post_timestamp ) {
-				return true;
-			}
 		}
 
 		$mkdir = array ( $flatroot, $flatdir );
@@ -773,6 +777,8 @@ class petermolnareu {
 				}
 			}
 		}
+
+		touch($flatdir, $post_timestamp);
 
 		// get all the attachments
 		$attachments = get_children( array (
@@ -795,6 +801,58 @@ class petermolnareu {
 				if ( !is_file($target_file))
 					link( $attachment_path, $target_file );
 			}
+		}
+
+		$comments = get_comments ( array( 'post_id' => $post->ID ) );
+		//$socials = array ('facebook', 'flickr', 'fivehpx');
+		if ( $comments ) {
+			foreach ($comments as $comment) {
+				$cf_timestamp = 0;
+
+				$cfile = $flatdir . DIRECTORY_SEPARATOR . 'comment_' . $comment->comment_ID . '.yml';
+
+				$c_timestamp = strtotime( $comment->comment_date );
+				if ( @file_exists($cfile) ) {
+					$cf_timestamp = @filemtime ( $cfile );
+					if ( $c_timestamp == $cf_timestamp ) {
+						continue;
+					}
+				}
+
+				$c = array (
+					'id' =>  (int)$comment->comment_ID,
+					'author' => $comment->comment_author,
+					'author_email' => $comment->comment_author_email,
+					'author_url' => $comment->comment_author_url,
+					'date' => $comment->comment_date,
+					//'content' => $comment->comment_content,
+					'useragent' => $comment->comment_agent,
+					'type' => $comment->comment_type,
+					'user_id' => (int)$comment->user_id,
+				);
+
+				if ( $avatar = get_comment_meta ($comment->comment_ID, "avatar", true))
+					$c['avatar'] = $avatar;
+
+				$social = pmlnr_base::preg_value($comment->comment_agent,'/Keyring_(.*?)_Reactions/' );
+
+				if ($social) {
+					$social = strtolower($social);
+					if ( $smeta = get_comment_meta ($comment->comment_ID, "keyring-${social}_reactions", true))
+						$c['keyring_reactions_importer'] = json_encode($smeta);
+				}
+
+				$cout = yaml_emit($c, YAML_UTF8_ENCODING );
+				$cout .= "---\n" . pmlnr_markdown::html2markdown($comment->comment_content);
+
+				pmlnr_base::debug ('Exporting comment #' . $comment->comment_ID. ' to ' . $cfile );
+				file_put_contents ($cfile, $cout);
+				touch ( $cfile, $c_timestamp );
+			}
+		}
+
+		if ( $file_timestamp == $post_timestamp ) {
+			return true;
 		}
 
 		$out = static::yaml();
@@ -875,7 +933,10 @@ class petermolnareu {
 		$excerpt = $post->post_excerpt;
 
 		$content = $post->post_content;
-		$content = self::insert_post_relations($content, $post);
+		$relations = pmlnr_post::get_post_webmention($post,false);
+		if ($relations)
+			$content = $content . $relations;
+		//$content = self::insert_post_relations($content, $post);
 
 		$search = array ( '”', '“', '’', '–', "\x0D" );
 		$replace = array ( '"', '"', "'", '-', '' );
@@ -1068,6 +1129,32 @@ class petermolnareu {
 
 		// Edxpected slashed
 		return wp_slash( $content );
+	}
+
+
+	/*
+	public static function send_mail ( $post ) {
+		$post = pmlnr_base::fix_post($post);
+		$excludes = get_option('ksuceExcludes');
+
+		if (is_array($excludes) && isset($excludes['exclude_main']) && !empty($excludes['exclude_main']) && is_array($excludes['exclude_main'])) {
+			$excludes = $excludes['exclude_main'];
+		}
+
+		//foreach ($excludes as $term_id) {
+			//if (has_category())
+		//}
+
+		$args = array(
+			'role' => '',
+			'fields' => 'user_email',
+		);
+	}
+	*/
+
+	public function cc_mime_types($mimes) {
+		$mimes['svg'] = 'image/svg+xml';
+		return $mimes;
 	}
 }
 

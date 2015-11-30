@@ -10,6 +10,9 @@
 						<span class="p-name">{{ post_title }}</span>
 					</a>
 				</h1>
+				{% if post_webmention %}
+				{{ post_webmention }}
+				{% endif %}
 			</div>
 		</header>
 

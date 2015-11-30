@@ -249,7 +249,7 @@ class pmlnr_base {
 
 	/**
 	 *
-	 *
+	 */
 	public static function is_imported( &$post ) {
 		$post = static::fix_post($post);
 
@@ -276,11 +276,10 @@ class pmlnr_base {
 
 		return $return;
 	}
-	*/
 
 	/**
 	 *
-	 *
+	 */
 	public static function is_twitter_reply( &$post ) {
 		$post = static::fix_post($post);
 
@@ -305,7 +304,6 @@ class pmlnr_base {
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
 		return $r;
 	}
-	*/
 
 	/**
 	 * decode short string and covert it back to UNIX EPOCH

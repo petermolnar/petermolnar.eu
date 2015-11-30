@@ -94,44 +94,6 @@ class pmlnr_markdown extends pmlnr_base {
 		 */
 		//$content = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/i",'<$1$2>', $content);
 
-		$c = str_get_html ( $content );
-
-		/*
-		 * find links
-		 */
-		foreach($c->find('a') as $a) {
-			$out = $href = $title = $txt = '';
-			$href = $a->href;
-			$title = $a->title;
-			$txt = $a->innertext;
-
-			if ( !empty( $txt ) && !empty ( $href ) ) {
-				if (!empty($title))
-					$out = '['. $txt .' '.$title.']('. $href .')';
-				else
-					$out = '['. $txt .']('. $href .')';
-				$content = str_replace ( $a->outertext, $out, $content );
-			}
-		}
-
-		/* clean up images:  */
-		foreach($c->find('img') as $img) {
-			$src = $alt = $title = $cl = $out = false;
-
-			$src = $img->src;
-			$alt = $img->alt;
-			$title = $img->title;
-
-			if ( empty($alt) && !empty($title) ) $alt = $title;
-			if ( empty($alt) ) $alt = $src;
-
-			$img = '!['.$alt.']('. $src;
-			if ( !empty($title) ) $img .= ' '. $title;
-			$img .= ')';
-
-			$content = str_replace ( $img->outertext, $img, $content );
-		}
-
 		/**
 		 * replace <pre>, <code>, [code] and [cc]
 		 */
@@ -196,23 +158,61 @@ class pmlnr_markdown extends pmlnr_base {
 		$r = array ( '', '', '' );
 		$content = str_replace ( $s, $r, $content );
 
-		if ( strstr( $content, '' )) {
-			preg_match_all('/<dl>(.*?)< \/dl>/s', $content, $dl);
-			if ( !empty ( $dl[0] ) ) {
-				foreach ( $dl[0] as $to_replace ) {
-					$to_clean = $to_replace;
-					preg_match_all('/<dt>(.*?)< \/dt>/s', $to_clean, $dts);
-					preg_match_all('/<dd>(.*?)< \/dd>/s', $to_clean, $dds);
+		preg_match_all('/<dl>(.*?)< \/dl>/s', $content, $dl);
+		if ( !empty ( $dl[0] ) ) {
+			foreach ( $dl[0] as $to_replace ) {
+				$to_clean = $to_replace;
+				preg_match_all('/<dt>(.*?)< \/dt>/s', $to_clean, $dts);
+				preg_match_all('/<dd>(.*?)< \/dd>/s', $to_clean, $dds);
 
-					foreach ( $dts[0] as $id=>$dt ) {
-							$o_dt = $dt;
-							$o_dd = $dds[0][$id];
+				foreach ( $dts[0] as $id=>$dt ) {
+						$o_dt = $dt;
+						$o_dd = $dds[0][$id];
 
-							$dt =  str_replace ( array('<dt>', '</dt>' ), array( "" , "\n" ), $dt );
+						$dt =  str_replace ( array('<dt>', '</dt>' ), array( "" , "\n" ), $dt );
 
-					}
 				}
 			}
+		}
+
+		$c = str_get_html ( $content );
+		if (!$c)
+			return $content;
+
+		/*
+		 * find links
+		 */
+		foreach($c->find('a') as $a) {
+			$out = $href = $title = $txt = '';
+			$href = $a->href;
+			$title = $a->title;
+			$txt = $a->innertext;
+
+			if ( !empty( $txt ) && !empty ( $href ) ) {
+				if (!empty($title))
+					$out = '['. $txt .' '.$title.']('. $href .')';
+				else
+					$out = '['. $txt .']('. $href .')';
+				$content = str_replace ( $a->outertext, $out, $content );
+			}
+		}
+
+		/* clean up images:  */
+		foreach($c->find('img') as $img) {
+			$src = $alt = $title = $cl = $out = false;
+
+			$src = $img->src;
+			$alt = $img->alt;
+			$title = $img->title;
+
+			if ( empty($alt) && !empty($title) ) $alt = $title;
+			if ( empty($alt) ) $alt = $src;
+
+			$img = '!['.$alt.']('. $src;
+			if ( !empty($title) ) $img .= ' '. $title;
+			$img .= ')';
+
+			$content = str_replace ( $img->outertext, $img, $content );
 		}
 
 		return $content;

@@ -69,6 +69,63 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
+	public static function get_post_webmention( &$post = null, $parsedown = true ) {
+		$post = static::fix_post($post);
+
+
+		if ($post === false )
+			return false;
+
+		if ( $cached = wp_cache_get ( $post->ID . (int) $parsedown, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = false;
+
+		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
+		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
+		$webmention_rsvp = get_post_meta ( $post->ID, 'webmention_rsvp', true);
+
+		switch ($webmention_type) {
+			case 'u-like-of':
+				$h = __('This is a like of:');
+				$cl = 'u-like-of';
+				break;
+			case 'u-repost-of':
+				$h = __('This is a repost of:');
+				$cl = 'u-repost-of';
+				break;
+			default:
+				$h = __('This is a reply to:');
+				$cl = 'u-in-reply-to';
+				break;
+		}
+
+		$rsvps = array (
+			'no' => __("Sorry, can't make it."),
+			'yes' => __("I'll be there."),
+			'maybe' => __("I'll do my best, but don't count on me for sure."),
+		);
+
+		if ( !empty($webmention_url)) {
+			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
+			$rel = str_replace('u-', '', $cl );
+			$r = "\n\n##### $h";
+			$r .= "\n[$webmention_title]($webmention_url){.$cl}\n";
+			if (!empty($webmention_rsvp))
+				$r .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
+
+			if ($parsedown)
+				$r = pmlnr_markdown::parsedown($r);
+		}
+
+		wp_cache_set ( $post->ID . (int) $parsedown, $r, __CLASS__ . __FUNCTION__, self::expire );
+
+		return $r;
+	}
+
+	/**
+	 *
+	 */
 	public static function post_get_tags_array ( &$post = null ) {
 		$post = static::fix_post($post);
 
@@ -454,6 +511,7 @@ class pmlnr_post extends pmlnr_base {
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
 			'author_formats' => array('article','photo','reply','rsvp', 'note'),
+			'webmention' => static::get_post_webmention($post),
 		);
 
 		$author_vars = pmlnr_author::template_vars( $post->post_author );

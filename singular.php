@@ -11,6 +11,8 @@ petermolnareu::make_post_syndication ($post);
 petermolnareu::export_yaml($post);
 pmlnr_post::post_format($post);
 
+//pmlnr_base::livedebug( $twigvars );
+
 //include (dirname(__FILE__) . '/partials/element-singular.php');
 $singular = $petermolnareu_theme->twig->loadTemplate('element-singular.html');
 echo $singular->render($twigvars);

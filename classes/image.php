@@ -266,7 +266,7 @@ class pmlnr_image extends pmlnr_base {
 		//preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
 
 		if ( !empty ( $markdown_images[0]  )) {
-			$excludes = array ( '.noadapt', '.alignleft', '.alignright', '.aligncenter', 'u-photo', 'avatar' );
+			$excludes = array ( '.noadapt', '.alignleft', '.alignright' ,'u-photo', 'avatar' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
 				$id = false;
 				$adaptify = true;

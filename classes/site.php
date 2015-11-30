@@ -113,7 +113,7 @@ class pmlnr_site extends pmlnr_base {
 			'author' => pmlnr_author::template_vars( $author_id ),
 			'header' => static::get_the_header(),
 			'footer' => static::get_the_footer(),
-			'subscribe_sidebar' => static::get_the_sidebar('subscribe'),
+			//'subscribe_sidebar' => static::get_the_sidebar('subscribe'),
 		);
 
 		// menu vars

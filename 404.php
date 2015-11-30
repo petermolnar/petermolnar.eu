@@ -1,4 +1,6 @@
 <?php
+	//wp_old_slug_redirect();
+
 	global $wp_query;
 
 	$wp_query->set_404();
