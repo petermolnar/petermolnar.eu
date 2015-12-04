@@ -3,15 +3,15 @@
 $twigvars['site'] = pmlnr_site::template_vars();
 $twigvars['posts'] = array();
 
-	if ( have_posts() ) {
-		while ( have_posts() ) {
-			the_post();
+if ( have_posts() ) {
+	while ( have_posts() ) {
+		the_post();
 
-			$post_id = get_the_ID();
-			$tmpl_vars = pmlnr_post::template_vars( $post );
-			$twigvars['posts'][] = $tmpl_vars;
-		}
+		$post_id = get_the_ID();
+		$tmpl_vars = pmlnr_post::template_vars( $post );
+		$twigvars['posts'][] = $tmpl_vars;
 	}
+}
 
 $twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
 echo $twig->render($twigvars);

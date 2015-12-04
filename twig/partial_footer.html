@@ -1,3 +1,10 @@
+
+	{% if site.pagination %}
+		<section>
+			{{ site.pagination }}
+		</section>
+	{% endif %}
+
 	<label for="showContentHeader" class="nav-toggle-button" onclick>&#9776;</label>
 	<input type="checkbox" id="showContentHeader" class="hide" />
 	<header class="content-header" id="main-header">

@@ -1,5 +1,7 @@
 <?php
 
+define('HEIGHT', 360);
+
 add_action( 'wp_enqueue_scripts', 'pmlnr_portfolio_scripts' );
 
 function pmlnr_portfolio_scripts () {
@@ -23,7 +25,7 @@ echo $header->render($twigvars);
 
 ?>
 <section class="content-body">
-	<div class="content-inner" id="portfolio">
+	<div class="" id="portfolio">
 <?php
 
 if ( have_posts() ) {
@@ -34,11 +36,13 @@ if ( have_posts() ) {
 			continue;
 
 		$thid = get_post_thumbnail_id( $post->ID );
-		$src = wp_get_attachment_image_src ($thid, 'medium');
+		$src = wp_get_attachment_image_src ($thid, array(0, HEIGHT));
 		$s = pmlnr_base::fix_url($src[0]);
 		$target = wp_get_attachment_image_src ($thid, 'large');
 		$t = pmlnr_base::fix_url($target[0]);
-		echo '<a href="'.$t.'"><img src="'.$s.'" alt="'.$post->post_title.'"/><span class="caption">'.$post->post_title.'</span></a>';
+		$vars = pmlnr_post::template_vars($post);
+
+		echo '<a href="'.$t.'" title="'. $vars['title'].'"><img src="'.$s.'" alt="'. htmlspecialchars(strip_tags($vars['content'])) .'"/><span class="caption">'. $vars['title'] .'</span></a>';
 	}
 }
 
@@ -50,8 +54,8 @@ if ( have_posts() ) {
 
 	jQuery("#portfolio").justifiedGallery({
 		margins: 1,
-		captions: false,
-		rowHeight: 180,
+		captions: true,
+		rowHeight: <?php echo round(HEIGHT/3 * 2) ?>,
 		lastRow: "justify",
 		captionSettings: {
 			animationDuration: 500,
