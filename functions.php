@@ -68,36 +68,14 @@ class petermolnareu {
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
 
-		// replace shortlink
-		//add_action( 'wp_head', array(&$this, 'shortlink'));
-
 		// add css & js
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
-
-		// add graphmeta, because world
-		//add_action('wp_head',array(&$this, 'graphmeta'));
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
 		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
 		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
 		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
-		add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
-
-		/*
-		if (is_admin() && !defined('DOING_AJAX')) {
-			$statuses = array ('new', 'draft', 'auto-draft', 'pending', 'private', 'future' );
-			foreach ($statuses as $status) {
-				add_action("{$status}_to_publish", array(&$this, "send_mail"));
-			}
-			add_action( 'publish_future_post', array(&$this, "send_mail"));
-		}
-		*/
-
-		add_action( 'template_redirect', array(&$this, 'template_redirect') );
-		foreach ($this->endpoints as $endpoint ) {
-			add_rewrite_endpoint( $endpoint, EP_PERMALINK | EP_PAGES );
-		}
 
 	}
 
@@ -105,8 +83,7 @@ class petermolnareu {
 
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
-		//add_theme_support( 'automatic-feed-links' );
-		add_theme_support( 'html5', array( 'search-form' /*, 'comment-form', 'comment-list' */ ) );
+		add_theme_support( 'html5', array( 'search-form' ) );
 		add_theme_support( 'title-tag' );
 
 		// add main menus
@@ -117,22 +94,13 @@ class petermolnareu {
 		// replace default <title></title>
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
-		// add webmention box
-		//add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
-
 		// add the webmention box value to the webmention links list
 		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
 
-		//
+		// this is because custom taxonomy
 		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
 
-		// shortlink replacement
-		//add_filter( 'get_shortlink', array(&$this, 'shorturl'), 1, 4 );
-
-		//add_filter( 'embed_oembed_html', array(&$this, 'fix_youtube'), 1, 4 );
-
-		//add_filter ('blogroll2email_content', array(&$this,'flickr_larger_picture'));
-
+		// I want to upload svg
 		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
 
 		// my own post formats
@@ -172,7 +140,6 @@ class petermolnareu {
 		wp_enqueue_style( 'prism' );
 		wp_register_script( 'prism' , $js_url . '/prism.js', false, null, true );
 		wp_enqueue_script( 'prism' );
-
 
 		// srcset fallback
 		wp_register_script( 'picturefill' , $base_url . '/lib/picturefill/dist/picturefill.min.js', false, null, true );
@@ -317,127 +284,10 @@ class petermolnareu {
 		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
 	}
 
+
 	/**
 	 *
 	 */
-	public static function graphmeta () {
-		global $post;
-		global $wp;
-		$og = array();
-
-		$og['og:locale'] = get_bloginfo( 'language' );
-		$og['og:site_name'] = get_bloginfo('name');
-		$og['og:type'] = 'website';
-		$og['twitter:card'] = 'summary_large_image';
-
-		if (is_singular()) {
-			$og['og:type'] = 'article';
-			$og['og:url'] = get_permalink();
-			$og['og:title'] = $og['twitter:title'] = get_the_title();
-
-			$loc = get_post_meta( $post->ID, 'locale' );
-			if ($loc) $og['og:locale'] = $loc;
-
-			$author = get_the_author();
-			if ( $tw = get_the_author_meta( 'twitter' ) )
-				$og['twitter:site'] = '@' . $tw;
-
-			$og['og:updated_time'] = get_the_modified_time( 'c', $post->ID );
-			$og['article:published_time'] = get_the_time( 'c', $post->ID );
-			$og['article:modified_time'] = get_the_modified_time( 'c', $post->ID );
-
-			$desc = strip_tags(get_the_excerpt());
-			$og['og:description'] = $desc;
-			$og['twitter:description'] = $desc;
-
-			$tags = get_the_tags();
-			$t = array();
-			if ( $tags ) {
-				foreach( $tags as $tag )
-					array_push ($t, $tag->name );
-
-				$og['article:tag'] = join(",", $t);
-			}
-
-			$thid = get_post_thumbnail_id( $post->ID );
-			if ( $thid ) {
-				$src = wp_get_attachment_image_src( $thid, 'large');
-				if ( !empty($src[0])) {
-					$src = pmlnr_base::fix_url($src[0]);
-					$og['og:image'] = $src;
-					$og['twitter:image:src'] = $src;
-				}
-			}
-		}
-		else {
-			$img = get_bloginfo('template_directory') . '/images/favicon.png';
-			$og['og:image'] = $img;
-			$og['twitter:image:src'] = $img;
-			$og['og:url'] = home_url(add_query_arg(array(),$wp->request));
-			if ( is_category())
-				$og['og:title'] = $og['twitter:title'] = single_cat_title( '', false );
-			elseif (is_tag())
-				$og['og:title'] = $og['twitter:title'] = single_cat_title( '', false );
-			else
-				$og['og:title'] = $og['twitter:title'] = get_bloginfo('name');
-		}
-
-		ksort($og);
-
-		foreach ($og as $property => $content )
-			printf( '<meta property="%s" content="%s" />%s', $property, $content, "\n" );
-	}
-
-	/**
-	 *
-	 *
-	public static function insert_post_relations( $content, $post = null ) {
-		if ( $post == null )
-			global $post;
-
-		if (empty($post) || !is_object($post))
-			return $content;
-
-		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
-		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
-		$webmention_rsvp = get_post_meta ( $post->ID, 'webmention_rsvp', true);
-
-		switch ($webmention_type) {
-			case 'u-like-of':
-				$h = __('This is a like of:');
-				$cl = 'u-like-of';
-				break;
-			case 'u-repost-of':
-				$h = __('This is a repost of:');
-				$cl = 'u-repost-of';
-				break;
-			default:
-				$h = __('This is a reply to:');
-				$cl = 'u-in-reply-to';
-				break;
-		}
-
-		$rsvps = array (
-			'no' => __("Sorry, can't make it."),
-			'yes' => __("I'll be there."),
-			'maybe' => __("I'll do my best, but don't count on me for sure."),
-		);
-
-		if ( !empty($webmention_url)) {
-			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
-			$rel = str_replace('u-', '', $cl );
-			//$add = "\n##### $h";
-			$add = "\n\n[$webmention_title]($webmention_url){.$cl}\n\n";
-			if (!empty($webmention_rsvp))
-				$add .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
-
-			$content .= $add;
-		}
-
-		return $content;
-	}
-	*/
-
 	public static function make_post_syndication ( &$post = null ) {
 		$post = pmlnr_base::fix_post($post);
 
@@ -562,20 +412,6 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public function widgets_init () {
-		register_sidebar( array(
-			'name' => __( 'Subscribe', 'petermolnareu' ),
-			'id' => 'subscribe',
-			'before_widget' => '',
-			'after_widget'  => '',
-			'before_title'  => '',
-			'after_title'   => '',
-		) );
-	}
-
-	/**
-	 *
-	 */
 	public function type_dropdown() {
 		global $typenow;
 		$post_type = 'post';
@@ -610,124 +446,10 @@ class petermolnareu {
 	}
 
 	/**
-	 * since WordPress has it's built-in rewrite engine, it's eaiser to use
-	 * that for adding the short urls
-	 *
-	public static function check_shorturl(&$post = null) {
-		$post = pmlnr_base::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		$epoch = get_the_time('U', $post->ID);
-		$url36 = pmlnr_base::epoch2url($epoch);
-		$url62 = pmlnr_base::epoch2url($epoch,62);
-
-		pmlnr_base::debug($post->post_name . ': ' . $url36 . ', ' . $url62);
-
-		// if the generated url is the same as the current slug, walk away
-		if ( $url36 == $post->post_name || $url62 == $post->post_name )
-			return true;
-
-		$meta = get_post_meta( $post->ID, '_wp_old_slug', false);
-
-		// cleanup if url is the same as slug
-		if ( $key = array_search( $post->post_name, $meta)) {
-			delete_post_meta($post->ID, '_wp_old_slug', $slug);
-			unset($meta[$key]);
-		}
-
-		// 2 generated, 1 additional is still ok
-		if ( count($meta) > 3 ) {
-			foreach ($meta as $key => $slug ) {
-
-				// base62 matches
-				if (preg_match('/^[0-9a-zA-Z]{5}$/', $slug)) {
-					static::debug('deleting slug ' . $slug . ' from ' . $post->ID );
-					delete_post_meta($post->ID, '_wp_old_slug', $slug);
-					unset($meta[$key]);
-				}
-
-				// base36 matches
-				if (preg_match('/^[0-9a-z]{5}$/', $slug)) {
-					static::debug('deleting slug ' . $slug . ' from ' . $post->ID );
-					delete_post_meta($post->ID, '_wp_old_slug', $slug);
-					unset($meta[$key]);
-				}
-			}
-		}
-
-		if ( !in_array($url36,$meta)) {
-			static::debug('adding slug ' . $url36 . ' to ' . $post->ID );
-			add_post_meta($post->ID, '_wp_old_slug', $url36);
-		}
-
-		if ( !in_array($url62,$meta)) {
-			static::debug('adding slug ' . $url62 . ' to ' . $post->ID );
-			add_post_meta($post->ID, '_wp_old_slug', $url62);
-		}
-
-		return true;
-	}
-	*/
-
-	/*
-	public function shortlink () {
-		if (is_singular())
-			printf ('<link rel="shortlink" href="%s" />%s', $this->shorturl() , "\n");
-	}
-	*/
-
-	/**
-	 * our very own shorturl function
-	 *
-	public static function shorturl ( $shortlink = '', $id = '', $context = '', $allow_slugs = '' ) {
-		global $post;
-		if (empty($post) || !isset($post->ID) || empty($post->ID))
-			return $shortlink;
-
-		$epoch = get_the_time('U', $post->ID);
-		$url = pmlnr_base::epoch2url($epoch);
-
-		$base = rtrim( get_bloginfo('url'), '/' ) . '/';
-		return $base.$url;
-	}
-	*/
-
-	/*
-	public static function fix_youtube ( $cache, $url, $attr, $postid ) {
-		if ( strstr($url, 'youtube.com')) {
-			$search = 'watch?v=';
-			$id = substr( $url, strrpos($url,$search) + strlen($search) );
-			return '<iframe src="https://www.youtube.com/embed/'.$id.'?html5=1"></iframe>';
-		}
-
-		return $cache;
-	}
-	*/
-
-	/**
 	 *
 	 */
-	public function template_redirect() {
-		global $wp_query;
-
-		if (!is_singular())
-			return false;
-
-		foreach ($this->endpoints as $endpoint ) {
-			if ( isset( $wp_query->query_vars[ $endpoint ]) && method_exists ( $this , $endpoint ) ) {
-				header('Content-Type: text/plain;charset=utf-8');
-				echo $this->$endpoint();
-				exit;
-			}
-		}
-
-		return true;
-	}
-
 	public static function export_yaml ( $postid = false ) {
-		//pmlnr_base::debug('exporting YAML');
+
 		if (!$postid)
 			return false;
 
@@ -741,7 +463,6 @@ class petermolnareu {
 		$flatroot = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'flat';
 		$flatdir = $flatroot . DIRECTORY_SEPARATOR . $filename;
 		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
-		//pmlnr_base::debug('YAML flat file: ' . $flatfile);
 
 		$post_timestamp = get_the_modified_time( 'U', $post->ID );
 		$file_timestamp = 0;
@@ -848,6 +569,7 @@ class petermolnareu {
 
 	/**
 	 * show post in YAML format (Grav friendly version)
+	 *
 	 */
 	public static function yaml ( $postid = false ) {
 
@@ -863,7 +585,7 @@ class petermolnareu {
 
 
 		$postdata = self::raw_post_data($post);
-		//pmlnr_base::debug('YAML raw data: . ' .  json_encode($postdata));
+
 		if (empty($postdata))
 			return false;
 
@@ -874,7 +596,7 @@ class petermolnareu {
 		}
 
 		$content = $postdata['content'];
-		//$content = wordwrap ( $content, 80, "\r\n", false);
+
 		unset($postdata['content']);
 
 		$out = yaml_emit($postdata,  YAML_UTF8_ENCODING );
@@ -901,7 +623,6 @@ class petermolnareu {
 			$category = $cat[0];
 		}
 
-		//$format = self::get_type($post);
 
 		$taglist = '';
 		$t = get_the_tags( $post->ID );
@@ -915,10 +636,6 @@ class petermolnareu {
 		$excerpt = $post->post_excerpt;
 
 		$content = $post->post_content;
-		//$relations = pmlnr_post::get_post_webmention($post);
-		//if ($relations)
-			//$content = $content . $relations;
-		//$content = self::insert_post_relations($content, $post);
 
 		$search = array ( '”', '“', '’', '–', "\x0D" );
 		$replace = array ( '"', '"', "'", '-', '' );
@@ -926,9 +643,6 @@ class petermolnareu {
 		$excerpt = strip_tags ( $parsedown->text ( $excerpt ) );
 		$content = str_replace ( $search, $replace, $content );
 
-		//$search = array ("\n");
-		//$replace = array ("");
-		//$description = trim ( str_replace( $search, $replace, $excerpt), "'\"" );
 
 		// fix all image attachments: resized -> original
 		$urlparts = parse_url(site_url());
@@ -942,7 +656,6 @@ class petermolnareu {
 
 		if ( !empty ( $resized_images[0]  )) {
 			foreach ( $resized_images[0] as $cntr => $imgstr ) {
-				//$location = $resized_images[1][$cntr];
 				$done_images[ $resized_images[2][$cntr] ] = 1;
 				$fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
 				$width = $resized_images[3][$cntr];
@@ -958,7 +671,6 @@ class petermolnareu {
 		if ( !empty ( $images[0]  )) {
 
 			foreach ( $images[0] as $cntr=>$imgstr ) {
-				//$location = $resized_images[1][$cntr];
 				if ( !isset($done_images[ $images[1][$cntr] ]) ){
 					if ( !strstr($images[1][$cntr], 'http'))
 						$fname = $images[2][$cntr] . '.' . $images[3][$cntr];
@@ -972,7 +684,6 @@ class petermolnareu {
 
 		$author_id = $post->post_author;
 		$author =  get_the_author_meta ( 'display_name' , $author_id );
-		//$author_url = get_the_author_meta ( 'user_url' , $author_id );
 
 		$meta = array();
 		$slugs = get_post_meta($post->ID, '_wp_old_slug', false);
@@ -1062,22 +773,6 @@ class petermolnareu {
 		return $out;
 	}
 
-
-	//public function flickr_larger_picture ( $content ) {
-		//// better flickr pictures
-		//preg_match_all('/farm[0-9]\.staticflickr.com\/[0-9]+\/[0-9]+_[0-9a-zA-Z]+_[a-z]{1}\.jpg/s', $content, $matches);
-
-		//if ( !empty ( $matches[0] ) ) {
-			//foreach ( $matches[0] as $to_replace ) {
-				//$clean = str_replace('_m.jpg', '_c.jpg', $to_replace);
-				//$content = str_replace ( $to_replace, $clean, $content );
-			//}
-		//}
-
-		//return $content;
-	//}
-
-
 	/**
 	 * Get the source's images and save them locally, for posterity, unless we can't.
 	 *
@@ -1086,7 +781,9 @@ class petermolnareu {
 		$content = wp_unslash( $content );
 
 		// match all markdown images
-		if ( preg_match_all('/\!\[.*?\]\((.*?) ?"?.*?"?\)\{.*?\}/', $content, $matches) && current_user_can( 'upload_files' ) ) {
+		$matches = pmlnr_base::extract_md_images($content);
+
+		if ( !empty($matches) && current_user_can( 'upload_files' ) ) {
 
 			foreach ( $matches[0] as $cntr => $image ) {
 				$image_src = $matches[1][$cntr];
@@ -1113,32 +810,17 @@ class petermolnareu {
 		return wp_slash( $content );
 	}
 
-
-	/*
-	public static function send_mail ( $post ) {
-		$post = pmlnr_base::fix_post($post);
-		$excludes = get_option('ksuceExcludes');
-
-		if (is_array($excludes) && isset($excludes['exclude_main']) && !empty($excludes['exclude_main']) && is_array($excludes['exclude_main'])) {
-			$excludes = $excludes['exclude_main'];
-		}
-
-		//foreach ($excludes as $term_id) {
-			//if (has_category())
-		//}
-
-		$args = array(
-			'role' => '',
-			'fields' => 'user_email',
-		);
-	}
-	*/
-
+	/**
+	 *
+	 */
 	public function cc_mime_types($mimes) {
 		$mimes['svg'] = 'image/svg+xml';
 		return $mimes;
 	}
 
+	/**
+	 *
+	 */
 	public static function template_vars ( $post = null ) {
 			$post = pmlnr_base::fix_post($post);
 			return array(
