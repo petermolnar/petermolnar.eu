@@ -1,20 +1,18 @@
 <?php
 the_post();
 
-get_header();
+global $petermolnareu_theme;
 
-$twigvars = pmlnr_post::template_vars( $post, 'post_' );
-extract(pmlnr_post::template_vars( $post ), EXTR_PREFIX_ALL, 'post' );
-//extract(pmlnr_author::template_vars( $post ), EXTR_PREFIX_ALL, 'post_author' );
-petermolnareu::make_post_syndication ($post);
-//petermolnareu::check_shorturl ($post);
+$twigvars = petermolnareu::template_vars();
 petermolnareu::export_yaml($post);
-pmlnr_post::post_format($post);
 
-//pmlnr_base::livedebug( $twigvars );
+if (is_page()) {
+	$twig = $petermolnareu_theme->twig->loadTemplate('page.html');
+}
+else {
+	petermolnareu::make_post_syndication ($post);
+	pmlnr_post::post_format($post);
+	$twig = $petermolnareu_theme->twig->loadTemplate('singular.html');
+}
 
-//include (dirname(__FILE__) . '/partials/element-singular.php');
-$singular = $petermolnareu_theme->twig->loadTemplate('element-singular.html');
-echo $singular->render($twigvars);
-
-get_footer();
+echo $twig->render($twigvars);

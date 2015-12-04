@@ -5,8 +5,23 @@ class pmlnr_post extends pmlnr_base {
 	public function __construct () {
 		// add graphmeta, because world
 		add_action('wp_head',array(&$this, 'post_graphmeta'));
+		add_action('init',array(&$this, 'init'));
 	}
 
+	public function init() {
+		add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
+	}
+
+	/**
+	 */
+	public static function insert_post_relations( $content, $post = null ) {
+		if ( $post == null )
+			$post = static::fix_post($post);
+
+		$webmention = static::post_get_webmention( $post );
+
+		return $webmention . "\n" . $content;
+	}
 
 	/**
 	 *
@@ -69,14 +84,14 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_post_webmention( &$post = null, $parsedown = true ) {
+	public static function post_get_webmention( &$post = null ) {
 		$post = static::fix_post($post);
 
 
 		if ($post === false )
 			return false;
 
-		if ( $cached = wp_cache_get ( $post->ID . (int) $parsedown, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$r = false;
@@ -109,16 +124,16 @@ class pmlnr_post extends pmlnr_base {
 		if ( !empty($webmention_url)) {
 			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
 			$rel = str_replace('u-', '', $cl );
-			$r = "\n\n##### $h";
-			$r .= "\n[$webmention_title]($webmention_url){.$cl}\n";
+			//$r = "\n\n##### $h";
+			$r = "\n[$webmention_title]($webmention_url){.$cl}\n";
 			if (!empty($webmention_rsvp))
 				$r .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
 
-			if ($parsedown)
-				$r = pmlnr_markdown::parsedown($r);
+			//if ($parsedown)
+				//$r = pmlnr_markdown::parsedown($r);
 		}
 
-		wp_cache_set ( $post->ID . (int) $parsedown, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $r;
 	}
@@ -486,6 +501,14 @@ class pmlnr_post extends pmlnr_base {
 			return $cached;
 
 		$r = array (
+			'id' => $post->ID,
+			'url' => get_permalink( $post->ID ),
+			'title' => trim(get_the_title( $post->ID )),
+			'shorturl' => wp_get_shortlink( $post->ID ),
+			'thumbnail' => static::post_thumbnail ($post),
+			'content' => static::get_the_content($post),
+			'raw_content' => $post->post_content,
+			'excerpt' => static::get_the_excerpt($post),
 			//'author_name' => get_the_author_meta ( 'display_name' , $post->post_author ),
 			//'author_url' => get_the_author_meta ( 'user_url' , $post->post_author ),
 			//'author_email' => get_the_author_meta ( 'user_email' , $post->post_author ),
@@ -498,26 +521,13 @@ class pmlnr_post extends pmlnr_base {
 			//'repost_of' => static::post_repost_of ( $post ),
 			'twitter_repost' => static::twitter_repost_of( $post ),
 			'twitter_reply' => static::twitter_reply_to( $post ),
-			//'webmention' =>
-			'url' => get_permalink( $post ),
-			'title' => trim(get_the_title( $post->ID )),
-			'shorturl' => wp_get_shortlink( $post->ID ),
-			//'thumbnail_id' => get_post_thumbnail_id( $post->ID ),
-			'thumbnail' => static::post_thumbnail ($post),
 			'bgstyle' => static::post_background ($post),
-			'content' => static::get_the_content($post),
-			'excerpt' => static::get_the_excerpt($post),
-			'id' => $post->ID,
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
-			'author_formats' => array('article','photo','reply','rsvp', 'note'),
-			'webmention' => static::get_post_webmention($post),
+			//'webmention' => static::get_post_webmention($post),
 		);
 
-		$author_vars = pmlnr_author::template_vars( $post->post_author );
-		foreach ($author_vars as $key => $value ) {
-			$r[$key] = $value;
-		}
+		$r['author'] = pmlnr_author::template_vars( $post->post_author );
 
 		if (!empty($prefix)) {
 			foreach ($r as $key => $value ) {

@@ -7,23 +7,21 @@ global $is_search;
 global $query_string;
 $is_search = true;
 
-get_header();
-?>
-<section class="content-body">
-	<h1><?php _e( "Displaying results for:" ); echo '"'. get_query_var('s'). '"'; ?></h1>
-	<?php
-		if ( have_posts() ):
-			while (have_posts()) :
-				the_post();
-				$twigvars = pmlnr_post::template_vars( $post, 'post_' );
-				$tmpl = $petermolnareu_theme->twig->loadTemplate('element-long.html');
-				echo $tmpl->render($twigvars);
-			endwhile;
 
-		endif;
+$twigvars['site'] = pmlnr_site::template_vars();
+$twigvars['site']['is_search'] = true;
+$twigvars['posts'] = array();
+$twigvars['site']['page_title'] = '<h1>' . __( "Displaying results for:" ) . ' "' . get_query_var('s') . '"' . '</h1>';
 
-	include(dirname(__FILE__) . '/partials/paginate.php' );
-	?>
-</section>
+	if ( have_posts() ) {
+		while ( have_posts() ) {
+			the_post();
 
-<?php get_footer(); ?>
+			$post_id = get_the_ID();
+			$tmpl_vars = pmlnr_post::template_vars( $post );
+			$twigvars['posts'][] = $tmpl_vars;
+		}
+	}
+
+$twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
+echo $twig->render($twigvars);

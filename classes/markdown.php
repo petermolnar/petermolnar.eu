@@ -18,21 +18,23 @@ class pmlnr_markdown extends pmlnr_base {
 		// markdown
 		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
 		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
-		//add_filter( 'press_this_suggested_html', array( &$this, 'html_to_markdown'), 8, 2 );
+
+		// press this
 		add_filter ('press_this_suggested_content', array (&$this, 'html2markdown'), 1);
 		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
-
-		//add_filter ('press_this_suggested_content', array (&$this, 'html2markdown'), 1);
-
 	}
 
 	/**
 	 * replace HTML img insert with Markdown Extra syntax
 	 */
 	public static function media_string_html2md( $str ) {
+
 		if ( !strstr ( $str, '<img' ) )
 			return $str;
 
+		$hash = sha1($str);
+		if ( $cached = wp_cache_get ( $hash, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
 
 		$src = static::preg_value ( $str, '/src="([^"]+)"/' );
 		$title = static::preg_value ( $str, '/title="([^"]+)"/' );
@@ -48,6 +50,8 @@ class pmlnr_markdown extends pmlnr_base {
 
 
 		$img = sprintf ('![%s](%s%s){%s%s}', $alt, $src, $title, $imgid, $cl);
+
+		wp_cache_set ( $hash, $img, __CLASS__ . __FUNCTION__, self::expire );
 		return $img;
 	}
 
@@ -75,6 +79,14 @@ class pmlnr_markdown extends pmlnr_base {
 
 
 	public static function html2markdown ( $content ) {
+
+		if (empty($content))
+			return false;
+
+		$hash = sha1($content);
+		if ( $cached = wp_cache_get ( $hash, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
 		$content = preg_replace('#\s(id|class|style|rel|data|content)="[^"]+"#', '', $content);
 		/*
 		 * Credits to @gnarf
@@ -215,9 +227,14 @@ class pmlnr_markdown extends pmlnr_base {
 			$content = str_replace ( $img->outertext, $img, $content );
 		}
 
+		wp_cache_set ( $hash, $content, __CLASS__ . __FUNCTION__, self::expire );
+
 		return $content;
 	}
 
+	/*
+	 *
+	 */
 	public static function cleanup_press_this_content ( $content ) {
 		$content = preg_replace("/^Source: /m", '\- ', $content);
 		return $content;

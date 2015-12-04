@@ -1,0 +1,8 @@
+<span class="p-author h-card vcard">
+	<a class="fn p-name url u-url hide" href="{{ author.url }}">{{ author.name }}</a>
+	<img class="photo avatar u-photo u-avatar hide" src="{{ author.avatar }}" alt="Photo of {{ author.name }}" style="height:1em; width:auto;"/>
+	<a rel="me" class="u-email email icon-mail" href="mailto:{{ author.email }}" title="{{ author.name }} email address">{{ author.email }}</a>
+	{% for silo, url in author.socials %}
+		<a rel="me" class="u-{{ silo }} x-{{ silo }} icon-{{ silo }} url u-url" href="{{ url }}" title="{{ author.name }} @ {{ silo }}">{{ silo }}</a>
+	{% endfor %}
+</span>

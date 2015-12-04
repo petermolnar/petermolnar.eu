@@ -1,25 +1,25 @@
 <div class="content-inner">
-	<article class="h-entry" id="post-{{ post_id }}">
+	<article class="h-entry" id="post-{{ post.id }}">
 
 		<header>
 			<div class="meta">
 				{% include 'ameta_pubdate.html' %}
 				{% include 'ameta_author.html' %}
 			</div>
-			{% if post_title|e %}
+			{% if post.title|e %}
 			<h2>
-				<a class="u-url" href="{{ post_url }}" rel="bookmark" title="{{ post_title }}">
-					<span class="p-name">{{ post_title }}</span>
+				<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+					<span class="p-name">{{ post.title }}</span>
 				</a>
 			</h2>
 			{% endif %}
-			{% if post_webmention %}
-			{{ post_webmention }}
+			{% if post.webmention %}
+			{{ post.webmention }}
 			{% endif %}
 		</header>
 
 		<div class="e-content">
-			{{ post_content }}
+			{{ post.content }}
 			<br class="clear" />
 		</div>
 

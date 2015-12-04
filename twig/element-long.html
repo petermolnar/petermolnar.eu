@@ -1,5 +1,5 @@
 <div class="content-inner">
-	<article class="h-entry" id="post-{{ post_id }}">
+	<article class="h-entry" id="post-{{ post.id }}">
 
 		<header>
 			<div class="meta">
@@ -8,20 +8,20 @@
 				{% include 'ameta_readtime.html' %}
 			</div>
 			<h2>
-				<a class="u-url" href="{{ post_url }}" rel="bookmark" title="{{ post_title }}">
-					<span class="p-name more">{{ post_title }}</span>
+				<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+					<span class="p-name more">{{ post.title }}</span>
 				</a>
 			</h2>
-			{% if post_webmention %}
-			{{ post_webmention }}
+			{% if post.webmention %}
+			{{ post.webmention }}
 			{% endif %}
 		</header>
 
 		<div class="e-summary">
-			{% if post_thumbnail %}
-				<img class="article-thumbnail" src="{{ post_thumbnail }}" />
+			{% if post.thumbnail %}
+				<img class="article-thumbnail" src="{{ post.thumbnail }}" />
 			{% endif %}
-			{{ post_excerpt }}
+			{{ post.excerpt }}
 			<br class="clear" />
 		</div>
 

@@ -1,0 +1,19 @@
+{% include 'partial_header.html' %}
+<section class="content-body h-feed" id="main-content">
+	{% if site.page_title %}
+	{{ site.page_title }}
+	{% endif %}
+	{% for post in posts %}
+		{% if post.format in site.image_formats %}
+			{% include 'element-photo.html' with {'post':post} only %}
+		{% elseif post.format in site.long_formats %}
+			{% include 'element-long.html' with {'post':post} only %}
+		{% else %}
+			{% include 'element-short.html' with {'post':post} only %}
+		{% endif %}
+	{% endfor %}
+</section>
+{% if site.pagination %}
+{{ site.pagination }}
+{% endif %}
+{% include 'partial_footer.html' %}

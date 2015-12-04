@@ -142,7 +142,7 @@ class petermolnareu {
 			'show_ui' => true,
 			'hierarchical' => true,
 			'show_admin_column' => true,
-			'rewrite' => array( 'slug' => 'metatype' ),
+			'rewrite' => array( 'slug' => 'type' ),
 		));
 	}
 
@@ -157,44 +157,26 @@ class petermolnareu {
 		wp_register_style( 'style', $base_url . '/style.css' , false );
 		wp_enqueue_style( 'style' );
 
-		/* Magnific popup *
+		// Magnific popup
 		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
-		//wp_enqueue_style( 'magnific-popup' );
 		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
-		//wp_enqueue_script ('magnific-popup');
 
-		/* justified gallery *
+
+		// justified gallery
 		wp_register_style( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/css/justifiedGallery.min.css' , false );
-		//wp_enqueue_style( 'Justified-Gallery' );
-		wp_register_script( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js' , array('jquery'), null, false );
-		//wp_enqueue_script ('Justified-Gallery');
 
-		/* syntax highlight */
+		wp_register_script( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js' , array('jquery'), null, false );
+
+		// syntax highlight
 		wp_register_style( 'prism', $css_url . '/prism.css', false, null );
 		wp_enqueue_style( 'prism' );
 		wp_register_script( 'prism' , $js_url . '/prism.js', false, null, true );
 		wp_enqueue_script( 'prism' );
 
 
-		/* srcset fallback */
+		// srcset fallback
 		wp_register_script( 'picturefill' , $base_url . '/lib/picturefill/dist/picturefill.min.js', false, null, true );
 		wp_enqueue_script( 'picturefill' );
-
-		//// cleanup
-		//wp_dequeue_style ('wp-mediaelement');
-		//wp_dequeue_style ('open-sans-css');
-		//wp_deregister_style ('wp-mediaelement');
-		//wp_deregister_style ('open-sans-css');
-
-		//wp_dequeue_script( 'mediaelement' );
-		//wp_dequeue_script( 'wp-mediaelement' );
-		//wp_dequeue_script ('wp-embed');
-		//wp_dequeue_script ('devicepx');
-
-		//wp_deregister_script( 'mediaelement' );
-		//wp_deregister_script( 'wp-mediaelement' );
-		//wp_deregister_script ('wp-embed');
-		//wp_deregister_script ('devicepx');
 
 	}
 
@@ -933,9 +915,9 @@ class petermolnareu {
 		$excerpt = $post->post_excerpt;
 
 		$content = $post->post_content;
-		$relations = pmlnr_post::get_post_webmention($post,false);
-		if ($relations)
-			$content = $content . $relations;
+		//$relations = pmlnr_post::get_post_webmention($post);
+		//if ($relations)
+			//$content = $content . $relations;
 		//$content = self::insert_post_relations($content, $post);
 
 		$search = array ( '”', '“', '’', '–', "\x0D" );
@@ -1155,6 +1137,14 @@ class petermolnareu {
 	public function cc_mime_types($mimes) {
 		$mimes['svg'] = 'image/svg+xml';
 		return $mimes;
+	}
+
+	public static function template_vars ( $post = null ) {
+			$post = pmlnr_base::fix_post($post);
+			return array(
+				'site' => pmlnr_site::template_vars(),
+				'post' => pmlnr_post::template_vars( $post ),
+			);
 	}
 }
 

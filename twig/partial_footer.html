@@ -3,24 +3,24 @@
 	<header class="content-header" id="main-header">
 		<nav class="content-navigation">
 			<ul>
-			{% for menu_id,menu_item in site_menu %}
+			{% for menu_id,menu_item in site.menu %}
 				<li{% if menu_item.active %} class="current-menu-item" {% endif %}><a title="{{menu_item.title}}" href="{{menu_item.url}}">{{menu_item.title}}</a></li>
 			{% endfor %}
 			</ul>
 		</nav>
 
 		<div class="limit content-contact">
-			<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a>{% include 'vcard.html' with site_author only %}<a class="icon-rss" title="RSS feed" href="{{ site_rss_url }}"></a>
+			<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a>{% include 'partial_vcard.html' with {'author':site.author} only %}<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}"></a>
 		</div>
 
 		<div class="limit footer-forms">
 			<i class='icon-subscribe'></i><a href="/subscribe-feliratkozas">Subscribe</a><br />
-			{% include 'search.html' %}
+			{% include 'partial_search.html' %}
 		</div>
 	</header>
 
 	<footer class="content-footer" id="main-footer">
-		{{ site_footer }}
+		{{ site.footer }}
 	</footer>
 
 	</body>

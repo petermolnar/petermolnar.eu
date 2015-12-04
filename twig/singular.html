@@ -1,24 +1,22 @@
+{% include 'partial_header.html' %}
 <section class="content-body" id="main-content">
-	<article class="h-entry" id="post-{{ post_id }}" >
-		<header {{ post_bgstyle }}>
+	<article class="h-entry" id="post-{{ post.id }}" >
+		<header {{ post.bgstyle }}>
 			<div class="content-inner">
 				{% include 'ameta_pubdate.html' %}
 				{% include 'ameta_author.html' %}
 				{% include 'ameta_readtime.html' %}
 				<h1>
-					<a class="u-url" href="{{ post_url }}" rel="bookmark" title="{{ post_title }}">
-						<span class="p-name">{{ post_title }}</span>
+					<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+						<span class="p-name">{{ post.title }}</span>
 					</a>
 				</h1>
-				{% if post_webmention %}
-				{{ post_webmention }}
-				{% endif %}
 			</div>
 		</header>
 
 		<div class="e-content">
 			<div class="content-inner">
-				{{ post_content }}
+				{{ post.content }}
 				<br class="clear" />
 			</div>
 		</div>
@@ -34,3 +32,4 @@
 		</footer>
 	</article>
 </section>
+{% include 'partial_footer.html' %}

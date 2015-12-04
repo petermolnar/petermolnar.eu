@@ -10,7 +10,6 @@ class pmlnr_author extends pmlnr_base {
 	public function init (  ) {
 		// additional user meta fields
 		add_filter('user_contactmethods', array( &$this, 'add_user_meta_fields'));
-
 	}
 
 	/**
@@ -65,7 +64,10 @@ class pmlnr_author extends pmlnr_base {
 		return $list;
 	}
 
-	public static function template_vars ( $author_id = 1, $prefix = 'author_' ) {
+	/**
+	 * template variables for twig
+	 */
+	public static function template_vars ( $author_id = 1, $prefix = '' ) {
 
 		if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
 			return $cached;

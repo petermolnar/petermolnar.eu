@@ -11,17 +11,17 @@ class pmlnr_site extends pmlnr_base {
 	 */
 	public static function get_the_header() {
 
-		if ( $cached = wp_cache_get ( __FUNCTION__, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
+		//if ( $cached = wp_cache_get ( __FUNCTION__, __CLASS__ . __FUNCTION__ ) )
+		//	return $cached;
 
 		ob_start();
 		wp_head();
 		$r = ob_get_clean();
 
-		wp_cache_set ( __FUNCTION__, $r, __CLASS__ . __FUNCTION__, self::expire );
-
 		$r = str_replace("'", '"', $r);
 		$r = preg_replace('/\?ver=.*?"/', '"', $r);
+
+		//wp_cache_set ( __FUNCTION__, $r, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $r;
 	}
@@ -34,14 +34,14 @@ class pmlnr_site extends pmlnr_base {
 		if (empty($name))
 			return false;
 
-		if ( $cached = wp_cache_get ( $name, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
+		//if ( $cached = wp_cache_get ( $name, __CLASS__ . __FUNCTION__ ) )
+		//	return $cached;
 
 		ob_start();
 		dynamic_sidebar( $name );
 		$r = ob_get_clean();
 
-		wp_cache_set ( $name, $r, __CLASS__ . __FUNCTION__, self::expire );
+		//wp_cache_set ( $name, $r, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $r;
 	}
@@ -51,8 +51,8 @@ class pmlnr_site extends pmlnr_base {
 	 */
 	public static function get_the_footer() {
 
-		if ( $cached = wp_cache_get ( __FUNCTION__, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
+		//if ( $cached = wp_cache_get ( __FUNCTION__, __CLASS__) )
+		//	return $cached;
 
 		ob_start();
 		wp_footer();
@@ -60,17 +60,35 @@ class pmlnr_site extends pmlnr_base {
 
 		$r = preg_replace('/\?ver=.*?"/', '"', $r);
 
-		wp_cache_set ( __FUNCTION__, $r, __CLASS__ . __FUNCTION__, self::expire );
+		//wp_cache_set ( __FUNCTION__, $r, __CLASS__, self::expire );
 
 		return $r;
+	}
+
+	public static function get_the_pagination() {
+		global $wp_query;
+		$wp_query->query_vars['paged'] > 1 ? $current = $wp_query->query_vars['paged'] : $current = 1;
+
+		$pargs = array(
+			'format'	 => 'page/%#%',
+			'current'	=> $current,
+			'end_size'   => 1,
+			'mid_size'   => 2,
+			'prev_next'  => True,
+			'prev_text'  => __('«'),
+			'next_text'  => __('»'),
+			'type'	   => 'list',
+			'total'	  => $wp_query->max_num_pages,
+		);
+		return paginate_links( $pargs );
 	}
 
 	/**
 	 *
 	 */
-	public static function template_vars ( $prefix = 'site_' ) {
+	public static function template_vars ( $prefix = '' ) {
 
-		//if ( $cached = wp_cache_get ( __FUNCTION__ . $prefix, __CLASS__ . __FUNCTION__ ) )
+		//if ( $cached = wp_cache_get ( __FUNCTION__ . $prefix, __CLASS__ ) )
 		//	return $cached;
 
 		$terms = $menus = array();
@@ -113,6 +131,10 @@ class pmlnr_site extends pmlnr_base {
 			'author' => pmlnr_author::template_vars( $author_id ),
 			'header' => static::get_the_header(),
 			'footer' => static::get_the_footer(),
+			'pagination' => static::get_the_pagination(),
+			'author_formats' => array('article','photo','reply','rsvp', 'note'),
+			'image_formats' => array('image', 'photo'),
+			'long_formats' => array('article'),
 			//'subscribe_sidebar' => static::get_the_sidebar('subscribe'),
 		);
 
@@ -144,8 +166,6 @@ class pmlnr_site extends pmlnr_base {
 				$r['menu'][ $item->ID ] = $e;
 			}
 		}
-
-
 
 		if (!empty($prefix)) {
 			foreach ($r as $key => $value ) {

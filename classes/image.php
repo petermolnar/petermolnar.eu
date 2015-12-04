@@ -21,6 +21,8 @@ class pmlnr_image extends pmlnr_base {
 		);
 
 		add_action( 'init', array( &$this, 'init'));
+		// insert featured image as RSS enclosure
+		add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
 	}
 
 	/* init function, should be used in the theme init loop */
@@ -39,9 +41,6 @@ class pmlnr_image extends pmlnr_base {
 
 		// extract additional images sizes
 		add_filter( 'wp_read_image_metadata', array(&$this, 'read_extra_exif'), 1, 3 );
-
-		// insert featured image as RSS enclosure
-		add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
 
 		// insert featured image as adaptive
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
@@ -150,14 +149,17 @@ class pmlnr_image extends pmlnr_base {
 	/**
 	 * adaptive image shortcode function
 	 */
-	public function adaptive( &$thid, $post = null ) {
+	public function adaptive( &$thid, $post = null, $max = null ) {
 		if (empty($thid))
 			return false;
 
-		if (!empty($post))
+		if (!empty($post)) {
 			$post = static::fix_post($post);
+			if ($post === false)
+				return false;
+		}
 
-		$meta = self::get_extended_meta($thid);
+		$meta = self::get_extended_thumbnail_meta($thid);
 		if (empty($meta['sizes']))
 			return false;
 
@@ -165,16 +167,22 @@ class pmlnr_image extends pmlnr_base {
 			return $cached;
 
 		$fallback = $meta['sizes']['thumbnail'];
-		$try = array ( self::prefix . '1', 'medium', self::prefix . '2' );
-		foreach ( $try as $test ) {
 
-			if (isset($meta['sizes'][$test]['src']) && !empty($meta['sizes'][$test]['src']))
-				$t = $meta['sizes'][$test];
-			else
-				continue;
+		if ( !empty($max) && isset($meta['sizes'][$max]) && isset($meta['sizes'][$max]['src']) && !empty($meta['sizes'][$max]['src']) ) {
+			$fallback = $meta['sizes'][$max]['src'];
+		}
+		else {
+			$try = array ( self::prefix . '1', 'medium', self::prefix . '2' );
+			foreach ( $try as $test ) {
 
-			if ( $t['src'] != $meta['src'] )
-				$fallback = $t;
+				if (isset($meta['sizes'][$test]['src']) && !empty($meta['sizes'][$test]['src']))
+					$t = $meta['sizes'][$test];
+				else
+					continue;
+
+				if ( $t['src'] != $meta['src'] )
+					$fallback = $t;
+			}
 		}
 
 		$as = $this->dpix;
@@ -297,60 +305,6 @@ class pmlnr_image extends pmlnr_base {
 		return $html;
 	}
 
-
-	/**
-	 *
-	 */
-	public static function get_extended_meta ( &$thid ) {
-		if ( empty ( $thid ) )
-			return false;
-
-		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$attachment = get_post( $thid );
-
-		$meta = array();
-		if ( self::is_post($attachment)) {
-			$meta = wp_get_attachment_metadata($thid);
-
-			if ( !empty ( $attachment->post_parent ) ) {
-				$parent = get_post( $attachment->post_parent );
-				$meta['parent'] = $parent->ID;
-				$meta['image_meta']['geo_latitude'] = get_post_meta( $parent->ID, 'geo_latitude', true );
-				$meta['image_meta']['geo_longitude'] = get_post_meta( $parent->ID, 'geo_longitude', true );
-			}
-
-			$src = wp_get_attachment_image_src ($thid, 'full');
-			$meta['src'] = static::fix_url($src[0]);
-
-			if (isset($meta['sizes']) && !empty($meta['sizes'])) {
-				foreach ( $meta['sizes'] as $size => $data ) {
-					$src = wp_get_attachment_image_src ($thid, $size);
-					$src = static::fix_url($src[0]);
-					$meta['sizes'][$size]['src'] = $src;
-				}
-			}
-
-			if ( empty($meta['image_meta']['title']))
-				$meta['image_meta']['title'] = esc_attr($attachment->post_title);
-
-			$slug = sanitize_title ( $meta['image_meta']['title'] , $thid );
-			if ( is_numeric( substr( $slug, 0, 1) ) )
-				$slug = 'img-' . $slug;
-			$meta['image_meta']['slug'] = $slug;
-
-			$meta['image_meta']['alt'] = '';
-			$alt = get_post_meta($thid, '_wp_attachment_image_alt', true);
-			if ( !empty($alt))
-				$meta['image_meta']['alt'] = strip_tags($alt);
-		}
-
-		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, self::expire );
-
-		return $meta;
-	}
-
 	/**
 	 *
 	 */
@@ -363,8 +317,7 @@ class pmlnr_image extends pmlnr_base {
 		if (!self::is_u_photo($post))
 			return $src;
 
-		$hash = sha1($src);
-		if ( $cached = wp_cache_get ( $hash, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$thid = get_post_thumbnail_id( $post->ID );
@@ -378,7 +331,7 @@ class pmlnr_image extends pmlnr_base {
 			$src = $src . static::photo_exif( $thid );
 		}
 
-		wp_cache_set ( $hash, $src, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $src, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $src;
 	}
@@ -395,7 +348,7 @@ class pmlnr_image extends pmlnr_base {
 
 		$return = false;
 
-		$meta = self::get_extended_meta($thid);
+		$meta = self::get_extended_thumbnail_meta($thid);
 
 		if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
 

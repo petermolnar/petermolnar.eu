@@ -8,6 +8,4 @@
 	header('HTTP/1.1 404 Not Found');
 
 	$tmpl = $petermolnareu_theme->twig->loadTemplate('404.html');
-	echo $tmpl->render(pmlnr_site::template_vars());
-
-?>
+	echo $tmpl->render(petermolnareu::template_vars());
