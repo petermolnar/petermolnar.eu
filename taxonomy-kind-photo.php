@@ -40,9 +40,18 @@ if ( have_posts() ) {
 		$s = pmlnr_base::fix_url($src[0]);
 		$target = wp_get_attachment_image_src ($thid, 'large');
 		$t = pmlnr_base::fix_url($target[0]);
-		$vars = pmlnr_post::template_vars($post);
 
-		echo '<a href="'.$t.'" title="'. $vars['title'].'"><img src="'.$s.'" alt="'. htmlspecialchars(strip_tags($vars['content'])) .'"/><span class="caption">'. $vars['title'] .'</span></a>';
+		$vars = petermolnareu::template_vars($post);
+
+		$vars['post']['tile_target'] = $t;
+		$vars['post']['tile_img'] = $s;
+		$vars['post']['tile_alt'] = htmlspecialchars(strip_tags($vars['post']['content']));
+
+
+		$twig = $petermolnareu_theme->twig->loadTemplate('element-tile.html');
+		echo $twig->render($vars);
+
+		//echo '<a href="'.$t.'" title="'. $vars['post']['title'].'" class="h-entry"><img src="'.$s.'" alt="'. htmlspecialchars(strip_tags($vars['post']['content'])) .'" class="u-photo" /><span class="caption ">'. $vars['post']['title'] .'</span><span class=></span></a>';
 	}
 }
 

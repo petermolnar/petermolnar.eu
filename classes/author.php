@@ -60,7 +60,7 @@ class pmlnr_author extends pmlnr_base {
 
 		}
 
-		//wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, self::expire );
+		//wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, static::expire );
 		return $list;
 	}
 
@@ -101,7 +101,7 @@ class pmlnr_author extends pmlnr_base {
 			}
 		}
 
-		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 

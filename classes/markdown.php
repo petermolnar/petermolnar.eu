@@ -51,7 +51,7 @@ class pmlnr_markdown extends pmlnr_base {
 
 		$img = sprintf ('![%s](%s%s){%s%s}', $alt, $src, $title, $imgid, $cl);
 
-		wp_cache_set ( $hash, $img, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $hash, $img, __CLASS__ . __FUNCTION__, static::expire );
 		return $img;
 	}
 
@@ -72,7 +72,7 @@ class pmlnr_markdown extends pmlnr_base {
 		$parsedown->setUrlsLinked(true);
 		$r = $parsedown->text ( $md );
 
-		wp_cache_set ( $hash, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $hash, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -227,7 +227,7 @@ class pmlnr_markdown extends pmlnr_base {
 			$content = str_replace ( $img->outertext, $img, $content );
 		}
 
-		wp_cache_set ( $hash, $content, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $hash, $content, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $content;
 	}

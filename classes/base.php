@@ -18,7 +18,33 @@ class pmlnr_base {
 
 	/**
 	 *
+	 * debug messages; will only work if WP_DEBUG is on
+	 * or if the level is LOG_ERR, but that will kill the process
+	 *
+	 * @param string $message
+	 * @param int $level
 	 */
+	static function debug( $message, $level = LOG_NOTICE ) {
+		if ( @is_array( $message ) || @is_object ( $message ) )
+			$message = json_encode($message);
+
+
+		switch ( $level ) {
+			case LOG_ERR :
+				wp_die( '<h1>Error:</h1>' . '<p>' . $message . '</p>' );
+				exit;
+			default:
+				if ( !defined( 'WP_DEBUG' ) || WP_DEBUG != true )
+					return;
+				break;
+		}
+
+		error_log(  __CLASS__ . " => " . $message );
+	}
+
+	/**
+	 *
+	 *
 	public static function debug( $message) {
 		if (is_object($message) || is_array($message))
 			$message = json_encode($message);
@@ -26,6 +52,7 @@ class pmlnr_base {
 		if ( defined('WP_DEBUG') && WP_DEBUG == true )
 			error_log ( 'PMLNR DEBUG => ' . $message);
 	}
+	*/
 
 	/**
 	 *
@@ -145,7 +172,7 @@ class pmlnr_base {
 			}
 		}
 
-		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $return;
 	}
@@ -192,7 +219,7 @@ class pmlnr_base {
 		if (is_object($kind) && isset($kind->slug))
 			$return = $kind->slug;
 
-		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $return;
 	}
@@ -272,7 +299,7 @@ class pmlnr_base {
 			}
 		}
 
-		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $return;
 	}
@@ -301,7 +328,7 @@ class pmlnr_base {
 			$r = true;
 		}
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 		return $r;
 	}
 
@@ -503,7 +530,7 @@ class pmlnr_base {
 			}
 		}*/
 
-		wp_cache_set ( $post->ID, $slug, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $slug, __CLASS__ . __FUNCTION__, static::expire );
 		return $slug;
 	}
 
@@ -520,7 +547,7 @@ class pmlnr_base {
 		$attachment = get_post( $thid );
 
 		$meta = array();
-		if ( self::is_post($attachment)) {
+		if ( static::is_post($attachment)) {
 			$meta = wp_get_attachment_metadata($thid);
 
 			if ( !empty ( $attachment->post_parent ) ) {
@@ -555,7 +582,7 @@ class pmlnr_base {
 				$meta['image_meta']['alt'] = strip_tags($alt);
 		}
 
-		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $meta;
 	}

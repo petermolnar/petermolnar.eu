@@ -1,2 +1,4 @@
 *.zip
 **.fuse_hidden*
+/vendor/
+composer.lock

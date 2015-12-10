@@ -9,7 +9,7 @@ class pmlnr_image extends pmlnr_base {
 	private $extra_exif = array();
 
 	public function __construct ( ) {
-		$sizes = explode(',',self::sizes);
+		$sizes = explode(',',static::sizes);
 
 		$cntr = 1;
 		foreach ($sizes as $size) {
@@ -30,14 +30,7 @@ class pmlnr_image extends pmlnr_base {
 
 		// additional image sizes for adaptiveness
 		foreach ( $this->dpix as $dpix => $size )
-			add_image_size ( self::prefix . $dpix, $size, $size, false );
-
-		// set higher jpg quality
-		add_filter( 'jpeg_quality', array( &$this, 'jpeg_quality' ) );
-		add_filter( 'wp_editor_set_quality', array( &$this, 'jpeg_quality' ) );
-
-		// sharpen resized images on upload
-		add_filter( 'image_make_intermediate_size',array ( &$this, 'sharpen' ),10);
+			add_image_size ( static::prefix . $dpix, $size, $size, false );
 
 		// extract additional images sizes
 		add_filter( 'wp_read_image_metadata', array(&$this, 'read_extra_exif'), 1, 3 );
@@ -47,62 +40,6 @@ class pmlnr_image extends pmlnr_base {
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
 	}
 
-	/**
-	 * better jpgs
-	 */
-	public static function jpeg_quality () {
-		$jpeg_quality = (int)92;
-		return $jpeg_quality;
-	}
-
-	/**
-	 * adaptive sharpen images w imagemagick
-	 */
-	static public function sharpen( $resized ) {
-
-		if (!class_exists('Imagick'))
-			return $resized;
-		/*
-		preg_match ( '/(.*)-([0-9]+)x([0-9]+)\.([0-9A-Za-z]{2,4})/', $resized, $details );
-
-		 * 0 => original var
-		 * 1 => full original file path without extension
-		 * 2 => resized size w
-		 * 3 => resized size h
-		 * 4 => extension
-		 */
-
-		$size = @getimagesize($resized);
-
-		if ( !$size )
-			return $resized;
-
-		$fname = basename( $resized );
-		$cachedir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'cache';
-		$cached = $cachedir . DIRECTORY_SEPARATOR . $fname;
-
-		if ( $size[2] != IMAGETYPE_JPEG ) {
-			static::debug( "moving " . $cached );
-			if (copy( $resized, $cached)) {
-				static::debug(  "removing " . $resized );
-				unlink( $resized );
-			}
-		}
-		else {
-			static::debug( "adaptive sharpen " . $resized );
-			$imagick = new Imagick($resized);
-			$imagick->unsharpMaskImage(0,0.5,1,0);
-			$imagick->setImageFormat("jpg");
-			$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
-			$imagick->setImageCompressionQuality(static::jpeg_quality());
-			$imagick->writeImage($cached);
-			$imagick->destroy();
-			static::debug( "removing " . $resized );
-			unlink ($resized);
-		}
-
-		return $resized;
-	}
 
 	/**
 	 * additional EXIF which only exiftool can read
@@ -159,7 +96,7 @@ class pmlnr_image extends pmlnr_base {
 				return false;
 		}
 
-		$meta = self::get_extended_thumbnail_meta($thid);
+		$meta = static::get_extended_thumbnail_meta($thid);
 		if (empty($meta['sizes']))
 			return false;
 
@@ -172,7 +109,7 @@ class pmlnr_image extends pmlnr_base {
 			$fallback = $meta['sizes'][$max]['src'];
 		}
 		else {
-			$try = array ( self::prefix . '1', 'medium', self::prefix . '2' );
+			$try = array ( static::prefix . '1', 'medium', static::prefix . '2' );
 			foreach ( $try as $test ) {
 
 				if (isset($meta['sizes'][$test]['src']) && !empty($meta['sizes'][$test]['src']))
@@ -188,7 +125,7 @@ class pmlnr_image extends pmlnr_base {
 		$as = $this->dpix;
 		$srcset = array();
 		foreach ( $this->dpix as $dpix => $size ) {
-			$id = self::prefix . $dpix;
+			$id = static::prefix . $dpix;
 			if (isset($meta['sizes'][$id]['src']) && !empty($meta['sizes'][$id]['src']))
 				$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $as[$dpix] . "w";
 				//$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $dpix ."x";
@@ -199,12 +136,12 @@ class pmlnr_image extends pmlnr_base {
 		}
 		else {
 			//end($this->dpix);
-			//$id = self::prefix . key($this->dpix);
+			//$id = static::prefix . key($this->dpix);
 			//$target = $meta['sizes'][$id]['src'];
 
 			$r = array_reverse($this->dpix,true);
 			foreach ( $r as $id => $size ) {
-				$n = self::prefix . $id;
+				$n = static::prefix . $id;
 				if ( isset($meta['sizes'][$n]) && !empty($meta['sizes'][$n])) {
 					$target = $meta['sizes'][$n]['src'];
 					break;
@@ -221,7 +158,7 @@ class pmlnr_image extends pmlnr_base {
 		//$target = static::fix_url($target);
 
 		$class="adaptimg";
-		if ( $post != null && self::is_u_photo($post)) {
+		if ( $post != null && static::is_u_photo($post)) {
 			$class .=" u-photo";
 		}
 
@@ -240,7 +177,7 @@ class pmlnr_image extends pmlnr_base {
 			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(min-width: 960px) 50vw, 100vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
-		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -300,7 +237,7 @@ class pmlnr_image extends pmlnr_base {
 			}
 		}
 
-		wp_cache_set ( $hash, $html, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $hash, $html, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $html;
 	}
@@ -314,7 +251,7 @@ class pmlnr_image extends pmlnr_base {
 		if (!static::is_post($post))
 			return $src;
 
-		if (!self::is_u_photo($post))
+		if (!static::is_u_photo($post))
 			return $src;
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
@@ -327,11 +264,11 @@ class pmlnr_image extends pmlnr_base {
 			$src = $src . $adaptive;
 		}
 
-		if ( self::is_photo($thid) && is_singular() ) {
+		if ( static::is_photo($thid) && is_singular() ) {
 			$src = $src . static::photo_exif( $thid );
 		}
 
-		wp_cache_set ( $post->ID, $src, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $src, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $src;
 	}
@@ -348,7 +285,7 @@ class pmlnr_image extends pmlnr_base {
 
 		$return = false;
 
-		$meta = self::get_extended_thumbnail_meta($thid);
+		$meta = static::get_extended_thumbnail_meta($thid);
 
 		if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
 
@@ -393,7 +330,7 @@ class pmlnr_image extends pmlnr_base {
 
 
 
-		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $return;
 	}
@@ -433,7 +370,7 @@ class pmlnr_image extends pmlnr_base {
 		$mime = $meta['sizes'][$asize]['mime-type'];
 		$str = sprintf('<enclosure url="%s" type="%s" length="%s" />',static::fix_url($img[0]),$mime,$fsize);
 
-		wp_cache_set ( $thid, $str, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $thid, $str, __CLASS__ . __FUNCTION__, static::expire );
 
 		echo $str;
 	}

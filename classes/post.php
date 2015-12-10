@@ -47,7 +47,7 @@ class pmlnr_post extends pmlnr_base {
 		wp_reset_postdata( $post );
 		$post = $prevpost;
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -76,7 +76,7 @@ class pmlnr_post extends pmlnr_base {
 		wp_reset_postdata( $post );
 		$post = $prevpost;
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -133,7 +133,7 @@ class pmlnr_post extends pmlnr_base {
 				//$r = pmlnr_markdown::parsedown($r);
 		}
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -157,7 +157,7 @@ class pmlnr_post extends pmlnr_base {
 			foreach( $tags as $tag )
 				$r[ $tag->name ] = get_tag_link( $tag->term_id );
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -190,7 +190,7 @@ class pmlnr_post extends pmlnr_base {
 				$r[$split[2]] = $split;
 		}
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -223,7 +223,7 @@ class pmlnr_post extends pmlnr_base {
 			}
 		}
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -285,7 +285,7 @@ class pmlnr_post extends pmlnr_base {
 		// short url / webmention
 		$r['webmention'] = $url;
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $share;
 	}
@@ -314,7 +314,7 @@ class pmlnr_post extends pmlnr_base {
 				$r = 'class="article-header" style="background-image:url('.$bgimg[0].');"';
 		}
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -339,7 +339,7 @@ class pmlnr_post extends pmlnr_base {
 				$r = static::fix_url($thumbnail[0]);
 		}
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -362,7 +362,7 @@ class pmlnr_post extends pmlnr_base {
 		if ( $twitter_url )
 			$r = $twitter_url;
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -386,7 +386,7 @@ class pmlnr_post extends pmlnr_base {
 		if ( $twitter_reply_user && $twitter_reply_id )
 			$r = 'https://twitter.com/' . $twitter_reply_user . '/status/' . $twitter_reply_id;
 
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -536,7 +536,7 @@ class pmlnr_post extends pmlnr_base {
 			}
 		}
 
-		wp_cache_set ( $post->ID . $prefix, $r, __CLASS__ . __FUNCTION__, self::expire );
+		wp_cache_set ( $post->ID . $prefix, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}

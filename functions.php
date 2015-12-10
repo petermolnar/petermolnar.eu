@@ -4,12 +4,16 @@ define('ARTICLE_MIN_LENGTH', 1100);
 
 $dirname = dirname(__FILE__);
 
-require_once ($dirname . '/lib/parsedown/Parsedown.php');
-require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
-require_once ($dirname . '/lib/lessphp/lessc.inc.php');
+require __DIR__ . '/vendor/autoload.php';
+
+//require_once ($dirname . '/lib/parsedown/Parsedown.php');
+//require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
+//require_once ($dirname . '/lib/lessphp/lessc.inc.php');
 require_once ($dirname . '/lib/simple_html_dom/simple_html_dom.php');
-require_once ($dirname . '/lib/Twig/lib/Twig/Autoloader.php');
+//require_once ($dirname . '/lib/Twig/lib/Twig/Autoloader.php');
+//require_once ($dirname . '/lib/Twig-extensions/lib/Twig/Extensions/Autoloader.php');
 Twig_Autoloader::register();
+Twig_Extensions_Autoloader::register();
 
 require_once ($dirname . '/classes/base.php');
 require_once ($dirname . '/classes/image.php');
@@ -21,7 +25,8 @@ require_once ($dirname . '/classes/site.php');
 
 class petermolnareu {
 	const menu_header = 'header';
-	private $endpoints = array ('yaml');
+	//private $endpoints = array ('yaml');
+
 	public $twig = null;
 	public $twigloader = null;
 	private $twigcache = WP_CONTENT_DIR . '/cache/twig';
@@ -48,12 +53,37 @@ class petermolnareu {
 		if (!is_dir($this->twigcache))
 			mkdir($this->twigcache);
 
-		$this->twigloader = new Twig_Loader_Filesystem( dirname(__FILE__) . '/twig');
+		$tplDir = dirname(__FILE__) . '/twig';
+		$this->twigloader = new Twig_Loader_Filesystem( $tplDir );
 		$this->twig = new Twig_Environment($this->twigloader, array(
 			'cache' => $this->twigcache,
 			'auto_reload' => true,
 			'autoescape' => false,
 		));
+		$this->twig->addExtension(new Twig_Extensions_Extension_I18n());
+
+		//$lang = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : 'en';
+
+		//putenv('LC_ALL='. $lang );
+		//setlocale(LC_ALL, $lang);
+
+		//// Specify the location of the translation tables
+		//bindtextdomain('petermolnareu', dirname(__FILE__) . '/translations');
+		//bind_textdomain_codeset('petermolnareu', 'UTF-8');
+
+		//// Choose domain
+		//textdomain('petermolnareu');
+
+		/*
+		// iterate over all your templates
+		foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tplDir), RecursiveIteratorIterator::LEAVES_ONLY) as $file)
+		{
+			// force compilation
+			if ($file->isFile()) {
+					$this->twig->loadTemplate(str_replace($tplDir.'/', '', $file));
+			}
+		}
+		*/
 
 		new pmlnr_image();
 		new pmlnr_cleanup();
@@ -76,6 +106,8 @@ class petermolnareu {
 		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
 		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
+
+		//add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
 
 	}
 
@@ -110,7 +142,7 @@ class petermolnareu {
 			'show_ui' => true,
 			'hierarchical' => true,
 			'show_admin_column' => true,
-			'rewrite' => array( 'slug' => 'type' ),
+			'rewrite' => array( 'slug' => 'format' ),
 		));
 	}
 
@@ -159,7 +191,6 @@ class petermolnareu {
 			'normal',
 			'default'
 		);
-
 	}
 
 	/**
@@ -391,13 +422,6 @@ class petermolnareu {
 			}
 		}
 
-		/*$insta = get_post_meta( $post->ID, 'instagram_url', true);
-
-		if ( $insta && !empty($insta))
-			if ( !in_array($insta, $_syndicated))
-				array_push($_syndicated, $insta);
-		*/
-
 		foreach ($_syndicated as $url ) {
 			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com'))
 				$synds[] = $url;
@@ -446,337 +470,9 @@ class petermolnareu {
 	}
 
 	/**
-	 *
-	 */
-	public static function export_yaml ( $postid = false ) {
-
-		if (!$postid)
-			return false;
-
-		$post = get_post($postid);
-
-		if (!pmlnr_base::is_post($post))
-			return false;
-
-		$filename = $post->post_name;
-
-		$flatroot = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'flat';
-		$flatdir = $flatroot . DIRECTORY_SEPARATOR . $filename;
-		$flatfile = $flatdir . DIRECTORY_SEPARATOR . 'item.md';
-
-		$post_timestamp = get_the_modified_time( 'U', $post->ID );
-		$file_timestamp = 0;
-
-		if ( @file_exists($flatfile) ) {
-			$file_timestamp = @filemtime ( $flatfile );
-		}
-
-		$mkdir = array ( $flatroot, $flatdir );
-		foreach ( $mkdir as $dir ) {
-			if ( !is_dir($dir)) {
-				if (!mkdir( $dir )) {
-					static::debug_log('Failed to create ' . $dir . ', exiting YAML creation');
-					return false;
-				}
-			}
-		}
-
-		touch($flatdir, $post_timestamp);
-
-		// get all the attachments
-		$attachments = get_children( array (
-			'post_parent'=>$post->ID,
-			'post_type'=>'attachment',
-			'orderby'=>'menu_order',
-			'order'=>'asc'
-		));
-
-		// 100 is there for sanity
-		// hardlink all the attachments; no need for copy
-		// unless you're on a filesystem that does not support hardlinks
-		if ( !empty($attachments) && count($attachments) < 100 ) {
-			$out['attachments'] = array();
-			foreach ( $attachments as $aid => $attachment ) {
-				$attachment_path = get_attached_file( $aid );
-				$attachment_file = basename( $attachment_path);
-				$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
-				pmlnr_base::debug ('should ' . $post->ID . ' have this attachment?: ' . $aid );
-				if ( !is_file($target_file))
-					link( $attachment_path, $target_file );
-			}
-		}
-
-		$comments = get_comments ( array( 'post_id' => $post->ID ) );
-		//$socials = array ('facebook', 'flickr', 'fivehpx');
-		if ( $comments ) {
-			foreach ($comments as $comment) {
-				$cf_timestamp = 0;
-
-				$cfile = $flatdir . DIRECTORY_SEPARATOR . 'comment_' . $comment->comment_ID . '.yml';
-
-				$c_timestamp = strtotime( $comment->comment_date );
-				if ( @file_exists($cfile) ) {
-					$cf_timestamp = @filemtime ( $cfile );
-					if ( $c_timestamp == $cf_timestamp ) {
-						continue;
-					}
-				}
-
-				$c = array (
-					'id' =>  (int)$comment->comment_ID,
-					'author' => $comment->comment_author,
-					'author_email' => $comment->comment_author_email,
-					'author_url' => $comment->comment_author_url,
-					'date' => $comment->comment_date,
-					//'content' => $comment->comment_content,
-					'useragent' => $comment->comment_agent,
-					'type' => $comment->comment_type,
-					'user_id' => (int)$comment->user_id,
-				);
-
-				if ( $avatar = get_comment_meta ($comment->comment_ID, "avatar", true))
-					$c['avatar'] = $avatar;
-
-				$social = pmlnr_base::preg_value($comment->comment_agent,'/Keyring_(.*?)_Reactions/' );
-
-				if ($social) {
-					$social = strtolower($social);
-					if ( $smeta = get_comment_meta ($comment->comment_ID, "keyring-${social}_reactions", true))
-						$c['keyring_reactions_importer'] = json_encode($smeta);
-				}
-
-				$cout = yaml_emit($c, YAML_UTF8_ENCODING );
-				$cout .= "---\n" . pmlnr_markdown::html2markdown($comment->comment_content);
-
-				pmlnr_base::debug ('Exporting comment #' . $comment->comment_ID. ' to ' . $cfile );
-				file_put_contents ($cfile, $cout);
-				touch ( $cfile, $c_timestamp );
-			}
-		}
-
-		if ( $file_timestamp == $post_timestamp ) {
-			return true;
-		}
-
-		$out = static::yaml();
-
-		// write log
-		pmlnr_base::debug ('Exporting #' . $post->ID . ', ' . $post->post_name . ' to ' . $flatfile );
-		file_put_contents ($flatfile, $out);
-		touch ( $flatfile, $post_timestamp );
-		return true;
-	}
-
-	/**
-	 * show post in YAML format (Grav friendly version)
-	 *
-	 */
-	public static function yaml ( $postid = false ) {
-
-		if (!$postid) {
-			global $post;
-		}
-		else {
-			$post = get_post($postid);
-		}
-
-		if (!pmlnr_base::is_post($post))
-			return false;
-
-
-		$postdata = self::raw_post_data($post);
-
-		if (empty($postdata))
-			return false;
-
-		$excerpt = false;
-		if (isset($postdata['excerpt']) && !empty($postdata['excerpt'])) {
-			$excerpt = $postdata['excerpt'];
-			unset($postdata['excerpt']);
-		}
-
-		$content = $postdata['content'];
-
-		unset($postdata['content']);
-
-		$out = yaml_emit($postdata,  YAML_UTF8_ENCODING );
-		if($excerpt) {
-			$out .= "\n" . $excerpt . "\n";
-		}
-
-		$out .= "---\n" . $content;
-
-		return $out;
-	}
-
-	/**
-	 * raw data for various representations, like JSON or YAML
-	 */
-	public static function raw_post_data ( &$post = null ) {
-		$post = pmlnr_base::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		$cat = get_the_category( $post->ID );
-		if ( !empty($cat) && isset($cat[0])) {
-			$category = $cat[0];
-		}
-
-
-		$taglist = '';
-		$t = get_the_tags( $post->ID );
-		$tags = array();
-		if ( !empty( $t ))
-			foreach ( $t as $tag )
-				array_push($tags, $tag->name);
-		$tags = array_unique($tags);
-
-		$parsedown = new ParsedownExtra();
-		$excerpt = $post->post_excerpt;
-
-		$content = $post->post_content;
-
-		$search = array ( '”', '“', '’', '–', "\x0D" );
-		$replace = array ( '"', '"', "'", '-', '' );
-		$excerpt = str_replace ( $search, $replace, $excerpt );
-		$excerpt = strip_tags ( $parsedown->text ( $excerpt ) );
-		$content = str_replace ( $search, $replace, $content );
-
-
-		// fix all image attachments: resized -> original
-		$urlparts = parse_url(site_url());
-		$domain = $urlparts ['host'];
-		$wp_upload_dir = wp_upload_dir();
-		$uploadurl = str_replace( '/', "\\/", trim( str_replace( site_url(), '', $wp_upload_dir['url']), '/'));
-
-		$pregstr = "/((https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/)(.*)-([0-9]{1,4})×([0-9]{1,4})\.([a-zA-Z]{2,4})/";
-
-		preg_match_all( $pregstr, $content, $resized_images );
-
-		if ( !empty ( $resized_images[0]  )) {
-			foreach ( $resized_images[0] as $cntr => $imgstr ) {
-				$done_images[ $resized_images[2][$cntr] ] = 1;
-				$fname = $resized_images[2][$cntr] . '.' . $resized_images[5][$cntr];
-				$width = $resized_images[3][$cntr];
-				$height = $resized_images[4][$cntr];
-				$r = $fname . '?resize=' . $width . ',' . $height;
-				$content = str_replace ( $imgstr, $r, $content );
-			}
-		}
-
-		$pregstr = "/(https?:\/\/". $domain .")?\/". $uploadurl ."\/.*\/[0-9]{4}\/[0-9]{2}\/(.*?)\.([a-zA-Z]{2,4})/";
-
-		preg_match_all( $pregstr, $content, $images );
-		if ( !empty ( $images[0]  )) {
-
-			foreach ( $images[0] as $cntr=>$imgstr ) {
-				if ( !isset($done_images[ $images[1][$cntr] ]) ){
-					if ( !strstr($images[1][$cntr], 'http'))
-						$fname = $images[2][$cntr] . '.' . $images[3][$cntr];
-					else
-						$fname = $images[1][$cntr] . '.' . $images[2][$cntr];
-
-					$content = str_replace ( $imgstr, $fname, $content );
-				}
-			}
-		}
-
-		$author_id = $post->post_author;
-		$author =  get_the_author_meta ( 'display_name' , $author_id );
-
-		$meta = array();
-		$slugs = get_post_meta($post->ID, '_wp_old_slug', false);
-		foreach ($slugs as $slug ) {
-			if ( strlen($slug) > 6 )
-				$meta['slugs'][] = $slug;
-		}
-
-		$meta_to_store = array('author','geo_latitude','geo_longitude','twitter_tweet_id', 'twitter_rt_id', 'twitter_rt_user_id', 'twitter_rt_time', 'twitter_reply_id', 'twitter_reply_user_id', 'instagram_id', 'instagram_url', 'twitter_id', 'twitter_permalink', 'twitter_in_reply_to_user_id', 'twitter_in_reply_to_screen_name','twitter_in_reply_to_status_id','fbpost->ID','webmention_url', 'webmention_type');
-
-		foreach ( $meta_to_store as $meta_key ) {
-			$meta_entry = get_post_meta($post->ID, $meta_key, true);
-			if ( !empty($meta_entry) && $meta_entry != false ) {
-				$meta[ $meta_key ] = $meta_entry;
-				if ($meta_key == 'author' )
-					$author = $meta_entry;
-			}
-		}
-
-		if ( isset($meta))
-
-		$out = array (
-			'title' => trim(get_the_title( $post->ID )),
-			'modified_date' => get_the_modified_time('c', $post->ID),
-			'date' => get_the_time('c', $post->ID),
-			'slug' => $post->post_name,
-			'id' => $post->ID,
-			'permalink' => get_permalink( $post ),
-			'shortlink' => wp_get_shortlink( $post->ID ),
-			'taxonomy' => array (
-				'tag' => $tags,
-				'category' => $category->name,
-				//'type' => $format,
-			),
-			'postmeta' => $meta,
-			'author' => $author,
-		);
-
-		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
-		if (!empty($webmention_url)) {
-			$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
-			if ($webmention_type != 'u-like-of' && $webmention_type != 'u-repost-of')
-				$webmention_type = 'u-in-reply-to';
-
-			$out['webmention'] = array (
-				'type' => $webmention_type,
-				'url' => $webmention_url,
-			);
-		}
-
-		// get all the attachments
-		$attachments = get_children( array (
-			'post_parent'=>$post->ID,
-			'post_type'=>'attachment',
-			'orderby'=>'menu_order',
-			'order'=>'asc'
-		));
-
-		// 100 is there for sanity
-		// hardlink all the attachments; no need for copy
-		// unless you're on a filesystem that does not support hardlinks
-		if ( !empty($attachments) && count($attachments) < 100 ) {
-			$out['attachments'] = array();
-			foreach ( $attachments as $aid => $attachment ) {
-				$attachment_path = get_attached_file( $aid );
-				$attachment_file = basename( $attachment_path);
-				array_push($out['attachments'], $attachment_file);
-				//$target_file = $flatdir . DIRECTORY_SEPARATOR . $attachment_file;
-				//error_log ('should ' . $post->ID . ' have this attachment?: ' . $aid );
-				//if ( !is_file($target_file))
-				//	link( $attachment_path, $target_file );
-			}
-		}
-
-		// syndication links
-		$_syndicated = get_post_meta ( $post->ID, 'syndication_urls', true );
-		if ( !empty ($_syndicated ) ) {
-			$out['syndicated'] = explode("\n", trim($_syndicated));
-		}
-
-		if($post->post_excerpt) {
-			$out['excerpt'] = $excerpt;
-		}
-
-		$out['content'] = $content;
-
-		return $out;
-	}
-
-	/**
 	 * Get the source's images and save them locally, for posterity, unless we can't.
 	 *
-	 */
+	 *
 	public function side_load_md_images( $post_id, $content = '' ) {
 		$content = wp_unslash( $content );
 
@@ -828,6 +524,21 @@ class petermolnareu {
 				'post' => pmlnr_post::template_vars( $post ),
 			);
 	}
+
+	/**
+	 *
+	 *
+	public function widgets_init () {
+		register_sidebar( array(
+			'name' => __( 'Left', 'petermolnareu' ),
+			'id' => 'nav_left',
+			'before_widget' => '',
+			'after_widget'  => '',
+			'before_title'  => '',
+			'after_title'   => '',
+		) );
+	}
+	*/
 }
 
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {

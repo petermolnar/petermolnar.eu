@@ -4,7 +4,7 @@ the_post();
 global $petermolnareu_theme;
 
 $twigvars = petermolnareu::template_vars();
-petermolnareu::export_yaml($post);
+//WP_FLATBACKUPS::export_yaml($post);
 
 if (is_page()) {
 	$twig = $petermolnareu_theme->twig->loadTemplate('page.html');

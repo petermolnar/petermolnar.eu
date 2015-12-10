@@ -1,9 +1,3 @@
-[submodule "lib/parsedown"]
-	path = lib/parsedown
-	url = https://github.com/erusev/parsedown.git
-[submodule "lib/parsedown-extra"]
-	path = lib/parsedown-extra
-	url = https://github.com/erusev/parsedown-extra.git
 [submodule "lib/openwebicons"]
 	path = lib/openwebicons
 	url = https://github.com/pfefferle/openwebicons
@@ -13,12 +7,6 @@
 [submodule "lib/Justified-Gallery"]
 	path = lib/Justified-Gallery
 	url = https://github.com/miromannino/Justified-Gallery
-[submodule "lib/lessphp"]
-	path = lib/lessphp
-	url = https://github.com/leafo/lessphp.git
 [submodule "lib/picturefill"]
 	path = lib/picturefill
 	url = https://github.com/scottjehl/picturefill.git
-[submodule "lib/Twig"]
-	path = lib/Twig
-	url = git://github.com/twigphp/Twig.git
