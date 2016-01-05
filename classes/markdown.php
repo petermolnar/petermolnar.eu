@@ -129,8 +129,7 @@ class pmlnr_markdown extends pmlnr_base {
 		}
 
 
-		/** straigtforward formatting: html to markdown
-		 */
+		// straigtforward formatting: html to markdown
 		$s = array ( '<tt>', '</tt>', '<bold>', '</bold>', '<strong>', '</strong>', '<em>', '</em>', '<i>', '</i>' );
 		$r = array ( '`', '`', '**', '**', '**', '**', '*', '*', '*', '*' );
 		$content = str_replace ( $s, $r, $content );
@@ -191,9 +190,7 @@ class pmlnr_markdown extends pmlnr_base {
 		if (!$c)
 			return $content;
 
-		/*
-		 * find links
-		 */
+		// find links
 		foreach($c->find('a') as $a) {
 			$out = $href = $title = $txt = '';
 			$href = $a->href;
@@ -209,7 +206,7 @@ class pmlnr_markdown extends pmlnr_base {
 			}
 		}
 
-		/* clean up images:  */
+		// clean up images:
 		foreach($c->find('img') as $img) {
 			$src = $alt = $title = $cl = $out = false;
 

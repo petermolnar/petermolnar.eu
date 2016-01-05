@@ -13,9 +13,7 @@
 				</a>
 			</h2>
 			{% endif %}
-			{% if post.webmention %}
-			{{ post.webmention }}
-			{% endif %}
+			{% include 'ameta_webmention.html' %}
 		</header>
 
 		<div class="e-content">

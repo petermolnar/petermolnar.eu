@@ -33,6 +33,14 @@ class petermolnareu {
 //	public $twig;
 //	public $twigloader;
 
+	//function __autoload ( $name ) {
+		//$pmlnr_name = str_replace('pmlnr_', '', $name);
+		//$pmlnr_file = __DIR__ . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . $pmlnr_name;
+		//if (is_file( $pmlnr_file )) {
+			//require_once ($pmlnr_file);
+		//}
+	//}
+
 	public function __construct () {
 
 		// autocompile LESS to CSS {{{
@@ -144,38 +152,39 @@ class petermolnareu {
 			'show_admin_column' => true,
 			'rewrite' => array( 'slug' => 'format' ),
 		));
+
 	}
 
 	/**
 	 * register & queue css & js
 	 */
 	public function register_css_js () {
-		$base_url = get_bloginfo('template_directory');
-		$js_url = $base_url . '/js';
-		$css_url = $base_url . '/css';
+		$base_url = get_bloginfo("template_directory");
+		$js_url = "{$base_url}/js";
+		$css_url = "{$base_url}/css";
 
-		wp_register_style( 'style', $base_url . '/style.css' , false );
-		wp_enqueue_style( 'style' );
+		wp_register_style( "style", "{$base_url}/style.css" , false );
+		wp_enqueue_style( "style" );
 
 		// Magnific popup
-		wp_register_style( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/magnific-popup.css' , false );
-		wp_register_script( 'magnific-popup', $base_url . '/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js' , array('jquery'), null, false );
+		wp_register_style( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/magnific-popup.css" , false );
+		wp_register_script( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
 
 
 		// justified gallery
-		wp_register_style( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/css/justifiedGallery.min.css' , false );
+		wp_register_style( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
 
-		wp_register_script( 'Justified-Gallery', $base_url . '/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js' , array('jquery'), null, false );
+		wp_register_script( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
 
 		// syntax highlight
-		wp_register_style( 'prism', $css_url . '/prism.css', false, null );
-		wp_enqueue_style( 'prism' );
-		wp_register_script( 'prism' , $js_url . '/prism.js', false, null, true );
-		wp_enqueue_script( 'prism' );
+		wp_register_style( "prism", "{$css_url }/prism.css", false, null );
+		wp_enqueue_style( "prism" );
+		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
+		wp_enqueue_script( "prism" );
 
 		// srcset fallback
-		wp_register_script( 'picturefill' , $base_url . '/lib/picturefill/dist/picturefill.min.js', false, null, true );
-		wp_enqueue_script( 'picturefill' );
+		wp_register_script( "picturefill" , "{$base_url}/lib/picturefill/dist/picturefill.min.js", false, null, true );
+		wp_enqueue_script( "picturefill" );
 
 	}
 
@@ -191,6 +200,50 @@ class petermolnareu {
 			'normal',
 			'default'
 		);
+
+		//add_meta_box(
+			//'bridgy_publish',
+			//esc_html__( 'Bridgy publish', 'petermolnareu' ),
+			//array(&$this, 'post_meta_display_bridgy'),
+			//'post',
+			//'normal',
+			//'default'
+		//);
+	}
+
+	/**
+	 * meta field display
+	 */
+	public function post_meta_display_bridgy ( $object, $box ) {
+		wp_nonce_field( basename( __FILE__ ), 'petermolnareu' );
+
+		$_tpl = '<h3>{{ silo }}</h3>
+		<dl>
+			<dt><label for="{{ silo }}_send">Send to {{ silo }}</label></dt>
+			<dd><span><input type="checkbox" name="{{ silo }}_send" value="1"></span></dd>
+
+			<dt><label for="{{ silo }}_content">Alternative content for {{ silo }}</label></dt>
+			<dd><textarea cols="80" name="{{ silo }}_content" id="{{ silo }}_content"></textarea></dd>
+		</p>';
+
+		$_tpl_done = '<h3>{{ silo }}</h3>
+		<p>Already posted to: {{ url }}</p>';
+
+		$supported = array ('twitter', 'facebook', 'instagram', 'flick');
+
+		foreach ($supported as $silo) {
+			$existing = get_post_meta($object->ID, "bridgy_response_{$silo}", true );
+
+			if (!empty($existing)) {
+				$html = str_replace('{{ url }}', json_encode($existing), $_tpl_done);
+			}
+			else {
+				$html = $_tpl;
+			}
+
+			$html = str_replace('{{ silo }}', $silo, $html);
+			echo $html;
+		}
 	}
 
 	/**
@@ -299,9 +352,36 @@ class petermolnareu {
 
 		// additional meta content links
 		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		array_push($links, $webmention_url);
+		if (!empty($webmention_url)) {
+			array_push($links, $webmention_url);
 
-		pmlnr_base::debug ( 'Post ' . $post->ID . ' urls for webmentioning: ' . join(', ', $links) );
+			/* auto-brigy publish: we need the returned data, so it has to be done here */
+			if (function_exists('send_webmention')) {
+				$bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
+				$autobridgy = false;
+
+				foreach ( $bridgy_silos as $silo ) {
+					if (stristr($webmention_url, $silo)) {
+						$u = wp_get_shortlink($post->ID);
+						$response = send_webmention($url, 'https://www.brid.gy/publish/' . $silo);
+						$rcode = wp_remote_retrieve_response_code( $response );
+
+						if ($rcode == 200) {
+							if (isset($response['body'])) {
+								$json = json_decode($response['body']);
+								$syn_url = $json->url;
+								static::add_syndication($postid, $syn_url);
+							}
+						}
+						else {
+							pmlnr_base::debug("bridgy error: code {$rcode}");
+						}
+					}
+				}
+			}
+		}
+
+		pmlnr_base::debug ( "Post {$post->ID} urls for webmentioning: " . join(', ', $links) );
 		return $links;
 	}
 
@@ -431,6 +511,31 @@ class petermolnareu {
 		if (!empty($_syndicated))
 			update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
 
+	}
+
+	/**
+	 *
+	 */
+	public static function add_syndication ( $postid, $url ) {
+		$curr = $orig = get_post_meta ( $post->ID, 'syndication_urls', true );
+		$url = rtrim(trim($url), '/');
+
+		if (empty($url))
+			return;
+
+		if ($curr && strstr($curr, "\n" ))
+			$curr = split("\n", $curr);
+		else
+			$curr = array ($curr);
+
+		foreach ($curr as $key => $curl )
+			$curr[$key] = rtrim(trim($curl), '/');
+
+		if (!in_array($url, $curr)) {
+			array_push($curr, $url);
+			$curr = join("\n", $curr);
+			update_post_meta ( $postid, 'syndication_urls', $curr, $orig );
+		}
 	}
 
 	/**

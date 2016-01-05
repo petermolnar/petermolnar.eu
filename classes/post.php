@@ -9,11 +9,12 @@ class pmlnr_post extends pmlnr_base {
 	}
 
 	public function init() {
-		add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
+		add_filter( 'the_content', array( &$this, 'dyn_self_url'), 1, 10 );
+		add_filter( 'the_excerpt', array( &$this, 'dyn_self_url'), 1, 10 );
 	}
 
 	/**
-	 */
+	 *
 	public static function insert_post_relations( $content, $post = null ) {
 		if ( $post == null )
 			$post = static::fix_post($post);
@@ -21,31 +22,33 @@ class pmlnr_post extends pmlnr_base {
 		$webmention = static::post_get_webmention( $post );
 
 		return $webmention . "\n" . $content;
-	}
+	}*/
 
 	/**
 	 *
 	 */
-	public static function get_the_content( &$_post = null ){
-		global $post;
-		$prevpost = $post;
+	public static function get_the_content( &$post = null ){
+		//global $post;
+		//$prevpost = $post;
 
-		$post = static::fix_post($_post);
+		$post = static::fix_post($post);
 
-		if ($post === false ) {
-			$post = $prevpost;
-			return false;
-		}
+		//if ($post === false ) {
+			//$post = $prevpost;
+			//return false;
+		//}
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		setup_postdata( $post );
-		ob_start();
-		the_content();
-		$r = ob_get_clean();
-		wp_reset_postdata( $post );
-		$post = $prevpost;
+		$r = apply_filters('the_content', $post->post_content);
+
+		//setup_postdata( $post );
+		//ob_start();
+		//the_content();
+		//$r = ob_get_clean();
+		//wp_reset_postdata( $post );
+		//$post = $prevpost;
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -55,26 +58,27 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_the_excerpt( &$_post = null ){
-		global $post;
-		$prevpost = $post;
+	public static function get_the_excerpt( &$post = null ){
+		//global $post;
+		//$prevpost = $post;
 
-		$post = static::fix_post($_post);
+		$post = static::fix_post($post);
 
-		if ($post === false ) {
-			$post = $prevpost;
-			return false;
-		}
+		//if ($post === false ) {
+			//$post = $prevpost;
+			//return false;
+		//}
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		setup_postdata( $post );
-		ob_start();
-		the_excerpt();
-		$r = ob_get_clean();
-		wp_reset_postdata( $post );
-		$post = $prevpost;
+		$r = apply_filters('the_excerpt', $post->post_excerpt);
+		//setup_postdata( $post );
+		//ob_start();
+		//the_excerpt();
+		//$r = ob_get_clean();
+		//wp_reset_postdata( $post );
+		//$post = $prevpost;
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -84,7 +88,7 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function post_get_webmention( &$post = null ) {
+	public static function post_get_webmention( &$post = null, $parsedown = false ) {
 		$post = static::fix_post($post);
 
 
@@ -104,14 +108,17 @@ class pmlnr_post extends pmlnr_base {
 			case 'u-like-of':
 				$h = __('This is a like of:');
 				$cl = 'u-like-of';
+				$prefix = '';
 				break;
 			case 'u-repost-of':
 				$h = __('This is a repost of:');
 				$cl = 'u-repost-of';
+				$prefix = '';
 				break;
 			default:
 				$h = __('This is a reply to:');
 				$cl = 'u-in-reply-to';
+				$prefix = '**RE:** ';
 				break;
 		}
 
@@ -125,12 +132,13 @@ class pmlnr_post extends pmlnr_base {
 			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
 			$rel = str_replace('u-', '', $cl );
 			//$r = "\n\n##### $h";
-			$r = "\n[$webmention_title]($webmention_url){.$cl}\n";
+
+			$r = "\n{$prefix}[{$webmention_title}]({$webmention_url}){.{$cl}}\n";
 			if (!empty($webmention_rsvp))
 				$r .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
 
-			//if ($parsedown)
-				//$r = pmlnr_markdown::parsedown($r);
+			if ($parsedown)
+				$r = pmlnr_markdown::parsedown($r);
 		}
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
@@ -502,7 +510,7 @@ class pmlnr_post extends pmlnr_base {
 
 		$r = array (
 			'id' => $post->ID,
-			'url' => get_permalink( $post->ID ),
+			'url' => static::dyn_self_url(get_permalink( $post->ID )),
 			'title' => trim(get_the_title( $post->ID )),
 			'shorturl' => wp_get_shortlink( $post->ID ),
 			'thumbnail' => static::post_thumbnail ($post),
@@ -524,7 +532,7 @@ class pmlnr_post extends pmlnr_base {
 			'bgstyle' => static::post_background ($post),
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
-			//'webmention' => static::get_post_webmention($post),
+			'webmention' => static::post_get_webmention($post, true),
 		);
 
 		$r['author'] = pmlnr_author::template_vars( $post->post_author );

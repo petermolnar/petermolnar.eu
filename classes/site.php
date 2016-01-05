@@ -11,9 +11,6 @@ class pmlnr_site extends pmlnr_base {
 	 */
 	public static function get_the_header() {
 
-		//if ( $cached = wp_cache_get ( __FUNCTION__, __CLASS__ . __FUNCTION__ ) )
-		//	return $cached;
-
 		ob_start();
 		wp_head();
 		$r = ob_get_clean();
@@ -21,7 +18,7 @@ class pmlnr_site extends pmlnr_base {
 		$r = str_replace("'", '"', $r);
 		$r = preg_replace('/\?ver=.*?"/', '"', $r);
 
-		//wp_cache_set ( __FUNCTION__, $r, __CLASS__ . __FUNCTION__, self::expire );
+		$r = static::dyn_self_url($r);
 
 		return $r;
 	}
@@ -34,14 +31,9 @@ class pmlnr_site extends pmlnr_base {
 		if (empty($name))
 			return false;
 
-		//if ( $cached = wp_cache_get ( $name, __CLASS__ . __FUNCTION__ ) )
-		//	return $cached;
-
 		ob_start();
 		dynamic_sidebar( $name );
 		$r = ob_get_clean();
-
-		//wp_cache_set ( $name, $r, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $r;
 	}
@@ -51,45 +43,45 @@ class pmlnr_site extends pmlnr_base {
 	 */
 	public static function get_the_footer() {
 
-		//if ( $cached = wp_cache_get ( __FUNCTION__, __CLASS__) )
-		//	return $cached;
-
 		ob_start();
 		wp_footer();
 		$r = ob_get_clean();
 
 		$r = preg_replace('/\?ver=.*?"/', '"', $r);
 
-		//wp_cache_set ( __FUNCTION__, $r, __CLASS__, self::expire );
+		$r = static::dyn_self_url($r);
 
 		return $r;
 	}
 
+	/**
+	 *
+	 */
 	public static function get_the_pagination() {
 		global $wp_query;
 		$wp_query->query_vars['paged'] > 1 ? $current = $wp_query->query_vars['paged'] : $current = 1;
 
 		$pargs = array(
-			'format'	 => 'page/%#%',
-			'current'	=> $current,
-			'end_size'   => 1,
-			'mid_size'   => 2,
-			'prev_next'  => True,
-			'prev_text'  => __('«'),
-			'next_text'  => __('»'),
-			'type'	   => 'list',
-			'total'	  => $wp_query->max_num_pages,
+			'format' => 'page/%#%',
+			'current' => $current,
+			'end_size' => 1,
+			'mid_size' => 2,
+			'prev_next' => True,
+			'prev_text' => __('«'),
+			'next_text' => __('»'),
+			'type' => 'list',
+			'total' => $wp_query->max_num_pages,
 		);
-		return paginate_links( $pargs );
+		$r = paginate_links( $pargs );
+		$r = static::dyn_self_url($r);
+
+		return $r;
 	}
 
 	/**
 	 *
 	 */
 	public static function template_vars ( $prefix = '' ) {
-
-		//if ( $cached = wp_cache_get ( __FUNCTION__ . $prefix, __CLASS__ ) )
-		//	return $cached;
 
 		$terms = $menus = array();
 		$author_id = 1;
@@ -122,11 +114,11 @@ class pmlnr_site extends pmlnr_base {
 			'description' => get_bloginfo('description'),
 			'language' => get_bloginfo('language'),
 			'content_dir' => WP_CONTENT_DIR,
-			'content_url' => WP_CONTENT_URL,
-			'theme_url' => get_bloginfo('stylesheet_directory'),
+			'content_url' => static::dyn_self_url(WP_CONTENT_URL),
+			'theme_url' => static::dyn_self_url(get_bloginfo('stylesheet_directory')),
 			'pingback_url' => get_bloginfo('pingback_url'),
-			'rss_url' => get_bloginfo('rss2_url'),
-			'favicon' => get_bloginfo('template_directory') . '/images/favicon.png',
+			'rss_url' => static::dyn_self_url(get_bloginfo('rss2_url')),
+			'favicon' => static::dyn_self_url(get_bloginfo('template_directory') . '/images/favicon.png'),
 			'user_lang' => isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : '',
 			'author' => pmlnr_author::template_vars( $author_id ),
 			'header' => static::get_the_header(),
@@ -173,8 +165,6 @@ class pmlnr_site extends pmlnr_base {
 				unset($r[$key]);
 			}
 		}
-
-		//wp_cache_set ( __FUNCTION__ . $prefix , $r, __CLASS__ . __FUNCTION__, self::expire );
 
 		return $r;
 	}

@@ -5,8 +5,8 @@
 		</section>
 	{% endif %}
 
-	<label for="showContentHeader" class="nav-toggle-button" onclick>&#9776;</label>
 	<input type="checkbox" id="showContentHeader" class="hide" />
+	<label for="showContentHeader" class="nav-toggle-button" onclick>&#9776;</label>
 	<header class="content-header" id="main-header">
 		<nav class="content-navigation">
 			<ul>
@@ -17,7 +17,7 @@
 		</nav>
 
 		<div class="limit content-contact">
-			<a rel="license" href="/licence" title="Licence" class="icon-copyright">&copy;</a>{% include 'partial_vcard.html' with {'author':site.author} only %}<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}"></a>
+			<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>{% include 'partial_vcard.html' with {'author':site.author} only %}<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
 		</div>
 
 		<div class="limit footer-forms">

@@ -12,9 +12,7 @@
 					<span class="p-name more">{{ post.title }}</span>
 				</a>
 			</h2>
-			{% if post.webmention %}
-			{{ post.webmention }}
-			{% endif %}
+			{% include 'ameta_webmention.html' %}
 		</header>
 
 		<div class="e-summary">

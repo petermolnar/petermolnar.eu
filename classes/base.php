@@ -6,6 +6,28 @@ class pmlnr_base {
 	public function __construct () {
 	}
 
+
+	public static function dyn_self_url ($str) {
+		return $str;
+		/*
+		$domain = parse_url($_SERVER['X_ONION'], PHP_URL_HOST);
+		$default = parse_url(get_bloginfo('url'), PHP_URL_HOST);
+
+		//static::debug('current domain is:' . $domain);
+		//static::debug($_SERVER);
+
+		if (empty($domain) || $domain == $default )
+			return $str;
+
+		$replace = array (
+			'https://' . $default,
+			'http://' . $default,
+		);
+
+		return str_replace( $replace, 'https://' . $domain, $str );
+		*/
+	}
+
 	/**
 	 *
 	 */

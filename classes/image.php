@@ -22,7 +22,7 @@ class pmlnr_image extends pmlnr_base {
 
 		add_action( 'init', array( &$this, 'init'));
 		// insert featured image as RSS enclosure
-		add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
+		//add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
 	}
 
 	/* init function, should be used in the theme init loop */
@@ -38,8 +38,20 @@ class pmlnr_image extends pmlnr_base {
 		// insert featured image as adaptive
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
+		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
 	}
 
+
+	/***
+	 *
+	 */
+	public function extend_image_sizes ( $existing ) {
+		$a = array();
+		foreach ( $this->dpix as $dpix => $size )
+			$a[ static::prefix . $dpix ] = "{$size} x {$size}, crop: 0";
+
+		return array_merge( $existing, $a );
+	}
 
 	/**
 	 * additional EXIF which only exiftool can read
@@ -338,7 +350,7 @@ class pmlnr_image extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function insert_enclosure_image ( ) {
 
 		$post = static::fix_post();
@@ -374,5 +386,5 @@ class pmlnr_image extends pmlnr_base {
 
 		echo $str;
 	}
-
+	*/
 }
