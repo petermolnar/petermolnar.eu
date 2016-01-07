@@ -186,7 +186,7 @@ class pmlnr_image extends pmlnr_base {
 		}
 		*/
 		else {
-			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(min-width: 960px) 50vw, 100vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, static::expire );

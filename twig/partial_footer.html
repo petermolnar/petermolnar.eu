@@ -5,29 +5,21 @@
 		</section>
 	{% endif %}
 
-	<input type="checkbox" id="showContentHeader" class="hide" />
-	<label for="showContentHeader" class="nav-toggle-button" onclick>&#9776;</label>
-	<header class="content-header" id="main-header">
-		<nav class="content-navigation">
-			<ul>
-			{% for menu_id,menu_item in site.menu %}
-				<li{% if menu_item.active %} class="current-menu-item" {% endif %}><a title="{{menu_item.title}}" href="{{menu_item.url}}">{{menu_item.title}}</a></li>
-			{% endfor %}
-			</ul>
-		</nav>
-
-		<div class="limit content-contact">
-			<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>{% include 'partial_vcard.html' with {'author':site.author} only %}<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
-		</div>
-
-		<div class="limit footer-forms">
-			<i class='icon-subscribe'></i><a href="/subscribe-feliratkozas">Subscribe</a><br />
-			{% include 'partial_search.html' %}
-		</div>
-	</header>
-
 	<footer class="content-footer" id="main-footer">
-		{{ site.footer }}
+		<div class="content-limit">
+			<div class="content-contact">
+				<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>{% include 'partial_vcard.html' with {'author':site.author} only %}<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
+			</div>
+
+			<span class="footer-forms">
+				<i class='icon-subscribe'></i><a href="/subscribe-feliratkozas">Subscribe</a>
+				{% include 'partial_search.html' %}
+			</span>
+
+			<div class="hide">
+			{{ site.footer }}
+			</div>
+		</div>
 	</footer>
 
 	</body>

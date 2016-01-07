@@ -210,7 +210,7 @@ html {
 body {
   position: relative;
   overflow: auto;
-  margin: 0 auto 0t auto;
+  margin: 0 auto 0 auto;
   line-height: 1.4em;
   font-family: "Liberation Sans", ".SFNSText-Regular", "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
   font-size: 17px;
@@ -235,11 +235,6 @@ hr {
   border-top: 1px solid #777;
   margin: 1em 0;
   padding: 0;
-}
-.limit {
-  max-width: 74em;
-  width: 98%;
-  margin: 0 auto 0 auto;
 }
 .content-inner,
 .content-limit {
@@ -377,33 +372,6 @@ input[type=submit]:active,
 input[type=submit]:focus {
   width: 2.8em;
 }
-.button-rss {
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  text-decoration: inherit;
-  text-align: center;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1em;
-  width: 1em;
-  margin-right: 0.3em;
-  font-family: "petermolnar";
-  width: auto;
-  border: none;
-  background-color: #4d4d4d;
-  color: #b3b3b3;
-  border-radius: 0.2em;
-  padding: 0.2em 0.4em;
-  margin: 0;
-  vertical-align: baseline;
-  line-height: 1.4em;
-}
-.button-rss:active,
-.button-rss:focus {
-  width: auto;
-}
 .subscribe h2 {
   font-size: 1em;
   font-weight: normal;
@@ -529,53 +497,16 @@ input[type=submit]:focus {
 .icon-subscribe:before {
   content: '\2b2d';
 }
-.content-header {
-  position: fixed;
-  width: 17em;
-  height: 100%;
-  top: 0;
+.content-header,
+.content-footer {
+  width: 100%;
   z-index: 99;
-  left: -17em;
-  padding: 3em 0 0 0;
-  transition: all 0.3s ease;
-  -webkit-transition: all 0.3s ease;
   background-color: #2D333A;
-}
-.nav-toggle-button {
-  font-size: 3em;
-  position: absolute;
-  top: -1em;
-  z-index: 999 !important;
-  outline: none;
-  cursor: pointer;
-  color: #000;
-  font-style: normal;
-  font-weight: normal;
-  speak: none;
-  display: inline-block;
-  text-decoration: inherit;
   text-align: center;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1em;
-  width: 1em;
-  margin-right: 0.3em;
-  font-family: "petermolnar";
-  text-shadow: 2px 2px #c8c8c8;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-#showContentHeader:checked ~ #main-header {
-  left: 0;
-  padding: 3em 0 0 0;
-  width: 17em;
-  height: 100%;
-  box-shadow: 0 0 2.8em #333;
 }
 .content-body {
   position: relative;
   z-index: 2;
-  margin-top: 2.8em;
   background-color: #EFEFEF;
   color: #333;
 }
@@ -588,13 +519,15 @@ input[type=submit]:focus {
   border-bottom: 1px dotted #999;
   line-height: 1em;
 }
-.content-footer {
-  padding: 1em 0 1em 0;
-  font-size: 0.9em;
+.content-contact,
+.footer-forms {
+  display: inline-block;
+}
+.content-contact .search-form,
+.footer-forms .search-form {
+  margin-left: 2em;
 }
 .content-contact {
-  margin: 1em 2em 0;
-  font-size: 0.9em;
   color: #888;
 }
 .content-contact [class^="icon-"],
@@ -666,15 +599,17 @@ input[type=submit]:focus {
   margin: 0;
 }
 .content-navigation ul li {
-  display: block;
+  display: inline-block;
   padding: 0;
   margin: 0;
+}
+.content-navigation ul li {
+  margin-right: 1em;
 }
 .content-navigation ul li a {
   display: block;
   line-height: 2.8em;
-  margin-bottom: 0.6em;
-  padding: 0;
+  padding: 0.3em;
   font-weight: bold;
   color: #888;
 }
@@ -687,8 +622,7 @@ input[type=submit]:focus {
 }
 .content-navigation ul li a:before {
   content: "»";
-  padding-right: 1em;
-  padding-left: 0.1em;
+  padding-right: 0.3em;
   color: rgba(239,239,239,0);
 }
 .content-navigation ul .current-menu-item a,
@@ -769,7 +703,7 @@ input[type=submit]:focus {
   padding: 0 0 1.2em 0;
   border-bottom: 1px solid #999999;
 }
-.h-entry .meta {
+.h-feed .h-entry .meta {
   font-size: 0.9em;
   opacity: 0.7;
 }
@@ -847,62 +781,4 @@ ul.page-numbers span {
 .wp-paginate .current,
 ul.page-numbers .current {
   opacity: 0.5;
-}
-@media (min-width: 960px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.5),(min-width: 960px) and (orientation: landscape) and (max-resolution: 220dpi),(min-width: 2400px) and (orientation: landscape) and (-webkit-max-device-pixel-ratio: 1.9),(min-width: 2400px) and (orientation: landscape) and (max-resolution: 290dpi) {
-  .nav-toggle-button {
-    display: none;
-    visibility: hidden;
-  }
-  .content-header {
-    left: 0;
-    width: 12em;
-    height: 100%;
-    padding: 0;
-  }
-  .content-body {
-    padding: 0;
-    margin-top: 0;
-  }
-  .content-footer,
-  .content-body,
-  .content-comments {
-    margin-left: 12em;
-  }
-  .tags,
-  .share,
-  .usyndication,
-  .siblings {
-    margin: 1em 0 0 0;
-    font-size: 0.9em;
-  }
-  .tags ul,
-  .share ul,
-  .usyndication ul,
-  .siblings ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  .tags ul li,
-  .share ul li,
-  .usyndication ul li,
-  .siblings ul li {
-    display: inline-block;
-    padding: 0;
-    margin: 0;
-  }
-  .tags ul li,
-  .share ul li,
-  .usyndication ul li,
-  .siblings ul li {
-    font-size: 0.8em;
-    display: inline-block;
-    margin: 0 0 0.6em 0;
-  }
-  .tags ul li a,
-  .share ul li a,
-  .usyndication ul li a,
-  .siblings ul li a {
-    display: block;
-  }
 }

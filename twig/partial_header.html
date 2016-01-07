@@ -13,3 +13,14 @@
 
 <body>
 
+	<header class="content-header" id="main-header">
+		<div class="content-limit">
+			<nav class="content-navigation">
+				<ul>
+				{% for menu_id,menu_item in site.menu %}
+					<li{% if menu_item.active %} class="current-menu-item" {% endif %}><a title="{{menu_item.title}}" href="{{menu_item.url}}">{{menu_item.title}}</a></li>
+				{% endfor %}
+				</ul>
+			</nav>
+		</div>
+	</header>
