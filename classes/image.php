@@ -333,10 +333,12 @@ class pmlnr_image extends pmlnr_base {
 			if ( isset($meta['iso']) && !empty($meta['iso']))
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
 
+			$location = '';
 			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude']))
-				$r['location'] = sprintf ( __('<i class="icon-location spacer"></i><span class="h-geo"><span class="p-latitude">%s</span>,<span class="p-longitude">%s</span></span>'), $meta['geo_latitude'], ($meta['geo_longitude'] ));
+				$location = sprintf ( __('<br /><i class="icon-location spacer"></i><span class="h-geo geo p-location"><span class="p-latitude">%s</span>,<span class="p-longitude">%s</span></span>'), $meta['geo_latitude'], ($meta['geo_longitude'] ));
 
-			$return = '<div class="aligncenter">' . join(', ',$r) .'</div>';
+			$return = '<div class="aligncenter">' . join(', ',$r) . $location . '</div>';
+
 
 		}
 

@@ -113,7 +113,7 @@ class pmlnr_post extends pmlnr_base {
 			case 'u-repost-of':
 				$h = __('This is a repost of:');
 				$cl = 'u-repost-of';
-				$prefix = '';
+				$prefix = '*reposted from:* ';
 				break;
 			default:
 				$h = __('This is a reply to:');
@@ -182,11 +182,11 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$r = [];
+		$r = array();
 		$syndicates = get_post_meta ( $post->ID, 'syndication_urls', true );
 
 		if ( !$syndicates )
-			return $parsed;
+			return $r;
 
 		$syndicates = explode( "\n", $syndicates );
 
@@ -195,7 +195,7 @@ class pmlnr_post extends pmlnr_base {
 			preg_match ( '/^http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\/(.*)\/(.*)$/', $syndicate, $split);
 
 			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3]))
-				$r[$split[2]] = $split;
+				$r[$split[2]] = $syndicate;
 		}
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
@@ -533,6 +533,7 @@ class pmlnr_post extends pmlnr_base {
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
 			'webmention' => static::post_get_webmention($post, true),
+			'syndicates' => static::post_get_syndicates($post),
 		);
 
 		$r['author'] = pmlnr_author::template_vars( $post->post_author );

@@ -500,10 +500,14 @@ input[type=submit]:focus {
 .icon-search:before {
   content: '\2753';
 }
+.icon-location:before {
+  content: '\2757';
+}
 .u-in-reply-to:before,
 .icon-reply:before {
   content: '\27a6';
 }
+.u-repost-of:before,
 .icon-repost:before {
   content: '\27f3';
 }

@@ -6,12 +6,7 @@ $dirname = dirname(__FILE__);
 
 require __DIR__ . '/vendor/autoload.php';
 
-//require_once ($dirname . '/lib/parsedown/Parsedown.php');
-//require_once ($dirname . '/lib/parsedown-extra/ParsedownExtra.php');
-//require_once ($dirname . '/lib/lessphp/lessc.inc.php');
 require_once ($dirname . '/lib/simple_html_dom/simple_html_dom.php');
-//require_once ($dirname . '/lib/Twig/lib/Twig/Autoloader.php');
-//require_once ($dirname . '/lib/Twig-extensions/lib/Twig/Extensions/Autoloader.php');
 Twig_Autoloader::register();
 Twig_Extensions_Autoloader::register();
 
@@ -25,25 +20,16 @@ require_once ($dirname . '/classes/site.php');
 
 class petermolnareu {
 	const menu_header = 'header';
-	//private $endpoints = array ('yaml');
 
 	public $twig = null;
 	public $twigloader = null;
 	private $twigcache = WP_CONTENT_DIR . '/cache/twig';
-//	public $twig;
-//	public $twigloader;
 
-	//function __autoload ( $name ) {
-		//$pmlnr_name = str_replace('pmlnr_', '', $name);
-		//$pmlnr_file = __DIR__ . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . $pmlnr_name;
-		//if (is_file( $pmlnr_file )) {
-			//require_once ($pmlnr_file);
-		//}
-	//}
+	const bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
 
 	public function __construct () {
 
-		// autocompile LESS to CSS {{{
+		// autocompile LESS to CSS
 		$dirname = dirname(__FILE__);
 		$lessfile = $dirname . '/style.less';
 		$lessmtime = filemtime( $lessfile );
@@ -51,12 +37,10 @@ class petermolnareu {
 		$cssmtime = filemtime( $cssfile );
 
 		if ($cssmtime < $lessmtime ) {
-			//include_once ($dirname . '/lib/lessphp/lessc.inc.php');
 			$less = new lessc;
 			$less->compileFile( $lessfile, $cssfile );
 			touch ( $cssfile, $lessmtime );
 		}
-		// }}}
 
 		if (!is_dir($this->twigcache))
 			mkdir($this->twigcache);
@@ -70,36 +54,12 @@ class petermolnareu {
 		));
 		$this->twig->addExtension(new Twig_Extensions_Extension_I18n());
 
-		//$lang = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : 'en';
-
-		//putenv('LC_ALL='. $lang );
-		//setlocale(LC_ALL, $lang);
-
-		//// Specify the location of the translation tables
-		//bindtextdomain('petermolnareu', dirname(__FILE__) . '/translations');
-		//bind_textdomain_codeset('petermolnareu', 'UTF-8');
-
-		//// Choose domain
-		//textdomain('petermolnareu');
-
-		/*
-		// iterate over all your templates
-		foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tplDir), RecursiveIteratorIterator::LEAVES_ONLY) as $file)
-		{
-			// force compilation
-			if ($file->isFile()) {
-					$this->twig->loadTemplate(str_replace($tplDir.'/', '', $file));
-			}
-		}
-		*/
-
 		new pmlnr_image();
 		new pmlnr_cleanup();
 		new pmlnr_markdown();
 		new pmlnr_post();
 		new pmlnr_author();
 		new pmlnr_site();
-		//new pmlnr_formats();
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
@@ -136,6 +96,9 @@ class petermolnareu {
 
 		// add the webmention box value to the webmention links list
 		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
+
+		// add the webmention box value to the webmention links list
+		add_filter ('bridgy_publish_urls', array(&$this, 'bridgy_publish_urls'), 1, 2);
 
 		// this is because custom taxonomy
 		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
@@ -200,15 +163,6 @@ class petermolnareu {
 			'normal',
 			'default'
 		);
-
-		//add_meta_box(
-			//'bridgy_publish',
-			//esc_html__( 'Bridgy publish', 'petermolnareu' ),
-			//array(&$this, 'post_meta_display_bridgy'),
-			//'post',
-			//'normal',
-			//'default'
-		//);
 	}
 
 	/**
@@ -328,6 +282,35 @@ class petermolnareu {
 	}
 
 	/**
+	 * magical bridgy magic
+	 */
+	public function bridgy_publish_urls ($links, $postid) {
+		if (empty($postid))
+			return $links;
+
+		$post = get_post( $postid );
+		if (!pmlnr_base::is_post($post))
+			return $links;
+
+		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
+		if (empty($webmention_url))
+			return $links;
+
+		pmlnr_base::debug("bridgy-magic: we should extend this: " . json_encode($links) );
+
+		foreach ( static::bridgy_silos as $silo ) {
+			if (stristr($webmention_url, $silo)) {
+				pmlnr_base::debug("extending bridgy_publish with {$silo} because {$webmention_url}");
+				$links[$silo] = 'yes';
+			}
+		}
+
+		pmlnr_base::debug("bridgy-magic: we extended: " . json_encode($links) );
+
+		return $links;
+	}
+
+	/**
 	 * filter links to webmentions
 	 *
 	 * this is needed because markdown
@@ -340,7 +323,7 @@ class petermolnareu {
 			return $links;
 
 		$post = get_post( $postid );
-		if (!$post || empty($post) || !is_object($post))
+		if (!pmlnr_base::is_post($post))
 			return $links;
 
 		// Find all external links in the source
@@ -354,31 +337,6 @@ class petermolnareu {
 		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
 		if (!empty($webmention_url)) {
 			array_push($links, $webmention_url);
-
-			/* auto-brigy publish: we need the returned data, so it has to be done here */
-			if (function_exists('send_webmention')) {
-				$bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
-				$autobridgy = false;
-
-				foreach ( $bridgy_silos as $silo ) {
-					if (stristr($webmention_url, $silo)) {
-						$u = wp_get_shortlink($post->ID);
-						$response = send_webmention($url, 'https://www.brid.gy/publish/' . $silo);
-						$rcode = wp_remote_retrieve_response_code( $response );
-
-						if ($rcode == 200) {
-							if (isset($response['body'])) {
-								$json = json_decode($response['body']);
-								$syn_url = $json->url;
-								static::add_syndication($postid, $syn_url);
-							}
-						}
-						else {
-							pmlnr_base::debug("bridgy error: code {$rcode}");
-						}
-					}
-				}
-			}
 		}
 
 		pmlnr_base::debug ( "Post {$post->ID} urls for webmentioning: " . join(', ', $links) );
@@ -503,7 +461,7 @@ class petermolnareu {
 		}
 
 		foreach ($_syndicated as $url ) {
-			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com'))
+			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com') && !strstr($url, 'tumblr.com'))
 				$synds[] = $url;
 		}
 
@@ -511,31 +469,6 @@ class petermolnareu {
 		if (!empty($_syndicated))
 			update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
 
-	}
-
-	/**
-	 *
-	 */
-	public static function add_syndication ( $postid, $url ) {
-		$curr = $orig = get_post_meta ( $post->ID, 'syndication_urls', true );
-		$url = rtrim(trim($url), '/');
-
-		if (empty($url))
-			return;
-
-		if ($curr && strstr($curr, "\n" ))
-			$curr = split("\n", $curr);
-		else
-			$curr = array ($curr);
-
-		foreach ($curr as $key => $curl )
-			$curr[$key] = rtrim(trim($curl), '/');
-
-		if (!in_array($url, $curr)) {
-			array_push($curr, $url);
-			$curr = join("\n", $curr);
-			update_post_meta ( $postid, 'syndication_urls', $curr, $orig );
-		}
 	}
 
 	/**
@@ -574,42 +507,6 @@ class petermolnareu {
 		}
 	}
 
-	/**
-	 * Get the source's images and save them locally, for posterity, unless we can't.
-	 *
-	 *
-	public function side_load_md_images( $post_id, $content = '' ) {
-		$content = wp_unslash( $content );
-
-		// match all markdown images
-		$matches = pmlnr_base::extract_md_images($content);
-
-		if ( !empty($matches) && current_user_can( 'upload_files' ) ) {
-
-			foreach ( $matches[0] as $cntr => $image ) {
-				$image_src = $matches[1][$cntr];
-
-				// Don't try to sideload a file without a file extension, leads to WP upload error.
-				if ( ! preg_match( '/[^\?]+\.(?:jpe?g|jpe|gif|png)(?:\?|$)/i', $image_src ) ) {
-					continue;
-				}
-
-				if ( !pmlnr_base::is_url_external($image_src) ) {
-					continue;
-				}
-
-				// Sideload image, which gives us a new image src.
-				$new_src = media_sideload_image( $image_src, $post_id, null, 'src' );
-
-				if ( ! is_wp_error( $new_src ) ) {
-					$content = str_replace( $image_src, $new_src, $content );
-				}
-			}
-		}
-
-		// Edxpected slashed
-		return wp_slash( $content );
-	}
 
 	/**
 	 *
@@ -630,20 +527,64 @@ class petermolnareu {
 			);
 	}
 
-	/**
-	 *
-	 *
-	public function widgets_init () {
-		register_sidebar( array(
-			'name' => __( 'Left', 'petermolnareu' ),
-			'id' => 'nav_left',
-			'before_widget' => '',
-			'after_widget'  => '',
-			'before_title'  => '',
-			'after_title'   => '',
-		) );
+
+
+	public static function migrate_stuff ($post) {
+		$post = pmlnr_base::fix_post($post);
+
+		$singlemention_url = get_post_meta($post->ID, 'webmention_url', true);
+		$singlemention_type = get_post_meta($post->ID, 'webmention_type', true);
+		if (empty($singlemention_type)) $singlemention_type = 'u-in-reply-to';
+		$singlemention_rsvp = get_post_meta($post->ID, 'webmention_rsvp', true);
+		if (empty($singlemention_rsvp)) $singlemention_rsvp = false;
+
+		if (empty($singlemention_url)) {
+			$twitter_reply_user = get_post_meta( $post->ID, 'twitter_in_reply_to_user_id', true);
+			$twitter_reply_id = get_post_meta( $post->ID, 'twitter_in_reply_to_status_id', true);
+			if ( $twitter_reply_user && $twitter_reply_id ) {
+				$r = 'https://twitter.com/' . $twitter_reply_user . '/status/' . $twitter_reply_id;
+				update_post_meta($post->ID, 'webmention_url', $r);
+				update_post_meta($post->ID, 'webmention_type', 'u-in-reply-to');
+			}
+
+			$twitter_url = get_post_meta( $post->ID, 'twitter_permalink', true);
+			if ( $twitter_url ) {
+				update_post_meta($post->ID, 'webmention_url', $twitter_url);
+				update_post_meta($post->ID, 'webmention_type', 'u-repost-of');
+			}
+		}
+
+		/*
+		$multimention = $multimention_curr = get_post_meta($post->ID, 'webmentions', true);
+		if (!is_array($multimention))
+			$multimention = array();
+
+		$m = array ();
+		$m['url'] = $singlemention_url;
+		$m['type'] = $singlemention_type;
+		if ($singlemention_rsvp != false )
+			$m['rsvp'] = $singlemention_rsvp;
+
+		$found = false;
+		foreach ($multimention as $n => $mention) {
+			if ($mention['url'] == $singlemention_url) {
+				$found = true;
+				$multimention[$n]['type'] = $singlemention_type;
+				if ($singlemention_rsvp != false )
+					$multimention[$n]['rsvp'] = $singlemention_rsvp;
+			}
+		}
+
+		if (!$found) {
+			array_push($multimention, $m);
+			pmlnr_base::debug('adding multimention:' . json_encode($multimention));
+			$u = update_post_meta($post->ID, 'webmentions', $multimention, $multimention_curr );
+			if (is_wp_error($u))
+				pmlnr_base::debug('huh? ' . $u->get_error_message());
+		}
+		*/
 	}
-	*/
+
 }
 
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {

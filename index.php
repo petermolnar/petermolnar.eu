@@ -6,7 +6,7 @@ $twigvars['posts'] = array();
 if ( have_posts() ) {
 	while ( have_posts() ) {
 		the_post();
-
+		//petermolnareu::migrate_stuff ($post);
 		$post_id = get_the_ID();
 		$tmpl_vars = pmlnr_post::template_vars( $post );
 		$twigvars['posts'][] = $tmpl_vars;
