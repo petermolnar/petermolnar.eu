@@ -2,3 +2,4 @@
 **.fuse_hidden*
 /vendor/
 composer.lock
+data.yaml

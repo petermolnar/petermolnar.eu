@@ -25,6 +25,10 @@ class pmlnr_image extends pmlnr_base {
 		//add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
 	}
 
+	public static function exif_types () {
+		return array ( 'camera', 'focal_length', 'shutter_speed', 'iso', 'aperture' );
+	}
+
 	/* init function, should be used in the theme init loop */
 	public function init (  ) {
 
@@ -39,6 +43,19 @@ class pmlnr_image extends pmlnr_base {
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
 		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
+
+		/*
+		foreach ( static::exif_types() as $exif ) {
+			register_taxonomy( 'exif_' . $exif, 'post', array (
+				'label' => 'Exif: ' . $exif,
+				'public' => true,
+				'show_ui' => true,
+				'hierarchical' => false,
+				'show_admin_column' => false,
+			));
+		}
+		*/
+
 	}
 
 
@@ -277,7 +294,7 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 		if ( static::is_photo($thid) && is_singular() ) {
-			$src = $src . static::photo_exif( $thid );
+			$src = $src . static::photo_exif( $thid, $post->ID );
 		}
 
 		wp_cache_set ( $post->ID, $src, __CLASS__ . __FUNCTION__, static::expire );
@@ -288,7 +305,7 @@ class pmlnr_image extends pmlnr_base {
 	/**
 	 *
 	 */
-	public function photo_exif ( &$thid ) {
+	public static function photo_exif ( &$thid, $post_id ) {
 		if (empty($thid))
 			return false;
 
@@ -304,14 +321,20 @@ class pmlnr_image extends pmlnr_base {
 			$meta = $meta['image_meta'];
 			$r = array();
 
-			if ( isset($meta['camera']) && !empty($meta['camera']))
+			if ( isset($meta['camera']) && !empty($meta['camera'])) {
 				$r['camera'] = '<i class="icon-camera spacer"></i>'. $meta['camera'];
+				//wp_set_post_terms( $post_id, $meta['camera'] , 'exif_camera' , false );
+			}
 
-			if ( isset($meta['focal_length']) && !empty($meta['focal_length']))
+			if ( isset($meta['focal_length']) && !empty($meta['focal_length'])) {
 				$r['focal_length'] = sprintf (__('<i class="icon-focallength spacer"></i>%smm'), $meta['focal_length'] );
+				//wp_set_post_terms( $post_id, $meta['focal_length'] , 'exif_focal_length' , false );
+			}
 
-			if ( isset($meta['aperture']) && !empty($meta['aperture']))
+			if ( isset($meta['aperture']) && !empty($meta['aperture'])) {
 				$r['aperture'] = sprintf ( __('<i class="icon-aperture spacer"></i>f/%s'), $meta['aperture']);
+				//wp_set_post_terms( $post_id, $meta['aperture'] , 'exif_aperture' , false );
+			}
 
 			if ( isset($meta['shutter_speed']) && !empty($meta['shutter_speed'])) {
 				if ( (1 / $meta['shutter_speed'] ) > 1) {
@@ -328,10 +351,13 @@ class pmlnr_image extends pmlnr_base {
 					$shutter_speed = $meta['shutter_speed'];
 				}
 				$r['shutter_speed'] = sprintf( __('<i class="icon-clock spacer"></i>%s sec'), $shutter_speed);
+				//wp_set_post_terms( $post_id, $shutter_speed , 'exif_shutter_speed' , false );
 			}
 
-			if ( isset($meta['iso']) && !empty($meta['iso']))
+			if ( isset($meta['iso']) && !empty($meta['iso'])) {
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
+				//wp_set_post_terms( $post_id, $meta['iso'] , 'exif_iso' , false );
+			}
 
 			$location = '';
 			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude']))

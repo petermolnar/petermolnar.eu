@@ -1,7 +1,5 @@
-<a href="{{ post.tile_target }}" title="{{ post.title }}" class="h-entry">
-	<img src="{{ post.tile_img }}" alt="{{ post.tile_alt }}" class="u-photo" />
-	<span class="caption p-name">{{ post.title }}</span>
-	<span class="hide">
+<article class="h-entry">
+	<header class="hide">
 		<time class="dt-published" datetime="{{ post.pubdate_iso }}">{{ post.pubdate_print }}</time>
 		<span class="p-author h-card vcard">{{ post.author.name }}</span>
 		{% if post.tags %}
@@ -9,5 +7,9 @@
 				<span class="p-category">{{ tname }}</span>
 			{% endfor %}
 		{% endif %}
-	</span>
-</a>
+	</header>
+	<a href="{{ post.url }}" title="{{ post.title }}" class="h-entry">
+		<img src="{{ post.tile_img }}" alt="{{ post.tile_alt }}" class="u-photo" />
+		<span class="caption p-name">{{ post.title }}</span>
+	</a>
+</article>

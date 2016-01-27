@@ -17,6 +17,7 @@ require_once ($dirname . '/classes/markdown.php');
 require_once ($dirname . '/classes/post.php');
 require_once ($dirname . '/classes/author.php');
 require_once ($dirname . '/classes/site.php');
+require_once ($dirname . '/classes/comment.php');
 
 class petermolnareu {
 	const menu_header = 'header';
@@ -38,6 +39,7 @@ class petermolnareu {
 
 		if ($cssmtime < $lessmtime ) {
 			$less = new lessc;
+			$less->setFormatter("classic");
 			$less->compileFile( $lessfile, $cssfile );
 			touch ( $cssfile, $lessmtime );
 		}
@@ -60,6 +62,7 @@ class petermolnareu {
 		new pmlnr_post();
 		new pmlnr_author();
 		new pmlnr_site();
+		new pmlnr_comment();
 
 		add_image_size ( 'headerbg', 720, 0, false );
 
@@ -73,12 +76,19 @@ class petermolnareu {
 		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
 		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
-		add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
+		//add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
 
-		//add_action( 'widgets_init', array( &$this, 'widgets_init' ) );
+		add_action ( 'comment_post', array(&$this, 'comment_webmention'),8,2);
+
+		//add_action( 'widgets_init', array(&$this, 'widgets_init') );
+
+		add_action( 'transition_post_status', array( &$this, 'on_publish' ), 12, 5 );
 
 	}
 
+	/**
+	 *
+	 */
 	public function init () {
 
 		add_theme_support( 'post-thumbnails' );
@@ -100,12 +110,10 @@ class petermolnareu {
 		// add the webmention box value to the webmention links list
 		add_filter ('bridgy_publish_urls', array(&$this, 'bridgy_publish_urls'), 1, 2);
 
-		// this is because custom taxonomy
-		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
-
 		// I want to upload svg
 		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
 
+		/*
 		// my own post formats
 		register_taxonomy( 'kind', 'post', array (
 			'label' => 'Type',
@@ -116,6 +124,25 @@ class petermolnareu {
 			'rewrite' => array( 'slug' => 'format' ),
 		));
 
+		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
+
+		*/
+
+		// add comment endpoint to query vars
+		add_filter( 'query_vars', array( &$this, 'add_query_var' ) );
+		add_rewrite_endpoint ( pmlnr_comment::comment_endpoint(), EP_ROOT );
+	}
+
+	/**
+	 * add webmention to accepted query vars
+	 *
+	 * @param array $vars current query vars
+	 *
+	 * @return array extended vars
+	 */
+	public function add_query_var($vars) {
+		array_push($vars, pmlnr_comment::comment_endpoint() );
+		return $vars;
 	}
 
 	/**
@@ -126,8 +153,8 @@ class petermolnareu {
 		$js_url = "{$base_url}/js";
 		$css_url = "{$base_url}/css";
 
-		wp_register_style( "style", "{$base_url}/style.css" , false );
-		wp_enqueue_style( "style" );
+		//wp_register_style( "style", "{$base_url}/style.css" , false );
+		//wp_enqueue_style( "style" );
 
 		// Magnific popup
 		wp_register_style( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/magnific-popup.css" , false );
@@ -140,8 +167,8 @@ class petermolnareu {
 		wp_register_script( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
 
 		// syntax highlight
-		wp_register_style( "prism", "{$css_url }/prism.css", false, null );
-		wp_enqueue_style( "prism" );
+		//wp_register_style( "prism", "{$css_url }/prism.css", false, null );
+		//wp_enqueue_style( "prism" );
 		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
 		wp_enqueue_script( "prism" );
 
@@ -233,6 +260,7 @@ class petermolnareu {
 			<?php foreach ( $types as $type => $label ): ?>
 			<span><input type="radio" name="<?php echo $typefield ?>" value="<?php echo $type ?>" <?php checked( $webmention_type, $type, 1 ); ?>><?php echo $label; ?></span>
 			<?php endforeach; ?>
+			<span><input type="radio" name="<?php echo $typefield ?>" value=""><?php _e('clear') ?></span>
 		</p>
 		<p>
 			<label for="<?php echo $rsvpfield ?>"><?php _e('RSVP'); ?></label><br />
@@ -296,7 +324,7 @@ class petermolnareu {
 		if (empty($webmention_url))
 			return $links;
 
-		pmlnr_base::debug("bridgy-magic: we should extend this: " . json_encode($links) );
+		//pmlnr_base::debug("bridgy-magic: we should extend this: " . json_encode($links) );
 
 		foreach ( static::bridgy_silos as $silo ) {
 			if (stristr($webmention_url, $silo)) {
@@ -305,7 +333,7 @@ class petermolnareu {
 			}
 		}
 
-		pmlnr_base::debug("bridgy-magic: we extended: " . json_encode($links) );
+		//pmlnr_base::debug("bridgy-magic: we extended: " . json_encode($links) );
 
 		return $links;
 	}
@@ -338,6 +366,16 @@ class petermolnareu {
 		if (!empty($webmention_url)) {
 			array_push($links, $webmention_url);
 		}
+
+		// additional urls from comments
+		$comment_urls = get_post_meta( $post->ID, pmlnr_comment::comment_endpoint(), false );
+		$links = array_merge($links, $comment_urls);
+
+		foreach ($links as $k => $link) {
+			$links[$k] = strtolower($link);
+		}
+
+		$links = array_unique($links);
 
 		pmlnr_base::debug ( "Post {$post->ID} urls for webmentioning: " . join(', ', $links) );
 		return $links;
@@ -472,8 +510,10 @@ class petermolnareu {
 	}
 
 	/**
+	 * these are all for custom post type
 	 *
-	 */
+	 *
+	 *
 	public function type_dropdown() {
 		global $typenow;
 		$post_type = 'post';
@@ -493,9 +533,6 @@ class petermolnareu {
 		};
 	}
 
-	/**
-	 *
-	 */
 	public function convert_id_to_term_in_query($query) {
 		global $pagenow;
 		$post_type = 'post'; // change HERE
@@ -506,6 +543,7 @@ class petermolnareu {
 			$q_vars[$taxonomy] = $term->slug;
 		}
 	}
+	*/
 
 
 	/**
@@ -517,18 +555,8 @@ class petermolnareu {
 	}
 
 	/**
-	 *
+	 * old data to new data
 	 */
-	public static function template_vars ( $post = null ) {
-			$post = pmlnr_base::fix_post($post);
-			return array(
-				'site' => pmlnr_site::template_vars(),
-				'post' => pmlnr_post::template_vars( $post ),
-			);
-	}
-
-
-
 	public static function migrate_stuff ($post) {
 		$post = pmlnr_base::fix_post($post);
 
@@ -584,6 +612,165 @@ class petermolnareu {
 		}
 		*/
 	}
+
+
+	/**
+	 *
+	 */
+	public function on_publish( $new_status, $old_status, $post ) {
+
+		if ( 'publish' != $new_status )
+			return false;
+
+		//if ( $new_status == $old_status )
+		//	return false;
+
+		$post = pmlnr_base::fix_post($post);
+		if ( ! pmlnr_base::is_post( $post ) )
+			return false;
+
+		static::posse_to_smtp ( $post );
+	}
+
+
+	/**
+	 *
+	 */
+	public static function posse_to_smtp ( $post ) {
+
+		$yaml = pmlnr_base::get_yaml();
+		$format = pmlnr_base::post_format( $post );
+
+		if ( !in_array( $format, $yaml['smtp_categories']) )
+			return;
+
+		$meta_key = 'posse_to_smtp';
+		$email = get_the_author_meta ( 'user_email' , 1 );
+		$name = get_the_author_meta ( 'display_name' , 1 );
+
+		$subscribers = $yaml['subscribers'];
+
+		$sent = get_post_meta ( $post->ID, $meta_key, true );
+		if ( !is_array( $sent ) )
+			$sent = array();
+
+		if ( empty (  array_diff( $subscribers, $sent ) ) ) {
+			pmlnr_base::debug( "all sent already!" );
+			return true;
+		}
+
+		$template_vars = pmlnr_post::template_vars( $post );
+
+		$headers = array (
+			"From: {$name} <{$email}>",
+			"Content-type: text/html",
+			'X-RSS-ID: ' . get_permalink($post->ID),
+			'X-RSS-Feed: ' . bloginfo('rss2_url'),
+			'X-RSS-URL: ' . get_permalink($post->ID)
+		);
+
+		$title = get_bloginfo('url') . " // " . $template_vars['title'];
+
+		$content = '<!DOCTYPE html>
+		<html>
+			<head>
+				<meta charset="utf-8" />
+			</head>
+			<body>
+				<h1>'. $template_vars['title'] .'</h1>
+				'. $template_vars['content'] .'
+				<hr />
+				<p>
+					Az oldalon: <a href="'. $template_vars['url'] .'">'. $template_vars['url'] .'</a>
+				</p>
+				<p>
+					Ha le akarsz iratkozni, <a href="mailto:'. $email . '">szólj</a>.
+				</p>
+			</body>
+		</html>';
+
+		add_filter( 'wp_mail_content_type', array( __CLASS__, 'set_html_content_type') );
+
+		foreach ( $subscribers as $addr ) {
+
+			if ( in_array( $addr, $sent ))
+				continue;
+
+			pmlnr_base::debug( "sending to {$addr}" );
+			$s = wp_mail( $addr, $title, $content, $headers);
+
+			if ( true == $s )
+				array_push ( $sent, $addr );
+		}
+
+		remove_filter( 'wp_mail_content_type', array( __CLASS__, 'set_html_content_type') );
+		update_post_meta ( $post->ID, $meta_key, $sent );
+
+	}
+
+	/**
+	 *
+	 */
+	public static function set_html_content_type() {
+		return 'text/html';
+	}
+
+	/*
+	public function widgets_init () {
+	register_sidebar( array(
+		'name'          => 'Home right sidebar',
+		'id'            => 'home_right_1',
+		'before_widget' => '<div>',
+		'after_widget'  => '</div>',
+		'before_title'  => '<h2 class="rounded">',
+		'after_title'   => '</h2>',
+	) );
+	}
+	*/
+
+	/**
+	 *
+	 */
+	public function comment_webmention ( $comment_ID, $comment_approved = false ) {
+		if ( ! function_exists( 'send_webmention' ) ) {
+			return false;
+		}
+
+		if ( false == $comment_approved ) {
+			pmlnr_base::debug ( "comment #{$comment_ID} is not approved" );
+			return false;
+		}
+
+		$comment = get_comment( $comment_ID );
+
+		if ( ! pmlnr_base::is_comment ( $comment ) ) {
+			pmlnr_base::debug ( "comment #{$comment_ID} is not a comment" );
+			return false;
+		}
+
+		if ( empty( $comment->comment_parent ) ) {
+			pmlnr_base::debug ( "comment #{$comment_ID} doesn't have a parent" );
+			return false;
+		}
+
+		$parent = get_comment( $comment->comment_parent );
+
+		if ( ! pmlnr_base::is_comment ( $parent ) ) {
+			pmlnr_base::debug ( "comment #{$comment_ID} parent is not a comment" );
+			return false;
+		}
+
+		if ( empty ( $parent->comment_author_url ) ) {
+			pmlnr_base::debug ( "comment #{$comment_ID} no author url for parent" );
+			return false;
+		}
+
+		$permalink = pmlnr_comment::get_permalink($comment_ID);
+
+		pmlnr_base::debug ( "comment #{$comment_ID} sending webmention to: {$parent->comment_author_url} as: {$permalink}" );
+		send_webmention ( $permalink, $parent->comment_author_url );
+	}
+
 
 }
 

@@ -1,0 +1,20 @@
+{% include 'partial_header.html' %}
+<section class="content-body" id="main-content">
+	<article class="h-entry" id="post-{{ post.id }}" >
+		<header>
+			<div class="content-inner">
+				{% include 'ameta_pubdate.html' %}
+				{% include 'ameta_author.html' %}
+				<a class="u-url" href="{{ post.url }}"></a>
+				{% include 'ameta_webmention.html' %}
+			</div>
+		</header>
+
+		<div class="e-content">
+			<div class="content-inner">
+				{{ post.content }}
+			</div>
+		</div>
+	</article>
+</section>
+{% include 'partial_footer.html' %}

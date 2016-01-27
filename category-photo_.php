@@ -5,8 +5,8 @@ define('HEIGHT', 360);
 add_action( 'wp_enqueue_scripts', 'pmlnr_portfolio_scripts' );
 
 function pmlnr_portfolio_scripts () {
-	wp_enqueue_style( 'magnific-popup' );
-	wp_enqueue_script ('magnific-popup');
+	//wp_enqueue_style( 'magnific-popup' );
+	//wp_enqueue_script ('magnific-popup');
 	wp_enqueue_style( 'Justified-Gallery' );
 	wp_enqueue_script ('Justified-Gallery');
 }
@@ -24,8 +24,8 @@ echo $header->render($twigvars);
 
 
 ?>
-<section class="content-body">
-	<div class="" id="portfolio">
+<section class="content-body h-feed">
+	<div class="limit" id="portfolio">
 <?php
 
 if ( have_posts() ) {
@@ -38,20 +38,17 @@ if ( have_posts() ) {
 		$thid = get_post_thumbnail_id( $post->ID );
 		$src = wp_get_attachment_image_src ($thid, array(0, HEIGHT));
 		$s = pmlnr_base::fix_url($src[0]);
-		$target = wp_get_attachment_image_src ($thid, 'large');
-		$t = pmlnr_base::fix_url($target[0]);
+		//$target = wp_get_attachment_image_src ($thid, 'large');
+		//$t = pmlnr_base::fix_url($target[0]);
 
-		$vars = petermolnareu::template_vars($post);
+		$twigvars['post'] = pmlnr_post::template_vars($post);
 
-		$vars['post']['tile_target'] = $t;
-		$vars['post']['tile_img'] = $s;
-		$vars['post']['tile_alt'] = htmlspecialchars(strip_tags($vars['post']['content']));
-
+		//$twigvars['post']['tile_target'] =
+		$twigvars['post']['tile_img'] = $s;
+		$twigvars['post']['tile_alt'] = htmlspecialchars(strip_tags($twigvars['post']['content']));
 
 		$twig = $petermolnareu_theme->twig->loadTemplate('element-tile.html');
-		echo $twig->render($vars);
-
-		//echo '<a href="'.$t.'" title="'. $vars['post']['title'].'" class="h-entry"><img src="'.$s.'" alt="'. htmlspecialchars(strip_tags($vars['post']['content'])) .'" class="u-photo" /><span class="caption ">'. $vars['post']['title'] .'</span><span class=></span></a>';
+		echo $twig->render($twigvars);
 	}
 }
 
@@ -64,7 +61,7 @@ if ( have_posts() ) {
 	jQuery("#portfolio").justifiedGallery({
 		margins: 1,
 		captions: true,
-		rowHeight: <?php echo round(HEIGHT/3 * 2) ?>,
+		rowHeight: <?php echo round( HEIGHT / 3 * 2) ?>,
 		lastRow: "justify",
 		captionSettings: {
 			animationDuration: 500,
@@ -73,23 +70,24 @@ if ( have_posts() ) {
 		},
 	});
 
-	jQuery("#portfolio").magnificPopup({
-		delegate: 'a',
-		type: 'image',
-		tLoading: 'Loading image #%curr%...',
-		mainClass: 'mfp-img-mobile',
-		gallery: {
-			enabled: true,
-			navigateByImgClick: true,
-			preload: [0,1] // Will preload 0 - before current, and 1 after the current image
-		},
-		image: {
-			tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
-			titleSrc: function(item) {
-				return item.el.attr('caption');
-			}
-		}
-	});
+
+	//jQuery("#portfolio").magnificPopup({
+		//delegate: 'a',
+		//type: 'image',
+		//tLoading: 'Loading image #%curr%...',
+		//mainClass: 'mfp-img-mobile',
+		//gallery: {
+			//enabled: true,
+			//navigateByImgClick: true,
+			//preload: [0,1] // Will preload 0 - before current, and 1 after the current image
+		//},
+		//image: {
+			//tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
+			//titleSrc: function(item) {
+				//return item.el.attr('caption');
+			//}
+		//}
+	//});
 
 </script>
 

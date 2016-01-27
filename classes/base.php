@@ -66,18 +66,6 @@ class pmlnr_base {
 
 	/**
 	 *
-	 *
-	public static function debug( $message) {
-		if (is_object($message) || is_array($message))
-			$message = json_encode($message);
-
-		if ( defined('WP_DEBUG') && WP_DEBUG == true )
-			error_log ( 'PMLNR DEBUG => ' . $message);
-	}
-	*/
-
-	/**
-	 *
 	 */
 	public static function livedebug( $message) {
 		if ( function_exists('is_user_logged_in') && is_user_logged_in() )
@@ -153,17 +141,18 @@ class pmlnr_base {
 	}
 
 	/**
+	 * validates a comment object if it really is a comment
 	 *
+	 * @param $post object Wordpress comment Object to check
 	 *
-	public static function is_amp () {
-		global $wp_query;
-
-		if ( is_object($wp_query) && isset( $wp_query->query_vars[ 'amp' ]) )
+	 * @return bool true if it's a post, false if not
+	 */
+	public static function is_comment ( &$comment ) {
+		if ( !empty($comment) && is_object($comment) && isset($comment->comment_ID) && !empty($comment->comment_ID) )
 			return true;
 
 		return false;
 	}
-	*/
 
 	/**
 	 * detect if the post is a photo made by me
@@ -182,14 +171,23 @@ class pmlnr_base {
 
 		$rawmeta = wp_get_attachment_metadata( $thid );
 
+		$yaml = static::get_yaml();
+
 		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta'])) {
 
-			if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) && ( stristr($rawmeta['image_meta']['copyright'], 'Peter Molnar') || stristr($rawmeta['image_meta']['copyright'], 'petermolnar.eu'))) {
-				$return = true;
+			//if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) && ( stristr($rawmeta['image_meta']['copyright'], 'Peter Molnar') || stristr($rawmeta['image_meta']['copyright'], 'petermolnar.eu'))) {
+				//$return = true;
+			//}
+
+			if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) ) {
+				foreach ( $yaml['copyright'] as $str ) {
+					if ( stristr($rawmeta['image_meta']['copyright'], $str) ) {
+						return true;
+					}
+				}
 			}
 
-			$my_devs = array ( 'PENTAX K-5 II s', 'NIKON D80', 'FinePix S5500' );
-			if ( isset($rawmeta['image_meta']['camera']) && !empty($rawmeta['image_meta']['camera']) && in_array(trim($rawmeta['image_meta']['camera']), $my_devs)) {
+			if ( isset($rawmeta['image_meta']['camera']) && !empty($rawmeta['image_meta']['camera']) && in_array(trim($rawmeta['image_meta']['camera']), $yaml['cameras'])) {
 				$return = true;
 			}
 		}
@@ -230,7 +228,7 @@ class pmlnr_base {
 
 		$return = false;
 
-		$kind = wp_get_post_terms( $post->ID, 'kind', array( 'fields' => 'all' ) );
+		$kind = wp_get_post_terms( $post->ID, 'category', array( 'fields' => 'all' ) );
 
 		if (is_wp_error($kind))
 			return false;
@@ -414,14 +412,11 @@ class pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		if (!defined('PMLNR_UPDATE_TYPES')) {
-			$type = static::get_type($post);
-			if ($type != false )
-				return $type;
-		}
-
-		$slug = 'article';
-		$name = __('Article', 'petermolnareu');
+		//if (!defined('PMLNR_UPDATE_TYPES')) {
+			//$type = static::get_type($post);
+			//if ($type != false )
+				//return $type;
+		//}
 
 		$post_length = strlen( $post->post_content );
 
@@ -438,7 +433,7 @@ class pmlnr_base {
 			$content = trim($content);
 		}
 
-		$is_twitter_reply = static::is_twitter_reply($post);
+		//$is_twitter_reply = static::is_twitter_reply($post);
 
 		// /m for multiline, so ^ means beginning of line
 		$has_quote = preg_match("/^> /m", $post->post_content);
@@ -459,72 +454,81 @@ class pmlnr_base {
 
 		$has_audio = preg_match("/\[audio.*\]/", $post->post_content);
 
-		$has_cblips = has_category( 'blips', $post );
-		$has_tblips = has_tag( 'blips', $post );
+		//$has_cblips = has_category( 'blips', $post );
+		//$has_tblips = has_tag( 'blips', $post );
 
-		$has_blips = ( $has_cblips != false || $has_tblips != false ) ? true : false;
+		//$has_blips = ( $has_cblips != false || $has_tblips != false ) ? true : false;
 
+
+		$has_ltc = has_tag( 'linux-tech-coding', $post );
+		$has_j = has_tag( 'journal', $post );
+		$has_longcat = ( $has_ltc != false || $has_j != false ) ? true : false;
+
+		$slug = 'article';
+		//$name = __('Article', 'petermolnareu');
 
 		/**
 		 * Actual discovery
 		 */
-		if ( !empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to' && !empty($webmention_rsvp) ) {
-			$slug = 'rsvp';
-			$name =  __('Response to event','petermolnareu');
+		if ( $has_longcat ) {
+			$slug = 'article';
+			//$name = __('Article', 'petermolnareu');
 		}
-		elseif ( (!empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to') || $is_twitter_reply ) {
+		elseif ( !empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to' && !empty($webmention_rsvp) ) {
+			$slug = 'rsvp';
+			//$name =  __('Response to event','petermolnareu');
+		}
+		elseif ( (!empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to') ) {
 			$slug = 'reply';
-			$name = __('Reply','petermolnareu');
+			//$name = __('Reply','petermolnareu');
 		}
 		elseif ( $has_code ) {
 			$slug = 'article';
-			$name = __('Article', 'petermolnareu');
+			//$name = __('Article', 'petermolnareu');
 		}
-		/*
 		elseif ( !empty($webmention_type) && ($webmention_type == 'u-like-of') ) {
-			$slug = 'like';
-			$name = __('Like','petermolnareu');
+			$slug = 'favorite';
+			//$name = __('Favourite','petermolnareu');
 		}
 		elseif ( !empty($webmention_type) && ($webmention_type == 'u-repost-of') ) {
 			$slug = 'repost';
-			$name = __('Repost','petermolnareu');
+			//$name = __('Repost','petermolnareu');
 		}
-		*/
 		elseif ( $has_thumbnail && static::is_photo($has_thumbnail) && $diff > 90 ) {
 			$slug = 'photo';
-			$name =  __('Photo','petermolnareu');
+			//$name =  __('Photo','petermolnareu');
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_thumbnail ) {
 			$slug = 'image';
-			$name = __('Image','petermolnareu');
+			//$name = __('Image','petermolnareu');
 		}
 		elseif ( !empty($webmention_url) && empty($content)) {
 			$slug = 'bookmark';
-			$name = __('Bookmark','petermolnareu');
+			//$name = __('Bookmark','petermolnareu');
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_youtube ) {
 			$slug = 'video';
-			$name = __('Video','petermolnareu');
+			//$name = __('Video','petermolnareu');
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_audio ) {
 			$slug = 'audio';
-			$name = __('Audio','petermolnareu');
+			//$name = __('Audio','petermolnareu');
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_quote ) {
 			$slug = 'quote';
-			$name = __('Quote','petermolnareu');
+			//$name = __('Quote','petermolnareu');
 		}
-		elseif ( strlen($post->post_title) == 0 || ($post_length < ARTICLE_MIN_LENGTH && $has_blips) ) {
+		elseif ( strlen($post->post_title) == 0 || ($post_length < ARTICLE_MIN_LENGTH) ) {
 			$slug = 'note';
-			$name = __('Note','petermolnareu');
+			//$name = __('Note','petermolnareu');
 		}
 
-		if ($id = term_exists( $slug, 'kind')) {
+		if ($id = term_exists( $slug, 'category')) {
 			$current = static::get_type( $post );
 			//static::debug(sprintf('post type refresh for %s: kind is "%s", automatic says "%s"', $post->ID,$current, $slug));
 			if ($current != $slug ) {
-				static::debug(sprintf('post type refresh for %s: kind is "%s", automatic says "%s"', $post->ID,$current, $slug));
-				wp_set_post_terms( $post->ID, $id, 'kind', false );
+				static::debug(sprintf('post type refresh for %s: category is "%s", automatic says "%s"', $post->ID,$current, $slug));
+				wp_set_post_terms( $post->ID, $id, 'category', false );
 			}
 		}
 
@@ -609,5 +613,18 @@ class pmlnr_base {
 		return $meta;
 	}
 
+
+	public static function get_yaml () {
+
+		if ( $cached = wp_cache_get ( __FUNCTION__ , __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = yaml_parse_file ( __DIR__ . '/../data.yaml' );
+
+		wp_cache_set ( __FUNCTION__, $r, __CLASS__ . __FUNCTION__, static::expire );
+
+
+		return $r;
+	}
 
 }

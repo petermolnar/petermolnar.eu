@@ -57,6 +57,17 @@ class pmlnr_site extends pmlnr_base {
 	/**
 	 *
 	 */
+	public static function get_css() {
+
+		$r = file_get_contents( get_stylesheet_directory() . '/style.css' );
+		$r .= file_get_contents( get_stylesheet_directory() . '/css/prism.css' );
+
+		return $r;
+	}
+
+	/**
+	 *
+	 */
 	public static function get_the_pagination() {
 		global $wp_query;
 		$wp_query->query_vars['paged'] > 1 ? $current = $wp_query->query_vars['paged'] : $current = 1;
@@ -86,7 +97,11 @@ class pmlnr_site extends pmlnr_base {
 		$terms = $menus = array();
 		$author_id = 1;
 
-		if (is_singular()) {
+		if (is_page()) {
+			$post = static::fix_post();
+			$terms[] = $post->ID;
+		}
+		elseif (is_singular()) {
 			$post = static::fix_post();
 
 			$terms[] = $post->ID;
@@ -128,6 +143,7 @@ class pmlnr_site extends pmlnr_base {
 			'image_formats' => array('image', 'photo'),
 			'long_formats' => array('article'),
 			//'subscribe_sidebar' => static::get_the_sidebar('subscribe'),
+			'css' => static::get_css(),
 		);
 
 		// menu vars

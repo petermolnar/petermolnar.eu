@@ -1,10 +1,11 @@
 /*
 Theme Name:		petermolnar.eu
-Theme URI:		http://petermolnar.eu/open-source/wordpress/petermolnar.eu
+Theme URI:		http://github.com/petermolnar/petermolnar.eu
 Description:	petermolnar.eu template for Wordpress
-Author:			Peter Molnar
+Author:				Peter Molnar
 Author URI:		http://petermolnar.eu/
-Version:		12.0
+Licence:			GPLv3
+Version:			12.1
 */
 
 
@@ -14,8 +15,6 @@ Version:		12.0
 @color-text-dark: #333;
 @color-link-light: #ddd;
 @color-link-dark: #000;
-@color-menu: #aaa;
-@color-activemenu: #fff;
 @color-header: #888;
 @color-table: #777;
 
@@ -28,17 +27,11 @@ Version:		12.0
 @padding-normal: 0.3em;
 @padding-large: 0.6em;
 @padding-xlarge: 1em;
-@padding-sxlarge: 1.6em;
 @padding-small: 0.2em;
-@padding-xsmall: 0.1em;
-
-@textshadow-outset: 1px 1px #111;
-@textshadow-light: 1px 1px #fff;
 
 @font-base: 17px;
 @font-gigantic: 36px;
 @font-enormous: 2.8em;
-@font-xxlarge: 2em;
 @font-xlarge: 1.2em;
 @font-large: 1.1em;
 @font-normal: 1em;
@@ -48,13 +41,6 @@ Version:		12.0
 @line-height: 1.4em;
 @line-height-medium: 1.8em;
 @line-height-small: 1.2em;
-@line-height-large: 3.6em;
-
-@panel-width: 17em;
-@toggle-size: 3em;
-@toggle-active: 4em;
-
-@panel-width-desktop: 12em;
 
 .flatul() {
 		list-style-type: none;
@@ -193,12 +179,12 @@ table {
 
 @font-face {
 	font-family: 'petermolnar';
-	src: url('fonts/petermolnar.eot?89917930');
+	src: url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot?89917930');
 	src: local('petermolnar'),
-		 url('fonts/petermolnar.eot#iefix') format('embedded-opentype'),
-		 url('fonts/petermolnar.woff') format('woff'),
-		 url('fonts/petermolnar.ttf') format('truetype'),
-		 url('fonts/petermolnar.svg#petermolnar') format('svg');
+		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot#iefix') format('embedded-opentype'),
+		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.woff') format('woff'),
+		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.ttf') format('truetype'),
+		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.svg#petermolnar') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -273,7 +259,7 @@ img.left {
 * GENERAL *
 ***********/
 html {
-	background-color: @color-bg-light;
+	background-color: @color-bg-dark;
 }
 
 body {
@@ -308,7 +294,7 @@ hr {
 .content-limit {
 	max-width:42em;
 	width:98%;
-	margin:0 auto @font-xlarge auto;
+	margin:0 auto 0 auto;
 	padding: @padding-large;
 }
 
@@ -447,6 +433,7 @@ input[type=submit] {
 	}
 }
 
+/*
 .subscribe {
 
 	h2 {
@@ -458,6 +445,7 @@ input[type=submit] {
 	}
 
 }
+*/
 
 [class^="icon-"]:before, [class*=" icon-"]:before,
 [class^="x-"]:before, [class*=" x-"]:before,
@@ -497,7 +485,12 @@ input[type=submit] {
 .icon-aperture:before { content: '\29be'; } /* '⦾' */
 .icon-picture:before { content: '\29c8'; } /* '⧈' */
 .icon-comment:before { content: '\2b2c'; } /* '⬬' */
-.icon-subscribe:before { content: '\2b2d'; } /* '⬭' */
+.icon-subscribe:before { content: '\2b2d'; padding-left: 1em; } /* '⬭' */
+.icon-indie:before { content: '\25a0'; } /* '■' */
+.icon-web:before { content: '\25bc'; } /* '▼' */
+.icon-camp:before { content: '\25d6'; } /* '◖' */
+.icon-markdown:before { content: '\27cf'; } /* '⟏' */
+.icon-microformats2:before { content: '\29c9'; } /* '⧉' */
 
 /* CONTENT */
 .content-header,
@@ -522,7 +515,7 @@ input[type=submit] {
 
 	.e-content {
 		a {
-			border-bottom: @thinborder dotted @color-text-light;
+			border-bottom: @thinborder solid @color-text-light;
 			line-height: @font-normal;
 		}
 
@@ -666,8 +659,7 @@ input[type=submit] {
 	margin: 2em 0 2em 0;
 
 	ul {
-		font-size: @font-xlarge;
-		.navul();
+		.flatul();
 
 		li {
 			margin: 0 0 @padding-small 0;
@@ -796,4 +788,40 @@ ul.page-numbers {
 		opacity: 0.5;
 	}
 
+}
+
+/* COMMENTS */
+ul.likes {
+	.flatul();
+}
+
+ul.replies {
+	.navul();
+
+	li {
+		margin: 0 0 @padding-large @font-xsmall;
+		padding: 0 0 0 @font-xsmall;
+		border-left: @border-thick;
+		display: block;
+	}
+
+	h6 {
+		margin: @padding-small @padding-large @padding-small 0;
+		padding: 0;
+		display: inline-block;
+	}
+
+	time {
+		font-size: @font-xsmall;
+		display:inline-block;
+	}
+
+	.e-content {
+		display: block;
+	}
+
+	.avatar {
+		float: left;
+		margin: 0 @padding-normal @padding-normal 0;
+	}
 }
