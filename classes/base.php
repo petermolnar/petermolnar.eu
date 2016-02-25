@@ -6,38 +6,6 @@ class pmlnr_base {
 	public function __construct () {
 	}
 
-
-	public static function dyn_self_url ($str) {
-		return $str;
-		/*
-		$domain = parse_url($_SERVER['X_ONION'], PHP_URL_HOST);
-		$default = parse_url(get_bloginfo('url'), PHP_URL_HOST);
-
-		//static::debug('current domain is:' . $domain);
-		//static::debug($_SERVER);
-
-		if (empty($domain) || $domain == $default )
-			return $str;
-
-		$replace = array (
-			'https://' . $default,
-			'http://' . $default,
-		);
-
-		return str_replace( $replace, 'https://' . $domain, $str );
-		*/
-	}
-
-	/**
-	 *
-	 */
-	public static function error( $message) {
-		if (is_object($message) || is_array($message))
-			$message = json_encode($message);
-
-		error_log ( 'PMLNR ERROR => ' . $message );
-	}
-
 	/**
 	 *
 	 * debug messages; will only work if WP_DEBUG is on
@@ -45,23 +13,54 @@ class pmlnr_base {
 	 *
 	 * @param string $message
 	 * @param int $level
+	 *
+	 * @output log to syslog | wp_die on high level
+	 * @return false on not taking action, true on log sent
 	 */
-	static function debug( $message, $level = LOG_NOTICE ) {
+	public static function debug( $message, $level = LOG_NOTICE ) {
+		if ( empty( $message ) )
+			return false;
+
 		if ( @is_array( $message ) || @is_object ( $message ) )
 			$message = json_encode($message);
 
+		$levels = array (
+			LOG_EMERG => 0, // system is unusable
+			LOG_ALERT => 1, // Alert 	action must be taken immediately
+			LOG_CRIT => 2, // Critical 	critical conditions
+			LOG_ERR => 3, // Error 	error conditions
+			LOG_WARNING => 4, // Warning 	warning conditions
+			LOG_NOTICE => 5, // Notice 	normal but significant condition
+			LOG_INFO => 6, // Informational 	informational messages
+			LOG_DEBUG => 7, // Debug 	debug-level messages
+		);
 
-		switch ( $level ) {
-			case LOG_ERR :
-				wp_die( '<h1>Error:</h1>' . '<p>' . $message . '</p>' );
-				exit;
-			default:
-				if ( !defined( 'WP_DEBUG' ) || WP_DEBUG != true )
-					return;
-				break;
+		// number for number based comparison
+		// should work with the defines only, this is just a make-it-sure step
+		$level_ = $levels [ $level ];
+
+		// in case WordPress debug log has a minimum level
+		if ( defined ( 'WP_DEBUG_LEVEL' ) ) {
+			$wp_level = $levels [ WP_DEBUG_LEVEL ];
+			if ( $level_ < $wp_level ) {
+				return false;
+			}
 		}
 
-		error_log(  __CLASS__ . " => " . $message );
+		// ERR, CRIT, ALERT and EMERG
+		if ( 3 >= $level_ ) {
+			wp_die( '<h1>Error:</h1>' . '<p>' . $message . '</p>' );
+			exit;
+		}
+
+		$trace = debug_backtrace();
+		$caller = $trace[1];
+		$parent = $caller['function'];
+
+		if (isset($caller['class']))
+			$parent = $caller['class'] . '::' . $parent;
+
+		return error_log( "{$parent}: {$message}" );
 	}
 
 	/**
@@ -113,24 +112,6 @@ class pmlnr_base {
 	}
 
 	/**
-	 * extract site name from url and return it's icon version
-	 *
-	 */
-	public static function icon4url ( &$url ) {
-		return 'icon-' . strtolower(substr(parse_url($url, PHP_URL_HOST), 0 , (strrpos(parse_url($url, PHP_URL_HOST), "."))));
-	}
-
-	/**
-	 *
-	 */
-	public static function is_localhost() {
-		if ( $_SERVER['SERVER_ADDR'] == $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR'] == '127.0.0.1' )
-			return true;
-
-		return false;
-	}
-
-	/**
 	 *
 	 */
 	public static function is_post ( &$post ) {
@@ -173,11 +154,9 @@ class pmlnr_base {
 
 		$yaml = static::get_yaml();
 
-		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta'])) {
 
-			//if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) && ( stristr($rawmeta['image_meta']['copyright'], 'Peter Molnar') || stristr($rawmeta['image_meta']['copyright'], 'petermolnar.eu'))) {
-				//$return = true;
-			//}
+
+		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta'])) {
 
 			if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) ) {
 				foreach ( $yaml['copyright'] as $str ) {
@@ -233,6 +212,9 @@ class pmlnr_base {
 		if (is_wp_error($kind))
 			return false;
 
+		if(is_array($kind) && count($kind) > 1 )
+			return false;
+
 		if(is_array($kind))
 			$kind = array_pop( $kind );
 
@@ -243,115 +225,6 @@ class pmlnr_base {
 
 		return $return;
 	}
-
-	/**
-	 * decode short string and covert it back to UNIX EPOCH
-	 *
-	 */
-	public static function url2epoch( $num, $b=36) {
-		/* this is the potential 1 I chopped off */
-		if ( !is_numeric($num[0]) || $num[0] != '1' )
-			$num = '1' . $num;
-
-		if ($b == 36)
-			$base='0123456789abcdefghijklmnopqrstuvwxyz';
-		else
-			$base='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-		$limit = strlen($num);
-		$res=strpos($base,$num[0]);
-		for($i=1;$i<$limit;$i++) {
-			$res = $b * $res + strpos($base,$num[$i]);
-		}
-
-		return $res;
-	}
-
-	/**
-	 * convert UNIX EPOCH to short string
-	 *
-	* thanks to https://stackoverflow.com/questions/4964197/converting-a-number-base-10-to-base-62-a-za-z0-9
-	*/
-	public static function epoch2url($num, $b=36) {
-		if ($b == 36)
-			$base='0123456789abcdefghijklmnopqrstuvwxyz';
-		else
-			$base='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-		$r = $num  % $b ;
-		$res = $base[$r];
-		$q = floor($num/$b);
-		while ($q) {
-			$r = $q % $b;
-			$q =floor($q/$b);
-			$res = $base[$r].$res;
-		}
-		/* most of the posts I'll make in my life will start with 1
-		 * so we can save a char by popping it off and re-adding them in
-		 * the decode function
-		 */
-		$res = ltrim($res,'1');
-		return $res;
-	}
-
-	/**
-	 *
-	 */
-	public static function is_imported( &$post ) {
-		$post = static::fix_post($post);
-
-		if ($post === false )
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$return = false;
-		$raw_import_data = get_post_meta ($post->ID, 'raw_import_data', true);
-		if (!empty($raw_import_data)) {
-			$return = true;
-
-			$raw_import_data = json_decode($raw_import_data);
-
-			if (isset($raw_import_data['source']) && !empty($raw_import_data['source'])) {
-				if (stristr($raw_import_data['source'], 'twitter'))
-					$return = 'twitter';
-			}
-		}
-
-		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $return;
-	}
-
-	/**
-	 *
-	 */
-	public static function is_twitter_reply( &$post ) {
-		$post = static::fix_post($post);
-
-		if ($post === false )
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = false;
-
-		$twitter_in_reply_to_screen_name = get_post_meta ( $post->ID, 'twitter_in_reply_to_screen_name', true);
-		if (!empty($twitter_in_reply_to_screen_name)) {
-				$r = true;
-		}
-
-		$twitter_reply_id = get_post_meta ($post->ID, 'twitter_reply_id', true);
-		if (!empty($twitter_reply_id)) {
-			$r = true;
-		}
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-		return $r;
-	}
-
 
 	/**
 	 *
@@ -384,22 +257,6 @@ class pmlnr_base {
 		return $matches;
 	}
 
-
-	/**
-	 *
-	 */
-	public static function is_url_external ( &$url ) {
-		if (!stristr($url, 'http://') || !stristr($url, 'https://'))
-			return false;
-
-		$domain = parse_url(get_bloginfo('url'), PHP_URL_HOST);
-		if (stristr($url, $domain))
-			return false;
-
-		return true;
-	}
-
-
 	/**
 	 *
 	 */
@@ -411,29 +268,30 @@ class pmlnr_base {
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
-
-		//if (!defined('PMLNR_UPDATE_TYPES')) {
-			//$type = static::get_type($post);
-			//if ($type != false )
-				//return $type;
-		//}
-
+/*
+		if ( $post->post_status == 'publish' ) {
+			$type = static::get_type($post);
+			if ($type != false ) {
+				return $type;
+			}
+		}
+*/
 		$post_length = strlen( $post->post_content );
 
 		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
 		$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
 		$webmention_rsvp = get_post_meta( $post->ID, 'webmention_rsvp', true );
 
+		$single_url = $webmention_url;
+
 		$links = static::extract_urls($post->post_content);
 		$content = $post->post_content;
 		// one single link in the post, so it's most probably a bookmark
 		if (!empty($links) && count($links) == 1) {
-			$webmention_url = $links[0];
-			$content = str_replace($webmention_url, '', $content);
+			$single_url = $links[0];
+			$content = str_replace($single_url, '', $content);
 			$content = trim($content);
 		}
-
-		//$is_twitter_reply = static::is_twitter_reply($post);
 
 		// /m for multiline, so ^ means beginning of line
 		$has_quote = preg_match("/^> /m", $post->post_content);
@@ -494,17 +352,13 @@ class pmlnr_base {
 			$slug = 'repost';
 			//$name = __('Repost','petermolnareu');
 		}
-		elseif ( $has_thumbnail && static::is_photo($has_thumbnail) && $diff > 90 ) {
+		elseif ( $has_thumbnail && static::is_photo($has_thumbnail) && $diff > 50 ) {
 			$slug = 'photo';
 			//$name =  __('Photo','petermolnareu');
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_thumbnail ) {
 			$slug = 'image';
 			//$name = __('Image','petermolnareu');
-		}
-		elseif ( !empty($webmention_url) && empty($content)) {
-			$slug = 'bookmark';
-			//$name = __('Bookmark','petermolnareu');
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_youtube ) {
 			$slug = 'video';
@@ -513,6 +367,31 @@ class pmlnr_base {
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_audio ) {
 			$slug = 'audio';
 			//$name = __('Audio','petermolnareu');
+		}
+		elseif ( !empty($webmention_url) ) {
+			$slug = 'bookmark';
+			//$name = __('Bookmark','petermolnareu');
+
+			// update things to make sure this is actually the case
+			/*
+			if ( $post->post_content != $content ) {
+				static::debug ( "Updating #{$post->post_ID} to have bookmark in webmention field: {$webmention_url}" );
+				update_post_meta( $post->ID, 'webmention_url', $webmention_url );
+
+				global $wpdb;
+				$dbname = "{$wpdb->prefix}posts";
+				$req = false;
+
+				$q = "UPDATE `{$dbname}` set `post_content`='{$content}' WHERE `ID`='{$post->ID}' LIMIT 1";
+
+				try {
+					$req = $wpdb->query( $q );
+				}
+				catch (Exception $e) {
+					static::debug('Something went wrong: ' . $e->getMessage());
+				}
+			}
+			*/
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_quote ) {
 			$slug = 'quote';
@@ -523,7 +402,8 @@ class pmlnr_base {
 			//$name = __('Note','petermolnareu');
 		}
 
-		if ($id = term_exists( $slug, 'category')) {
+		$id = term_exists( $slug, 'category');
+		if ($id !== 0 && $id !== null) {
 			$current = static::get_type( $post );
 			//static::debug(sprintf('post type refresh for %s: kind is "%s", automatic says "%s"', $post->ID,$current, $slug));
 			if ($current != $slug ) {
@@ -536,7 +416,9 @@ class pmlnr_base {
 		if ( $slug == 'note' && strlen($post->post_title) != 0) {
 			static::post_replace_title($post);
 		}
+		*/
 
+		/*
 		if ( strlen($post->post_title) == 0 ) {
 			$current_slug = $post->post_name;
 			$epoch = get_the_time('U', $post->ID);
@@ -613,7 +495,9 @@ class pmlnr_base {
 		return $meta;
 	}
 
-
+	/**
+	 * non-git safe data
+	 */
 	public static function get_yaml () {
 
 		if ( $cached = wp_cache_get ( __FUNCTION__ , __CLASS__ . __FUNCTION__ ) )
@@ -625,6 +509,21 @@ class pmlnr_base {
 
 
 		return $r;
+	}
+
+	/**
+	 *
+	 */
+	public static function prefix_array ( &$r, $prefix = '' ) {
+		if (!empty($prefix)) {
+			foreach ($r as $key => $value ) {
+				$r[ $prefix . $key ] = $value;
+				unset($r[$key]);
+			}
+		}
+
+		return $r;
+
 	}
 
 }

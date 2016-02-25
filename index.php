@@ -26,11 +26,13 @@ if ( array_key_exists( $endpoint, $wp->query_vars ) ) {
 }
 
 $twigvars['site'] = pmlnr_site::template_vars();
+$twigvars['archive'] = pmlnr_archive::template_vars();
 $twigvars['posts'] = array();
 
 if ( have_posts() ) {
 	while ( have_posts() ) {
 		the_post();
+		//petermolnareu::autotag_by_photo ( $post );
 		//petermolnareu::migrate_stuff ($post);
 		$post_id = get_the_ID();
 		$tmpl_vars = pmlnr_post::template_vars( $post );
@@ -39,4 +41,5 @@ if ( have_posts() ) {
 }
 
 $twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
-echo $twig->render($twigvars);
+$r = $twig->render($twigvars);
+echo petermolnareu::maybe_tidy ( $r );

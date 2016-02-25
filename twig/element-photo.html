@@ -1,22 +1,25 @@
-<div class="content-inner">
-	<article class="h-entry" id="post-{{ post.id }}" >
+<article class="h-entry h-photo">
 
-		<header>
-			<div class="meta">
-				{% include 'ameta_pubdate.html' %}
-				{% include 'ameta_author.html' %}
-			</div>
-			<h2>
-				<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
-					<span class="p-name">{{ post.title }}</span>
-				</a>
-			</h2>
-		</header>
+	<header>
+		<h2>
+			<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+				<span class="p-name">{{ post.title }}</span>
+			</a>
+		</h2>
+		{% include 'ameta_author.html' %}
+	</header>
 
-		<div class="e-content">
-			{{ post.content }}
-			<br class="clear" />
-		</div>
+	<div class="e-content">
+		{{ post.content }}
+		<br class="clear" />
+	</div>
 
-	</article>
-</div>
+	<footer>
+		<br class="clear" />
+		{% include 'ameta_comments.html' %}
+		{% include 'list_tag.html' %}
+		{% include 'ameta_pubdate.html' %}
+		<br class="clear">
+	</footer>
+
+</article>

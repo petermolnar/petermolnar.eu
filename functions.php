@@ -18,6 +18,7 @@ require_once ($dirname . '/classes/post.php');
 require_once ($dirname . '/classes/author.php');
 require_once ($dirname . '/classes/site.php');
 require_once ($dirname . '/classes/comment.php');
+require_once ($dirname . '/classes/archive.php');
 
 class petermolnareu {
 	const menu_header = 'header';
@@ -39,7 +40,8 @@ class petermolnareu {
 
 		if ($cssmtime < $lessmtime ) {
 			$less = new lessc;
-			$less->setFormatter("classic");
+			//$less->setFormatter("classic");
+			$less->setFormatter("compressed");
 			$less->compileFile( $lessfile, $cssfile );
 			touch ( $cssfile, $lessmtime );
 		}
@@ -82,8 +84,9 @@ class petermolnareu {
 
 		//add_action( 'widgets_init', array(&$this, 'widgets_init') );
 
-		add_action( 'transition_post_status', array( &$this, 'on_publish' ), 12, 5 );
+		add_action( 'transition_post_status', array( &$this, 'on_publish' ), 99, 5 );
 
+		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
 	}
 
 	/**
@@ -131,6 +134,90 @@ class petermolnareu {
 		// add comment endpoint to query vars
 		add_filter( 'query_vars', array( &$this, 'add_query_var' ) );
 		add_rewrite_endpoint ( pmlnr_comment::comment_endpoint(), EP_ROOT );
+
+		add_filter ('press_this_save_post', array (&$this, 'extract_replies'), 2);
+		add_filter ('enable_press_this_media_discovery', '__return_false' );
+
+		add_filter( 'embed_oembed_html', array ( &$this, 'custom_oembed_filter' ), 10, 4 ) ;
+
+		add_filter ('wp_url2snapshot_urls', array ( &$this, 'wp_url2snapshot_urls' ), 2, 2 );
+
+		add_image_size ( 'thumbnail-large', 180, 180, true );
+	}
+
+	public function wp_url2snapshot_urls ( $urls, $post = null ) {
+		$post = pmlnr_base::fix_post( $post );
+
+		// additional meta content links
+		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
+		if (!empty($webmention_url)) {
+			array_push($urls, $webmention_url);
+		}
+
+		return $urls;
+	}
+
+	public function custom_oembed_filter($html, $url, $attr, $post_ID) {
+		$return = '<div class="video-container">'.$html.'</div>';
+		return $return;
+	}
+
+	public function extract_replies ( $post ) {
+
+		parse_str ( parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_QUERY ), $ref );
+
+		$type = 'reply';
+		pmlnr_base::debug ( var_export ( $ref, 1 ) );
+		if ( is_array( $ref ) && isset( $ref['type'] ) ) {
+			$type = $ref['type'];
+			pmlnr_base::debug ( $type );
+		}
+
+		switch ( $type ) {
+			case 'fav':
+			case 'like':
+			case 'u-like-of':
+				$type = 'u-like-of';
+				break;
+			case 'repost':
+				$type = 'u-repost-of';
+				break;
+			default:
+				$type = 'u-in-reply-to';
+				break;
+		}
+
+		$m = array();
+		$match = preg_match_all('/(?:\b|>)(https?:\/\/(?:mobile|m)?\.?(?:twimg\.com|t\.co|twitter\.com|twtr\.io)[^\[<]+)(?:\b|<)/', $post['post_content'], $m );
+
+		if ( $match && !empty( $m ) && isset( $m[0] ) && !empty($m[0]) ) {
+			$m = array_pop ( $m[0] );
+			add_post_meta( $post['ID'], 'webmention_url', $m );
+			add_post_meta( $post['ID'], 'webmention_type', $type );
+			$post['post_title'] = '';
+		}
+
+		$m = array();
+		$match = preg_match_all('/(?:\b|>)(https?:\/\/(?:www)?\.?(?:flickr.com)[^\[<]+)(?:\b|<)/', $post['post_content'], $m );
+
+		if ( $match && !empty( $m ) && isset( $m[0] ) && !empty($m[0]) ) {
+			$m = array_pop ( $m[0] );
+			add_post_meta( $post['ID'], 'webmention_url', $m );
+			add_post_meta( $post['ID'], 'webmention_type', $type );
+			//$post['post_title'] = '';
+		}
+
+		//$m = array();
+		//$match = preg_match_all('/(?:\b|>)(https?:\/\/(?:www)?\.?(?:flickr.com)[^\[<]+)(?:\b|<)/', $post['post_content'], $m );
+
+		//if ( $match && !empty( $m ) && isset( $m[0] ) && !empty($m[0]) ) {
+			//$m = array_pop ( $m[0] );
+			//update_post_meta( $post['ID'], 'webmention_url', $m );
+			//update_post_meta( $post['ID'], 'webmention_type', 'u-like-of' );
+			//$post['post_title'] = '';
+		//}
+
+		return $post;
 	}
 
 	/**
@@ -167,8 +254,8 @@ class petermolnareu {
 		wp_register_script( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
 
 		// syntax highlight
-		//wp_register_style( "prism", "{$css_url }/prism.css", false, null );
-		//wp_enqueue_style( "prism" );
+		wp_register_style( "prism", "{$css_url }/prism.css", false, null );
+		wp_enqueue_style( "prism" );
 		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
 		wp_enqueue_script( "prism" );
 
@@ -619,17 +706,72 @@ class petermolnareu {
 	 */
 	public function on_publish( $new_status, $old_status, $post ) {
 
-		if ( 'publish' != $new_status )
-			return false;
-
-		//if ( $new_status == $old_status )
-		//	return false;
-
 		$post = pmlnr_base::fix_post($post);
 		if ( ! pmlnr_base::is_post( $post ) )
 			return false;
 
-		static::posse_to_smtp ( $post );
+		if ( 'post' != $post->post_type )
+			return false;
+
+		// this runs on _any_ status
+		$format = pmlnr_base::post_format ( $post );
+
+		if ( 'photo' == $format )
+			static::autotag_by_photo ( $post, $yaml, $format );
+
+		// only on publish from now on
+		if ( 'publish' != $new_status )
+			return false;
+
+		// these will run on update
+		if ( class_exists('WP_Webmention_Again_Sender'))
+			do_action( WP_Webmention_Again_Sender::cron );
+
+		if ( $new_status == $old_status )
+			return false;
+
+		// these will only run on fresh publish
+		$yaml = pmlnr_base::get_yaml();
+
+		if ( in_array( $format, $yaml['smtp_categories']) ) {
+			$args = array (
+				'post' => $post,
+				//'yaml' => $yaml,
+				//'format' => $format
+			);
+
+			wp_schedule_single_event( time() + 120, 'posse_to_smtp', $args );
+			//static::posse_to_smtp ( $post, $yaml, $format );
+		}
+
+	}
+
+	/**
+	 *
+	 */
+	public static function autotag_by_photo ( $post, $yaml = null, $format = null ) {
+		$taxonomy = 'post_tag';
+
+		$thid = get_post_thumbnail_id( $post->ID );
+
+		if ( empty($thid) )
+			return false;
+
+		$meta = pmlnr_base::get_extended_thumbnail_meta ( $thid );
+		if ( isset( $meta['image_meta'] ) && isset ( $meta['image_meta']['keywords'] ) && !empty( $meta['image_meta']['keywords'] ) ) {
+			$keywords = $meta['image_meta']['keywords'];
+			$keywords[] = 'photo';
+			$keywords = array_unique($keywords);
+			foreach ( $keywords as $tag ) {
+				if ( !term_exists( $tag, $taxonomy ))
+					wp_insert_term ( $tag, $taxonomy );
+
+				if ( !has_term( $tag, $taxonomy, $post ) ) {
+					pmlnr_base::debug ( "appending post #{$post->ID} {$taxonomy} taxonomy with: {$tag}");
+					wp_set_post_terms( $post->ID, $tag, $taxonomy, true );
+				}
+			}
+		}
 	}
 
 
@@ -637,12 +779,35 @@ class petermolnareu {
 	 *
 	 */
 	public static function posse_to_smtp ( $post ) {
+		pmlnr_base::debug( "POSSE #{$post->ID} to SMTP" );
+
+		$post = pmlnr_base::fix_post($post);
+		if ( ! pmlnr_base::is_post( $post ) ) {
+			pmlnr_base::debug( "this is not a post." );
+			return false;
+		}
+
+		if ( 'post' != $post->post_type ){
+			pmlnr_base::debug( "this is not a post type post." );
+			return false;
+		}
+
+
+		// only on publish from now on
+		if ( 'publish' != $post->post_status ){
+			pmlnr_base::debug( "this is not a published post." );
+			return false;
+		}
+
 
 		$yaml = pmlnr_base::get_yaml();
-		$format = pmlnr_base::post_format( $post );
+		$format = pmlnr_base::post_format ( $post );
 
-		if ( !in_array( $format, $yaml['smtp_categories']) )
-			return;
+		if ( ! in_array( $format, $yaml['smtp_categories']) ){
+			pmlnr_base::debug( "this post shouldn't send a mail" );
+			return false;
+		}
+
 
 		$meta_key = 'posse_to_smtp';
 		$email = get_the_author_meta ( 'user_email' , 1 );
@@ -678,6 +843,7 @@ class petermolnareu {
 			</head>
 			<body>
 				<h1>'. $template_vars['title'] .'</h1>
+				%s
 				'. $template_vars['content'] .'
 				<hr />
 				<p>
@@ -688,6 +854,12 @@ class petermolnareu {
 				</p>
 			</body>
 		</html>';
+
+		$url = get_post_meta ( $post->ID, 'webmention_url', true);
+		if ( $url )
+			$url = '<h2><a href="'.$url.'">'.$url.'</a></h2>';
+
+		$content = sprintf ( $content, $url );
 
 		add_filter( 'wp_mail_content_type', array( __CLASS__, 'set_html_content_type') );
 
@@ -771,6 +943,12 @@ class petermolnareu {
 		send_webmention ( $permalink, $parent->comment_author_url );
 	}
 
+
+	public static function maybe_tidy ( $r ) {
+		$indenter = new \Gajus\Dindent\Indenter();
+		$r = $indenter->indent($r);
+		return $r;
+	}
 
 }
 

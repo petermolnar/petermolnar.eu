@@ -1,4 +1,8 @@
-<a href="{{ post.url }}"><time class="dt-published" datetime="{{ post.pubdate_iso }}">{{ post.pubdate_print }}</time></a>
-{% if post.moddate_print %}
-<time class="dt-updated hide" datetime="{{ post.moddate_iso }}">{{ post.moddate_print }}</time>
-{% endif %}
+<aside class="pubdate">
+	<a href="{{ post.url }}">
+		<time class="dt-published" datetime="{{ post.pubdate_iso }}">{{ post.pubdate_print }}</time>
+	</a>
+	{# if post.moddate_print %}
+		<time class="dt-updated hide" datetime="{{ post.moddate_iso }}">{{ post.moddate_print }}</time>
+	{% endif #}
+</aside>

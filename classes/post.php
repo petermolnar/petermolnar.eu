@@ -5,52 +5,20 @@ class pmlnr_post extends pmlnr_base {
 	public function __construct () {
 		// add graphmeta, because world
 		add_action('wp_head',array(&$this, 'post_graphmeta'));
-		add_action('init',array(&$this, 'init'));
 	}
 
-	public function init() {
-		add_filter( 'the_content', array( &$this, 'dyn_self_url'), 1, 10 );
-		add_filter( 'the_excerpt', array( &$this, 'dyn_self_url'), 1, 10 );
-	}
-
-	/**
-	 *
-	public static function insert_post_relations( $content, $post = null ) {
-		if ( $post == null )
-			$post = static::fix_post($post);
-
-		$webmention = static::post_get_webmention( $post );
-
-		return $webmention . "\n" . $content;
-	}*/
 
 	/**
 	 *
 	 */
 	public static function get_the_content( &$post = null ){
-		//global $post;
-		//$prevpost = $post;
 
 		$post = static::fix_post($post);
-
-		//if ($post === false ) {
-			//$post = $prevpost;
-			//return false;
-		//}
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$r = apply_filters('the_content', $post->post_content);
-
-		//$r = wordwrap ( $r, 80, "\n", false );
-
-		//setup_postdata( $post );
-		//ob_start();
-		//the_content();
-		//$r = ob_get_clean();
-		//wp_reset_postdata( $post );
-		//$post = $prevpost;
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -61,26 +29,12 @@ class pmlnr_post extends pmlnr_base {
 	 *
 	 */
 	public static function get_the_excerpt( &$post = null ){
-		//global $post;
-		//$prevpost = $post;
-
 		$post = static::fix_post($post);
-
-		//if ($post === false ) {
-			//$post = $prevpost;
-			//return false;
-		//}
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$r = apply_filters('the_excerpt', $post->post_excerpt);
-		//setup_postdata( $post );
-		//ob_start();
-		//the_excerpt();
-		//$r = ob_get_clean();
-		//wp_reset_postdata( $post );
-		//$post = $prevpost;
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -117,10 +71,15 @@ class pmlnr_post extends pmlnr_base {
 				$cl = 'u-repost-of';
 				$prefix = '*reposted from:* ';
 				break;
-			default:
+			case 'u-in-reply-to':
 				$h = __('This is a reply to:');
 				$cl = 'u-in-reply-to';
 				$prefix = '**RE:** ';
+				break;
+			default:
+				$h = __('');
+				$cl = 'u-url';
+				$prefix = '**URL:** ';
 				break;
 		}
 
@@ -160,12 +119,18 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
+		$format = static::post_format( $post );
+
 		$r = [];
+
+		if ( $format == 'photo' && ! has_term ( 'photo', 'post_tag', $post ) )
+			wp_set_object_terms( $post->ID, 'photo', 'post_tag', true );
 
 		$tags = get_the_tags( $post->ID );
 		if ( $tags )
 			foreach( $tags as $tag )
 				$r[ $tag->name ] = get_tag_link( $tag->term_id );
+
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -356,53 +321,6 @@ class pmlnr_post extends pmlnr_base {
 
 	/**
 	 *
-	 *
-	public static function twitter_repost_of (&$post = null) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = false;
-
-		$twitter_url = get_post_meta( $post->ID, 'twitter_permalink', true);
-		if ( $twitter_url )
-			$r = $twitter_url;
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-
-	/**
-	 *
-	 *
-	public static function twitter_reply_to (&$post = null) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = false;
-
-		$twitter_reply_user = get_post_meta( $post->ID, 'twitter_in_reply_to_user_id', true);
-		$twitter_reply_id = get_post_meta( $post->ID, 'twitter_in_reply_to_status_id', true);
-		if ( $twitter_reply_user && $twitter_reply_id )
-			$r = 'https://twitter.com/' . $twitter_reply_user . '/status/' . $twitter_reply_id;
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-
-	/**
-	 *
 	 */
 	public static function post_replace_title ( &$post, $new_title = '' ) {
 		$post = static::fix_post($post);
@@ -494,8 +412,10 @@ class pmlnr_post extends pmlnr_base {
 
 		ksort($og);
 
-		foreach ($og as $property => $content )
-			printf( '<meta property="%s" content="%s" />%s', $property, $content, "\n" );
+		foreach ($og as $property => $content ) {
+			$tag = ( strstr( $property, 'og' ) ) ? 'property': 'name';
+			printf( '<meta %s="%s" content="%s" />%s', $tag, $property, $content, "\n" );
+		}
 	}
 
 	/**
@@ -549,6 +469,7 @@ class pmlnr_post extends pmlnr_base {
 					'pubdate_print' => sprintf ('%s %s',
 						date( get_option('date_format'), $time ),
 						date( get_option('time_format'), $time ) ),
+					'source' => get_comment_meta ( $comment->comment_ID, 'comment_url', true ),
 				);
 
 				array_push($r, $c);
@@ -579,7 +500,7 @@ class pmlnr_post extends pmlnr_base {
 
 		$args = array (
 			'post_id' => $post->ID,
-			'type' => 'reacji'
+			'type__in' => array ( 'reacji', 'like', 'favorite' )
 		);
 
 		$comments = get_comments ( $args );
@@ -598,8 +519,21 @@ class pmlnr_post extends pmlnr_base {
 						date( get_option('time_format'), $time ) ),
 				);
 
-				$r[ $comment->comment_content ] = array();
-				array_push($r[ $comment->comment_content ], $c);
+				switch ( $comment->comment_type ) {
+					case 'like':
+					case 'favorite':
+						$reacji = '★';
+						break;
+					default:
+						$reacji = $comment->comment_content;
+						break;
+				}
+
+				if ( ! isset ( $r [ $reacji ] ) )
+					$r [ $reacji ] = array();
+
+				array_push($r[ $reacji ], $c);
+
 			}
 		}
 
@@ -613,40 +547,35 @@ class pmlnr_post extends pmlnr_base {
 	 *
 	 */
 	public static function template_vars (&$post = null, $prefix = '' ) {
+		$r = array();
 		$post = static::fix_post($post);
 
 		if ($post === false)
-			return false;
+			return $r;
 
 		if ( $cached = wp_cache_get ( $post->ID . $prefix, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$r = array (
 			'id' => $post->ID,
-			'url' => static::dyn_self_url(get_permalink( $post->ID )),
+			'url' => get_permalink( $post->ID ),
 			'title' => trim(get_the_title( $post->ID )),
 			'shorturl' => wp_get_shortlink( $post->ID ),
 			'thumbnail' => static::post_thumbnail ($post),
 			'content' => static::get_the_content($post),
 			'raw_content' => $post->post_content,
 			'excerpt' => static::get_the_excerpt($post),
-			//'author_name' => get_the_author_meta ( 'display_name' , $post->post_author ),
-			//'author_url' => get_the_author_meta ( 'user_url' , $post->post_author ),
-			//'author_email' => get_the_author_meta ( 'user_email' , $post->post_author ),
 			'author_meta' => get_post_meta ( $post->ID, 'author', true),
 			'pubdate_iso' => get_the_time( 'c', $post->ID ),
 			'pubdate_print' => sprintf ('%s %s',
 				get_the_time( get_option('date_format'), $post->ID ),
 				get_the_time( get_option('time_format'), $post->ID ) ),
-			'moddate_iso' => get_the_modified_time( 'c', $post->ID ),
-			'moddate_print' => sprintf ('%s %s',
-				get_the_modified_time( get_option('date_format'), $post->ID ),
-				get_the_modified_time( get_option('time_format'), $post->ID ) ),
+			//'moddate_iso' => get_the_modified_time( 'c', $post->ID ),
+			//'moddate_print' => sprintf ('%s %s',
+			//	get_the_modified_time( get_option('date_format'), $post->ID ),
+			//	get_the_modified_time( get_option('time_format'), $post->ID ) ),
 			'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
-			//'repost_of' => static::post_repost_of ( $post ),
-			//'twitter_repost' => static::twitter_repost_of( $post ),
-			//'twitter_reply' => static::twitter_reply_to( $post ),
-			'bgstyle' => static::post_background ($post),
+			'wordstoread' => str_word_count( strip_tags($post->post_content), 0 ),
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
 			'webmention' => static::post_get_webmention($post, true),
@@ -654,16 +583,14 @@ class pmlnr_post extends pmlnr_base {
 			'likes' => static::get_comments($post, 'like'),
 			'replies' => static::get_comments($post, 'reply'),
 			'reacji' => static::get_reacji($post),
+			'singular' => is_singular(),
+			'debug' => is_user_logged_in(),
+			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
 		);
 
 		$r['author'] = pmlnr_author::template_vars( $post->post_author );
 
-		if (!empty($prefix)) {
-			foreach ($r as $key => $value ) {
-				$r[ $prefix . $key ] = $value;
-				unset($r[$key]);
-			}
-		}
+		$r = static::prefix_array ( $r, $prefix );
 
 		wp_cache_set ( $post->ID . $prefix, $r, __CLASS__ . __FUNCTION__, static::expire );
 

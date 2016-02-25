@@ -1,7 +1,6 @@
 <article class="h-entry h-article">
 
 	<header>
-		{% include 'ameta_readtime.html' %}
 		<h2>
 			<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
 				<span class="p-name more">{{ post.title }}</span>
@@ -20,11 +19,10 @@
 	</div>
 
 	<footer>
-		<br class="clear" />
-		{% include 'ameta_comments.html' %}
-		{% include 'list_tag.html' %}
-		{% include 'ameta_pubdate.html' %}
-		<br class="clear" />
+			{% include 'ameta_pubdate.html' %}
+			{% include 'ameta_comments.html' %}
+			{% include 'ameta_readtime.html' %}
+			{% include 'list_tag.html' %}
 	</footer>
 
 </article>

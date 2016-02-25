@@ -1,11 +1,9 @@
-{% if post.author_meta|length > 0 %}
-<span>by <span class="p-author h-card vcard">{{ post.author_meta }}</span></span>
-
-{% elseif post.format in site.author_formats %}
-
-by <span class="p-author h-card vcard">
-	<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
-	<img class="u-photo u-avatar hide" src="{{ post.author.avatar }}" />
-</span>
-
+{% if post.format in site.author_formats %}
+<aside class="author">
+	<p>
+		by <span class="p-author h-card vcard">
+			<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
+		</span>
+		</p>
+</aside>
 {% endif %}

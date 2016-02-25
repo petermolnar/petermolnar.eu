@@ -14,11 +14,13 @@ class pmlnr_cleanup extends pmlnr_base {
 		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
 		remove_action('wp_head', 'adjacent_posts_rel_link', 10, 0);
 		remove_action('wp_head', 'wp_generator');
+		remove_action('wp_head', 'rest_output_link_wp_head', 10 );
+		remove_action('template_redirect', 'rest_output_link_header', 11, 0 );
 		//remove_action('wp_head', 'rel_canonical');
-		remove_action('admin_print_styles', 'print_emoji_styles' );
-		remove_action('wp_head', 'print_emoji_detection_script', 7 );
-		remove_action('admin_print_scripts', 'print_emoji_detection_script' );
-		remove_action('wp_print_styles', 'print_emoji_styles' );
+		//remove_action('admin_print_styles', 'print_emoji_styles' );
+		//remove_action('wp_head', 'print_emoji_detection_script', 7 );
+		//remove_action('admin_print_scripts', 'print_emoji_detection_script' );
+		//remove_action('wp_print_styles', 'print_emoji_styles' );
 
 		// RSS will be added by hand
 		remove_action( 'wp_head', 'feed_links', 2 );
@@ -36,10 +38,10 @@ class pmlnr_cleanup extends pmlnr_base {
 		remove_filter( 'the_excerpt', 'wpautop' );
 		remove_filter( 'the_content', 'make_clickable', 12 );
 		remove_filter( 'comment_text', 'make_clickable', 9);
-		remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
-		remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
-		remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
-		add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
+		//remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+		//remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
+		//remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
+		//add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
 
 		// remove too special chars
 		add_filter( 'content_save_pre' , array(&$this, '_sanitize_content') , 10, 1);
@@ -65,12 +67,12 @@ class pmlnr_cleanup extends pmlnr_base {
 		wp_deregister_script ('devicepx');
 	}
 
-	public function disable_emojicons_tinymce( $plugins ) {
-		if ( is_array( $plugins ) )
-			return array_diff( $plugins, array( 'wpemoji' ) );
-		else
-			return array();
-	}
+	//public function disable_emojicons_tinymce( $plugins ) {
+		//if ( is_array( $plugins ) )
+			//return array_diff( $plugins, array( 'wpemoji' ) );
+		//else
+			//return array();
+	//}
 
 	/**
 	 * remove hidious quote chars and other exotic things
@@ -89,7 +91,7 @@ class pmlnr_cleanup extends pmlnr_base {
 	 */
 	public static function _sanitize_content( $content ) {
 
-		$mimic = static::mimic();
+		$mimic = static::unmimic();
 
 		foreach ( $mimic as $char => $evil ) {
 			$content = str_replace( $evil, $char, $content );
@@ -98,7 +100,7 @@ class pmlnr_cleanup extends pmlnr_base {
 		return $content;
 	}
 
-	public static function mimic ( ) {
+	public static function unmimic ( ) {
 
 	/*
 		$extended = array (

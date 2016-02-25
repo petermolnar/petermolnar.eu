@@ -18,8 +18,6 @@ class pmlnr_site extends pmlnr_base {
 		$r = str_replace("'", '"', $r);
 		$r = preg_replace('/\?ver=.*?"/', '"', $r);
 
-		$r = static::dyn_self_url($r);
-
 		return $r;
 	}
 
@@ -49,8 +47,6 @@ class pmlnr_site extends pmlnr_base {
 
 		$r = preg_replace('/\?ver=.*?"/', '"', $r);
 
-		$r = static::dyn_self_url($r);
-
 		return $r;
 	}
 
@@ -59,8 +55,25 @@ class pmlnr_site extends pmlnr_base {
 	 */
 	public static function get_css() {
 
-		$r = file_get_contents( get_stylesheet_directory() . '/style.css' );
-		$r .= file_get_contents( get_stylesheet_directory() . '/css/prism.css' );
+		$base = get_stylesheet_directory();
+		//if ( is_user_logged_in() )
+			//$r = '/* test CSS */' . file_get_contents( get_stylesheet_directory() . '/style_.css' );
+		//else
+		$r = file_get_contents( "{$base}/style.css" );
+		//$r .= file_get_contents( "{$base}/css/prism.min.css" );
+
+		return $r;
+	}
+
+	/**
+	 *
+	 */
+	public static function get_js() {
+
+		$base = get_stylesheet_directory();
+		$r = file_get_contents( "{$base}/js/prism.js" );
+		$r .= "\n";
+		$r .= file_get_contents( "{$base}/lib/picturefill/dist/picturefill.min.js" );
 
 		return $r;
 	}
@@ -84,10 +97,9 @@ class pmlnr_site extends pmlnr_base {
 			'total' => $wp_query->max_num_pages,
 		);
 		$r = paginate_links( $pargs );
-		$r = static::dyn_self_url($r);
-
 		return $r;
 	}
+
 
 	/**
 	 *
@@ -96,6 +108,7 @@ class pmlnr_site extends pmlnr_base {
 
 		$terms = $menus = array();
 		$author_id = 1;
+		$atitle = false;
 
 		if (is_page()) {
 			$post = static::fix_post();
@@ -120,6 +133,7 @@ class pmlnr_site extends pmlnr_base {
 			global $wp_query;
 			$term = $wp_query->get_queried_object();
 			$terms[] = $term->term_id;
+			$atitle = $term->name;
 		}
 
 		$r = array (
@@ -129,21 +143,23 @@ class pmlnr_site extends pmlnr_base {
 			'description' => get_bloginfo('description'),
 			'language' => get_bloginfo('language'),
 			'content_dir' => WP_CONTENT_DIR,
-			'content_url' => static::dyn_self_url(WP_CONTENT_URL),
-			'theme_url' => static::dyn_self_url(get_bloginfo('stylesheet_directory')),
+			'content_url' => WP_CONTENT_URL,
+			'theme_url' => get_bloginfo('stylesheet_directory'),
 			'pingback_url' => get_bloginfo('pingback_url'),
-			'rss_url' => static::dyn_self_url(get_bloginfo('rss2_url')),
-			'favicon' => static::dyn_self_url(get_bloginfo('template_directory') . '/images/favicon.png'),
+			'rss_url' => get_bloginfo('rss2_url'),
+			'favicon' => get_bloginfo('template_directory') . '/images/favicon.png',
 			'user_lang' => isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : '',
 			'author' => pmlnr_author::template_vars( $author_id ),
 			'header' => static::get_the_header(),
 			'footer' => static::get_the_footer(),
 			'pagination' => static::get_the_pagination(),
-			'author_formats' => array('article','photo','reply','rsvp', 'note'),
+			'author_formats' => array('article','photo'),
 			'image_formats' => array('image', 'photo'),
 			'long_formats' => array('article'),
 			//'subscribe_sidebar' => static::get_the_sidebar('subscribe'),
 			'css' => static::get_css(),
+			//'js' => static::get_js(),
+			'atitle' => $atitle,
 		);
 
 		// menu vars
@@ -175,12 +191,7 @@ class pmlnr_site extends pmlnr_base {
 			}
 		}
 
-		if (!empty($prefix)) {
-			foreach ($r as $key => $value ) {
-				$r[ $prefix . $key ] = $value;
-				unset($r[$key]);
-			}
-		}
+		$r = static::prefix_array ( $r, $prefix );
 
 		return $r;
 	}

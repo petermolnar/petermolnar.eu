@@ -1,0 +1,16 @@
+<aside class="reactions">
+	<ul>
+		{% if post.reacji|length > 0 or post.likes|length > 0 or post.replies|length > 0 %}
+			{% if post.reacji|length > 0 %}
+				{% for reacji, reacjis in post.reacji %}
+				<li><a href="{{ post.url }}#{{ reacji }}"><i class="reacticon">{{ reacji }}</i> {{ reacjis|length }}</a></li>
+				{% endfor %}
+			{% endif %}
+
+			{% if post.replies|length > 0 %}
+				<li><a href="{{ post.url }}#replies"><i class="reacticon">⬬</i> {{ post.replies|length }}</a></li>
+			{% endif %}
+		{% endif %}
+	</ul>
+</aside>
+

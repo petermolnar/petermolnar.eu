@@ -1,3 +1,5 @@
-{% set email = post.author.email %}
-<hr />
-<p class="small">Want to leave a comment or get in touch? Reply with your own blog using <a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an <a href="mailto:{{ email }}">email</a>, or poke me on social media.</p>
+{% if post.singular %}
+	{% set email = post.author.email %}
+	<hr />
+	<p class="small">Want to leave a comment or get in touch? Reply with your own blog using <a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an <a href="mailto:{{ email }}">email</a>, or poke me on social media.</p>
+{% endif %}

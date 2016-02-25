@@ -24,7 +24,7 @@ echo $header->render($twigvars);
 
 
 ?>
-<section class="content-body h-feed">
+<section class="content-body">
 	<div class="limit" id="portfolio">
 <?php
 
@@ -62,12 +62,14 @@ if ( have_posts() ) {
 		margins: 1,
 		captions: true,
 		rowHeight: <?php echo round( HEIGHT / 3 * 2) ?>,
+		//maxRowHeight: "120%",
 		lastRow: "justify",
 		captionSettings: {
 			animationDuration: 500,
 			visibleOpacity: 0.8,
 			nonVisibleOpacity: 0.4
 		},
+		cssAnimation: true,
 	});
 
 

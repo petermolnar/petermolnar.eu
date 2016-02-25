@@ -23,6 +23,11 @@ class pmlnr_image extends pmlnr_base {
 		add_action( 'init', array( &$this, 'init'));
 		// insert featured image as RSS enclosure
 		//add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
+
+		/* overwrite gallery shortcode */
+		//remove_shortcode('gallery');
+		//add_shortcode('gallery', array ( &$this, 'gallery' ) );
+
 	}
 
 	public static function exif_types () {
@@ -293,7 +298,7 @@ class pmlnr_image extends pmlnr_base {
 			$src = $src . $adaptive;
 		}
 
-		if ( static::is_photo($thid) && is_singular() ) {
+		if ( static::is_photo($thid) ) {
 			$src = $src . static::photo_exif( $thid, $post->ID );
 		}
 
@@ -361,9 +366,11 @@ class pmlnr_image extends pmlnr_base {
 
 			$location = '';
 			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude']))
-				$location = sprintf ( __('<br /><i class="icon-location spacer"></i><span class="h-geo geo p-location"><span class="p-latitude">%s</span>,<span class="p-longitude">%s</span></span>'), $meta['geo_latitude'], ($meta['geo_longitude'] ));
+				$location = sprintf ( __('<i class="icon-location spacer"></i><a href="http://maps.google.com/?q=%s,%s"><span class="h-geo geo p-location"><span class="p-latitude">%s</span>, <span class="p-longitude">%s</span></span></a>'), $meta['geo_latitude'], $meta['geo_longitude'], $meta['geo_latitude'], $meta['geo_longitude'] );
 
-			$return = '<div class="aligncenter">' . join(', ',$r) . $location . '</div>';
+			$r['location'] = $location;
+
+			$return = '<aside class="exif"><ul><li>' . join('</li><li>',$r) . '</li></ul></aside>';
 
 
 		}
@@ -414,5 +421,201 @@ class pmlnr_image extends pmlnr_base {
 
 		echo $str;
 	}
-	*/
+	//*/
+
+	///**
+	 //*
+	 //*/
+	//public function gallery( $atts ,  $content = null ) {
+		//wp_enqueue_script( "Justified-Gallery" );
+		//wp_enqueue_script( "magnific-popup" );
+
+		//extract( shortcode_atts(array(
+			//'postid' => false,
+			//'ids' => false,
+			//'columns' => false
+		//), $atts));
+
+		//$images = array();
+
+		//if ( !empty( $ids )) {
+			//$ids = explode ( ',' , $ids );
+			//if (!empty($ids))
+				//$images = $this->image_attachments_by_ids ( $ids );
+		//}
+		//else {
+			//if ( $postid == false ) {
+				//global $post;
+				//if (isset($post->ID) && !empty($post-ID))
+					//$postid = $post->ID;
+			//}
+
+			//if ( !empty($postid) ) {
+				//$images = $this->image_attachments_by_post ( $post->ID );
+			//}
+		//}
+
+		//if (empty($images))
+			//return false;
+
+		//$try = array ( 3 );
+
+		//foreach ($images as $imgid => $img ) {
+			//$fallback = $img['src']['a'][3];
+
+			//foreach ( $try as $test ) {
+
+				//if (isset($img['src']['a'][ $test ]))
+					//$t = $img['src']['a'][ $test ];
+				//elseif (isset($img['src'][ $test ]))
+					//$t = $img['src'][ $test ];
+				//else
+					//continue;
+
+				//if ( $t[0] != $img['src']['o'][0] )
+					//$fallback = $t;
+
+
+			//}
+
+			//$t = end( $img['src']['a']);
+			//$target = static::fix_url($t[0]);
+			//$src = static::fix_url($fallback[0]);
+			//$width = $fallback[1];
+			//$height = $fallback[2];
+			//$caption = $img['caption'];
+			//$title = $img['title'];
+
+			//$str = sprintf('<a href="%s" title="%s"><img src="%s" title="%s" width="%s" height="%s" /><div class="caption">%s</div></a>', $target, $title, $src, $title, $width, $height, $caption );
+
+			//$imgs[] = $str;
+		//}
+
+		//$gstr = join('', $imgs);
+		//$gid = md5( $gstr );
+
+		//$r = sprintf ('<div id="justified-gallery-%s">%s</div>', $gid, $gstr);
+		//$rh = $this->dpix[1];
+
+		//$r .= '
+		//<script>
+			//jQuery("#justified-gallery-'.$gid.'").justifiedGallery({
+				//margins: 2,
+				//captions: true,
+				//rowHeight: '. $rh .',
+				//lastRow: "justify",
+				//captionSettings: {
+					//animationDuration: 500,
+					//visibleOpacity: 0.8,
+					//nonVisibleOpacity: 0.4
+				//},
+			//});
+
+			//jQuery("#justified-gallery-'.$gid.'").magnificPopup({
+				//delegate: \'a\',
+				//type: \'image\',
+				//tLoading: \'Loading image #%curr%...\',
+				//mainClass: \'mfp-img-mobile\',
+				//gallery: {
+					//enabled: true,
+					//navigateByImgClick: true,
+					//preload: [0,1] // Will preload 0 - before current, and 1 after the current image
+				//},
+				//image: {
+					//tError: \'<a href="%url%">The image #%curr%</a> could not be loaded.\',
+					//titleSrc: function(item) {
+						//return item.el.attr(\'caption\');
+					//}
+				//}
+			//});
+
+		//</script>';
+
+		//return $r;
+	//}
+
+
+	///* get all image attachments for a post
+	 //*
+	 //* @param $post WordPress post object
+	 //*
+	 //* @return array of images, key is attachment id
+	//*/
+	//private function image_attachments_by_post ( $postid ) {
+		//$images = array();
+
+		///* get image type attachments for the post by ID */
+		//$attachments = get_children( array (
+			//'post_parent'=>$postid,
+			//'post_type'=>'attachment',
+			//'post_mime_type'=>'image',
+			//'orderby'=>'menu_order',
+			//'order'=>'asc'
+		//) );
+
+		//if ( !empty($attachments) ) {
+			//foreach ( $attachments as $imgid => $attachment ) {
+				//$images[ $imgid ] = $this->get_imagemeta( $imgid );
+			//}
+		//}
+
+		//return $images;
+	//}
+
+	///* get all image attachments for a post
+	 //*
+	 //* @param $post WordPress post object
+	 //*
+	 //* @return array of images, key is attachment id
+	//*/
+	//private function image_attachments_by_ids ( $ids ) {
+		//if ( empty ( $ids ) )
+			//return false;
+
+		//if ( !is_array ( $ids) )
+			//$ids = array ( $ids );
+
+		//$images = array();
+
+		//foreach ( $ids as $imgid ) {
+			//$images[ $imgid ] = $this->get_imagemeta( $imgid );
+		//}
+
+		//return $images;
+	//}
+
+	///*
+	 //*
+	 //*/
+	//public function get_imagemeta ( $imgid ) {
+		//$img = array();
+		//$__post = get_post( $imgid );
+
+		//$img['title'] = esc_attr($__post->post_title);
+		//$img['alttext'] = strip_tags ( get_post_meta($__post->id, '_wp_attachment_image_alt', true) );
+		//$img['caption'] = esc_attr($__post->post_excerpt);
+		//$img['description'] = esc_attr($__post->post_content);
+		//$img['slug'] =  sanitize_title ( $__post->post_title , $imgid );
+		//if ( is_numeric( substr( $img['slug'], 0, 1) ) )
+			//$img['slug'] = 'img-' . $img['slug'];
+
+		//if ( !empty ( $__post->post_parent ) ) {
+			//$parent = get_post( $__post->post_parent );
+			//$img['parent'] = $parent->ID;
+		//}
+
+		//foreach ( $this->dpix as $dpix => $size ) {
+			//$img['src']['a'][$dpix] = wp_get_attachment_image_src( $imgid, self::prefix . $dpix );
+		//}
+
+		//$img['src']['o'] = wp_get_attachment_image_src( $imgid, 'full' );
+
+		//$img['src']['m'] = wp_get_attachment_image_src( $imgid, 'medium' );
+
+		//$img['src']['l'] = wp_get_attachment_image_src( $imgid, 'large' );
+
+		//return $img;
+	//}
+
+
 }

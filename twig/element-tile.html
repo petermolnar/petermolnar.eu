@@ -1,4 +1,5 @@
-<article class="h-entry">
+<!--
+<article>
 	<header class="hide">
 		<time class="dt-published" datetime="{{ post.pubdate_iso }}">{{ post.pubdate_print }}</time>
 		<span class="p-author h-card vcard">{{ post.author.name }}</span>
@@ -8,8 +9,11 @@
 			{% endfor %}
 		{% endif %}
 	</header>
-	<a href="{{ post.url }}" title="{{ post.title }}" class="h-entry">
+-->
+	<a href="{{ post.url }}" title="{{ post.title }}">
 		<img src="{{ post.tile_img }}" alt="{{ post.tile_alt }}" class="u-photo" />
 		<span class="caption p-name">{{ post.title }}</span>
 	</a>
+<!--
 </article>
+-->

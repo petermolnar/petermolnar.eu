@@ -1,61 +1,26 @@
 <section class="content-comments">
 
-	{% if post.reacji|length > 0 %}
-		<h5><a name="reacji"></a></h5>
-		<dl>
-		{% for reacji, reacjis in post.reacji %}
-			<dt>{{ reacji }}</dt>
-			<dd><ul>
-			{% for like in reacjis %}
-			<li id="comment-{{ like.id }}" class="p-comment h-entry comment reacji">
-				<span class="hide">
-					<time class="dt-published" datetime="{{ reply.pubdate_iso }}">{{ reply.pubdate_print }}</time>
-				</span>
-				<span class="comment-author p-author h-card vcard">
-					<a href="{{ like.author_url }}" title="{{ like.author }}">{{ like.avatar }}</a>
-				</span>
-			</li>
-			{% endfor %}
-			</ul></dd>
-		{% endfor %}
-		</dl>
-	{% endif %}
-
-	{% if post.likes|length > 0 %}
-		<h5><a name="likes">Liked/faved by:</a></h5>
-		<ul class="likes comment-list">
-		{% for like in post.likes %}
-			<li id="comment-{{ like.id }}" class="p-comment h-entry comment">
-				<span class="hide">
-					<a class="u-like-of" href="{{ post.url }}">{{ post.title }}</a>
-					<time class="dt-published" datetime="{{ reply.pubdate_iso }}">{{ reply.pubdate_print }}</time>
-				</span>
-				<span class="comment-author p-author h-card vcard">
-					<a href="{{ like.author_url }}" title="{{ like.author }}">{{ like.avatar }}</a>
-				</span>
-			</li>
-		{% endfor %}
-		</ul>
-		<br class="clear" />
-	{% endif %}
-
 	{% if post.replies|length > 0 %}
-		<h5><a name="comments">Replies:</a></h5>
-		<ul class="replies comment-list">
+	<a name="replies"></a>
+	<aside class="replies">
+		<ul class="comment-list">
 		{% for reply in post.replies %}
-			<li id="comment-{{ reply.id }}" class="p-comment h-entry comment">
+			<li id="comment-{{ reply.id }}" class="p-comment comment">
 				<p class="hide">
 					<a class="u-in-reply-to" href="{{ post.url }}">{{ post.title }}</a>
 				</p>
 				<span class="comment-author p-author h-card vcard">
 					{% if reply.author_url|length > 0 %}
-						<a class="url u-url" href="{{ reply.url }}">
+						<a class="url u-url" href="{{ reply.author_url }}">
 							<h6 class="p-name fn">{{ reply.author }}</h6>
 						</a>
 					{% else %}
 						<h6 class="p-name fn">{{ reply.author }}</h6>
 					{% endif %}
 					<time class="dt-published" datetime="{{ reply.pubdate_iso }}">{{ reply.pubdate_print }}</time>
+					{% if reply.source %}
+					<a href="{{ reply.source }}" class="u-repost-of">{{ reply.source }}</a>
+					{% endif %}
 				</span>
 				<div class="comment-content e-content">
 					{{ reply.avatar }}
@@ -66,6 +31,32 @@
 		{% endfor %}
 		</ul>
 		<br class="clear" />
+	</aside>
+	{% endif %}
+
+	{% if post.reacji|length > 0 %}
+	<a name="reacji"></a>
+	<aside class="reacji">
+	<dl>
+	{% for reacji, reacjis in post.reacji %}
+		<dt><a name="{{ reacji }}"></a>{{ reacji }}</dt>
+		<dd>
+			<ul>
+			{% for like in reacjis %}
+				<li id="comment-{{ like.id }}" class="p-comment comment reacji">
+					<span class="hide">
+						<time class="dt-published" datetime="{{ reply.pubdate_iso }}">{{ reply.pubdate_print }}</time>
+					</span>
+					<span class="comment-author p-author h-card vcard">
+						<a href="{{ like.author_url }}" title="{{ like.author }}">{{ like.avatar }}</a>
+					</span>
+				</li>
+			{% endfor %}
+			</ul>
+		</dd>
+		{% endfor %}
+	</dl>
+	</aside>
 	{% endif %}
 
 </section>

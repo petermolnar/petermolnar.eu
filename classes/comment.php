@@ -8,7 +8,36 @@ class pmlnr_comment extends pmlnr_base {
 	}
 
 	public function init() {
+		add_filter ( 'wp_webmention_again_validate_local', array ( &$this, 'validate_local'), 2, 2 );
+	}
 
+	/**
+	 *
+	 */
+	public function validate_local ( $postid, $target ) {
+		static::debug ( $target );
+		$target = strtolower ( $target );
+		$endpoint = static::comment_endpoint();
+
+		if (strstr( $target, $endpoint ) ) {
+			$target = explode ( '/', $target );
+			$tnum = array_search ( $endpoint, $target, true );
+			$tnum = (int) $tnum + 1;
+			$comment_id = $target[ $tnum ];
+			$comment = get_comment($comment_id);
+			static::debug ( $comment_id );
+
+			if (pmlnr_base::is_comment($comment)) {
+				static::debug ( $comment );
+				$post = get_post( $comment->comment_post_ID);
+				static::debug ( $post );
+				if (pmlnr_base::is_post($post)) {
+					$postid = $post->ID;
+				}
+			}
+		}
+
+		return $postid;
 	}
 
 	/**
@@ -121,14 +150,10 @@ class pmlnr_comment extends pmlnr_base {
 			'from_url' => $comment->comment_author_url,
 			'content' => $comment->comment_content,
 			'webmention' => static::comment_get_webmention( $comment, true ),
+			'parent' => get_permalink( $post->ID ),
 		);
 
-		if (!empty($prefix)) {
-			foreach ($r as $key => $value ) {
-				$r[ $prefix . $key ] = $value;
-				unset($r[$key]);
-			}
-		}
+		$r = static::prefix_array ( $r, $prefix );
 
 		wp_cache_set ( $comment->comment_ID . $prefix, $r, __CLASS__ . __FUNCTION__, static::expire );
 

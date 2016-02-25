@@ -1,11 +1,19 @@
 {% if post.tags %}
-<div class="tags">
-	<ul>
-		{% for tname, turl in post.tags %}
-			<li class="u-tag">
-				<a href="{{ turl }}" class="icon-tag p-category">{{ tname }}</a>
-			</li>
-		{% endfor %}
-	</ul>
-</div>
+<aside class="tags">
+	<nav>
+		<ul class="icon-tag">
+			{% for tname, turl in post.tags %}
+				<li class="u-tag">
+					<a href="{{ turl }}" class="p-category">{{ tname }}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	</nav>
+</aside>
 {% endif %}
+
+{#
+{% if post.debug %}
+<p>{{ post.format }}</p>
+{% endif %}
+#}

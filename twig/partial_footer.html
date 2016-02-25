@@ -6,22 +6,27 @@
 	{% endif %}
 
 	<footer class="content-footer" id="main-footer">
-		<div class="content-limit">
-			<div class="content-contact">
-				<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>{% include 'partial_vcard.html' with {'author':site.author} only %}<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
-			</div>
-
-			<span class="footer-forms">
-				<a href="https://indiewebcamp.com">
-					<i class="icon-indie"></i><i class="icon-web"></i><i class="icon-camp"></i><span class="hide">IndieWebCamp</span>
-				</a>
-				<i class='icon-subscribe'></i><a href="/subscribe-feliratkozas">Subscribe</a>
+		<div class="limit">
+			<nav class="content-contact">
+				{% include 'partial_vcard.html' with {'author':site.author} only %}
+			</nav>
+			<nav class="content-footnotes">
+				<ul>
+					<li>
+						<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>
+					</li>
+					<li>
+						<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
+					</li>
+					<li>
+						<a href="/subscribe-feliratkozas"><i class="icon-subscribe"></i>Subscribe</a>
+					</li>
+				</ul>
 				{% include 'partial_search.html' %}
+			</nav>
+			<span class="hide">
+				{{ site.footer }}
 			</span>
-
-			<div class="hide">
-			{{ site.footer }}
-			</div>
 		</div>
 	</footer>
 

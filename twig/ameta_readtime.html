@@ -1,3 +1,7 @@
-<span class="right spacer icon-clock">
-	{{ post.minstoread }} mins to read
-</span>
+{% if post.format in site.long_formats %}
+<aside class="readtime">
+	<span class="icon-clock">
+		{{ post.wordstoread }} words to read
+	</span>
+</aside>
+{% endif %}

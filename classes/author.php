@@ -4,6 +4,7 @@ class pmlnr_author extends pmlnr_base {
 
 	public function __construct ( ) {
 		add_action( 'init', array( &$this, 'init'));
+		//add_shortcode( 'vcard' , array( &$this, 'vcard') );
 	}
 
 	/* init function, should be used in the theme init loop */
@@ -27,6 +28,10 @@ class pmlnr_author extends pmlnr_base {
 		$profile_fields['instagram'] = __('instagram username', 'petermolnareu');
 		$profile_fields['skype'] = __('skype username', 'petermolnareu');
 		$profile_fields['twitter'] = __('twitter username', 'petermolnareu');
+		$profile_fields['wechat'] = __('wechat username', 'petermolnareu');
+		$profile_fields['icq'] = __('ICQ number', 'petermolnareu');
+		$profile_fields['qq'] = __('QQ number', 'petermolnareu');
+		$profile_fields['telegram'] = __('Telegram handle', 'petermolnareu');
 
 		return $profile_fields;
 	}
@@ -34,22 +39,23 @@ class pmlnr_author extends pmlnr_base {
 	/**
 	 * new utils - no formatting, no html, just data
 	 */
-
 	public static function author_social ( $author_id = 1 ) {
 
-		//if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
-			//return $cached;
+		if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
 
 		$list = [];
 
 		$socials = array (
 			'github'   => 'https://github.com/%s',
-			//'linkedin' => 'https://www.linkedin.com/in/%s',
-			'twitter'  => 'https://twitter.com/%s',
+			//'twitter'  => 'https://twitter.com/%s',
 			'flickr'   => 'https://www.flickr.com/people/%s',
-			//'500px'	=> 'https://500px.com/%s',
-			//'instagram'=> 'https://instagram.com/%s',
-			//'skype'=> 'callto:%s',
+			//'linkedin'   => 'https://www.linkedin.com/in/%s',
+			//'skype'   => 'callto://%s+type=skype',
+			//'wechat'   => 'callto://%s+type=wechat',
+			//'qq'   => 'callto://%s+type=qq',
+			'telegram' => 'https://telegram.me/%s',
+			'pgp' => get_bloginfo('url') . '%s',
 		);
 
 		foreach ( $socials as $silo => $pattern ) {
@@ -60,8 +66,30 @@ class pmlnr_author extends pmlnr_base {
 
 		}
 
-		//wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, static::expire );
+		wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, static::expire );
 		return $list;
+	}
+
+	/**
+	 *
+	 *
+	function vcard( $atts, $content = "" ) {
+
+		if (isset($atts['author']))
+			$author = $atts['author'];
+		else
+			$author = 1;
+
+		global $petermolnareu_theme;
+		$twigvars = array (
+			'author' => static::template_vars ( $author ),
+		);
+
+		if ( isset($atts['showall']) )
+			$twigvars['author']['showall'] = 1;
+
+		$twig = $petermolnareu_theme->twig->loadTemplate('partial_vcard.html');
+		return $twig->render($twigvars);
 	}
 
 	/**
@@ -94,12 +122,7 @@ class pmlnr_author extends pmlnr_base {
 			'pgp' => get_the_author_meta ( 'pgp' , $author_id ),
 		);
 
-		if (!empty($prefix)) {
-			foreach ($r as $key => $value ) {
-				$r[ $prefix . $key ] = $value;
-				unset($r[$key]);
-			}
-		}
+		$r = static::prefix_array ( $r, $prefix );
 
 		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__, static::expire );
 

@@ -3,6 +3,9 @@
 	<article class="h-entry" id="post-{{ post.id }}" >
 		<header>
 			<div class="content-inner">
+				<h2>
+					<a class="u-in-reply-to" href="{{ post.parent }}">{{ post.parent }}</a>
+				</h2>
 				{% include 'ameta_pubdate.html' %}
 				{% include 'ameta_author.html' %}
 				<a class="u-url" href="{{ post.url }}"></a>

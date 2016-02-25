@@ -32,6 +32,7 @@ else {
 	$twig = $petermolnareu_theme->twig->loadTemplate('singular.html');
 }
 
-echo $twig->render($twigvars);
+$r = $twig->render($twigvars);
+echo petermolnareu::maybe_tidy ( $r );
 
-dynamic_sidebar( 'home_right_1' );
+//dynamic_sidebar( 'home_right_1' );
