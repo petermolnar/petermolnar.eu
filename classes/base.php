@@ -8,6 +8,29 @@ class pmlnr_base {
 
 	/**
 	 *
+	 *
+	public static function reaction_pregpattern () {
+		return "/^---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+(.*))?[\n\r]+---/mi";
+	}
+
+	/**
+	 *
+	 */
+	public static function has_reaction ( $content ) {
+		$pattern = "/---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+((?!---).*))?[\n\r]+---/mi";
+
+		$matches = array();
+		preg_match_all( $pattern, $content, $matches);
+
+		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) )
+			return $matches;
+
+		return false;
+
+	}
+
+	/**
+	 *
 	 * debug messages; will only work if WP_DEBUG is on
 	 * or if the level is LOG_ERR, but that will kill the process
 	 *
@@ -68,7 +91,7 @@ class pmlnr_base {
 	 */
 	public static function livedebug( $message) {
 		if ( function_exists('is_user_logged_in') && is_user_logged_in() )
-			print_r ($message);
+			var_dump ($message);
 	}
 
 	/**
@@ -231,7 +254,7 @@ class pmlnr_base {
 	 */
 	public static function extract_urls( &$text ) {
 		$matches = array();
-		preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#]*/i", $text, $matches);
+		preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*/i", $text, $matches);
 
 		$matches = $matches[0];
 		return $matches;
@@ -268,29 +291,52 @@ class pmlnr_base {
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
-/*
-		if ( $post->post_status == 'publish' ) {
-			$type = static::get_type($post);
-			if ($type != false ) {
-				return $type;
-			}
-		}
-*/
+
+		//if ( $post->post_status == 'publish' ) {
+			$current = static::get_type($post);
+			//if ($current != false ) {
+				//return $current;
+			//}
+		//}
+
 		$post_length = strlen( $post->post_content );
-
-		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
-		$webmention_rsvp = get_post_meta( $post->ID, 'webmention_rsvp', true );
-
-		$single_url = $webmention_url;
-
-		$links = static::extract_urls($post->post_content);
 		$content = $post->post_content;
-		// one single link in the post, so it's most probably a bookmark
-		if (!empty($links) && count($links) == 1) {
-			$single_url = $links[0];
-			$content = str_replace($single_url, '', $content);
-			$content = trim($content);
+
+		$matches = static::has_reaction( $content );
+
+		if ( ! empty( $matches ) && is_array( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) ) {
+			$replace = $matches[0][0];
+			$type = trim($matches[1][0]);
+			$webmention_url = trim($matches[2][0]);
+			$webmention_rsvp = trim($matches[3][0]);
+
+			switch ($type) {
+				case 'like':
+					$webmention_type = 'u-like-of';
+					break;
+				case 'from':
+					$webmention_type= 'u-repost-of';
+					break;
+				case 're':
+					$webmention_type = 'u-in-reply-to';
+					break;
+			}
+
+			$content = trim ( str_replace( $replace, '', $content ) );
+		}
+		else {
+			$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
+			$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
+			$webmention_rsvp = get_post_meta( $post->ID, 'webmention_rsvp', true );
+			$single_url = $webmention_url;
+			$links = static::extract_urls($post->post_content);
+
+			// one single link in the post, so it's most probably a bookmark
+			if (!empty($links) && count($links) == 1) {
+				$single_url = $links[0];
+				$content = str_replace($single_url, '', $content);
+				$content = trim($content);
+			}
 		}
 
 		// /m for multiline, so ^ means beginning of line
@@ -404,7 +450,7 @@ class pmlnr_base {
 
 		$id = term_exists( $slug, 'category');
 		if ($id !== 0 && $id !== null) {
-			$current = static::get_type( $post );
+			//$current = static::get_type( $post );
 			//static::debug(sprintf('post type refresh for %s: kind is "%s", automatic says "%s"', $post->ID,$current, $slug));
 			if ($current != $slug ) {
 				static::debug(sprintf('post type refresh for %s: category is "%s", automatic says "%s"', $post->ID,$current, $slug));
@@ -457,6 +503,7 @@ class pmlnr_base {
 		$meta = array();
 		if ( static::is_post($attachment)) {
 			$meta = wp_get_attachment_metadata($thid);
+			$wp_upload_dir = wp_upload_dir();
 
 			if ( !empty ( $attachment->post_parent ) ) {
 				$parent = get_post( $attachment->post_parent );
@@ -473,6 +520,7 @@ class pmlnr_base {
 					$src = wp_get_attachment_image_src ($thid, $size);
 					$src = static::fix_url($src[0]);
 					$meta['sizes'][$size]['src'] = $src;
+					$meta['sizes'][$size]['path'] = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $data['file'];
 				}
 			}
 

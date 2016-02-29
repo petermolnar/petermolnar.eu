@@ -7,7 +7,6 @@ class pmlnr_post extends pmlnr_base {
 		add_action('wp_head',array(&$this, 'post_graphmeta'));
 	}
 
-
 	/**
 	 *
 	 */
@@ -18,7 +17,10 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$r = apply_filters('the_content', $post->post_content);
+		$r = $post->post_content;
+		$r = static::convert_relations_in_content ( $r );
+		$r = apply_filters('the_content', $r);
+
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -54,52 +56,87 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$r = false;
+		// all done already, because it's inline
+		$content = $post->post_content;
+		$matches = static::has_reaction( $content );
+		if ( false != $matches )
+				return false;
+
+		$r = $migrate = false;
 
 		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
 		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
 		$webmention_rsvp = get_post_meta ( $post->ID, 'webmention_rsvp', true);
 
-		switch ($webmention_type) {
-			case 'u-like-of':
-				$h = __('This is a like of:');
-				$cl = 'u-like-of';
-				$prefix = '';
-				break;
-			case 'u-repost-of':
-				$h = __('This is a repost of:');
-				$cl = 'u-repost-of';
-				$prefix = '*reposted from:* ';
-				break;
-			case 'u-in-reply-to':
-				$h = __('This is a reply to:');
-				$cl = 'u-in-reply-to';
-				$prefix = '**RE:** ';
-				break;
-			default:
-				$h = __('');
-				$cl = 'u-url';
-				$prefix = '**URL:** ';
-				break;
-		}
-
-		$rsvps = array (
-			'no' => __("Sorry, can't make it."),
-			'yes' => __("I'll be there."),
-			'maybe' => __("I'll do my best, but don't count on me for sure."),
-		);
 
 		if ( !empty($webmention_url)) {
+			switch ($webmention_type) {
+				case 'u-like-of':
+					$h = __('This is a like of:');
+					$cl = 'u-like-of';
+					$prefix = '';
+					$migrate = "---\nlike: {$webmention_url}\n---\n\n";
+					break;
+				case 'u-repost-of':
+					$h = __('This is a repost of:');
+					$cl = 'u-repost-of';
+					$prefix = '*reposted from:* ';
+					$migrate = "---\nfrom: {$webmention_url}\n---\n\n";
+					break;
+				case 'u-in-reply-to':
+					$h = __('This is a reply to:');
+					$cl = 'u-in-reply-to';
+					$prefix = '**RE:** ';
+					$migrate = "---\nre: {$webmention_url}\n---\n\n";
+					break;
+				default:
+					$h = __('');
+					$cl = 'u-url';
+					$prefix = '**URL:** ';
+					$migrate = "---\n{$webmention_url}\n---\n\n";
+					break;
+			}
+
+			$rsvps = array (
+				'no' => __("Sorry, can't make it."),
+				'yes' => __("I'll be there."),
+				'maybe' => __("I'll do my best, but don't count on me for sure."),
+			);
+
 			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
 			$rel = str_replace('u-', '', $cl );
-			//$r = "\n\n##### $h";
 
 			$r = "\n{$prefix}[{$webmention_title}]({$webmention_url}){.{$cl}}\n";
-			if (!empty($webmention_rsvp))
+
+			if (!empty($webmention_rsvp)) {
 				$r .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
+				$migrate = "---\nre: {$webmention_url}\n{$webmention_rsvp}\n---\n\n";
+			}
+
+			/*
+			// this should be a temporary thing
+			global $wpdb;
+			$dbname = "{$wpdb->prefix}posts";
+			$req = false;
+			$modcontent = $migrate . $post->post_content;
+
+			static::debug("Updating post content for #{$post->ID}");
+
+			$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
+
+			try {
+				$req = $wpdb->query( $q );
+			}
+			catch (Exception $e) {
+				static::debug('Something went wrong: ' . $e->getMessage());
+			}
+			*/
 
 			if ($parsedown)
 				$r = pmlnr_markdown::parsedown($r);
+
+
+
 		}
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
@@ -542,6 +579,59 @@ class pmlnr_post extends pmlnr_base {
 		return $r;
 	}
 
+
+	/**
+	 *
+	 */
+	public static function convert_relations_in_content ( $content ) {
+
+		$matches = static::has_reaction( $content );
+		if ( false == $matches )
+			return $content;
+
+		$replace = false;
+		$r = false;
+		$type = false;
+		$rsvp = '';
+
+		$rsvps = array (
+			'no' => __("Sorry, can't make it."),
+			'yes' => __("I'll be there."),
+			'maybe' => __("I'll do my best, but don't count on me for sure."),
+		);
+
+		$replace = $matches[0][0];
+		$type = trim($matches[1][0]);
+		$url = trim($matches[2][0]);
+		$data = trim($matches[3][0]);
+
+		if ( $type == 're' && !empty( $data ) )
+			$rsvp = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
+
+		switch ($type) {
+			case 'like':
+				$cl = 'u-like-of';
+				$prefix = '';
+				break;
+			case 'from':
+				$cl = 'u-repost-of';
+				$prefix = '*reposted from:* ';
+				break;
+			case 're':
+				$cl = 'u-in-reply-to';
+				$prefix = '**RE:** ';
+				break;
+			default:
+				$cl = 'u-url';
+				$prefix = '**URL:** ';
+				break;
+		}
+
+		$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
+		$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}\n{$rsvp}";
+
+		return str_replace ( $replace, $r, $content );
+	}
 
 	/**
 	 *

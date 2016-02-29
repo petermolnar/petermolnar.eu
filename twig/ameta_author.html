@@ -1,9 +1,7 @@
-{% if post.format in site.author_formats %}
 <aside class="author">
-	<p>
+	<p{% if post.format not in site.author_formats %} class="hide"{% endif %}>
 		by <span class="p-author h-card vcard">
 			<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
 		</span>
 		</p>
 </aside>
-{% endif %}

@@ -19,13 +19,18 @@
 						<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
 					</li>
 					<li>
-						<a href="/subscribe-feliratkozas"><i class="icon-subscribe"></i>Subscribe</a>
+						<a class="icon-wordpress" title="WordPress" href="https://wordpress.org">WordPress</a>
 					</li>
 				</ul>
 				{% include 'partial_search.html' %}
 			</nav>
 			<span class="hide">
 				{{ site.footer }}
+				{% if site.is_user_logged_in %}
+				<script>
+					window.navigator.registerProtocolHandler('web+action', 'https://petermolnar.eu/indie-config/?handler=%s', 'Peter Molnar');
+				</script>
+				{% endif %}
 			</span>
 		</div>
 	</footer>

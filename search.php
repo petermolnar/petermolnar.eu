@@ -24,5 +24,4 @@ $twigvars['site']['page_title'] = '<h1>' . __( "Displaying results for:" ) . ' "
 	}
 
 $twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
-$r = $twig->render($twigvars);
-echo petermolnareu::maybe_tidy ( $r );
+echo $twig->render($twigvars);

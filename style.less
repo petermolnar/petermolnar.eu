@@ -554,12 +554,13 @@ img.left {
 		.tags {
 			clear: right;
 			float: right;
-			max-width:36em;
+			max-width:48em;
 			text-align: right;
 		}
 
 		.pubdate {
 			float:left;
+			width: 10em;
 		}
 
 		@media all and (max-width: @responsive-limit) {
@@ -568,6 +569,7 @@ img.left {
 				display:block;
 				float:none;
 				text-align:left;
+				width:100%;
 			}
 		}
 
@@ -877,6 +879,7 @@ img.left {
 	display:block;
 	text-align:right;
 	margin: @padding-large 0 @padding-large 0;
+	font-size: 0.8em;
 
 	a {
 		border: 1px solid darken(@bgcolor,10%);
@@ -886,6 +889,10 @@ img.left {
 			border: 1px solid darken(@bgcolor,20%);
 		}
 	}
+}
+
+#portfolio {
+	max-width:90%;
 }
 
 /* --- PAGINATION --- */

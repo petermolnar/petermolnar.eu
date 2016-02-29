@@ -28,11 +28,14 @@ if (is_page()) {
 else {
 	petermolnareu::make_post_syndication ($post);
 
-	pmlnr_post::post_format($post);
+	$format = pmlnr_post::post_format($post);
+	if ( 'photo' == $format )
+		petermolnareu::autotag_by_photo ( $post );
+
 	$twig = $petermolnareu_theme->twig->loadTemplate('singular.html');
 }
 
-$r = $twig->render($twigvars);
-echo petermolnareu::maybe_tidy ( $r );
+echo $twig->render($twigvars);
+
 
 //dynamic_sidebar( 'home_right_1' );

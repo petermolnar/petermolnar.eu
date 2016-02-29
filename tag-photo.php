@@ -1,6 +1,6 @@
 <?php
 
-define('HEIGHT', 360);
+define('HEIGHT', 300);
 
 add_action( 'wp_enqueue_scripts', 'pmlnr_portfolio_scripts' );
 
@@ -12,7 +12,7 @@ function pmlnr_portfolio_scripts () {
 }
 
 global $query_string;
-$posts_per_page = 42;
+$posts_per_page = 24;
 $_query_string = $query_string;
 $_query_string = $query_string . '&posts_per_page=42';
 
@@ -24,8 +24,7 @@ echo $header->render($twigvars);
 
 
 ?>
-<section class="content-body">
-	<div class="limit" id="portfolio">
+<section class="content-body" id="portfolio">
 <?php
 
 if ( have_posts() ) {
@@ -36,7 +35,7 @@ if ( have_posts() ) {
 			continue;
 
 		$thid = get_post_thumbnail_id( $post->ID );
-		$src = wp_get_attachment_image_src ($thid, array(0, HEIGHT));
+		$src = wp_get_attachment_image_src ($thid, 'adaptive_3');
 		$s = pmlnr_base::fix_url($src[0]);
 		//$target = wp_get_attachment_image_src ($thid, 'large');
 		//$t = pmlnr_base::fix_url($target[0]);
@@ -53,7 +52,6 @@ if ( have_posts() ) {
 }
 
 ?>
-	</div>
 </section>
 
 <script>
@@ -61,7 +59,7 @@ if ( have_posts() ) {
 	jQuery("#portfolio").justifiedGallery({
 		margins: 1,
 		captions: true,
-		rowHeight: <?php echo round( HEIGHT / 3 * 2) ?>,
+		rowHeight: <?php echo HEIGHT ?>,
 		//maxRowHeight: "120%",
 		lastRow: "justify",
 		captionSettings: {

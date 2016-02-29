@@ -27,7 +27,7 @@ class petermolnareu {
 	public $twigloader = null;
 	private $twigcache = WP_CONTENT_DIR . '/cache/twig';
 
-	const bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
+	//const bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
 
 	public function __construct () {
 
@@ -75,8 +75,8 @@ class petermolnareu {
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
 
 		// Add meta boxes on the 'add_meta_boxes' hook.
-		add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
-		add_action( 'save_post', array(&$this, 'post_meta_save' ) );
+		//add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
+		//add_action( 'save_post', array(&$this, 'post_meta_save' ) );
 
 		//add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
 
@@ -109,9 +109,10 @@ class petermolnareu {
 
 		// add the webmention box value to the webmention links list
 		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
+		add_filter ('get_to_ping', array(&$this, 'webmention_links'), 1);
 
 		// add the webmention box value to the webmention links list
-		add_filter ('bridgy_publish_urls', array(&$this, 'bridgy_publish_urls'), 1, 2);
+		//add_filter ('bridgy_publish_urls', array(&$this, 'bridgy_publish_urls'), 1, 2);
 
 		// I want to upload svg
 		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
@@ -135,16 +136,44 @@ class petermolnareu {
 		add_filter( 'query_vars', array( &$this, 'add_query_var' ) );
 		add_rewrite_endpoint ( pmlnr_comment::comment_endpoint(), EP_ROOT );
 
-		add_filter ('press_this_save_post', array (&$this, 'extract_replies'), 2);
+		add_filter ('press_this_suggested_content', array (&$this, 'press_this_add_reaction_url'));
 		add_filter ('enable_press_this_media_discovery', '__return_false' );
 
 		add_filter( 'embed_oembed_html', array ( &$this, 'custom_oembed_filter' ), 10, 4 ) ;
 
-		add_filter ('wp_url2snapshot_urls', array ( &$this, 'wp_url2snapshot_urls' ), 2, 2 );
+		//add_filter ('wp_url2snapshot_urls', array ( &$this, 'wp_url2snapshot_urls' ), 2, 2 );
 
 		add_image_size ( 'thumbnail-large', 180, 180, true );
+
+		//add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
 	}
 
+	/**
+	 *
+	 *
+	public function insert_post_relations( $content, $post = null ) {
+		if ( ! is_feed () )
+			return $content;
+
+		$post = pmlnr_base::fix_post($post);
+
+		if ( false === $post )
+			return $content;
+
+		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
+
+		if ( !empty($webmention_url)) {
+			$add = '<h2><a href="'.$webmention_url.'">'.$webmention_url.'</a></h2>';
+			$content = $add . $content;
+		}
+
+		return $content;
+	}
+
+
+	/**
+	 *
+	 *
 	public function wp_url2snapshot_urls ( $urls, $post = null ) {
 		$post = pmlnr_base::fix_post( $post );
 
@@ -157,67 +186,51 @@ class petermolnareu {
 		return $urls;
 	}
 
+	/**
+	 *
+	 */
 	public function custom_oembed_filter($html, $url, $attr, $post_ID) {
 		$return = '<div class="video-container">'.$html.'</div>';
 		return $return;
 	}
 
-	public function extract_replies ( $post ) {
+	/**
+	 */
+	public function press_this_add_reaction_url ( $content ) {
+		$ref = array();
+		parse_str ( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY ), $ref );
 
-		parse_str ( parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_QUERY ), $ref );
+		if ( is_array( $ref ) && isset ( $ref['u'] ) && ! empty( $ref['u'] ) ) {
+			$url = $ref['u'];
+			$t = '';
 
-		$type = 'reply';
-		pmlnr_base::debug ( var_export ( $ref, 1 ) );
-		if ( is_array( $ref ) && isset( $ref['type'] ) ) {
-			$type = $ref['type'];
-			pmlnr_base::debug ( $type );
+			if ( isset( $ref['type'] ) )
+				$t = $ref['type'];
+
+			switch ( $t ) {
+				case 'fav':
+				case 'like':
+				case 'u-like-of':
+					$type = 'like: ';
+					break;
+				case 'repost':
+					$type = 'from: ';
+					break;
+				case 'reply':
+					$type = 're: ';
+					break;
+				default:
+					$type = '';
+					break;
+			}
+
+			$relation = "---\n{$type}{$url}\n---\n\n";
+
+			$content = $relation . $content;
+
 		}
 
-		switch ( $type ) {
-			case 'fav':
-			case 'like':
-			case 'u-like-of':
-				$type = 'u-like-of';
-				break;
-			case 'repost':
-				$type = 'u-repost-of';
-				break;
-			default:
-				$type = 'u-in-reply-to';
-				break;
-		}
-
-		$m = array();
-		$match = preg_match_all('/(?:\b|>)(https?:\/\/(?:mobile|m)?\.?(?:twimg\.com|t\.co|twitter\.com|twtr\.io)[^\[<]+)(?:\b|<)/', $post['post_content'], $m );
-
-		if ( $match && !empty( $m ) && isset( $m[0] ) && !empty($m[0]) ) {
-			$m = array_pop ( $m[0] );
-			add_post_meta( $post['ID'], 'webmention_url', $m );
-			add_post_meta( $post['ID'], 'webmention_type', $type );
-			$post['post_title'] = '';
-		}
-
-		$m = array();
-		$match = preg_match_all('/(?:\b|>)(https?:\/\/(?:www)?\.?(?:flickr.com)[^\[<]+)(?:\b|<)/', $post['post_content'], $m );
-
-		if ( $match && !empty( $m ) && isset( $m[0] ) && !empty($m[0]) ) {
-			$m = array_pop ( $m[0] );
-			add_post_meta( $post['ID'], 'webmention_url', $m );
-			add_post_meta( $post['ID'], 'webmention_type', $type );
-			//$post['post_title'] = '';
-		}
-
-		//$m = array();
-		//$match = preg_match_all('/(?:\b|>)(https?:\/\/(?:www)?\.?(?:flickr.com)[^\[<]+)(?:\b|<)/', $post['post_content'], $m );
-
-		//if ( $match && !empty( $m ) && isset( $m[0] ) && !empty($m[0]) ) {
-			//$m = array_pop ( $m[0] );
-			//update_post_meta( $post['ID'], 'webmention_url', $m );
-			//update_post_meta( $post['ID'], 'webmention_type', 'u-like-of' );
-			//$post['post_title'] = '';
-		//}
-
-		return $post;
+		return $content;
 	}
 
 	/**
@@ -258,6 +271,10 @@ class petermolnareu {
 		wp_enqueue_style( "prism" );
 		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
 		wp_enqueue_script( "prism" );
+		wp_register_script( "indie-config" ,  "{$js_url}/indie-config.js", false, null, true );
+		wp_enqueue_script( "indie-config" );
+		wp_register_script( "webactions" ,  "{$js_url}/webactions.js", false, null, true );
+		wp_enqueue_script( "webactions" );
 
 		// srcset fallback
 		wp_register_script( "picturefill" , "{$base_url}/lib/picturefill/dist/picturefill.min.js", false, null, true );
@@ -267,7 +284,7 @@ class petermolnareu {
 
 	/**
 	 * add webmention field to admin
-	 */
+	 *
 	public function post_meta_add () {
 		add_meta_box(
 			'webmention',
@@ -281,7 +298,7 @@ class petermolnareu {
 
 	/**
 	 * meta field display
-	 */
+	 *
 	public function post_meta_display_bridgy ( $object, $box ) {
 		wp_nonce_field( basename( __FILE__ ), 'petermolnareu' );
 
@@ -316,7 +333,7 @@ class petermolnareu {
 
 	/**
 	 * meta field display
-	 */
+	 *
 	public function post_meta_display_webmention ( $object, $box ) {
 		wp_nonce_field( basename( __FILE__ ), 'petermolnareu' );
 		$urlfield = 'webmention_url';
@@ -362,7 +379,7 @@ class petermolnareu {
 
 	/**
 	 * handle additional post meta
-	 */
+	 *
 	public function post_meta_save ( $post_id ) {
 		if ( !isset( $_POST[ 'petermolnareu' ] ))
 			return $post_id;
@@ -398,7 +415,7 @@ class petermolnareu {
 
 	/**
 	 * magical bridgy magic
-	 */
+	 *
 	public function bridgy_publish_urls ($links, $postid) {
 		if (empty($postid))
 			return $links;
@@ -407,6 +424,17 @@ class petermolnareu {
 		if (!pmlnr_base::is_post($post))
 			return $links;
 
+		$bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
+		foreach ( $links as $url ) {
+			foreach ( $bridgy_silos as $silo ) {
+				if (stristr($url, $silo)) {
+					pmlnr_base::debug("extending bridgy_publish with {$silo} because {$webmention_url}");
+					$links[$silo] = 'yes';
+				}
+			}
+		}
+
+		/*
 		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
 		if (empty($webmention_url))
 			return $links;
@@ -422,8 +450,10 @@ class petermolnareu {
 
 		//pmlnr_base::debug("bridgy-magic: we extended: " . json_encode($links) );
 
+
 		return $links;
 	}
+		*/
 
 	/**
 	 * filter links to webmentions
@@ -432,12 +462,13 @@ class petermolnareu {
 	 * and because of the special fields the to be poked webmention
 	 * url is stored in
 	 */
-	public function webmention_links ( $links, $postid ) {
+	public function webmention_links ( $links, $postid = null ) {
 
 		if (empty($postid))
-			return $links;
+			$post = pmlnr_base::fix_post();
+		else
+			$post = get_post ( $postid );
 
-		$post = get_post( $postid );
 		if (!pmlnr_base::is_post($post))
 			return $links;
 
@@ -465,6 +496,7 @@ class petermolnareu {
 		$links = array_unique($links);
 
 		pmlnr_base::debug ( "Post {$post->ID} urls for webmentioning: " . join(', ', $links) );
+		pmlnr_base::debug ( debug_backtrace() );
 		return $links;
 	}
 
@@ -586,7 +618,7 @@ class petermolnareu {
 		}
 
 		foreach ($_syndicated as $url ) {
-			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com') && !strstr($url, 'tumblr.com'))
+			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com') && !strstr($url, 'tumblr.com') && !strstr($url, 'twitter.com'))
 				$synds[] = $url;
 		}
 
@@ -643,7 +675,7 @@ class petermolnareu {
 
 	/**
 	 * old data to new data
-	 */
+	 *
 	public static function migrate_stuff ($post) {
 		$post = pmlnr_base::fix_post($post);
 
@@ -697,9 +729,8 @@ class petermolnareu {
 			if (is_wp_error($u))
 				pmlnr_base::debug('huh? ' . $u->get_error_message());
 		}
-		*/
 	}
-
+		*/
 
 	/**
 	 *
@@ -713,35 +744,24 @@ class petermolnareu {
 		if ( 'post' != $post->post_type )
 			return false;
 
-		// this runs on _any_ status
+		// -- these will run on anything ---
+		$yaml = pmlnr_base::get_yaml();
 		$format = pmlnr_base::post_format ( $post );
 
 		if ( 'photo' == $format )
-			static::autotag_by_photo ( $post, $yaml, $format );
+			static::autotag_by_photo ( $post );
 
-		// only on publish from now on
+		// --- these only on already publish one, incl. refresh ---
 		if ( 'publish' != $new_status )
 			return false;
 
-		// these will run on update
-		if ( class_exists('WP_Webmention_Again_Sender'))
-			do_action( WP_Webmention_Again_Sender::cron );
-
+		// --- these only when a post is freshly published ---
 		if ( $new_status == $old_status )
 			return false;
 
-		// these will only run on fresh publish
-		$yaml = pmlnr_base::get_yaml();
-
 		if ( in_array( $format, $yaml['smtp_categories']) ) {
-			$args = array (
-				'post' => $post,
-				//'yaml' => $yaml,
-				//'format' => $format
-			);
-
+			$args = array ( 'post' => $post );
 			wp_schedule_single_event( time() + 120, 'posse_to_smtp', $args );
-			//static::posse_to_smtp ( $post, $yaml, $format );
 		}
 
 	}
@@ -749,7 +769,8 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public static function autotag_by_photo ( $post, $yaml = null, $format = null ) {
+	public static function autotag_by_photo ( $post ) {
+
 		$taxonomy = 'post_tag';
 
 		$thid = get_post_thumbnail_id( $post->ID );
@@ -759,8 +780,25 @@ class petermolnareu {
 
 		$meta = pmlnr_base::get_extended_thumbnail_meta ( $thid );
 		if ( isset( $meta['image_meta'] ) && isset ( $meta['image_meta']['keywords'] ) && !empty( $meta['image_meta']['keywords'] ) ) {
+
 			$keywords = $meta['image_meta']['keywords'];
+
+			// add photo tag
 			$keywords[] = 'photo';
+
+			if ( isset ( $meta['image_meta']['camera'] ) && ! empty ( $meta['image_meta']['camera'] ) ) {
+
+				// add camera
+				$keywords[] = $meta['image_meta']['camera'];
+
+				// add camera manufacturer
+				if ( strstr( $meta['image_meta']['camera'], ' ' ) ) {
+					$manufacturer = ucfirst ( strtolower ( substr ( $meta['image_meta']['camera'], 0, strpos( $meta['image_meta']['camera'], ' ') ) ) ) ;
+					$keywords[] = $manufacturer;
+				}
+
+			}
+
 			$keywords = array_unique($keywords);
 			foreach ( $keywords as $tag ) {
 				if ( !term_exists( $tag, $taxonomy ))
@@ -778,27 +816,29 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public static function posse_to_smtp ( $post ) {
-		pmlnr_base::debug( "POSSE #{$post->ID} to SMTP" );
+	public static function posse_to_smtp ( $_post ) {
+		pmlnr_base::debug( "POSSE #{$_post->ID} to SMTP" );
 
-		$post = pmlnr_base::fix_post($post);
-		if ( ! pmlnr_base::is_post( $post ) ) {
+		$_post = pmlnr_base::fix_post($_post);
+		if ( ! pmlnr_base::is_post( $_post ) ) {
 			pmlnr_base::debug( "this is not a post." );
 			return false;
 		}
 
-		if ( 'post' != $post->post_type ){
+		if ( 'post' != $_post->post_type ){
 			pmlnr_base::debug( "this is not a post type post." );
 			return false;
 		}
 
-
 		// only on publish from now on
-		if ( 'publish' != $post->post_status ){
+		if ( 'publish' != $_post->post_status ){
 			pmlnr_base::debug( "this is not a published post." );
 			return false;
 		}
 
+		// this if for filters on the content, 'cus it has no idea about the post
+		global $post;
+		$post = $_post;
 
 		$yaml = pmlnr_base::get_yaml();
 		$format = pmlnr_base::post_format ( $post );
@@ -815,8 +855,8 @@ class petermolnareu {
 
 		$subscribers = $yaml['subscribers'];
 
-		$sent = get_post_meta ( $post->ID, $meta_key, true );
-		if ( !is_array( $sent ) )
+		//$sent = get_post_meta ( $post->ID, $meta_key, true );
+		//if ( !is_array( $sent ) )
 			$sent = array();
 
 		if ( empty (  array_diff( $subscribers, $sent ) ) ) {
@@ -834,7 +874,7 @@ class petermolnareu {
 			'X-RSS-URL: ' . get_permalink($post->ID)
 		);
 
-		$title = get_bloginfo('url') . " // " . $template_vars['title'];
+		$title = get_bloginfo('url') . ": " . $template_vars['title'] . " [{$format}]";
 
 		$content = '<!DOCTYPE html>
 		<html>
@@ -843,7 +883,6 @@ class petermolnareu {
 			</head>
 			<body>
 				<h1>'. $template_vars['title'] .'</h1>
-				%s
 				'. $template_vars['content'] .'
 				<hr />
 				<p>
@@ -855,11 +894,22 @@ class petermolnareu {
 			</body>
 		</html>';
 
-		$url = get_post_meta ( $post->ID, 'webmention_url', true);
-		if ( $url )
-			$url = '<h2><a href="'.$url.'">'.$url.'</a></h2>';
+		// add webmention url
+		//$url = get_post_meta ( $post->ID, 'webmention_url', true);
+		//if ( $url )
+		//	$url = '<h2><a href="'.$url.'">'.$url.'</a></h2>';
+		//$content = sprintf ( $content, $url );
 
-		$content = sprintf ( $content, $url );
+
+		// attach image
+		$attachment = false;
+		$thid = get_post_thumbnail_id( $post->ID );
+		if ( ! empty( $thid ) ) {
+			$thmeta = pmlnr_base::get_extended_thumbnail_meta ( $thid );
+			//pmlnr_base::debug ( $thmeta );
+			$attachment = $thmeta['sizes']['adaptive_2']['path'];
+			pmlnr_base::debug( "attachment found: {$attachment}" );
+		}
 
 		add_filter( 'wp_mail_content_type', array( __CLASS__, 'set_html_content_type') );
 
@@ -869,7 +919,7 @@ class petermolnareu {
 				continue;
 
 			pmlnr_base::debug( "sending to {$addr}" );
-			$s = wp_mail( $addr, $title, $content, $headers);
+			$s = wp_mail( $addr, $title, $content, $headers, $attachment );
 
 			if ( true == $s )
 				array_push ( $sent, $addr );
@@ -943,12 +993,13 @@ class petermolnareu {
 		send_webmention ( $permalink, $parent->comment_author_url );
 	}
 
-
+	/*
 	public static function maybe_tidy ( $r ) {
-		$indenter = new \Gajus\Dindent\Indenter();
-		$r = $indenter->indent($r);
+		//$indenter = new \Gajus\Dindent\Indenter();
+		//$r = $indenter->indent($r);
 		return $r;
 	}
+	*/
 
 }
 

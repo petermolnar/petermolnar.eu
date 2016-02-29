@@ -35,11 +35,15 @@ if ( have_posts() ) {
 		//petermolnareu::autotag_by_photo ( $post );
 		//petermolnareu::migrate_stuff ($post);
 		$post_id = get_the_ID();
+
+		$format = pmlnr_post::post_format($post);
+		if ( 'photo' == $format )
+			petermolnareu::autotag_by_photo ( $post );
+
 		$tmpl_vars = pmlnr_post::template_vars( $post );
 		$twigvars['posts'][] = $tmpl_vars;
 	}
 }
 
 $twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
-$r = $twig->render($twigvars);
-echo petermolnareu::maybe_tidy ( $r );
+echo $twig->render($twigvars);
