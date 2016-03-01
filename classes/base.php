@@ -460,7 +460,7 @@ class pmlnr_base {
 			$slug = 'repost';
 			//$name = __('Repost','petermolnareu');
 		}
-		elseif ( $has_thumbnail && static::is_photo($has_thumbnail) && $diff > 50 ) {
+		elseif ( $has_thumbnail && static::is_photo($has_thumbnail) /* && $diff > 50 */ ) {
 			$slug = 'photo';
 			//$name =  __('Photo','petermolnareu');
 		}

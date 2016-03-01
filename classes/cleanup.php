@@ -47,6 +47,16 @@ class pmlnr_cleanup extends pmlnr_base {
 		add_filter( 'content_save_pre' , array(&$this, '_sanitize_content') , 10, 1);
 
 		//add_filter( 'the_content' , array(&$this, '_sanitize_content') , 9, 1);
+
+		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
+	}
+
+	/*
+	 *
+	 */
+	public static function cleanup_press_this_content ( $content ) {
+		$content = preg_replace("/^Source: /m", '\- ', $content);
+		return $content;
 	}
 
 	public function remove_enqueues () {

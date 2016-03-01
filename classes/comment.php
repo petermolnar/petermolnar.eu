@@ -2,13 +2,36 @@
 
 class pmlnr_comment extends pmlnr_base {
 
+	public static function comment_endpoint () {
+		return 'webmention_response';
+	}
+
 	public function __construct () {
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
+
+		// enable webmentions for comments
+		add_action ( 'comment_post', array(&$this, 'comment_webmention'),8,2);
 	}
 
 	public function init() {
 		add_filter ( 'wp_webmention_again_validate_local', array ( &$this, 'validate_local'), 2, 2 );
+
+		// add comment endpoint to query vars
+		add_filter( 'query_vars', array( &$this, 'add_query_var' ) );
+		add_rewrite_endpoint ( pmlnr_comment::comment_endpoint(), EP_ROOT );
+	}
+
+	/**
+	 * add webmention to accepted query vars
+	 *
+	 * @param array $vars current query vars
+	 *
+	 * @return array extended vars
+	 */
+	public function add_query_var($vars) {
+		array_push($vars, static::comment_endpoint() );
+		return $vars;
 	}
 
 	/**
@@ -38,13 +61,6 @@ class pmlnr_comment extends pmlnr_base {
 		}
 
 		return $postid;
-	}
-
-	/**
-	 *
-	 */
-	public static function comment_endpoint () {
-		return 'webmention_response';
 	}
 
 	/**
@@ -124,6 +140,48 @@ class pmlnr_comment extends pmlnr_base {
 		return $r;
 	}
 
+	/**
+	 *
+	 */
+	public function comment_webmention ( $comment_ID, $comment_approved = false ) {
+		if ( ! function_exists( 'send_webmention' ) ) {
+			return false;
+		}
+
+		if ( false == $comment_approved ) {
+			static::debug ( "comment #{$comment_ID} is not approved" );
+			return false;
+		}
+
+		$comment = get_comment( $comment_ID );
+
+		if ( ! static::is_comment ( $comment ) ) {
+			static::debug ( "comment #{$comment_ID} is not a comment" );
+			return false;
+		}
+
+		if ( empty( $comment->comment_parent ) ) {
+			static::debug ( "comment #{$comment_ID} doesn't have a parent" );
+			return false;
+		}
+
+		$parent = get_comment( $comment->comment_parent );
+
+		if ( ! static::is_comment ( $parent ) ) {
+			static::debug ( "comment #{$comment_ID} parent is not a comment" );
+			return false;
+		}
+
+		if ( empty ( $parent->comment_author_url ) ) {
+			static::debug ( "comment #{$comment_ID} no author url for parent" );
+			return false;
+		}
+
+		$permalink = pmlnr_comment::get_permalink($comment_ID);
+
+		static::debug ( "comment #{$comment_ID} sending webmention to: {$parent->comment_author_url} as: {$permalink}" );
+		send_webmention ( $permalink, $parent->comment_author_url );
+	}
 
 	/**
 	 *

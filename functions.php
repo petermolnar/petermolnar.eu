@@ -78,14 +78,12 @@ class petermolnareu {
 		// add css & js
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
 
-		// enable webmentions for comments
-		add_action ( 'comment_post', array(&$this, 'comment_webmention'),8,2);
-
 		// do things on post publish
 		add_action( 'transition_post_status', array( &$this, 'on_publish' ), 99, 5 );
 
 		// hook for mail sending
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
+		add_action ( 'make_post_syndication', array( 'petermolnareu', 'make_post_syndication' ), 99, 1 );
 	}
 
 	/**
@@ -115,22 +113,13 @@ class petermolnareu {
 		// I want to upload svg
 		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
 
-		// add comment endpoint to query vars
-		add_filter( 'query_vars', array( &$this, 'add_query_var' ) );
-		add_rewrite_endpoint ( pmlnr_comment::comment_endpoint(), EP_ROOT );
-
 		// add reaction url if any and clean up Press This content
 		add_filter ('press_this_suggested_content', array (&$this, 'press_this_add_reaction_url'));
 		add_filter ('enable_press_this_media_discovery', '__return_false' );
-		add_filter ('press_this_suggested_content', array ('pmlnr_markdown', 'html2markdown'), 1);
-		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
-
 
 		// for responsive videos
 		add_filter( 'embed_oembed_html', array ( &$this, 'custom_oembed_filter' ), 10, 4 ) ;
 
-
-		//add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown') );
 	}
 
 	/**
@@ -140,19 +129,6 @@ class petermolnareu {
 	public function custom_oembed_filter($html, $url, $attr, $post_ID) {
 		$return = '<div class="video-container">'.$html.'</div>';
 		return $return;
-	}
-
-
-	/**
-	 * add webmention to accepted query vars
-	 *
-	 * @param array $vars current query vars
-	 *
-	 * @return array extended vars
-	 */
-	public function add_query_var($vars) {
-		array_push($vars, pmlnr_comment::comment_endpoint() );
-		return $vars;
 	}
 
 	/**
@@ -391,10 +367,11 @@ class petermolnareu {
 		$yaml = pmlnr_base::get_yaml();
 		$format = pmlnr_base::post_format ( $post );
 
-		if ( 'photo' == $format )
+		if ( 'photo' == $format ) {
 			static::autotag_by_photo ( $post );
+		}
 
-		// --- these only on already publish one, incl. refresh ---
+		// --- these on already published ones, incl. refresh ---
 		if ( 'publish' != $new_status )
 			return false;
 
@@ -402,10 +379,11 @@ class petermolnareu {
 		if ( $new_status == $old_status )
 			return false;
 
-		if ( in_array( $format, $yaml['smtp_categories']) ) {
-			$args = array ( 'post' => $post );
+		$args = array ( 'post' => $post );
+		wp_schedule_single_event( time() + 120, 'make_post_syndication', $args );
+
+		if ( in_array( $format, $yaml['smtp_categories']) )
 			wp_schedule_single_event( time() + 120, 'posse_to_smtp', $args );
-		}
 
 	}
 
@@ -413,6 +391,10 @@ class petermolnareu {
 	 *
 	 */
 	public static function autotag_by_photo ( $post ) {
+		$post = pmlnr_base::fix_post($post);
+
+		if ( false === $post )
+			return false;
 
 		$taxonomy = 'post_tag';
 
@@ -422,6 +404,7 @@ class petermolnareu {
 			return false;
 
 		$meta = pmlnr_base::get_extended_thumbnail_meta ( $thid );
+
 		if ( isset( $meta['image_meta'] ) && isset ( $meta['image_meta']['keywords'] ) && !empty( $meta['image_meta']['keywords'] ) ) {
 
 			$keywords = $meta['image_meta']['keywords'];
@@ -451,6 +434,44 @@ class petermolnareu {
 					pmlnr_base::debug ( "appending post #{$post->ID} {$taxonomy} taxonomy with: {$tag}");
 					wp_set_post_terms( $post->ID, $tag, $taxonomy, true );
 				}
+			}
+		}
+
+		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
+			pmlnr_base::debug ( "appending post #{$post->ID} content with image caption" );
+			global $wpdb;
+			$dbname = "{$wpdb->prefix}posts";
+			$req = false;
+			$modcontent = $meta['image_meta']['caption'];
+
+			pmlnr_base::debug("Updating post content for #{$post->ID}");
+
+			$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
+
+			try {
+				$req = $wpdb->query( $q );
+			}
+			catch (Exception $e) {
+				pmlnr_base::debug('Something went wrong: ' . $e->getMessage());
+			}
+		}
+
+		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
+			pmlnr_base::debug ( "appending post #{$post->ID} content with image caption" );
+			global $wpdb;
+			$dbname = "{$wpdb->prefix}posts";
+			$req = false;
+			$modcontent = $meta['image_meta']['caption'];
+
+			pmlnr_base::debug("Updating post content for #{$post->ID}");
+
+			$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
+
+			try {
+				$req = $wpdb->query( $q );
+			}
+			catch (Exception $e) {
+				pmlnr_base::debug('Something went wrong: ' . $e->getMessage());
 			}
 		}
 	}
@@ -580,56 +601,9 @@ class petermolnareu {
 		return 'text/html';
 	}
 
-	/**
-	 *
-	 */
-	public function comment_webmention ( $comment_ID, $comment_approved = false ) {
-		if ( ! function_exists( 'send_webmention' ) ) {
-			return false;
-		}
 
-		if ( false == $comment_approved ) {
-			pmlnr_base::debug ( "comment #{$comment_ID} is not approved" );
-			return false;
-		}
 
-		$comment = get_comment( $comment_ID );
 
-		if ( ! pmlnr_base::is_comment ( $comment ) ) {
-			pmlnr_base::debug ( "comment #{$comment_ID} is not a comment" );
-			return false;
-		}
-
-		if ( empty( $comment->comment_parent ) ) {
-			pmlnr_base::debug ( "comment #{$comment_ID} doesn't have a parent" );
-			return false;
-		}
-
-		$parent = get_comment( $comment->comment_parent );
-
-		if ( ! pmlnr_base::is_comment ( $parent ) ) {
-			pmlnr_base::debug ( "comment #{$comment_ID} parent is not a comment" );
-			return false;
-		}
-
-		if ( empty ( $parent->comment_author_url ) ) {
-			pmlnr_base::debug ( "comment #{$comment_ID} no author url for parent" );
-			return false;
-		}
-
-		$permalink = pmlnr_comment::get_permalink($comment_ID);
-
-		pmlnr_base::debug ( "comment #{$comment_ID} sending webmention to: {$parent->comment_author_url} as: {$permalink}" );
-		send_webmention ( $permalink, $parent->comment_author_url );
-	}
-
-	/*
-	 *
-	 */
-	public static function cleanup_press_this_content ( $content ) {
-		$content = preg_replace("/^Source: /m", '\- ', $content);
-		return $content;
-	}
 
 	/**
 	 * extract the url from the uri and insert it formatted accordingly automatically

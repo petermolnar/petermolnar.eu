@@ -20,6 +20,10 @@ class pmlnr_markdown extends pmlnr_base {
 		add_filter( 'the_excerpt', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 
 		// press this
+		add_filter ('press_this_suggested_content', array ( 'pmlnr_markdown', 'html2markdown' ), 1);
+
+		// convert comment HTML
+		add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown' ) );
 	}
 
 	/**
@@ -221,6 +225,9 @@ class pmlnr_markdown extends pmlnr_base {
 
 			$content = str_replace ( $img->outertext, $img, $content );
 		}
+
+		// fix potential hashtag issues
+		$content = preg_replace ( '/^#/mi', '\#', $content );
 
 		wp_cache_set ( $hash, $content, __CLASS__ . __FUNCTION__, static::expire );
 
