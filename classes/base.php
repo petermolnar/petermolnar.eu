@@ -31,6 +31,75 @@ class pmlnr_base {
 
 	/**
 	 *
+	 */
+	public static function extract_reaction ( $content, $parsedown = false ) {
+
+		$matches = static::has_reaction( $content );
+		if ( false == $matches )
+			return false;
+
+		$replace = false;
+		$r = false;
+		$type = false;
+		$rsvp = '';
+
+		$rsvps = array (
+			'no' => __("Sorry, can't make it."),
+			'yes' => __("I'll be there."),
+			'maybe' => __("I'll do my best, but don't count on me for sure."),
+		);
+
+		$replace = $matches[0][0];
+		$type = trim($matches[1][0]);
+		$url = trim($matches[2][0]);
+		$data = trim($matches[3][0]);
+
+		if ( $type == 're' && !empty( $data ) )
+			$rsvp = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
+
+		switch ($type) {
+			case 'like':
+			case 'fav':
+				$cl = 'u-like-of';
+				$prefix = '';
+				break;
+			case 'from':
+				$cl = 'u-repost-of';
+				$prefix = '*reposted from:* ';
+				break;
+			case 're':
+				$cl = 'u-in-reply-to';
+				$prefix = '**RE:** ';
+				break;
+			default:
+				$cl = 'u-url';
+				$prefix = '**URL:** ';
+				break;
+		}
+
+		$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
+		$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}\n{$rsvp}";
+
+		if ($parsedown)
+			$r = pmlnr_markdown::parsedown($r);
+
+		return $r;
+	}
+
+	/**
+	 *
+	 */
+	public static function remove_reaction ( $content ) {
+
+		$matches = static::has_reaction( $content );
+		if ( false == $matches )
+			return $content;
+
+		return str_replace ( $matches[0][0], '', $content );
+	}
+
+	/**
+	 *
 	 * debug messages; will only work if WP_DEBUG is on
 	 * or if the level is LOG_ERR, but that will kill the process
 	 *

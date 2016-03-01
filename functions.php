@@ -146,6 +146,8 @@ class petermolnareu {
 		add_image_size ( 'thumbnail-large', 180, 180, true );
 
 		//add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
+
+		add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown') );
 	}
 
 	/**

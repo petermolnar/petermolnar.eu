@@ -153,7 +153,7 @@ class pmlnr_site extends pmlnr_base {
 			'header' => static::get_the_header(),
 			'footer' => static::get_the_footer(),
 			'pagination' => static::get_the_pagination(),
-			'author_formats' => array('article','photo', 'reply'),
+			'author_formats' => array('article','photo'),
 			'image_formats' => array('image', 'photo'),
 			'long_formats' => array('article'),
 			//'subscribe_sidebar' => static::get_the_sidebar('subscribe'),

@@ -10,19 +10,23 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_the_content( &$post = null ){
+	public static function get_the_content( &$post = null, $clean = false ){
 
 		$post = static::fix_post($post);
 
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $post->ID . $clean, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$r = $post->post_content;
-		$r = static::convert_relations_in_content ( $r );
+
+		if ( $clean == 'clean')
+			$r = static::remove_reaction ( $r );
+		else
+			$r = static::convert_reaction ( $r );
+
 		$r = apply_filters('the_content', $r);
 
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
+		wp_cache_set ( $post->ID . $clean, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
@@ -60,14 +64,15 @@ class pmlnr_post extends pmlnr_base {
 		$content = $post->post_content;
 		$matches = static::has_reaction( $content );
 		if ( false != $matches )
-				return false;
+			return false;
 
+		// otherwise try to get the meta field which is deprecated and I should delete
+		// this code
 		$r = $migrate = false;
 
 		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
 		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
 		$webmention_rsvp = get_post_meta ( $post->ID, 'webmention_rsvp', true);
-
 
 		if ( !empty($webmention_url)) {
 			switch ($webmention_type) {
@@ -134,8 +139,6 @@ class pmlnr_post extends pmlnr_base {
 
 			if ($parsedown)
 				$r = pmlnr_markdown::parsedown($r);
-
-
 
 		}
 
@@ -501,6 +504,7 @@ class pmlnr_post extends pmlnr_base {
 					'author_url' => $comment->comment_author_url,
 					'author' => $comment->comment_author,
 					'avatar' => get_avatar( $comment, 42 ),
+					//'content' => pmlnr_markdown::parsedown ($comment->comment_content),
 					'content' => $comment->comment_content,
 					'pubdate_iso' => date( 'c', $time ),
 					'pubdate_print' => sprintf ('%s %s',
@@ -583,7 +587,7 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function convert_relations_in_content ( $content ) {
+	public static function convert_reaction ( $content ) {
 
 		$matches = static::has_reaction( $content );
 		if ( false == $matches )
@@ -610,6 +614,7 @@ class pmlnr_post extends pmlnr_base {
 
 		switch ($type) {
 			case 'like':
+			case 'fav':
 				$cl = 'u-like-of';
 				$prefix = '';
 				break;
@@ -652,7 +657,8 @@ class pmlnr_post extends pmlnr_base {
 			'title' => trim(get_the_title( $post->ID )),
 			'shorturl' => wp_get_shortlink( $post->ID ),
 			'thumbnail' => static::post_thumbnail ($post),
-			'content' => static::get_the_content($post),
+			'content' => static::get_the_content($post, 'clean'),
+			'parsed_content' => static::get_the_content($post),
 			'raw_content' => $post->post_content,
 			'excerpt' => static::get_the_excerpt($post),
 			'author_meta' => get_post_meta ( $post->ID, 'author', true),
@@ -668,7 +674,8 @@ class pmlnr_post extends pmlnr_base {
 			'wordstoread' => str_word_count( strip_tags($post->post_content), 0 ),
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
-			'webmention' => static::post_get_webmention($post, true),
+			//'webmention' => static::post_get_webmention($post, true),
+			'webmention' => static::extract_reaction($post->post_content, true),
 			'syndicates' => static::post_get_syndicates($post),
 			'likes' => static::get_comments($post, 'like'),
 			'replies' => static::get_comments($post, 'reply'),
