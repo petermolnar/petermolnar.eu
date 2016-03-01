@@ -8,13 +8,6 @@ class pmlnr_base {
 
 	/**
 	 *
-	 *
-	public static function reaction_pregpattern () {
-		return "/^---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+(.*))?[\n\r]+---/mi";
-	}
-
-	/**
-	 *
 	 */
 	public static function has_reaction ( $content ) {
 		$pattern = "/---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+((?!---).*))?[\n\r]+---/mi";

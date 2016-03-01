@@ -13,15 +13,13 @@ class pmlnr_markdown extends pmlnr_base {
 	public function init (  ) {
 
 		// replace img inserts with Markdown
-		add_filter( 'image_send_to_editor', array( &$this, 'media_string_html2md'), 10 );
+		add_filter( 'image_send_to_editor', array( 'pmlnr_markdown', 'media_string_html2md'), 10 );
 
 		// markdown
-		add_filter( 'the_content', array( &$this, 'parsedown'), 8, 1 );
-		add_filter( 'the_excerpt', array( &$this, 'parsedown'), 8, 1 );
+		add_filter( 'the_content', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
+		add_filter( 'the_excerpt', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 
 		// press this
-		add_filter ('press_this_suggested_content', array (&$this, 'html2markdown'), 1);
-		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
 	}
 
 	/**
@@ -229,11 +227,4 @@ class pmlnr_markdown extends pmlnr_base {
 		return $content;
 	}
 
-	/*
-	 *
-	 */
-	public static function cleanup_press_this_content ( $content ) {
-		$content = preg_replace("/^Source: /m", '\- ', $content);
-		return $content;
-	}
 }

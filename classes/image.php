@@ -8,6 +8,9 @@ class pmlnr_image extends pmlnr_base {
 	private $dpx = array();
 	private $extra_exif = array();
 
+	/**
+	 *
+	 */
 	public function __construct ( ) {
 		$sizes = explode(',',static::sizes);
 
@@ -21,20 +24,18 @@ class pmlnr_image extends pmlnr_base {
 		);
 
 		add_action( 'init', array( &$this, 'init'));
-		// insert featured image as RSS enclosure
-		//add_action( 'rss2_item', array(&$this,'insert_enclosure_image') );
-
-		/* overwrite gallery shortcode */
-		//remove_shortcode('gallery');
-		//add_shortcode('gallery', array ( &$this, 'gallery' ) );
-
 	}
 
+	/**
+	 *
+	 */
 	public static function exif_types () {
 		return array ( 'camera', 'focal_length', 'shutter_speed', 'iso', 'aperture' );
 	}
 
-	/* init function, should be used in the theme init loop */
+	/**
+	 * init function, should be used in the theme init loop
+	 */
 	public function init (  ) {
 
 		// additional image sizes for adaptiveness
@@ -48,18 +49,6 @@ class pmlnr_image extends pmlnr_base {
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
 		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
-
-		/*
-		foreach ( static::exif_types() as $exif ) {
-			register_taxonomy( 'exif_' . $exif, 'post', array (
-				'label' => 'Exif: ' . $exif,
-				'public' => true,
-				'show_ui' => true,
-				'hierarchical' => false,
-				'show_admin_column' => false,
-			));
-		}
-		*/
 
 	}
 
@@ -77,6 +66,7 @@ class pmlnr_image extends pmlnr_base {
 
 	/**
 	 * additional EXIF which only exiftool can read
+	 *
 	 */
 	public function read_extra_exif ( $meta, $filepath ='', $sourceImageType = '' ) {
 
@@ -119,6 +109,7 @@ class pmlnr_image extends pmlnr_base {
 
 	/**
 	 * adaptive image shortcode function
+	 *
 	 */
 	public function adaptive( &$thid, $post = null, $max = null ) {
 		if (empty($thid))
@@ -169,10 +160,6 @@ class pmlnr_image extends pmlnr_base {
 			$target = get_permalink ( $meta['parent'] );
 		}
 		else {
-			//end($this->dpix);
-			//$id = static::prefix . key($this->dpix);
-			//$target = $meta['sizes'][$id]['src'];
-
 			$r = array_reverse($this->dpix,true);
 			foreach ( $r as $id => $size ) {
 				$n = static::prefix . $id;
@@ -242,7 +229,6 @@ class pmlnr_image extends pmlnr_base {
 
 		// match all markdown images
 		$markdown_images = static::extract_md_images( $html );
-		//preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $html, $markdown_images);
 
 		if ( !empty ( $markdown_images[0]  )) {
 			$excludes = array ( '.noadapt', '.alignleft', '.alignright' ,'u-photo', 'avatar' );
@@ -381,241 +367,5 @@ class pmlnr_image extends pmlnr_base {
 
 		return $return;
 	}
-
-
-	/**
-	 *
-	 *
-	public static function insert_enclosure_image ( ) {
-
-		$post = static::fix_post();
-
-		$thid = get_post_thumbnail_id( $post->ID );
-		if ( ! $thid )
-			return false;
-
-		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$asize = 'adaptive_3';
-		$img = wp_get_attachment_image_src( $thid, $asize );
-		$meta = wp_get_attachment_metadata($thid);
-		if ( !isset($meta['sizes'][$asize]))
-			return false;
-
-		$upload_dir = wp_upload_dir();
-		$cached = WP_CONTENT_DIR . '/cache/' . $meta['sizes'][$asize]['file'];
-		$file = $upload_dir['basedir'] . '/' . $meta['sizes'][$asize]['file'];
-
-		if ( file_exists($cached))
-			$fsize = filesize($cached);
-		elseif ( file_exists($file) )
-			$fsize = filesize($file);
-		else
-			return false;
-
-		$mime = $meta['sizes'][$asize]['mime-type'];
-		$str = sprintf('<enclosure url="%s" type="%s" length="%s" />',static::fix_url($img[0]),$mime,$fsize);
-
-		wp_cache_set ( $thid, $str, __CLASS__ . __FUNCTION__, static::expire );
-
-		echo $str;
-	}
-	//*/
-
-	///**
-	 //*
-	 //*/
-	//public function gallery( $atts ,  $content = null ) {
-		//wp_enqueue_script( "Justified-Gallery" );
-		//wp_enqueue_script( "magnific-popup" );
-
-		//extract( shortcode_atts(array(
-			//'postid' => false,
-			//'ids' => false,
-			//'columns' => false
-		//), $atts));
-
-		//$images = array();
-
-		//if ( !empty( $ids )) {
-			//$ids = explode ( ',' , $ids );
-			//if (!empty($ids))
-				//$images = $this->image_attachments_by_ids ( $ids );
-		//}
-		//else {
-			//if ( $postid == false ) {
-				//global $post;
-				//if (isset($post->ID) && !empty($post-ID))
-					//$postid = $post->ID;
-			//}
-
-			//if ( !empty($postid) ) {
-				//$images = $this->image_attachments_by_post ( $post->ID );
-			//}
-		//}
-
-		//if (empty($images))
-			//return false;
-
-		//$try = array ( 3 );
-
-		//foreach ($images as $imgid => $img ) {
-			//$fallback = $img['src']['a'][3];
-
-			//foreach ( $try as $test ) {
-
-				//if (isset($img['src']['a'][ $test ]))
-					//$t = $img['src']['a'][ $test ];
-				//elseif (isset($img['src'][ $test ]))
-					//$t = $img['src'][ $test ];
-				//else
-					//continue;
-
-				//if ( $t[0] != $img['src']['o'][0] )
-					//$fallback = $t;
-
-
-			//}
-
-			//$t = end( $img['src']['a']);
-			//$target = static::fix_url($t[0]);
-			//$src = static::fix_url($fallback[0]);
-			//$width = $fallback[1];
-			//$height = $fallback[2];
-			//$caption = $img['caption'];
-			//$title = $img['title'];
-
-			//$str = sprintf('<a href="%s" title="%s"><img src="%s" title="%s" width="%s" height="%s" /><div class="caption">%s</div></a>', $target, $title, $src, $title, $width, $height, $caption );
-
-			//$imgs[] = $str;
-		//}
-
-		//$gstr = join('', $imgs);
-		//$gid = md5( $gstr );
-
-		//$r = sprintf ('<div id="justified-gallery-%s">%s</div>', $gid, $gstr);
-		//$rh = $this->dpix[1];
-
-		//$r .= '
-		//<script>
-			//jQuery("#justified-gallery-'.$gid.'").justifiedGallery({
-				//margins: 2,
-				//captions: true,
-				//rowHeight: '. $rh .',
-				//lastRow: "justify",
-				//captionSettings: {
-					//animationDuration: 500,
-					//visibleOpacity: 0.8,
-					//nonVisibleOpacity: 0.4
-				//},
-			//});
-
-			//jQuery("#justified-gallery-'.$gid.'").magnificPopup({
-				//delegate: \'a\',
-				//type: \'image\',
-				//tLoading: \'Loading image #%curr%...\',
-				//mainClass: \'mfp-img-mobile\',
-				//gallery: {
-					//enabled: true,
-					//navigateByImgClick: true,
-					//preload: [0,1] // Will preload 0 - before current, and 1 after the current image
-				//},
-				//image: {
-					//tError: \'<a href="%url%">The image #%curr%</a> could not be loaded.\',
-					//titleSrc: function(item) {
-						//return item.el.attr(\'caption\');
-					//}
-				//}
-			//});
-
-		//</script>';
-
-		//return $r;
-	//}
-
-
-	///* get all image attachments for a post
-	 //*
-	 //* @param $post WordPress post object
-	 //*
-	 //* @return array of images, key is attachment id
-	//*/
-	//private function image_attachments_by_post ( $postid ) {
-		//$images = array();
-
-		///* get image type attachments for the post by ID */
-		//$attachments = get_children( array (
-			//'post_parent'=>$postid,
-			//'post_type'=>'attachment',
-			//'post_mime_type'=>'image',
-			//'orderby'=>'menu_order',
-			//'order'=>'asc'
-		//) );
-
-		//if ( !empty($attachments) ) {
-			//foreach ( $attachments as $imgid => $attachment ) {
-				//$images[ $imgid ] = $this->get_imagemeta( $imgid );
-			//}
-		//}
-
-		//return $images;
-	//}
-
-	///* get all image attachments for a post
-	 //*
-	 //* @param $post WordPress post object
-	 //*
-	 //* @return array of images, key is attachment id
-	//*/
-	//private function image_attachments_by_ids ( $ids ) {
-		//if ( empty ( $ids ) )
-			//return false;
-
-		//if ( !is_array ( $ids) )
-			//$ids = array ( $ids );
-
-		//$images = array();
-
-		//foreach ( $ids as $imgid ) {
-			//$images[ $imgid ] = $this->get_imagemeta( $imgid );
-		//}
-
-		//return $images;
-	//}
-
-	///*
-	 //*
-	 //*/
-	//public function get_imagemeta ( $imgid ) {
-		//$img = array();
-		//$__post = get_post( $imgid );
-
-		//$img['title'] = esc_attr($__post->post_title);
-		//$img['alttext'] = strip_tags ( get_post_meta($__post->id, '_wp_attachment_image_alt', true) );
-		//$img['caption'] = esc_attr($__post->post_excerpt);
-		//$img['description'] = esc_attr($__post->post_content);
-		//$img['slug'] =  sanitize_title ( $__post->post_title , $imgid );
-		//if ( is_numeric( substr( $img['slug'], 0, 1) ) )
-			//$img['slug'] = 'img-' . $img['slug'];
-
-		//if ( !empty ( $__post->post_parent ) ) {
-			//$parent = get_post( $__post->post_parent );
-			//$img['parent'] = $parent->ID;
-		//}
-
-		//foreach ( $this->dpix as $dpix => $size ) {
-			//$img['src']['a'][$dpix] = wp_get_attachment_image_src( $imgid, self::prefix . $dpix );
-		//}
-
-		//$img['src']['o'] = wp_get_attachment_image_src( $imgid, 'full' );
-
-		//$img['src']['m'] = wp_get_attachment_image_src( $imgid, 'medium' );
-
-		//$img['src']['l'] = wp_get_attachment_image_src( $imgid, 'large' );
-
-		//return $img;
-	//}
-
 
 }

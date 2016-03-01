@@ -4,7 +4,6 @@ class pmlnr_author extends pmlnr_base {
 
 	public function __construct ( ) {
 		add_action( 'init', array( &$this, 'init'));
-		//add_shortcode( 'vcard' , array( &$this, 'vcard') );
 	}
 
 	/* init function, should be used in the theme init loop */
@@ -68,28 +67,6 @@ class pmlnr_author extends pmlnr_base {
 
 		wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, static::expire );
 		return $list;
-	}
-
-	/**
-	 *
-	 *
-	function vcard( $atts, $content = "" ) {
-
-		if (isset($atts['author']))
-			$author = $atts['author'];
-		else
-			$author = 1;
-
-		global $petermolnareu_theme;
-		$twigvars = array (
-			'author' => static::template_vars ( $author ),
-		);
-
-		if ( isset($atts['showall']) )
-			$twigvars['author']['showall'] = 1;
-
-		$twig = $petermolnareu_theme->twig->loadTemplate('partial_vcard.html');
-		return $twig->render($twigvars);
 	}
 
 	/**

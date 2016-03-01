@@ -24,21 +24,6 @@ class pmlnr_site extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_the_sidebar($name='') {
-
-		if (empty($name))
-			return false;
-
-		ob_start();
-		dynamic_sidebar( $name );
-		$r = ob_get_clean();
-
-		return $r;
-	}
-
-	/**
-	 *
-	 */
 	public static function get_the_footer() {
 
 		ob_start();
@@ -61,19 +46,6 @@ class pmlnr_site extends pmlnr_base {
 		//else
 		$r = file_get_contents( "{$base}/style.css" );
 		//$r .= file_get_contents( "{$base}/css/prism.min.css" );
-
-		return $r;
-	}
-
-	/**
-	 *
-	 */
-	public static function get_js() {
-
-		$base = get_stylesheet_directory();
-		$r = file_get_contents( "{$base}/js/prism.js" );
-		$r .= "\n";
-		$r .= file_get_contents( "{$base}/lib/picturefill/dist/picturefill.min.js" );
 
 		return $r;
 	}
@@ -156,9 +128,7 @@ class pmlnr_site extends pmlnr_base {
 			'author_formats' => array('article','photo'),
 			'image_formats' => array('image', 'photo'),
 			'long_formats' => array('article'),
-			//'subscribe_sidebar' => static::get_the_sidebar('subscribe'),
 			'css' => static::get_css(),
-			//'js' => static::get_js(),
 			'atitle' => $atitle,
 			'is_user_logged_in' => is_user_logged_in(),
 		);

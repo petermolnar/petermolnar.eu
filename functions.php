@@ -4,9 +4,10 @@ define('ARTICLE_MIN_LENGTH', 1100);
 
 $dirname = dirname(__FILE__);
 
-require __DIR__ . '/vendor/autoload.php';
-
+//
 require_once ($dirname . '/lib/simple_html_dom/simple_html_dom.php');
+
+require __DIR__ . '/vendor/autoload.php';
 Twig_Autoloader::register();
 Twig_Extensions_Autoloader::register();
 
@@ -27,7 +28,6 @@ class petermolnareu {
 	public $twigloader = null;
 	private $twigcache = WP_CONTENT_DIR . '/cache/twig';
 
-	//const bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
 
 	public function __construct () {
 
@@ -46,6 +46,7 @@ class petermolnareu {
 			touch ( $cssfile, $lessmtime );
 		}
 
+		// set up Twig
 		if (!is_dir($this->twigcache))
 			mkdir($this->twigcache);
 
@@ -58,6 +59,7 @@ class petermolnareu {
 		));
 		$this->twig->addExtension(new Twig_Extensions_Extension_I18n());
 
+		// set up theme class action hooks
 		new pmlnr_image();
 		new pmlnr_cleanup();
 		new pmlnr_markdown();
@@ -66,7 +68,9 @@ class petermolnareu {
 		new pmlnr_site();
 		new pmlnr_comment();
 
+		// additional image sizes
 		add_image_size ( 'headerbg', 720, 0, false );
+		add_image_size ( 'thumbnail-large', 180, 180, true );
 
 		// init all the things!
 		add_action( 'init', array( &$this, 'init'));
@@ -74,18 +78,13 @@ class petermolnareu {
 		// add css & js
 		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
 
-		// Add meta boxes on the 'add_meta_boxes' hook.
-		//add_action( 'add_meta_boxes', array(&$this, 'post_meta_add' ));
-		//add_action( 'save_post', array(&$this, 'post_meta_save' ) );
-
-		//add_action('restrict_manage_posts', array(&$this, 'type_dropdown'));
-
+		// enable webmentions for comments
 		add_action ( 'comment_post', array(&$this, 'comment_webmention'),8,2);
 
-		//add_action( 'widgets_init', array(&$this, 'widgets_init') );
-
+		// do things on post publish
 		add_action( 'transition_post_status', array( &$this, 'on_publish' ), 99, 5 );
 
+		// hook for mail sending
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
 	}
 
@@ -94,6 +93,7 @@ class petermolnareu {
 	 */
 	public function init () {
 
+		// required WP Theme magic
 		add_theme_support( 'post-thumbnails' );
 		add_theme_support( 'menus' );
 		add_theme_support( 'html5', array( 'search-form' ) );
@@ -101,94 +101,40 @@ class petermolnareu {
 
 		// add main menus
 		register_nav_menus( array(
-			self::menu_header => __( self::menu_header , 'petermolnareu' ),
+			static::menu_header => __( self::menu_header , 'petermolnareu' ),
 		) );
 
 		// replace default <title></title>
 		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
 
-		// add the webmention box value to the webmention links list
+		// add link extraction to webmention and ping hooks as they
+		// don't always do a good enough job
 		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
 		add_filter ('get_to_ping', array(&$this, 'webmention_links'), 1);
 
-		// add the webmention box value to the webmention links list
-		//add_filter ('bridgy_publish_urls', array(&$this, 'bridgy_publish_urls'), 1, 2);
-
 		// I want to upload svg
 		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
-
-		/*
-		// my own post formats
-		register_taxonomy( 'kind', 'post', array (
-			'label' => 'Type',
-			'public' => true,
-			'show_ui' => true,
-			'hierarchical' => true,
-			'show_admin_column' => true,
-			'rewrite' => array( 'slug' => 'format' ),
-		));
-
-		add_filter('parse_query', array(&$this, 'convert_id_to_term_in_query'));
-
-		*/
 
 		// add comment endpoint to query vars
 		add_filter( 'query_vars', array( &$this, 'add_query_var' ) );
 		add_rewrite_endpoint ( pmlnr_comment::comment_endpoint(), EP_ROOT );
 
+		// add reaction url if any and clean up Press This content
 		add_filter ('press_this_suggested_content', array (&$this, 'press_this_add_reaction_url'));
 		add_filter ('enable_press_this_media_discovery', '__return_false' );
+		add_filter ('press_this_suggested_content', array ('pmlnr_markdown', 'html2markdown'), 1);
+		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
 
+
+		// for responsive videos
 		add_filter( 'embed_oembed_html', array ( &$this, 'custom_oembed_filter' ), 10, 4 ) ;
 
-		//add_filter ('wp_url2snapshot_urls', array ( &$this, 'wp_url2snapshot_urls' ), 2, 2 );
 
-		add_image_size ( 'thumbnail-large', 180, 180, true );
-
-		//add_filter( 'the_content', array( &$this, 'insert_post_relations'), 1, 1 );
-
-		add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown') );
+		//add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown') );
 	}
 
 	/**
-	 *
-	 *
-	public function insert_post_relations( $content, $post = null ) {
-		if ( ! is_feed () )
-			return $content;
-
-		$post = pmlnr_base::fix_post($post);
-
-		if ( false === $post )
-			return $content;
-
-		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
-
-		if ( !empty($webmention_url)) {
-			$add = '<h2><a href="'.$webmention_url.'">'.$webmention_url.'</a></h2>';
-			$content = $add . $content;
-		}
-
-		return $content;
-	}
-
-
-	/**
-	 *
-	 *
-	public function wp_url2snapshot_urls ( $urls, $post = null ) {
-		$post = pmlnr_base::fix_post( $post );
-
-		// additional meta content links
-		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		if (!empty($webmention_url)) {
-			array_push($urls, $webmention_url);
-		}
-
-		return $urls;
-	}
-
-	/**
+	 * adds a wrapper div around video iframes to make them responsive
 	 *
 	 */
 	public function custom_oembed_filter($html, $url, $attr, $post_ID) {
@@ -196,44 +142,6 @@ class petermolnareu {
 		return $return;
 	}
 
-	/**
-	 */
-	public function press_this_add_reaction_url ( $content ) {
-		$ref = array();
-		parse_str ( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY ), $ref );
-
-		if ( is_array( $ref ) && isset ( $ref['u'] ) && ! empty( $ref['u'] ) ) {
-			$url = $ref['u'];
-			$t = '';
-
-			if ( isset( $ref['type'] ) )
-				$t = $ref['type'];
-
-			switch ( $t ) {
-				case 'fav':
-				case 'like':
-				case 'u-like-of':
-					$type = 'like: ';
-					break;
-				case 'repost':
-					$type = 'from: ';
-					break;
-				case 'reply':
-					$type = 're: ';
-					break;
-				default:
-					$type = '';
-					break;
-			}
-
-			$relation = "---\n{$type}{$url}\n---\n\n";
-
-			$content = $relation . $content;
-
-		}
-
-		return $content;
-	}
 
 	/**
 	 * add webmention to accepted query vars
@@ -249,12 +157,14 @@ class petermolnareu {
 
 	/**
 	 * register & queue css & js
+	 *
 	 */
 	public function register_css_js () {
 		$base_url = get_bloginfo("template_directory");
 		$js_url = "{$base_url}/js";
 		$css_url = "{$base_url}/css";
 
+		// this is moved to inline
 		//wp_register_style( "style", "{$base_url}/style.css" , false );
 		//wp_enqueue_style( "style" );
 
@@ -283,179 +193,6 @@ class petermolnareu {
 		wp_enqueue_script( "picturefill" );
 
 	}
-
-	/**
-	 * add webmention field to admin
-	 *
-	public function post_meta_add () {
-		add_meta_box(
-			'webmention',
-			esc_html__( 'Webmention', 'petermolnareu' ),
-			array(&$this, 'post_meta_display_webmention'),
-			'post',
-			'normal',
-			'default'
-		);
-	}
-
-	/**
-	 * meta field display
-	 *
-	public function post_meta_display_bridgy ( $object, $box ) {
-		wp_nonce_field( basename( __FILE__ ), 'petermolnareu' );
-
-		$_tpl = '<h3>{{ silo }}</h3>
-		<dl>
-			<dt><label for="{{ silo }}_send">Send to {{ silo }}</label></dt>
-			<dd><span><input type="checkbox" name="{{ silo }}_send" value="1"></span></dd>
-
-			<dt><label for="{{ silo }}_content">Alternative content for {{ silo }}</label></dt>
-			<dd><textarea cols="80" name="{{ silo }}_content" id="{{ silo }}_content"></textarea></dd>
-		</p>';
-
-		$_tpl_done = '<h3>{{ silo }}</h3>
-		<p>Already posted to: {{ url }}</p>';
-
-		$supported = array ('twitter', 'facebook', 'instagram', 'flick');
-
-		foreach ($supported as $silo) {
-			$existing = get_post_meta($object->ID, "bridgy_response_{$silo}", true );
-
-			if (!empty($existing)) {
-				$html = str_replace('{{ url }}', json_encode($existing), $_tpl_done);
-			}
-			else {
-				$html = $_tpl;
-			}
-
-			$html = str_replace('{{ silo }}', $silo, $html);
-			echo $html;
-		}
-	}
-
-	/**
-	 * meta field display
-	 *
-	public function post_meta_display_webmention ( $object, $box ) {
-		wp_nonce_field( basename( __FILE__ ), 'petermolnareu' );
-		$urlfield = 'webmention_url';
-		$webmention_url = get_post_meta( $object->ID, $urlfield, true );
-
-		$typefield = 'webmention_type';
-		$webmention_type = get_post_meta( $object->ID, $typefield, true );
-
-		$rsvpfield = 'webmention_rsvp';
-		$webmention_rsvp = get_post_meta( $object->ID, $rsvpfield, true );
-
-
-		$types = array (
-			'u-in-reply-to' => __('Reply'),
-			'u-like-of' => __('Like'),
-			'u-repost-of' => __('Repost'),
-		);
-
-		$rsvps = array ( 'no', 'yes', 'maybe' );
-
-		?>
-		<p>
-			<label for="<?php echo $urlfield ?>"><?php _e('URL to poke'); ?></label><br />
-			<input class="attachmentlinks" type="url" name="<?php echo $urlfield ?>" id="<?php echo $urlfield ?>" value="<?php echo $webmention_url ?>" />
-		</p>
-		<p>
-			<label for="<?php echo $typefield ?>"><?php _e('Webmention type'); ?></label><br />
-			<?php foreach ( $types as $type => $label ): ?>
-			<span><input type="radio" name="<?php echo $typefield ?>" value="<?php echo $type ?>" <?php checked( $webmention_type, $type, 1 ); ?>><?php echo $label; ?></span>
-			<?php endforeach; ?>
-			<span><input type="radio" name="<?php echo $typefield ?>" value=""><?php _e('clear') ?></span>
-		</p>
-		<p>
-			<label for="<?php echo $rsvpfield ?>"><?php _e('RSVP'); ?></label><br />
-			<?php foreach ( $rsvps as $data ): ?>
-			<span><input type="radio" name="<?php echo $rsvpfield ?>" value="<?php echo $data ?>" <?php checked( $webmention_rsvp, $data, 1 ); ?>><?php echo $data; ?></span>
-			<?php endforeach; ?>
-		</p>
-
-		<?php
-	}
-
-
-	/**
-	 * handle additional post meta
-	 *
-	public function post_meta_save ( $post_id ) {
-		if ( !isset( $_POST[ 'petermolnareu' ] ))
-			return $post_id;
-
-		 if (!wp_verify_nonce( $_POST[ 'petermolnareu' ], basename( __FILE__ ) ) )
-			return $post_id;
-
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
-			return $post_id;
-
-		if ( ! current_user_can( 'edit_page', $post_id ) )
-			return $post_id;
-
-		// sanitize
-		$san = array (
-			'webmention_url' =>FILTER_SANITIZE_URL,
-			'webmention_type' => FILTER_SANITIZE_STRING,
-			'webmention_rsvp' => FILTER_SANITIZE_STRING,
-		);
-
-		foreach ($san as $key => $filter) {
-			if (isset($_POST[$key])) {
-				$new = filter_var($_POST[$key], $san[$key]);
-				$curr = get_post_meta( $post_id, $key, true );
-
-				if ( !empty($new) )
-					$r = update_post_meta( $post_id, $key, $new, $curr );
-				elseif ( empty($new) && !empty($curr) )
-					$r = delete_post_meta( $post_id, $key );
-			}
-		}
-	}
-
-	/**
-	 * magical bridgy magic
-	 *
-	public function bridgy_publish_urls ($links, $postid) {
-		if (empty($postid))
-			return $links;
-
-		$post = get_post( $postid );
-		if (!pmlnr_base::is_post($post))
-			return $links;
-
-		$bridgy_silos = array ('twitter', 'facebook', 'instagram', 'flickr' );
-		foreach ( $links as $url ) {
-			foreach ( $bridgy_silos as $silo ) {
-				if (stristr($url, $silo)) {
-					pmlnr_base::debug("extending bridgy_publish with {$silo} because {$webmention_url}");
-					$links[$silo] = 'yes';
-				}
-			}
-		}
-
-		/*
-		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		if (empty($webmention_url))
-			return $links;
-
-		//pmlnr_base::debug("bridgy-magic: we should extend this: " . json_encode($links) );
-
-		foreach ( static::bridgy_silos as $silo ) {
-			if (stristr($webmention_url, $silo)) {
-				pmlnr_base::debug("extending bridgy_publish with {$silo} because {$webmention_url}");
-				$links[$silo] = 'yes';
-			}
-		}
-
-		//pmlnr_base::debug("bridgy-magic: we extended: " . json_encode($links) );
-
-
-		return $links;
-	}
-		*/
 
 	/**
 	 * filter links to webmentions
@@ -631,108 +368,12 @@ class petermolnareu {
 	}
 
 	/**
-	 * these are all for custom post type
-	 *
-	 *
-	 *
-	public function type_dropdown() {
-		global $typenow;
-		$post_type = 'post';
-		$taxonomy = 'kind'; // change HERE
-		if ($typenow == $post_type) {
-			$selected = isset($_GET[$taxonomy]) ? $_GET[$taxonomy] : '';
-			$info_taxonomy = get_taxonomy($taxonomy);
-			wp_dropdown_categories(array(
-				'show_option_all' => __("Show All {$info_taxonomy->label}"),
-				'taxonomy' => $taxonomy,
-				'name' => $taxonomy,
-				'orderby' => 'name',
-				'selected' => $selected,
-				'show_count' => true,
-				'hide_empty' => true,
-			));
-		};
-	}
-
-	public function convert_id_to_term_in_query($query) {
-		global $pagenow;
-		$post_type = 'post'; // change HERE
-		$taxonomy = 'kind'; // change HERE
-		$q_vars = &$query->query_vars;
-		if ($pagenow == 'edit.php' && isset($q_vars['post_type']) && $q_vars['post_type'] == $post_type && isset($q_vars[$taxonomy]) && is_numeric($q_vars[$taxonomy]) && $q_vars[$taxonomy] != 0) {
-			$term = get_term_by('id', $q_vars[$taxonomy], $taxonomy);
-			$q_vars[$taxonomy] = $term->slug;
-		}
-	}
-	*/
-
-
-	/**
 	 *
 	 */
 	public function cc_mime_types($mimes) {
 		$mimes['svg'] = 'image/svg+xml';
 		return $mimes;
 	}
-
-	/**
-	 * old data to new data
-	 *
-	public static function migrate_stuff ($post) {
-		$post = pmlnr_base::fix_post($post);
-
-		$singlemention_url = get_post_meta($post->ID, 'webmention_url', true);
-		$singlemention_type = get_post_meta($post->ID, 'webmention_type', true);
-		if (empty($singlemention_type)) $singlemention_type = 'u-in-reply-to';
-		$singlemention_rsvp = get_post_meta($post->ID, 'webmention_rsvp', true);
-		if (empty($singlemention_rsvp)) $singlemention_rsvp = false;
-
-		if (empty($singlemention_url)) {
-			$twitter_reply_user = get_post_meta( $post->ID, 'twitter_in_reply_to_user_id', true);
-			$twitter_reply_id = get_post_meta( $post->ID, 'twitter_in_reply_to_status_id', true);
-			if ( $twitter_reply_user && $twitter_reply_id ) {
-				$r = 'https://twitter.com/' . $twitter_reply_user . '/status/' . $twitter_reply_id;
-				update_post_meta($post->ID, 'webmention_url', $r);
-				update_post_meta($post->ID, 'webmention_type', 'u-in-reply-to');
-			}
-
-			$twitter_url = get_post_meta( $post->ID, 'twitter_permalink', true);
-			if ( $twitter_url ) {
-				update_post_meta($post->ID, 'webmention_url', $twitter_url);
-				update_post_meta($post->ID, 'webmention_type', 'u-repost-of');
-			}
-		}
-
-		/*
-		$multimention = $multimention_curr = get_post_meta($post->ID, 'webmentions', true);
-		if (!is_array($multimention))
-			$multimention = array();
-
-		$m = array ();
-		$m['url'] = $singlemention_url;
-		$m['type'] = $singlemention_type;
-		if ($singlemention_rsvp != false )
-			$m['rsvp'] = $singlemention_rsvp;
-
-		$found = false;
-		foreach ($multimention as $n => $mention) {
-			if ($mention['url'] == $singlemention_url) {
-				$found = true;
-				$multimention[$n]['type'] = $singlemention_type;
-				if ($singlemention_rsvp != false )
-					$multimention[$n]['rsvp'] = $singlemention_rsvp;
-			}
-		}
-
-		if (!$found) {
-			array_push($multimention, $m);
-			pmlnr_base::debug('adding multimention:' . json_encode($multimention));
-			$u = update_post_meta($post->ID, 'webmentions', $multimention, $multimention_curr );
-			if (is_wp_error($u))
-				pmlnr_base::debug('huh? ' . $u->get_error_message());
-		}
-	}
-		*/
 
 	/**
 	 *
@@ -885,7 +526,7 @@ class petermolnareu {
 			</head>
 			<body>
 				<h1>'. $template_vars['title'] .'</h1>
-				'. $template_vars['content'] .'
+				'. $template_vars['parsed_content'] .'
 				<hr />
 				<p>
 					Az oldalon: <a href="'. $template_vars['url'] .'">'. $template_vars['url'] .'</a>
@@ -939,19 +580,6 @@ class petermolnareu {
 		return 'text/html';
 	}
 
-	/*
-	public function widgets_init () {
-	register_sidebar( array(
-		'name'          => 'Home right sidebar',
-		'id'            => 'home_right_1',
-		'before_widget' => '<div>',
-		'after_widget'  => '</div>',
-		'before_title'  => '<h2 class="rounded">',
-		'after_title'   => '</h2>',
-	) );
-	}
-	*/
-
 	/**
 	 *
 	 */
@@ -996,12 +624,53 @@ class petermolnareu {
 	}
 
 	/*
-	public static function maybe_tidy ( $r ) {
-		//$indenter = new \Gajus\Dindent\Indenter();
-		//$r = $indenter->indent($r);
-		return $r;
+	 *
+	 */
+	public static function cleanup_press_this_content ( $content ) {
+		$content = preg_replace("/^Source: /m", '\- ', $content);
+		return $content;
 	}
-	*/
+
+	/**
+	 * extract the url from the uri and insert it formatted accordingly automatically
+	 *
+	 */
+	public function press_this_add_reaction_url ( $content ) {
+		$ref = array();
+		parse_str ( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY ), $ref );
+
+		if ( is_array( $ref ) && isset ( $ref['u'] ) && ! empty( $ref['u'] ) ) {
+			$url = $ref['u'];
+			$t = '';
+
+			if ( isset( $ref['type'] ) )
+				$t = $ref['type'];
+
+			switch ( $t ) {
+				case 'fav':
+				case 'like':
+				case 'u-like-of':
+					$type = 'like: ';
+					break;
+				case 'repost':
+					$type = 'from: ';
+					break;
+				case 'reply':
+					$type = 're: ';
+					break;
+				default:
+					$type = '';
+					break;
+			}
+
+			$relation = "---\n{$type}{$url}\n---\n\n";
+
+			$content = $relation . $content;
+
+		}
+
+		return $content;
+	}
 
 }
 
