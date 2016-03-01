@@ -2,22 +2,19 @@
 <section class="content-body" id="main-content">
 	<article class="h-entry" id="post-{{ post.id }}" >
 		<header>
-			<div class="content-inner">
-				<h2>
-					<a class="u-in-reply-to" href="{{ post.parent }}">{{ post.parent }}</a>
-				</h2>
-				{% include 'ameta_pubdate.html' %}
 				{% include 'ameta_author.html' %}
 				<a class="u-url" href="{{ post.url }}"></a>
 				{% include 'ameta_webmention.html' %}
-			</div>
 		</header>
 
 		<div class="e-content">
-			<div class="content-inner">
 				{{ post.content }}
-			</div>
 		</div>
+
+		<footer>
+			{% include 'ameta_pubdate.html' %}
+			<br class="cl" />
+		</footer>
 	</article>
 </section>
 {% include 'partial_footer.html' %}

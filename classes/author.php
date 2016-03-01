@@ -74,10 +74,17 @@ class pmlnr_author extends pmlnr_base {
 	 */
 	public static function template_vars ( $author_id = 1, $prefix = '' ) {
 
+		$r = array();
+
 		if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$email = get_the_author_meta ( 'user_email' , $author_id );
+
+		// invalid user
+		if ( empty ( $email ) )
+			return $r;
+
 		$name = get_the_author_meta ( 'display_name' , $author_id );
 
 		$thid = get_user_option ( 'metronet_image_id', $author_id );

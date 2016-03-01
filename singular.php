@@ -1,6 +1,8 @@
 <?php
 the_post();
 
+//WP_SHORTSLUG::check_shorturl( $post->post_status, $post->post_status, $post );
+
 global $petermolnareu_theme;
 $twigvars = array (
 	'site' => pmlnr_site::template_vars(),

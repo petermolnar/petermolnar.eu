@@ -564,7 +564,7 @@ class pmlnr_base {
 
 		$meta = array();
 		if ( static::is_post($attachment)) {
-			$meta = wp_get_attachment_metadata($thid);
+			$meta = $_meta = wp_get_attachment_metadata($thid);
 			$wp_upload_dir = wp_upload_dir();
 
 			if ( !empty ( $attachment->post_parent ) ) {
@@ -598,6 +598,19 @@ class pmlnr_base {
 			$alt = get_post_meta($thid, '_wp_attachment_image_alt', true);
 			if ( !empty($alt))
 				$meta['image_meta']['alt'] = strip_tags($alt);
+
+
+			/*
+			if ( static::is_photo ($thid ) ) {
+				if ( !isset ( $meta['image_meta']['lens'] ) || strstr ( $meta['image_meta']['lens'], 'Unknown') ) {
+					require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+					$m = wp_read_image_metadata( $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $meta['file'] );
+					static::debug ( " #{$thid} got exif as: " . json_encode($m) );
+					$_meta['image_meta'] = $m;
+					update_post_meta ( $thid, '_wp_attachment_metadata', $_meta );
+				}
+			}
+			*/
 		}
 
 		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, static::expire );

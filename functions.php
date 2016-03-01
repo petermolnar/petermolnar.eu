@@ -357,6 +357,7 @@ class petermolnareu {
 	public function on_publish( $new_status, $old_status, $post ) {
 
 		$post = pmlnr_base::fix_post($post);
+
 		if ( ! pmlnr_base::is_post( $post ) )
 			return false;
 
@@ -391,6 +392,7 @@ class petermolnareu {
 	 *
 	 */
 	public static function autotag_by_photo ( $post ) {
+		pmlnr_base::debug ( "autotag triggered");
 		$post = pmlnr_base::fix_post($post);
 
 		if ( false === $post )
@@ -437,6 +439,7 @@ class petermolnareu {
 			}
 		}
 
+		// content
 		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
 			pmlnr_base::debug ( "appending post #{$post->ID} content with image caption" );
 			global $wpdb;
@@ -456,24 +459,6 @@ class petermolnareu {
 			}
 		}
 
-		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
-			pmlnr_base::debug ( "appending post #{$post->ID} content with image caption" );
-			global $wpdb;
-			$dbname = "{$wpdb->prefix}posts";
-			$req = false;
-			$modcontent = $meta['image_meta']['caption'];
-
-			pmlnr_base::debug("Updating post content for #{$post->ID}");
-
-			$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
-
-			try {
-				$req = $wpdb->query( $q );
-			}
-			catch (Exception $e) {
-				pmlnr_base::debug('Something went wrong: ' . $e->getMessage());
-			}
-		}
 	}
 
 

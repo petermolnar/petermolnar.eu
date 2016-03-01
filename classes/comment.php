@@ -100,12 +100,22 @@ class pmlnr_comment extends pmlnr_base {
 			return false;
 		}
 
+		/*
 		if ( empty ( $parent->comment_author_url ) ) {
 			pmlnr_base::debug ( "comment #{$comment_ID} no author url for parent" );
 			return false;
 		}
 
 		return $parent->comment_author_url;
+		*/
+
+		$target = get_comment_meta ( $parent->comment_ID, 'comment_url', true );
+		if ( empty ( $target ) ) {
+			static::debug ( "comment #{$comment_ID}'s parent has no comment_url meta" );
+			return false;
+		}
+
+		return $target;
 	}
 
 
@@ -172,15 +182,23 @@ class pmlnr_comment extends pmlnr_base {
 			return false;
 		}
 
+		/*
 		if ( empty ( $parent->comment_author_url ) ) {
 			static::debug ( "comment #{$comment_ID} no author url for parent" );
+			return false;
+		}
+		*/
+
+		$target = get_comment_meta ( $parent->comment_ID, 'comment_url', true );
+		if ( empty ( $target ) ) {
+			static::debug ( "comment #{$comment_ID}'s parent has no comment_url meta" );
 			return false;
 		}
 
 		$permalink = pmlnr_comment::get_permalink($comment_ID);
 
-		static::debug ( "comment #{$comment_ID} sending webmention to: {$parent->comment_author_url} as: {$permalink}" );
-		send_webmention ( $permalink, $parent->comment_author_url );
+		static::debug ( "comment #{$comment_ID} sending webmention to: {$target} as: {$permalink}" );
+		send_webmention ( $permalink, $target );
 	}
 
 	/**
@@ -210,6 +228,8 @@ class pmlnr_comment extends pmlnr_base {
 			'webmention' => static::comment_get_webmention( $comment, true ),
 			'parent' => get_permalink( $post->ID ),
 		);
+
+		$r['author'] = pmlnr_author::template_vars( $comment->user_id );
 
 		$r = static::prefix_array ( $r, $prefix );
 

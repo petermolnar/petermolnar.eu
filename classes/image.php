@@ -70,8 +70,10 @@ class pmlnr_image extends pmlnr_base {
 	 */
 	public function read_extra_exif ( $meta, $filepath ='', $sourceImageType = '' ) {
 
-		if (empty($filepath) || !is_file($filepath) || !is_readable($filepath))
+		if (empty($filepath) || !is_file($filepath) || !is_readable($filepath)) {
+			static::debug ( "{$filepath} doesn't exist" );
 			return $meta;
+		}
 
 		if ( $sourceImageType != IMAGETYPE_JPEG )
 			return $meta;
@@ -115,11 +117,10 @@ class pmlnr_image extends pmlnr_base {
 		if (empty($thid))
 			return false;
 
-		if (!empty($post)) {
-			$post = static::fix_post($post);
-			if ($post === false)
-				return false;
-		}
+		$post = static::fix_post($post);
+
+		if ($post === false)
+			return false;
 
 		$meta = static::get_extended_thumbnail_meta($thid);
 		if (empty($meta['sizes']))
@@ -306,7 +307,6 @@ class pmlnr_image extends pmlnr_base {
 		$return = false;
 
 		$meta = static::get_extended_thumbnail_meta($thid);
-
 		if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
 
 			$meta = $meta['image_meta'];
@@ -348,6 +348,10 @@ class pmlnr_image extends pmlnr_base {
 			if ( isset($meta['iso']) && !empty($meta['iso'])) {
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
 				//wp_set_post_terms( $post_id, $meta['iso'] , 'exif_iso' , false );
+			}
+
+			if ( isset($meta['lens']) && !empty($meta['lens'])) {
+				$r['iso'] = sprintf (__('<i class="icon-lens spacer"></i>%s'), $meta['lens'] );
 			}
 
 			$location = '';
