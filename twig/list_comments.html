@@ -10,6 +10,7 @@
 					<a class="u-in-reply-to" href="{{ post.url }}">{{ post.title }}</a>
 				</p>
 				<span class="comment-author p-author h-card vcard">
+					{{ reply.avatar }}
 					{% if reply.author_url|length > 0 %}
 						<a class="url u-url" href="{{ reply.author_url }}">
 							<h6 class="p-name fn">{{ reply.author }}</h6>
@@ -22,8 +23,8 @@
 					<a href="{{ reply.source }}" class="u-repost-of">{{ reply.source }}</a>
 					{% endif %}
 				</span>
+				<br class="clear" />
 				<div class="comment-content e-content">
-					{{ reply.avatar }}
 					{{ reply.content }}
 				</div>
 				<br class="clear" />

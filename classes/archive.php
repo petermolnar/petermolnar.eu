@@ -22,20 +22,32 @@ class pmlnr_archive extends pmlnr_base {
 			return $cached;
 
 		$name = get_bloginfo('name');
-		$taxonomy = false;
+		$taxonomy = $description = false;
 
 		if ( is_archive() ) {
 			global $wp_query;
 			$term = $wp_query->get_queried_object();
 			$name = $term->name;
 			$taxonomy = $term->taxonomy;
+			$description = pmlnr_markdown::parsedown( $term->description );
 		}
+
+		$curr_feed = rtrim( $curr_url, '/' ) . '/feed';
+
+		$subscribe = array (
+			'resource' => $curr_url,
+			'feeds' => $curr_feed,
+			'suggestedUrl' => 'http://blogtrottr.com/?subscribe={feed}',
+			'suggestedName' => 'Blogtrottr',
+		);
 
 		$r = array (
 			'name' => $name,
 			'taxonomy' => $taxonomy,
 			'url' => $curr_url,
-			'feed' => rtrim( $curr_url, '/' ) . '/feed',
+			'feed' => $curr_feed,
+			'description' => $description,
+			'subscribe' => 'https://www.subtome.com/?subs/#/subscribe?' . http_build_query ( $subscribe )
 		);
 
 		$r = static::prefix_array ( $r, $prefix );

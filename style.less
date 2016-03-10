@@ -474,6 +474,28 @@ img.left {
 			margin: @padding-large auto @padding-large auto;
 			padding: 0;
 		}
+
+		/*
+		a {
+			&:hover {
+				&:after {
+					color:#000;
+					position: absolute;
+					display:block;
+					white-space: nowrap;
+					width:auto;
+					max-width:42em;
+					content:attr(href);
+					font-style:italic;
+					left:0;
+					top:-0.3em;
+					padding-right:1em;
+					padding-left: 1em;
+					background-color: rgba(255,0,0,0.7) ;
+				}
+			}
+		}
+		*/
 	}
 
 	.article-thumbnail {
@@ -691,11 +713,6 @@ img.left {
 
 	.replies {
 
-		a {
-			text-decoration: none;
-			border: 1px solid transparent;
-		}
-
 		ul {
 			.navul();
 
@@ -712,7 +729,7 @@ img.left {
 
 		time {
 			display:inline-block;
-			font-size: 0.7em;
+			font-size: 0.6em;
 		}
 
 		.avatar {
@@ -727,7 +744,7 @@ img.left {
 
 		.e-content {
 			display: block;
-			font-size: 0.9em;
+			font-size: 0.7em;
 		}
 
 
@@ -895,6 +912,10 @@ img.left {
 	max-width:90%;
 }
 
+.h-feed > .p-summary {
+	font-size: 0.8em;
+}
+
 /* --- PAGINATION --- */
 .wp-paginate,
 ul.page-numbers {
@@ -984,3 +1005,5 @@ ul.page-numbers {
 .icon-rss:before { content: '\e804'; } /* '' */
 .icon-telegram:before { content: '\2708'; } /* '✈' */
 .icon-lens:before { content: '\2299'; } /* '⊙' */
+.icon-paypal:before { content: '\50'; } /* 'P' */
+.icon-flattr:before { content: '\27f2'; } /* '⟲' */

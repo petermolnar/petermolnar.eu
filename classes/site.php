@@ -38,13 +38,13 @@ class pmlnr_site extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_css() {
+	public static function get_css( $file = 'style' ) {
 
 		$base = get_stylesheet_directory();
 		//if ( is_user_logged_in() )
 			//$r = '/* test CSS */' . file_get_contents( get_stylesheet_directory() . '/style_.css' );
 		//else
-		$r = file_get_contents( "{$base}/style.css" );
+		$r = file_get_contents( "{$base}/{$file}.css" );
 		//$r .= file_get_contents( "{$base}/css/prism.min.css" );
 
 		return $r;
@@ -129,6 +129,7 @@ class pmlnr_site extends pmlnr_base {
 			'image_formats' => array('image', 'photo'),
 			'long_formats' => array('article'),
 			'css' => static::get_css(),
+			'printcss' => static::get_css( 'print' ),
 			'atitle' => $atitle,
 			'is_user_logged_in' => is_user_logged_in(),
 		);

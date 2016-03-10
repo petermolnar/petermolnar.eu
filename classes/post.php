@@ -12,10 +12,15 @@ class pmlnr_post extends pmlnr_base {
 	 */
 	public static function get_the_content( &$post = null, $clean = false ){
 
-		$post = static::fix_post($post);
+		$post = static::contentfilters ( $post );
+
+		if ( false === $post )
+			return false;
 
 		if ( $cached = wp_cache_get ( $post->ID . $clean, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
+
+
 
 		$r = $post->post_content;
 
@@ -29,6 +34,22 @@ class pmlnr_post extends pmlnr_base {
 		wp_cache_set ( $post->ID . $clean, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
+	}
+
+	public static function contentfilters ( $post ) {
+		$post = static::fix_post($post);
+
+		if ( false === $post )
+			return false;
+
+		//if ( has_term( 'indieweb', 'post_tag', $post ) ) {
+			//$lang = get_post_meta ( $post->ID, 'locale', true );
+
+			//if ( empty( $lang ) || $lang == 'en' || $lang == 'eng' )
+				//$post->post_content .= '<a href="http://news.indiewebcamp.com/en" class="u-syndication"></a>';
+		//}
+
+		return $post;
 	}
 
 	/**
@@ -49,7 +70,7 @@ class pmlnr_post extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function post_get_webmention( &$post = null, $parsedown = false ) {
 		$post = static::fix_post($post);
 
@@ -118,24 +139,22 @@ class pmlnr_post extends pmlnr_base {
 				$migrate = "---\nre: {$webmention_url}\n{$webmention_rsvp}\n---\n\n";
 			}
 
-			/*
 			// this should be a temporary thing
-			global $wpdb;
-			$dbname = "{$wpdb->prefix}posts";
-			$req = false;
-			$modcontent = $migrate . $post->post_content;
+			//global $wpdb;
+			//$dbname = "{$wpdb->prefix}posts";
+			//$req = false;
+			//$modcontent = $migrate . $post->post_content;
 
-			static::debug("Updating post content for #{$post->ID}");
+			//static::debug("Updating post content for #{$post->ID}");
 
-			$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
+			//$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
 
-			try {
-				$req = $wpdb->query( $q );
-			}
-			catch (Exception $e) {
-				static::debug('Something went wrong: ' . $e->getMessage());
-			}
-			*/
+			//try {
+				//$req = $wpdb->query( $q );
+			//}
+			//catch (Exception $e) {
+				//static::debug('Something went wrong: ' . $e->getMessage());
+			//}
 
 			if ($parsedown)
 				$r = pmlnr_markdown::parsedown($r);
@@ -619,6 +638,7 @@ class pmlnr_post extends pmlnr_base {
 				$prefix = '';
 				break;
 			case 'from':
+			case 'repost':
 				$cl = 'u-repost-of';
 				$prefix = '*reposted from:* ';
 				break;

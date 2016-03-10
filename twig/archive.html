@@ -3,9 +3,12 @@
 	{% if site.atitle %}
 	<h1 class="p-name hide">{{ site.atitle }}</h1>
 	{% endif %}
+	{% if archive.description %}
+	<aside class="p-summary">{{ archive.description }}</aside>
+	{% endif %}
 	{% if archive.feed %}
 	<aside class="follow">
-		<a class="icon-subscribe" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" value="Subscribe" data-subtome-resource="{{ archive.url }}" data-subtome-feeds="{{ archive.feed }}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" href="#" title="subscribe to {{ archive.url }}">follow{% if site.atitle %} "{{ site.atitle }}"{% endif%}</a>
+		<a class="icon-subscribe" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" value="Subscribe" data-subtome-resource="{{ archive.url }}" data-subtome-feeds="{{ archive.feed }}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" href="{{ archive.subscribe }}" title="subscribe to {{ archive.url }}">follow{% if site.atitle %} "{{ site.atitle }}"{% endif%}</a>
 	</aside>
 	{% endif %}
 	{% for post in posts %}

@@ -20,10 +20,11 @@ class pmlnr_markdown extends pmlnr_base {
 		add_filter( 'the_excerpt', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 
 		// press this
-		add_filter ('press_this_suggested_content', array ( 'pmlnr_markdown', 'html2markdown' ), 1);
+		// add_filter ('press_this_suggested_content', array ( 'pmlnr_markdown', 'html2markdown' ), 1);
 
 		// convert comment HTML
-		add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown' ) );
+		//add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown' ) );
+		//add_filter ( 'wp_webmention_again_comment_content', array ( 'pmlnr_markdown', 'html2markdown' ), 9, 2 );
 	}
 
 	/**

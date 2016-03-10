@@ -54,7 +54,7 @@ class pmlnr_author extends pmlnr_base {
 			//'wechat'   => 'callto://%s+type=wechat',
 			//'qq'   => 'callto://%s+type=qq',
 			'telegram' => 'https://telegram.me/%s',
-			'pgp' => get_bloginfo('url') . '%s',
+			'pgp' => '%s',
 		);
 
 		foreach ( $socials as $silo => $pattern ) {

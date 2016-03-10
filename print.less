@@ -1,0 +1,90 @@
+html {
+	font-family: monospace;
+	font-size: 9pt;
+	line-height: 1.2em
+}
+
+h1 {
+	font-size:2em;
+	line-height:2.2em;
+	margin:0 0 1em 0;
+	padding: 0;
+}
+
+a, a:visited, a:link {
+	color: #000;
+	text-decoration:none;
+}
+
+
+.e-content {
+	a, a:visited, a:link {
+		color: #000;
+		text-decoration:underline;
+
+		&:after {
+			content: "(" attr(href) ")";
+			display: inline-block;
+			width: auto;
+			font-size: 0.8em;
+			text-decoration: none;
+			margin-left: 0.3em;
+		}
+	}
+}
+
+p {
+	text-indent: 0.6em
+}
+
+ul {
+	margin-top:1em;
+	margin-bottom:1em;
+}
+
+.pubdate {
+	&:before {
+		content: 'Published';
+		display:block;
+		font-weight: bold;
+	}
+}
+
+.tags {
+	&:before {
+		content: 'Tags';
+		display:block;
+		font-weight: bold;
+	}
+}
+
+.shortlink {
+
+
+	&:before {
+		content: 'Short URL';
+		display:block;
+		font-weight: bold;
+		margin-top: 1em;
+	}
+
+	p {
+		text-indent: 0;
+		margin:0;
+		padding: 0;
+	}
+}
+
+#wpadminbar,
+.clear,
+.content-note,
+.content-footer,
+.content-header,
+.indie-actions,
+.hide,
+.article-thumbnail,
+.content-comments,
+.h-feed > .p-summary {
+	display:none;
+	visibility:hidden;
+}

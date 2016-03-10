@@ -42,22 +42,77 @@ class pmlnr_cleanup extends pmlnr_base {
 		//remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
 		//remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
 		//add_filter( 'tiny_mce_plugins', array(&$this, 'disable_emojicons_tinymce') );
+		remove_filter( 'the_content', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
 
 		// remove too special chars
 		add_filter( 'content_save_pre' , array(&$this, '_sanitize_content') , 10, 1);
 
-		//add_filter( 'the_content' , array(&$this, '_sanitize_content') , 9, 1);
+		// press this magic
+		add_filter( 'press_this_data', array (&$this, 'cleanup_press_this_data' ), 9, 1 );
+		add_filter( 'press_this_suggested_html', array (&$this, 'cleanup_press_this_suggested' ), 2, 2 );
+		add_filter ('enable_press_this_media_discovery', '__return_false' );
+	}
 
-		add_filter ('press_this_suggested_content', array (&$this, 'cleanup_press_this_content'), 2);
+
+	public function cleanup_press_this_data ( $data ) {
+		if ( isset( $data['s'] ) && ! empty( $data['s'] ))
+			$data['s'] = pmlnr_markdown::html2markdown( $data['s'] );
+
+		return $data;
+	}
+
+	public function cleanup_press_this_suggested ( $default_html, $data ) {
+
+		$ref = array();
+		$relation = '';
+		parse_str ( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY ), $ref );
+
+		if ( is_array( $ref ) && isset ( $ref['u'] ) && ! empty( $ref['u'] ) ) {
+			$url = $ref['u'];
+			$t = '';
+
+			if ( isset( $ref['type'] ) )
+				$t = $ref['type'];
+
+			switch ( $t ) {
+				case 'fav':
+				case 'like':
+				case 'u-like-of':
+					$type = 'like: ';
+					break;
+				case 'repost':
+					$type = 'from: ';
+					break;
+				case 'reply':
+					$type = 're: ';
+					break;
+				default:
+					$type = '';
+					break;
+			}
+
+			$relation = "---\n{$type}{$url}\n---\n\n";
+
+		}
+
+		$default_html = array (
+			'quote' => '> %1$s',
+			//'link' => "\n" . '\\- %2$s',
+			'link' => '',
+			'embed' => $relation,
+		);
+
+		return $default_html;
 	}
 
 	/*
 	 *
-	 */
+	 *
 	public static function cleanup_press_this_content ( $content ) {
 		$content = preg_replace("/^Source: /m", '\- ', $content);
 		return $content;
 	}
+	*/
 
 	public function remove_enqueues () {
 		// cleanup

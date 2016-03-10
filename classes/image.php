@@ -355,10 +355,11 @@ class pmlnr_image extends pmlnr_base {
 			}
 
 			$location = '';
-			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude']))
+			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude'])) {
 				$location = sprintf ( __('<i class="icon-location spacer"></i><a href="http://maps.google.com/?q=%s,%s"><span class="h-geo geo p-location"><span class="p-latitude">%s</span>, <span class="p-longitude">%s</span></span></a>'), $meta['geo_latitude'], $meta['geo_longitude'], $meta['geo_latitude'], $meta['geo_longitude'] );
 
-			$r['location'] = $location;
+				$r['location'] = $location;
+			}
 
 			$return = '<aside class="exif"><ul><li>' . join('</li><li>',$r) . '</li></ul></aside>';
 

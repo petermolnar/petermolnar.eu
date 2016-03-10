@@ -31,19 +31,22 @@ class petermolnareu {
 
 	public function __construct () {
 
-		// autocompile LESS to CSS
+		$lessfiles = array ( 'style.less', 'print.less' );
 		$dirname = dirname(__FILE__);
-		$lessfile = $dirname . '/style.less';
-		$lessmtime = filemtime( $lessfile );
-		$cssfile = str_replace('less', 'css', $lessfile);
-		$cssmtime = filemtime( $cssfile );
+		foreach ( $lessfiles as $lessfile ) {
+			// autocompile LESS to CSS
+			$lessfile = $dirname . DIRECTORY_SEPARATOR . $lessfile;
+			$lessmtime = filemtime( $lessfile );
+			$cssfile = str_replace('less', 'css', $lessfile);
+			$cssmtime = filemtime( $cssfile );
 
-		if ($cssmtime < $lessmtime ) {
-			$less = new lessc;
-			//$less->setFormatter("classic");
-			$less->setFormatter("compressed");
-			$less->compileFile( $lessfile, $cssfile );
-			touch ( $cssfile, $lessmtime );
+			if ($cssmtime < $lessmtime ) {
+				$less = new lessc;
+				//$less->setFormatter("classic");
+				$less->setFormatter("compressed");
+				$less->compileFile( $lessfile, $cssfile );
+				touch ( $cssfile, $lessmtime );
+			}
 		}
 
 		// set up Twig
@@ -73,13 +76,13 @@ class petermolnareu {
 		add_image_size ( 'thumbnail-large', 180, 180, true );
 
 		// init all the things!
-		add_action( 'init', array( &$this, 'init'));
+		add_action( 'init', array( 'petermolnareu', 'init'));
 
 		// add css & js
-		add_action( 'wp_enqueue_scripts', array(&$this,'register_css_js'),10);
+		add_action( 'wp_enqueue_scripts', array('petermolnareu','register_css_js'),10);
 
 		// do things on post publish
-		add_action( 'transition_post_status', array( &$this, 'on_publish' ), 99, 5 );
+		add_action( 'transition_post_status', array( 'petermolnareu', 'on_publish' ), 99, 5 );
 
 		// hook for mail sending
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
@@ -89,7 +92,7 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public function init () {
+	public static function init () {
 
 		// required WP Theme magic
 		add_theme_support( 'post-thumbnails' );
@@ -99,26 +102,22 @@ class petermolnareu {
 
 		// add main menus
 		register_nav_menus( array(
-			static::menu_header => __( self::menu_header , 'petermolnareu' ),
+			static::menu_header => __( static::menu_header , 'petermolnareu' ),
 		) );
 
 		// replace default <title></title>
-		add_filter('wp_title', array(&$this, 'nice_title',),10,1);
+		add_filter('wp_title', array('petermolnareu', 'nice_title',),10,1);
 
 		// add link extraction to webmention and ping hooks as they
 		// don't always do a good enough job
-		add_filter ('webmention_links', array(&$this, 'webmention_links'), 1, 2);
-		add_filter ('get_to_ping', array(&$this, 'webmention_links'), 1);
+		add_filter ('webmention_links', array('petermolnareu', 'webmention_links'), 1, 2);
+		add_filter ('get_to_ping', array('petermolnareu', 'webmention_links'), 1);
 
 		// I want to upload svg
-		add_filter('upload_mimes', array(&$this, 'cc_mime_types'));
-
-		// add reaction url if any and clean up Press This content
-		add_filter ('press_this_suggested_content', array (&$this, 'press_this_add_reaction_url'));
-		add_filter ('enable_press_this_media_discovery', '__return_false' );
+		add_filter('upload_mimes', array('petermolnareu', 'cc_mime_types'));
 
 		// for responsive videos
-		add_filter( 'embed_oembed_html', array ( &$this, 'custom_oembed_filter' ), 10, 4 ) ;
+		add_filter( 'embed_oembed_html', array ( 'petermolnareu', 'custom_oembed_filter' ), 10, 4 ) ;
 
 	}
 
@@ -126,7 +125,7 @@ class petermolnareu {
 	 * adds a wrapper div around video iframes to make them responsive
 	 *
 	 */
-	public function custom_oembed_filter($html, $url, $attr, $post_ID) {
+	public static function custom_oembed_filter($html, $url, $attr, $post_ID) {
 		$return = '<div class="video-container">'.$html.'</div>';
 		return $return;
 	}
@@ -135,7 +134,7 @@ class petermolnareu {
 	 * register & queue css & js
 	 *
 	 */
-	public function register_css_js () {
+	public static function register_css_js () {
 		$base_url = get_bloginfo("template_directory");
 		$js_url = "{$base_url}/js";
 		$css_url = "{$base_url}/css";
@@ -177,7 +176,7 @@ class petermolnareu {
 	 * and because of the special fields the to be poked webmention
 	 * url is stored in
 	 */
-	public function webmention_links ( $links, $postid = null ) {
+	public static function webmention_links ( $links, $postid = null ) {
 
 		if (empty($postid))
 			$post = pmlnr_base::fix_post();
@@ -218,7 +217,7 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public function nice_title ( $title ) {
+	public static function nice_title ( $title ) {
 		if (is_home() || empty($title))
 			return get_bloginfo('name');
 
@@ -229,10 +228,11 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public static function make_post_syndication ( &$post = null ) {
-		$post = pmlnr_base::fix_post($post);
+	public static function make_post_syndication ( $post_id = false ) {
+		$post = get_post ( $post_id );
+		//$post = pmlnr_base::fix_post($post);
 
-		if ($post === false)
+		if ( false === pmlnr_base::is_post( $post ) )
 			return false;
 
 		global $nxs_snapAvNts;
@@ -346,7 +346,7 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public function cc_mime_types($mimes) {
+	public static function cc_mime_types($mimes) {
 		$mimes['svg'] = 'image/svg+xml';
 		return $mimes;
 	}
@@ -354,7 +354,7 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public function on_publish( $new_status, $old_status, $post ) {
+	public static function on_publish( $new_status, $old_status, $post ) {
 
 		$post = pmlnr_base::fix_post($post);
 
@@ -380,7 +380,7 @@ class petermolnareu {
 		if ( $new_status == $old_status )
 			return false;
 
-		$args = array ( 'post' => $post );
+		$args = array ( 'post_id' => $post->ID );
 		wp_schedule_single_event( time() + 120, 'make_post_syndication', $args );
 
 		if ( in_array( $format, $yaml['smtp_categories']) )
@@ -465,11 +465,12 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public static function posse_to_smtp ( $_post ) {
-		pmlnr_base::debug( "POSSE #{$_post->ID} to SMTP" );
+	public static function posse_to_smtp ( $post_id ) {
+		pmlnr_base::debug( "POSSE #{$post_id} to SMTP" );
 
-		$_post = pmlnr_base::fix_post($_post);
-		if ( ! pmlnr_base::is_post( $_post ) ) {
+		$_post = get_post ( $post_id );
+
+		if ( false === pmlnr_base::is_post( $_post ) ) {
 			pmlnr_base::debug( "this is not a post." );
 			return false;
 		}
@@ -487,6 +488,8 @@ class petermolnareu {
 
 		// this if for filters on the content, 'cus it has no idea about the post
 		global $post;
+		$old = $post;
+
 		$post = $_post;
 
 		$yaml = pmlnr_base::get_yaml();
@@ -577,6 +580,9 @@ class petermolnareu {
 		remove_filter( 'wp_mail_content_type', array( __CLASS__, 'set_html_content_type') );
 		update_post_meta ( $post->ID, $meta_key, $sent );
 
+		// reset post to previous, just in case
+		$post = $old;
+
 	}
 
 	/**
@@ -593,7 +599,7 @@ class petermolnareu {
 	/**
 	 * extract the url from the uri and insert it formatted accordingly automatically
 	 *
-	 */
+	 *
 	public function press_this_add_reaction_url ( $content ) {
 		$ref = array();
 		parse_str ( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY ), $ref );
@@ -611,6 +617,7 @@ class petermolnareu {
 				case 'u-like-of':
 					$type = 'like: ';
 					break;
+				case 'repost':
 				case 'repost':
 					$type = 'from: ';
 					break;
@@ -630,6 +637,7 @@ class petermolnareu {
 
 		return $content;
 	}
+	*/
 
 }
 

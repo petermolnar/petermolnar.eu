@@ -198,7 +198,7 @@ class pmlnr_comment extends pmlnr_base {
 		$permalink = pmlnr_comment::get_permalink($comment_ID);
 
 		static::debug ( "comment #{$comment_ID} sending webmention to: {$target} as: {$permalink}" );
-		send_webmention ( $permalink, $target );
+		send_webmention ( $permalink, $target, 'comment', $comment_ID );
 	}
 
 	/**

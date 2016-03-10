@@ -127,7 +127,7 @@ class pmlnr_base {
 		// in case WordPress debug log has a minimum level
 		if ( defined ( 'WP_DEBUG_LEVEL' ) ) {
 			$wp_level = $levels [ WP_DEBUG_LEVEL ];
-			if ( $level_ < $wp_level ) {
+			if ( $level_ > $wp_level ) {
 				return false;
 			}
 		}
@@ -426,8 +426,10 @@ class pmlnr_base {
 		//$has_blips = ( $has_cblips != false || $has_tblips != false ) ? true : false;
 
 
-		$has_ltc = has_tag( 'linux-tech-coding', $post );
-		$has_j = has_tag( 'journal', $post );
+		$taxonomy = 'post_tag';
+		$has_ltc = has_term( 'linux-tech-coding', $taxonomy, $post );
+		$has_j = has_term( 'journal', $taxonomy, $post );
+		$has_p = has_term( 'photo', $taxonomy, $post );
 		$has_longcat = ( $has_ltc != false || $has_j != false ) ? true : false;
 
 		$slug = 'article';
@@ -460,9 +462,10 @@ class pmlnr_base {
 			$slug = 'repost';
 			//$name = __('Repost','petermolnareu');
 		}
-		elseif ( $has_thumbnail && static::is_photo($has_thumbnail) /* && $diff > 50 */ ) {
+		elseif ( ( $has_thumbnail && static::is_photo($has_thumbnail) ) || $has_p ) {
 			$slug = 'photo';
 			//$name =  __('Photo','petermolnareu');
+			/* && $diff > 50 */
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_thumbnail ) {
 			$slug = 'image';
@@ -479,27 +482,6 @@ class pmlnr_base {
 		elseif ( !empty($webmention_url) ) {
 			$slug = 'bookmark';
 			//$name = __('Bookmark','petermolnareu');
-
-			// update things to make sure this is actually the case
-			/*
-			if ( $post->post_content != $content ) {
-				static::debug ( "Updating #{$post->post_ID} to have bookmark in webmention field: {$webmention_url}" );
-				update_post_meta( $post->ID, 'webmention_url', $webmention_url );
-
-				global $wpdb;
-				$dbname = "{$wpdb->prefix}posts";
-				$req = false;
-
-				$q = "UPDATE `{$dbname}` set `post_content`='{$content}' WHERE `ID`='{$post->ID}' LIMIT 1";
-
-				try {
-					$req = $wpdb->query( $q );
-				}
-				catch (Exception $e) {
-					static::debug('Something went wrong: ' . $e->getMessage());
-				}
-			}
-			*/
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_quote ) {
 			$slug = 'quote';

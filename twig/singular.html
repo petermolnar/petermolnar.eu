@@ -12,6 +12,16 @@
 			{% include 'ameta_webmention.html' %}
 		</header>
 
+		{% if post.excerpt|length > 0 %}
+		<div class="e-summary">
+			{% if post.thumbnail %}
+				<img class="article-thumbnail" src="{{ post.thumbnail }}" />
+			{% endif %}
+			{{ post.excerpt }}
+			<br class="clear" />
+		</div>
+		{% endif %}
+
 		<div class="e-content">
 			<div class="content-inner">
 				{{ post.content }}
@@ -23,7 +33,12 @@
 			{% include 'list_tag.html' %}
 			{% include 'ameta_pubdate.html' %}
 			<br class="clear" />
-			<span class="u-uid hide">{{ post.uuid }}</span>
+			<aside class="shortlink"></p>
+				<p>
+					<span class="u-uid hide">{{ post.uuid }}</span>
+					<a href="{{ post.shorturl }}">{{ post.shorturl }}</a>
+				</p>
+			</aside>
 			<div class="indie-actions">
 				{% if site.is_user_logged_in %}
 				<indie-action do="like" with="{{ post.url }}">
