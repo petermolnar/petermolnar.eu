@@ -99,6 +99,7 @@ class petermolnareu {
 		add_theme_support( 'menus' );
 		add_theme_support( 'html5', array( 'search-form' ) );
 		add_theme_support( 'title-tag' );
+		add_theme_support( 'custom-logo' );
 
 		// add main menus
 		register_nav_menus( array(
@@ -119,6 +120,19 @@ class petermolnareu {
 		// for responsive videos
 		add_filter( 'embed_oembed_html', array ( 'petermolnareu', 'custom_oembed_filter' ), 10, 4 ) ;
 
+		//add_filter( 'the_content', array ( 'pmlnr_post', 'convert_reaction' ) );
+
+
+		add_filter('script_loader_tag', array ( 'petermolnareu', 'add_async_attribute'), 10, 2);
+
+	}
+
+	/**
+	 * http://matthewhorne.me/add-defer-async-attributes-to-wordpress-scripts/
+	 *
+	 */
+	public static function add_async_attribute($tag, $handle) {
+		return str_replace( ' src', ' async="async" defer="defer" src', $tag );
 	}
 
 	/**
@@ -158,10 +172,12 @@ class petermolnareu {
 		wp_enqueue_style( "prism" );
 		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
 		wp_enqueue_script( "prism" );
-		wp_register_script( "indie-config" ,  "{$js_url}/indie-config.js", false, null, true );
-		wp_enqueue_script( "indie-config" );
-		wp_register_script( "webactions" ,  "{$js_url}/webactions.js", false, null, true );
-		wp_enqueue_script( "webactions" );
+
+
+		//wp_register_script( "indie-config" ,  "{$js_url}/indie-config.js", false, null, true );
+		//wp_enqueue_script( "indie-config" );
+		//wp_register_script( "webactions" ,  "{$js_url}/webactions.js", false, null, true );
+		//wp_enqueue_script( "webactions" );
 
 		// srcset fallback
 		wp_register_script( "picturefill" , "{$base_url}/lib/picturefill/dist/picturefill.min.js", false, null, true );

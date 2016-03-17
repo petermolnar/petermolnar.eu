@@ -9,7 +9,7 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function has_reaction ( $content ) {
+	public static function has_reaction ( &$content ) {
 		$pattern = "/---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+((?!---).*))?[\n\r]+---/mi";
 
 		$matches = array();
@@ -25,7 +25,7 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function extract_reaction ( $content, $parsedown = false ) {
+	public static function extract_reaction ( &$content, $parsedown = false ) {
 
 		$matches = static::has_reaction( $content );
 		if ( false == $matches )
@@ -82,7 +82,7 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function remove_reaction ( $content ) {
+	public static function remove_reaction ( &$content ) {
 
 		$matches = static::has_reaction( $content );
 		if ( false == $matches )
@@ -455,7 +455,7 @@ class pmlnr_base {
 			//$name = __('Article', 'petermolnareu');
 		}
 		elseif ( !empty($webmention_type) && ($webmention_type == 'u-like-of') ) {
-			$slug = 'favorite';
+			$slug = 'bookmark';
 			//$name = __('Favourite','petermolnareu');
 		}
 		elseif ( !empty($webmention_type) && ($webmention_type == 'u-repost-of') ) {

@@ -5,7 +5,7 @@ Description:	petermolnar.eu template for Wordpress
 Author:				Peter Molnar
 Author URI:		http://petermolnar.eu/
 Licence:			GPLv3
-Version:			14.0
+Version:			14.2
 */
 
 /* --- LESS variables & methods --- */
@@ -283,6 +283,21 @@ input[type=submit] {
 	}
 }
 
+table {
+
+	td,
+	th {
+		border: 1px solid darken(@bgcolor,3%);
+		padding: @padding-large;
+	}
+
+	th {
+		text-align: left;
+		font-weight: bold;
+	}
+
+}
+
 /* --- GENERIC MAIN --- */
 
 @font-face {
@@ -464,6 +479,14 @@ img.left {
 			margin-top: 1.6em;
 		}
 
+		/*
+		p > code {
+			display: inline-block;
+			outline: 1px dashed lighten(@color,30%);
+			padding: 0px @padding-large;
+		}
+		*/
+
 		.adaptimg {
 			position: relative;
 			display: block;
@@ -573,28 +596,6 @@ img.left {
 			font-size: 0.9em;
 		}
 
-		.tags {
-			clear: right;
-			float: right;
-			max-width:48em;
-			text-align: right;
-		}
-
-		.pubdate {
-			float:left;
-			width: 10em;
-		}
-
-		@media all and (max-width: @responsive-limit) {
-			.tags,
-			.pubdate {
-				display:block;
-				float:none;
-				text-align:left;
-				width:100%;
-			}
-		}
-
 	}
 
 	footer {
@@ -606,14 +607,8 @@ img.left {
 
 }
 
-.singular {
-	.e-content,
-	footer {
-		margin-top: 2em;
-	}
 
 
-}
 
 .tags {
 	ul {
@@ -680,6 +675,84 @@ img.left {
 		font-size: 0.7em;
 	}
 }
+
+.singular {
+	.e-content,
+	footer {
+		margin-top: 2em;
+	}
+
+	.pubdate,
+	.tags,
+	.shortlink {
+		float:none;
+		clear:both;
+		display:block;
+		text-align: left;
+
+		&:before {
+			display:block;
+			font-weight: bold;
+			margin-top: 1em;
+		}
+	}
+
+	.pubdate {
+		&:before {
+			content: 'Published';
+		}
+	}
+
+	.tags {
+
+		&:before {
+			content: 'Tags';
+		}
+	}
+
+	.shortlink {
+
+		&:before {
+			content: 'Short URL';
+		}
+
+		p {
+			text-indent: 0;
+			margin:0;
+			padding: 0;
+		}
+	}
+
+
+}
+
+
+.h-feed {
+
+	.tags {
+		clear: right;
+		float: right;
+		max-width:48em;
+		text-align: right;
+	}
+
+	.pubdate {
+		float:left;
+		width: 10em;
+	}
+
+	@media all and (max-width: @responsive-limit) {
+		.tags,
+		.pubdate {
+			display:block;
+			float:none;
+			text-align:left;
+			width:100%;
+		}
+	}
+}
+
+
 
 /* --- COMMENTS --- */
 .content-comments {

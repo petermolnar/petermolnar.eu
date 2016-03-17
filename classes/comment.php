@@ -29,7 +29,7 @@ class pmlnr_comment extends pmlnr_base {
 	 *
 	 * @return array extended vars
 	 */
-	public function add_query_var($vars) {
+	public function add_query_var( $vars ) {
 		array_push($vars, static::comment_endpoint() );
 		return $vars;
 	}
@@ -37,7 +37,7 @@ class pmlnr_comment extends pmlnr_base {
 	/**
 	 *
 	 */
-	public function validate_local ( $postid, $target ) {
+	public function validate_local ( &$postid, &$target ) {
 		static::debug ( $target );
 		$target = strtolower ( $target );
 		$endpoint = static::comment_endpoint();
@@ -66,7 +66,7 @@ class pmlnr_comment extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_permalink( $comment_ID ) {
+	public static function get_permalink( &$comment_ID ) {
 		if ( empty( $comment_ID ) )
 			return false;
 
@@ -76,7 +76,7 @@ class pmlnr_comment extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function is_a_reply ( $comment_ID ) {
+	public static function is_a_reply ( &$comment_ID ) {
 
 		if ( empty( $comment_ID ) )
 			return false;

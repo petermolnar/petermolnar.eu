@@ -16,6 +16,7 @@ class pmlnr_markdown extends pmlnr_base {
 		add_filter( 'image_send_to_editor', array( 'pmlnr_markdown', 'media_string_html2md'), 10 );
 
 		// markdown
+		//add_filter( 'the_content', array( 'pmlnr_markdown', 'markdown_toc'), 7, 1 );
 		add_filter( 'the_content', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 		add_filter( 'the_excerpt', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 
@@ -235,4 +236,52 @@ class pmlnr_markdown extends pmlnr_base {
 		return $content;
 	}
 
+
+
+	/**
+	 * http://stackoverflow.com/a/34970944/673576
+	 *
+	 */
+	public static function markdown_toc( $str ) {
+
+		// ensure using only "\n" as line-break
+		$source = str_replace( ["\r\n", "\r"], "\n", $str );
+		$matches = array();
+		// look for markdown TOC items
+		preg_match_all(
+			'/^(?:=|-|#).*$/m',
+			$source,
+			$matches,
+			PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE
+		);
+
+		// preprocess: iterate matched lines to create an array of items
+		// where each item is en array(level, text)
+		$file_size = strlen($source);
+		foreach ($matches[0] as $item) {
+			$found_mark = substr($item[0], 0, 1);
+			if ($found_mark == '#') {
+				// text is the found item
+				$item_text = $item[0];
+				$item_level = strrpos($item_text, '#') + 1;
+				$item_text = substr($item_text, $item_level);
+			}
+			else {
+				// text is the previous line (empty if <hr>)
+				$item_offset = $item[1];
+				$prev_line_offset = strrpos($source, "\n", -($file_size - $item_offset + 2));
+				$item_text = substr($source, $prev_line_offset, $item_offset - $prev_line_offset - 1);
+				$item_text = trim($item_text);
+				$item_level = $found_mark == '=' ? 1 : 2;
+			}
+			if (!trim($item_text) OR strpos($item_text, '|') !== FALSE) {
+				// item is an horizontal separator or a table header, don't mind
+				continue;
+			}
+			//$raw_toc[] = ['level' => $item_level, 'text' => trim($item_text)];
+			$raw_toc[] = str_pad( '  ', $item_level ) . '- ' . trim( $item_text );
+		}
+
+		return join( "\n", $raw_toc ) . $str;
+	}
 }

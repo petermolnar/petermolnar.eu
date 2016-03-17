@@ -12,7 +12,7 @@ class pmlnr_post extends pmlnr_base {
 	 */
 	public static function get_the_content( &$post = null, $clean = false ){
 
-		$post = static::contentfilters ( $post );
+		$post = static::fix_post ( $post );
 
 		if ( false === $post )
 			return false;
@@ -36,22 +36,6 @@ class pmlnr_post extends pmlnr_base {
 		return $r;
 	}
 
-	public static function contentfilters ( $post ) {
-		$post = static::fix_post($post);
-
-		if ( false === $post )
-			return false;
-
-		//if ( has_term( 'indieweb', 'post_tag', $post ) ) {
-			//$lang = get_post_meta ( $post->ID, 'locale', true );
-
-			//if ( empty( $lang ) || $lang == 'en' || $lang == 'eng' )
-				//$post->post_content .= '<a href="http://news.indiewebcamp.com/en" class="u-syndication"></a>';
-		//}
-
-		return $post;
-	}
-
 	/**
 	 *
 	 */
@@ -62,104 +46,6 @@ class pmlnr_post extends pmlnr_base {
 			return $cached;
 
 		$r = apply_filters('the_excerpt', $post->post_excerpt);
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-
-	/**
-	 *
-	 *
-	public static function post_get_webmention( &$post = null, $parsedown = false ) {
-		$post = static::fix_post($post);
-
-
-		if ($post === false )
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		// all done already, because it's inline
-		$content = $post->post_content;
-		$matches = static::has_reaction( $content );
-		if ( false != $matches )
-			return false;
-
-		// otherwise try to get the meta field which is deprecated and I should delete
-		// this code
-		$r = $migrate = false;
-
-		$webmention_url = get_post_meta ( $post->ID, 'webmention_url', true);
-		$webmention_type = get_post_meta ( $post->ID, 'webmention_type', true);
-		$webmention_rsvp = get_post_meta ( $post->ID, 'webmention_rsvp', true);
-
-		if ( !empty($webmention_url)) {
-			switch ($webmention_type) {
-				case 'u-like-of':
-					$h = __('This is a like of:');
-					$cl = 'u-like-of';
-					$prefix = '';
-					$migrate = "---\nlike: {$webmention_url}\n---\n\n";
-					break;
-				case 'u-repost-of':
-					$h = __('This is a repost of:');
-					$cl = 'u-repost-of';
-					$prefix = '*reposted from:* ';
-					$migrate = "---\nfrom: {$webmention_url}\n---\n\n";
-					break;
-				case 'u-in-reply-to':
-					$h = __('This is a reply to:');
-					$cl = 'u-in-reply-to';
-					$prefix = '**RE:** ';
-					$migrate = "---\nre: {$webmention_url}\n---\n\n";
-					break;
-				default:
-					$h = __('');
-					$cl = 'u-url';
-					$prefix = '**URL:** ';
-					$migrate = "---\n{$webmention_url}\n---\n\n";
-					break;
-			}
-
-			$rsvps = array (
-				'no' => __("Sorry, can't make it."),
-				'yes' => __("I'll be there."),
-				'maybe' => __("I'll do my best, but don't count on me for sure."),
-			);
-
-			$webmention_title = str_replace ( parse_url( $webmention_url, PHP_URL_SCHEME) .'://', '', $webmention_url);
-			$rel = str_replace('u-', '', $cl );
-
-			$r = "\n{$prefix}[{$webmention_title}]({$webmention_url}){.{$cl}}\n";
-
-			if (!empty($webmention_rsvp)) {
-				$r .= '<data class="p-rsvp" value="' . $webmention_rsvp .'">'. $rsvps[ $webmention_rsvp ] .'</data>';
-				$migrate = "---\nre: {$webmention_url}\n{$webmention_rsvp}\n---\n\n";
-			}
-
-			// this should be a temporary thing
-			//global $wpdb;
-			//$dbname = "{$wpdb->prefix}posts";
-			//$req = false;
-			//$modcontent = $migrate . $post->post_content;
-
-			//static::debug("Updating post content for #{$post->ID}");
-
-			//$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
-
-			//try {
-				//$req = $wpdb->query( $q );
-			//}
-			//catch (Exception $e) {
-				//static::debug('Something went wrong: ' . $e->getMessage());
-			//}
-
-			if ($parsedown)
-				$r = pmlnr_markdown::parsedown($r);
-
-		}
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -356,7 +242,7 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function post_thumbnail (&$post = null) {
+	public static function post_thumbnail ( &$post = null ) {
 		$post = static::fix_post($post);
 
 		if ($post === false)
@@ -480,7 +366,7 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_comments ( $post = null, $type = '' ) {
+	public static function get_comments ( &$post = null, $type = '' ) {
 
 		$r = array();
 
@@ -544,7 +430,7 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function get_reacji ( $post = null ) {
+	public static function get_reacji ( &$post = null ) {
 
 		$r = array();
 
@@ -606,12 +492,16 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function convert_reaction ( $content ) {
+	public static function convert_reaction ( &$content ) {
 
 		$matches = static::has_reaction( $content );
 		if ( false == $matches )
 			return $content;
 
+		//$replace = $matches[0][0];
+		$reaction = static::extract_reaction ( $content );
+
+		/*
 		$replace = false;
 		$r = false;
 		$type = false;
@@ -654,14 +544,14 @@ class pmlnr_post extends pmlnr_base {
 
 		$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
 		$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}\n{$rsvp}";
-
-		return str_replace ( $replace, $r, $content );
+		*/
+		return str_replace ( $matches[0][0], $reaction, $content );
 	}
 
 	/**
 	 *
 	 */
-	public static function template_vars (&$post = null, $prefix = '' ) {
+	public static function template_vars ( &$post = null, $prefix = '' ) {
 		$r = array();
 		$post = static::fix_post($post);
 
@@ -679,7 +569,7 @@ class pmlnr_post extends pmlnr_base {
 			'thumbnail' => static::post_thumbnail ($post),
 			'content' => static::get_the_content($post, 'clean'),
 			'parsed_content' => static::get_the_content($post),
-			'raw_content' => $post->post_content,
+			//'raw_content' => $post->post_content,
 			'excerpt' => static::get_the_excerpt($post),
 			'author_meta' => get_post_meta ( $post->ID, 'author', true),
 			'pubdate_iso' => get_the_time( 'c', $post->ID ),

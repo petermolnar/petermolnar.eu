@@ -4,10 +4,12 @@
 	<base href="{{ site.url }}" />
 	<meta charset="{{ site.charset }}" />
 	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1" />
+	<link rel="self" href="{{ site.url }}" />
 	<link rel="shortcut icon" href="{{ site.favicon }}" />
 	<link rel="apple-touch-icon" href="{{ site.favicon }}" />
 	<link rel="icon" href="{{ site.favicon }}" />
 	<link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS Feed" href="{{ site.rss_url }}" />
+	<link rel="hub" href="https://switchboard.p3k.io/" />
 	{{ site.header }}
 	<style type="text/css" media="screen,handheld">
 		{{ site.css }}
