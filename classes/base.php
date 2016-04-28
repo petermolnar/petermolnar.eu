@@ -54,18 +54,18 @@ class pmlnr_base {
 			case 'like':
 			case 'fav':
 				$cl = 'u-like-of';
-				$prefix = '';
+				$prefix = '**URL:** ';
 				break;
 			case 'from':
 				$cl = 'u-repost-of';
-				$prefix = '*reposted from:* ';
+				$prefix = '**FROM:** ';
 				break;
 			case 're':
 				$cl = 'u-in-reply-to';
 				$prefix = '**RE:** ';
 				break;
 			default:
-				$cl = 'u-url';
+				$cl = 'u-url .u-like-of';
 				$prefix = '**URL:** ';
 				break;
 		}
@@ -238,8 +238,6 @@ class pmlnr_base {
 		$rawmeta = wp_get_attachment_metadata( $thid );
 
 		$yaml = static::get_yaml();
-
-
 
 		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta'])) {
 

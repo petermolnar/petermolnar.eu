@@ -5,7 +5,7 @@ Description:	petermolnar.eu template for Wordpress
 Author:				Peter Molnar
 Author URI:		http://petermolnar.eu/
 Licence:			GPLv3
-Version:			14.2
+Version:			16.0
 */
 
 /* --- LESS variables & methods --- */
@@ -19,11 +19,14 @@ Version:			14.2
 @bgcolor: #f8f8f8;
 @bglight: #fff;
 @color: #333336;
+@altcolor: #333377;
 
 @padding-normal: 0.3em;
 @padding-large: 0.6em;
 
 @responsive-limit: 50em;
+
+@limit: 76ch;
 
 .animate() {
 	transition: all 0.3s ease;
@@ -31,7 +34,7 @@ Version:			14.2
 }
 
 .limit() {
-	max-width:42em;
+	max-width:@limit;
 	width:98%;
 	margin:0 auto 0 auto;
 	padding: @padding-large 1% @padding-large 1%;
@@ -134,6 +137,7 @@ nav {
 
 blockquote, q {
 	quotes: none;
+
 }
 
 blockquote:before, blockquote:after,
@@ -156,9 +160,6 @@ table {
 }
 
 html {
-/*
-	background-color: @bgcolor;
-*/
 	background-color: @color;
 }
 
@@ -167,9 +168,6 @@ body {
 	overflow:auto;
 	margin: 0 auto 0 auto;
 	line-height: @line-height;
-/*
-	font-family: "Liberation Sans", ".SFNSText-Regular", "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
-*/
 	font-family: "Liberation Mono", "Courier New", monospace;
 	font-size:@font-base;
 	font-weight: normal;
@@ -200,8 +198,8 @@ hr {
 }
 
 blockquote {
-	margin-left: @padding-large;
-	padding-left: @padding-large;
+	margin: 1em 0 1em 1em;
+	padding-left: 1em;
 	font-style: italic;
 	border-left: 2px solid lighten(@color, 30%);
 }
@@ -453,7 +451,7 @@ img.left {
 
 .limit,
 .content-body {
-	max-width: 42em;
+	max-width: @limit;
 	margin: @font-size auto @font-size auto;
 }
 
@@ -473,19 +471,12 @@ img.left {
 
 	.e-summary,
 	.e-content {
+		margin: @padding-large 0 0 0;
 		font-size: 0.9em;
 
 		h2, h3, h4, h5, h6 {
 			margin-top: 1.6em;
 		}
-
-		/*
-		p > code {
-			display: inline-block;
-			outline: 1px dashed lighten(@color,30%);
-			padding: 0px @padding-large;
-		}
-		*/
 
 		.adaptimg {
 			position: relative;
@@ -498,27 +489,14 @@ img.left {
 			padding: 0;
 		}
 
-		/*
 		a {
+			border-bottom: 1px solid lighten(@altcolor, 40%);
+
 			&:hover {
-				&:after {
-					color:#000;
-					position: absolute;
-					display:block;
-					white-space: nowrap;
-					width:auto;
-					max-width:42em;
-					content:attr(href);
-					font-style:italic;
-					left:0;
-					top:-0.3em;
-					padding-right:1em;
-					padding-left: 1em;
-					background-color: rgba(255,0,0,0.7) ;
-				}
+				border-bottom: 1px solid @altcolor;
 			}
 		}
-		*/
+
 	}
 
 	.article-thumbnail {
@@ -537,14 +515,13 @@ img.left {
 	}
 
 	aside {
-		opacity: 0.8;
 
 		a {
 			text-decoration: none;
-			opacity: 0.8;
+			border-bottom: 1px solid lighten(@altcolor, 40%);
 
 			&:hover {
-				opacity: 0.99;
+				border-bottom: 1px solid @altcolor;
 			}
 		}
 	}
@@ -560,16 +537,8 @@ img.left {
 			margin: 0 0 @padding-normal 0;
 		}
 
-		h2 {
-			clear:none;
-		}
-
 		ul {
 			.flatul();
-		}
-
-		aside {
-			display: inline-block;
 		}
 
 		.reactions {
@@ -582,50 +551,47 @@ img.left {
 			}
 		}
 
-		.readtime {
-			display: inline-block;
-			float: right;
-			font-size: 0.7em;
-			margin: -@padding-large 0 0 @font-size;
-
-		}
-
-		.author {
-			display: block;
-			margin-top: -@padding-large;
-			font-size: 0.9em;
+		.webmention {
+			display:block;
 		}
 
 	}
 
 	footer {
-/*
-		font-size: 0.9em;
-*/
 		font-size: 0.8em;
+
+		h6 {
+			margin-top: 2em;
+		}
 	}
 
+	.e-summary.long p {
+		display:inline;
+	}
+
+	header {
+		h2 {
+			margin: 0;
+		}
+		aside {
+			font-size: 0.8em;
+			display: inline-block;
+
+			p {
+				margin: 0;
+			}
+
+		}
+	}
 }
 
 
 
 
 .tags {
+	margin: @padding-large 0 @padding-large 0;
 	ul {
 		.flatul();
-
-/*
-		li + li:before {
-			content: ",";
-*/
-/*
-			margin: 0 @padding-normal 0 -@padding-normal;
-*/
-/*
-			margin: 0 @padding-normal 0 -@padding-large;
-			display: inline-block;
-		}
-*/
 
 		li:after {
 			content: ",";
@@ -639,6 +605,13 @@ img.left {
 			display:none;
 		}
 
+		li:before {
+			content: "#";
+			margin: 0 -@padding-large 0 0;
+			display: inline-block;
+		}
+
+
 	}
 }
 
@@ -647,16 +620,9 @@ img.left {
 	ul {
 		.flatul();
 
-	li {
-		margin: 0 @padding-normal 0 0;
-	}
-/*
-		li + li:before {
-			content: ",";
-			margin: 0 @padding-normal 0 -@padding-normal;
-			display: inline-block;
+		li {
+			margin: 0 @padding-normal 0 0;
 		}
-*/
 	}
 
 }
@@ -668,7 +634,7 @@ img.left {
 
 .content-note {
 	display:block;
-	max-width: 42em;
+	max-width: @limit;
 	margin: @font-size auto 0 auto;
 
 	p {
@@ -689,32 +655,9 @@ img.left {
 		clear:both;
 		display:block;
 		text-align: left;
-
-		&:before {
-			display:block;
-			font-weight: bold;
-			margin-top: 1em;
-		}
-	}
-
-	.pubdate {
-		&:before {
-			content: 'Published';
-		}
-	}
-
-	.tags {
-
-		&:before {
-			content: 'Tags';
-		}
 	}
 
 	.shortlink {
-
-		&:before {
-			content: 'Short URL';
-		}
 
 		p {
 			text-indent: 0;
@@ -728,22 +671,12 @@ img.left {
 
 
 .h-feed {
-
 	.tags {
-		clear: right;
-		float: right;
-		max-width:48em;
-		text-align: right;
-	}
-
-	.pubdate {
-		float:left;
-		width: 10em;
+		margin-bottom:0;
 	}
 
 	@media all and (max-width: @responsive-limit) {
-		.tags,
-		.pubdate {
+		.tags {
 			display:block;
 			float:none;
 			text-align:left;
@@ -759,7 +692,7 @@ img.left {
 
 	.reacji {
 		display:block;
-		max-width: 42em;
+		max-width: @limit;
 		margin: @font-size auto 0 auto;
 
 		a {
@@ -790,7 +723,7 @@ img.left {
 			.navul();
 
 			li {
-				max-width: 42em;
+				max-width: @limit;
 				margin: @font-size auto 0 auto;
 				background-color: @bglight;
 				display: block;
@@ -901,51 +834,16 @@ img.left {
 	}
 
 }
-/*
-	margin: @font-size 2em 0;
-*/
-/*
-	font-size:  0.8em;
-*/
-
-/*
-	[class^="icon-"], [class*=" icon-"] {
-		font-size: 0em;
-		letter-spacing: -1em;
-
-		&:before {
-			font-size: @font-base;
-		}
-	}
-
-}
-*/
-/*
-.footer-forms {
-	float:right;
-
-	.search-form {
-		margin-left: 2em;
-	}
-
-
-	form {
-		display:inline;
-	}
-
-	p {
-		display: inline;
-		margin: 0;
-	}
-
-}
-*/
 
 /* --- THINGS --- */
 .more:after {
 	content: '»';
 	margin-left: @padding-normal;
 	text-decoration:none;
+}
+
+.inline-more {
+	font-weight: bold;
 }
 
 .video-container {
@@ -1014,16 +912,14 @@ ul.page-numbers {
 		border:none;
 		background-color: @bglight;
 		border: 1px solid darken(@bgcolor,10%);
-		opacity: 0.7;
 
 		&:hover {
-			opacity: 0.99;
 			border: 1px solid darken(@bgcolor,40%);
 		}
 	}
 
 	.current {
-		opacity: 0.5;
+		color: lighten(@color,30%);
 	}
 
 }
@@ -1034,49 +930,57 @@ ul.page-numbers {
 [class*="u-repost-of"]:before,
 [class^="icon-"]:before,
 [class*=" icon-"]:before,
+[class^="i-"]:before,
+[class*=" i-"]:before,
 .reacticon {
 	.iconstyle();
 }
 
-.icon-wordpress:before { content: '\57'; } /* 'W' */
-.icon-webmention:before { content: '\77'; } /* 'w' */
-.icon-copyright:before { content: '\a9'; } /* '©' */
-.icon-focallength:before { content: '\2194'; } /* '↔' */
-.icon-home:before { content: '\224b'; } /* '≋' */
-.icon-clock:before { content: '\231a'; } /* '⌚' */
-.icon-linux-tech-coding:before { content: '\2328'; } /* '⌨' */
-.icon-tag:before { content: '\235d'; } /* '⍝' */
-.icon-facebook:before { content: '\24a1'; } /* '⒡' */
-.icon-github:before { content: '\24a2'; } /* '⒢' */
-.icon-instagram:before { content: '\24a4'; } /* '⒤' */
-.icon-linkedin:before { content: '\24a7'; } /* '⒧' */
-.icon-qq:before { content: '\24ac'; } /* '⒬' */
-.icon-skype:before { content: '\24ae'; } /* '⒮' */
-.icon-twitter:before { content: '\24af'; } /* '⒯' */
-.icon-wechat:before { content: '\24b2'; } /* '⒲' */
-.icon-about:before { content: '\25ad'; } /* '▭' */
-.u-like-of:before, .icon-like:before { content: '\2605'; } /* '★' */
-.icon-journal:before { content: '\2615'; } /* '☕' */
-.icon-menu:before { content: '\2630'; } /* '☰' */
-.icon-sensitivity:before { content: '\263c'; } /* '☼' */
-.icon-lastfm:before { content: '\267e'; } /* '♾' */
-.icon-flickr:before { content: '\2687'; } /* '⚇' */
-.icon-pgp:before, .icon-lock:before { content: '\26bf'; } /* '⚿' */
-.icon-photos:before, .icon-camera:before { content: '\26f6'; } /* '⛶' */
-.icon-phone:before { content: '\2706'; } /* '✆' */
-.icon-mail:before { content: '\2709'; } /* '✉' */
-.icon-icq:before { content: '\2741'; } /* '❁' */
-.icon-search:before { content: '\2753'; } /* '❓' */
-.icon-location:before { content: '\2757'; } /* '❗' */
-.u-in-reply-to:before, .icon-reply:before { content: '\27a6'; } /* '➦' */
-.u-repost-of:before, .icon-repost:before { content: '\27f3'; } /* '⟳' */
-.icon-share:before { content: '\2928'; } /* '⤨' */
-.icon-aperture:before { content: '\29be'; } /* '⦾' */
-.icon-comment:before { content: '\2b2c'; } /* '⬬' */
-.icon-subscribe:before { content: '\2b2d'; } /* '⬭' */
-.icon-picture:before { content: '\e802'; } /* '' */
-.icon-rss:before { content: '\e804'; } /* '' */
-.icon-telegram:before { content: '\2708'; } /* '✈' */
-.icon-lens:before { content: '\2299'; } /* '⊙' */
-.icon-paypal:before { content: '\50'; } /* 'P' */
-.icon-flattr:before { content: '\27f2'; } /* '⟲' */
+.i-wordpress:before, .icon-wordpress:before { content: '\57'; } /* 'W' */
+.i-webmention:before, .icon-webmention:before { content: '\77'; } /* 'w' */
+.i-copyright:before, .icon-copyright:before { content: '\a9'; } /* '©' */
+.i-focallength:before, .icon-focallength:before { content: '\2194'; } /* '↔' */
+.i-home:before, .icon-home:before { content: '\224b'; } /* '≋' */
+.i-clock:before, .icon-clock:before { content: '\231a'; } /* '⌚' */
+.i-linux-tech-coding:before, .icon-linux-tech-coding:before { content: '\2328'; } /* '⌨' */
+.i-tag:before, .icon-tag:before { content: '\235d'; } /* '⍝' */
+.i-facebook:before, .icon-facebook:before { content: '\24a1'; } /* '⒡' */
+.i-github:before, .icon-github:before { content: '\24a2'; } /* '⒢' */
+.i-instagram:before, .icon-instagram:before { content: '\24a4'; } /* '⒤' */
+.i-linkedin:before, .icon-linkedin:before { content: '\24a7'; } /* '⒧' */
+.i-qq:before, .icon-qq:before { content: '\24ac'; } /* '⒬' */
+.i-skype:before, .icon-skype:before { content: '\24ae'; } /* '⒮' */
+.i-twitter:before, .icon-twitter:before { content: '\24af'; } /* '⒯' */
+.i-wechat:before, .icon-wechat:before { content: '\24b2'; } /* '⒲' */
+.i-about:before, .icon-about:before, .i-contact:before, .icon-contact:before { content: '\25ad'; } /* '▭' */
+/*.u-like-of:before,*/ .i-like:before, .icon-like:before { content: '\2605'; } /* '★' */
+.i-journal:before, .icon-journal:before { content: '\2615'; } /* '☕' */
+.i-menu:before, .icon-menu:before { content: '\2630'; } /* '☰' */
+.i-sensitivity:before, .icon-sensitivity:before { content: '\263c'; } /* '☼' */
+.i-lastfm:before, .icon-lastfm:before { content: '\267e'; } /* '♾' */
+.i-flickr:before, .icon-flickr:before { content: '\2687'; } /* '⚇' */
+.i-pgp:before, .icon-pgp:before, .i-lock:before, .icon-lock:before { content: '\26bf'; } /* '⚿' */
+.i-photos:before, .icon-photos:before, .i-camera:before, .icon-camera:before { content: '\26f6'; } /* '⛶' */
+.i-phone:before, .icon-phone:before { content: '\2706'; } /* '✆' */
+.i-mail:before, .icon-mail:before { content: '\2709'; } /* '✉' */
+.i-icq:before, .icon-icq:before { content: '\2741'; } /* '❁' */
+.i-search:before, .icon-search:before { content: '\2753'; } /* '❓' */
+.i-location:before, .icon-location:before { content: '\2757'; } /* '❗' */
+/*.u-in-reply-to:before,*/ .i-reply:before, .icon-reply:before { content: '\27a6'; } /* '➦' */
+/*.u-repost-of:before,*/ .i-repost:before, .icon-repost:before { content: '\27f3'; } /* '⟳' */
+.i-share:before, .icon-share:before { content: '\2928'; } /* '⤨' */
+.i-aperture:before, .icon-aperture:before { content: '\29be'; } /* '⦾' */
+.i-comment:before, .icon-comment:before { content: '\2b2c'; } /* '⬬' */
+.i-subscribe:before, .icon-subscribe:before { content: '\2b2d'; } /* '⬭' */
+.i-picture:before, .icon-picture:before { content: '\e802'; } /* '' */
+.i-rss:before, .icon-rss:before { content: '\e804'; } /* '' */
+.i-telegram:before, .icon-telegram:before { content: '\2708'; } /* '✈' */
+.i-lens:before, .icon-lens:before { content: '\2299'; } /* '⊙' */
+.i-paypal:before, .icon-paypal:before { content: '\50'; } /* 'P' */
+.i-flattr:before, .icon-flattr:before { content: '\27f2'; } /* '⟲' */
+
+.u-in-reply-to:before, .u-repost-of:before, .u-like-of:before {
+	content: '»';
+	margin-right: @padding-normal;
+	text-decoration:none;
+}

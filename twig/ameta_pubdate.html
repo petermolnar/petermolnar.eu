@@ -1,5 +1,9 @@
+{% if post.singular %}
+<h6 class="pubdate-title">Published</h6>
+{% endif %}
+
 <aside class="pubdate">
-	<a href="{{ post.url }}">
+	<a class="u-url" rel="bookmark" title="{{ post.title }}" href="{{ post.url }}">
 		<time class="dt-published" datetime="{{ post.pubdate_iso }}">{{ post.pubdate_print }}</time>
 	</a>
 	{# if post.moddate_print %}

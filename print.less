@@ -11,27 +11,38 @@ h1 {
 	padding: 0;
 }
 
+h2 {
+	line-height: 2em;
+}
+
+h6 {
+	font-size: 1em;
+	font-weight: bold;
+}
+
 a, a:visited, a:link {
 	color: #000;
 	text-decoration:none;
 }
 
 
-.e-content {
-	a, a:visited, a:link {
-		color: #000;
-		text-decoration:underline;
+a, a:visited, a:link {
+	color: #000;
+	text-decoration:underline;
 
-		&:after {
-			content: "(" attr(href) ")";
-			display: inline-block;
-			width: auto;
-			font-size: 0.8em;
-			text-decoration: none;
-			margin-left: 0.3em;
-		}
+	&:after {
+		content: "(" attr(href) ")";
+		display: inline-block;
+		width: auto;
+/*
+		font-size: 0.8em;
+*/
+		text-decoration: none;
+		margin-left: 0.3em;
+		font-style:italic;
 	}
 }
+
 
 p {
 	text-indent: 0.6em
@@ -42,31 +53,8 @@ ul {
 	margin-bottom:1em;
 }
 
-.pubdate {
-	&:before {
-		content: 'Published';
-		display:block;
-		font-weight: bold;
-	}
-}
-
-.tags {
-	&:before {
-		content: 'Tags';
-		display:block;
-		font-weight: bold;
-	}
-}
 
 .shortlink {
-
-
-	&:before {
-		content: 'Short URL';
-		display:block;
-		font-weight: bold;
-		margin-top: 1em;
-	}
 
 	p {
 		text-indent: 0;

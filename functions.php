@@ -111,7 +111,7 @@ class petermolnareu {
 
 		// add link extraction to webmention and ping hooks as they
 		// don't always do a good enough job
-		add_filter ('webmention_links', array('petermolnareu', 'webmention_links'), 1, 2);
+		//add_filter ('webmention_links', array('petermolnareu', 'webmention_links'), 1, 2);
 		add_filter ('get_to_ping', array('petermolnareu', 'webmention_links'), 1);
 
 		// I want to upload svg
@@ -123,7 +123,7 @@ class petermolnareu {
 		//add_filter( 'the_content', array ( 'pmlnr_post', 'convert_reaction' ) );
 
 
-		add_filter('script_loader_tag', array ( 'petermolnareu', 'add_async_attribute'), 10, 2);
+		//add_filter('script_loader_tag', array ( 'petermolnareu', 'add_async_attribute'), 10, 2);
 
 	}
 
@@ -180,8 +180,8 @@ class petermolnareu {
 		//wp_enqueue_script( "webactions" );
 
 		// srcset fallback
-		wp_register_script( "picturefill" , "{$base_url}/lib/picturefill/dist/picturefill.min.js", false, null, true );
-		wp_enqueue_script( "picturefill" );
+		//wp_register_script( "picturefill" , "{$base_url}/lib/picturefill/dist/picturefill.min.js", false, null, true );
+		//wp_enqueue_script( "picturefill" );
 
 	}
 
@@ -191,7 +191,7 @@ class petermolnareu {
 	 * this is needed because markdown
 	 * and because of the special fields the to be poked webmention
 	 * url is stored in
-	 */
+	 *
 	public static function webmention_links ( $links, $postid = null ) {
 
 		if (empty($postid))
@@ -229,6 +229,7 @@ class petermolnareu {
 		pmlnr_base::debug ( debug_backtrace() );
 		return $links;
 	}
+	*/
 
 	/**
 	 *
@@ -557,7 +558,8 @@ class petermolnareu {
 					Az oldalon: <a href="'. $template_vars['url'] .'">'. $template_vars['url'] .'</a>
 				</p>
 				<p>
-					Ha le akarsz iratkozni, <a href="mailto:'. $email . '">szólj</a>.
+					Ha le akarsz iratkozni, vagy csak simán nem kéred már ezeket a leveleket, <a href="mailto:'. $email . '?subject=túltoltad">szólj</a>szólj, leveszlek.<br />
+					( Nincs harag meg semmi, én is kismillió dologról iratkoztam már le. )
 				</p>
 			</body>
 		</html>';

@@ -3,10 +3,12 @@
 class pmlnr_image extends pmlnr_base {
 
 	const prefix = 'adaptive_';
-	const sizes = '360,540,980,1280';
+	const sizes = '360,540,720,980,1280';
 
 	private $dpx = array();
 	private $extra_exif = array();
+
+	const cachedir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'cache';
 
 	/**
 	 *
@@ -24,6 +26,8 @@ class pmlnr_image extends pmlnr_base {
 		);
 
 		add_action( 'init', array( &$this, 'init'));
+
+		add_action( 'delete_attachment', array (&$this, 'delete_from_cache'));
 	}
 
 	/**
@@ -50,8 +54,205 @@ class pmlnr_image extends pmlnr_base {
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
 		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
 
+		// set higher jpg quality
+		add_filter( 'jpeg_quality', array( &$this, 'jpeg_quality' ) );
+		add_filter( 'wp_editor_set_quality', array( &$this, 'jpeg_quality' ) );
+
+		// sharpen resized images on upload
+		add_filter( 'image_make_intermediate_size',array ( &$this, 'sharpen' ),10);
+
+		// don't strip meta
+		add_filter( 'image_strip_meta', '__return_false', 1 );
+
+		add_filter ( 'wp_image_editors', array ( &$this, 'wp_image_editors' ));
 	}
 
+	public function wp_image_editors ( $arr ) {
+		return array ( 'WP_Image_Editor_Imagick' );
+	}
+
+	/**
+	 * called on attachment deletion and takes care of removing the moved files
+	 *
+	 */
+	public static function delete_from_cache ( $aid = null ) {
+		static::debug( "DELETE is called and aid is: " . $aid, 5 );
+		if ($aid === null)
+			return false;
+
+		$attachment = get_post( $aid );
+
+		if ( static::is_post($attachment)) {
+			$meta = wp_get_attachment_metadata($aid);
+
+			if (isset($meta['sizes']) && !empty($meta['sizes'])) {
+				foreach ( $meta['sizes'] as $size => $data ) {
+					$file = static::cachedir . DIRECTORY_SEPARATOR . $data['file'];
+					if ( isset($data['file']) && is_file($file)) {
+						static::debug( " removing " . $file, 5 );
+						unlink ($file);
+					}
+				}
+			}
+		}
+
+		return $aid;
+	}
+
+	/**
+	 * better jpgs
+	 */
+	public static function jpeg_quality () {
+		$jpeg_quality = (int)92;
+		return $jpeg_quality;
+	}
+
+	/*
+	public static function is_photo_resized( $resized ) {
+
+		if ( empty( $resized ) )
+			return false;
+
+		$path = pathinfo ( $resized );
+		$basefname = $path['filename'];
+		$ext = $path['extension'];
+
+		$pattern = '/^(.*?)-(?:\d+)x(?:\d+)$/i';
+		$replacement = '$1.$2';
+
+		$fname = preg_replace($pattern, $replacement, $basefname);
+		$fname = "{$fname}{$ext}";
+		pmlnr_base::debug('Testing for: ' . $fname, 4);
+
+		global $wpdb;
+		$dbname = "{$wpdb->prefix}postmeta";
+
+
+		try {
+			$thid = $wpdb->get_var( "SELECT `post_id` FROM `{$dbname}` WHERE `meta_key` = '_wp_attached_file' AND `meta_value` = '{$fname}' LIMIT 1");
+		}
+		catch (Exception $e) {
+			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
+		}
+
+		if ( empty( $thid ))
+			return false;
+
+		return static::is_photo( $thid );
+	}
+	*/
+
+	/**
+	 * adaptive sharpen images w imagemagick
+	 */
+	static public function sharpen( $resized ) {
+
+		if (!class_exists('Imagick')) {
+			static::debug('Please install Imagick extension; otherwise this plugin will not work as well as it should.', 4);
+			return;
+		}
+
+		if (!is_dir(static::cachedir)) {
+			if (!mkdir(static::cachedir)) {
+				static::debug('failed to create ' . static::cachedir, 4);
+			}
+		}
+
+		/*
+		preg_match ( '/(.*)-([0-9]+)x([0-9]+)\.([0-9A-Za-z]{2,4})/', $resized, $details );
+
+		 * 0 => original var
+		 * 1 => full original file path without extension
+		 * 2 => resized size w
+		 * 3 => resized size h
+		 * 4 => extension
+		 */
+
+		$size = @getimagesize($resized);
+
+		if ( !$size ) {
+			static::debug("Unable to get size for: {$resized}", 4);
+			return $resized;
+		}
+
+		//$cachedir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'cache';
+
+		$fname = basename( $resized );
+		$cached = static::cachedir . DIRECTORY_SEPARATOR . $fname;
+
+		if ( $size[2] == IMAGETYPE_JPEG && class_exists('Imagick')) {
+			static::debug( "adaptive sharpen " . $resized, 6 );
+
+			$watermarkfile = get_template_directory() . DIRECTORY_SEPARATOR . 'watermark.png';
+			$meta = wp_read_image_metadata ( $resized );
+			$yaml = static::get_yaml();
+			$is_photo = false;
+
+			if (isset($meta['copyright']) && !empty($meta['copyright']) ) {
+				foreach ( $yaml['copyright'] as $str ) {
+					if ( stristr($meta['copyright'], $str) ) {
+						$is_photo = true;
+					}
+				}
+			}
+
+			if ( isset($meta['camera']) && !empty($meta['camera']) && in_array(trim($meta['camera']), $yaml['cameras'])) {
+				$is_photo = true;
+			}
+
+			try {
+				$imagick = new Imagick($resized);
+				$imagick->unsharpMaskImage(0,0.5,1,0);
+				$imagick->setImageFormat("jpg");
+				$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
+				$imagick->setImageCompressionQuality(static::jpeg_quality());
+				$imagick->setInterlaceScheme(Imagick::INTERLACE_PLANE);
+
+				// only watermark my own images, others should not have this obviously
+				if ( file_exists ( $watermarkfile ) && true === $is_photo ) {
+
+					static::debug( 'watermark present and it looks like my photo, adding watermark to image ', 5 );
+					$watermark = new Imagick( $watermarkfile );
+					$iWidth = $imagick->getImageWidth();
+					$iHeight = $imagick->getImageHeight();
+					$wWidth = $watermark->getImageWidth();
+					$wHeight = $watermark->getImageHeight();
+
+					$nWidth = round($iWidth * 0.16);
+					$nHeight = round($wHeight * ( $nWidth / $wWidth ));
+					$watermark->scaleImage($nWidth, $nHeight);
+
+					$x = round($iWidth - $nWidth) - round( $iWidth * 0.01 );
+					$y = round($iHeight - $nHeight) - round( $iHeight * 0.01 );
+					$imagick->compositeImage($watermark, imagick::COMPOSITE_OVER, $x , $y );
+				}
+
+				$imagick->writeImage($cached);
+				$imagick->clear();
+				$imagick->destroy();
+			}
+			catch (Exception $e) {
+				static::debug( 'something went wrong with imagemagick: ',  $e->getMessage(), 4 );
+				return $resized;
+			}
+
+			static::debug( "removing " . $resized, 5 );
+			unlink ($resized);
+
+		}
+		else {
+			static::debug( "moving " . $cached, 5 );
+			if (copy( $resized, $cached)) {
+				static::debug(  "removing " . $resized, 5 );
+				unlink( $resized );
+			}
+			else {
+				static::debug( "\tmove failed, passing on this", 4 );
+			}
+		}
+
+		return $resized;
+	}
 
 	/***
 	 *
@@ -129,6 +330,7 @@ class pmlnr_image extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
+		// ultimate fallback to thumbnail, that has to exist
 		$fallback = $meta['sizes']['thumbnail'];
 
 		if ( !empty($max) && isset($meta['sizes'][$max]) && isset($meta['sizes'][$max]['src']) && !empty($meta['sizes'][$max]['src']) ) {
@@ -153,7 +355,7 @@ class pmlnr_image extends pmlnr_base {
 		foreach ( $this->dpix as $dpix => $size ) {
 			$id = static::prefix . $dpix;
 			if (isset($meta['sizes'][$id]['src']) && !empty($meta['sizes'][$id]['src']))
-				$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $as[$dpix] . "w";
+				$srcset[] = $meta['sizes'][$id]['src'] . ' ' . ( $as[$dpix] ) . "w";
 				//$srcset[] = $meta['sizes'][$id]['src'] . ' ' . $dpix ."x";
 		}
 
@@ -196,7 +398,8 @@ class pmlnr_image extends pmlnr_base {
 		}
 		*/
 		else {
-			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw, 60vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			//$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="42em" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, static::expire );

@@ -1,7 +1,12 @@
 
 	{% if site.pagination %}
 		<section>
-			{{ site.pagination }}
+			<ul class="page-numbers">
+				{% for element in site.pagination %}
+					<li>{{ element }}</li>
+				{% endfor %}
+			</ul>
+
 		</section>
 	{% endif %}
 
@@ -13,7 +18,7 @@
 			<nav class="content-footnotes">
 				<ul>
 					<li>
-						<a class="icon-paypal" href="https://www.paypal.me/petermolnar/3">Buy me a coffee</a>
+						<a class="i-paypal" href="https://www.paypal.me/petermolnar/3">Buy me a coffee</a>
 					</li>
 					<!--
 					<li>
@@ -21,13 +26,13 @@
 					</li>
 					-->
 					<li>
-						<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>
+						<a rel="license" href="/licence" title="Licence" class="i-copyright">copyright notes</a>
 					</li>
 					<li>
-						<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
+						<a class="i-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
 					</li>
 					<li>
-						<a class="icon-wordpress" title="WordPress" href="https://wordpress.org">WordPress</a>
+						<a class="i-wordpress" title="WordPress" href="https://wordpress.org">WordPress</a>
 					</li>
 				</ul>
 				{% include 'partial_search.html' %}

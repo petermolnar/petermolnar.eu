@@ -1,29 +1,30 @@
 <article class="h-entry h-article">
 
 	<header>
-		{% include 'ameta_readtime.html' %}
 		<h2>
-			<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+			<a href="{{ post.url }}" title="{{ post.title }}">
 				<span class="p-name more">{{ post.title }}</span>
 			</a>
 		</h2>
+		{% include 'ameta_pubdate.html' %}
 		{% include 'ameta_author.html' %}
 		{% include 'ameta_webmention.html' %}
 	</header>
 
-	<div class="e-summary">
+	<div class="e-summary long">
 		{% if post.thumbnail %}
 			<img class="article-thumbnail" src="{{ post.thumbnail }}" />
 		{% endif %}
 		{{ post.excerpt }}
+		<a class="inline-more" href="{{ post.url }}" title="{{ post.title }}">
+			<span class="more">…</span>
+		</a>
 		<br class="clear" />
 	</div>
 
 	<footer>
 		<br class="clear" />
-		{% include 'ameta_comments.html' %}
 		{% include 'list_tag.html' %}
-		{% include 'ameta_pubdate.html' %}
 		<br class="clear" />
 	</footer>
 

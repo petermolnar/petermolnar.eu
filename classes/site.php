@@ -65,10 +65,23 @@ class pmlnr_site extends pmlnr_base {
 			'prev_next' => True,
 			'prev_text' => __('«'),
 			'next_text' => __('»'),
-			'type' => 'list',
+			'type' => 'array',
 			'total' => $wp_query->max_num_pages,
 		);
 		$r = paginate_links( $pargs );
+
+
+		if ( ! empty( $r ) && is_array ( $r ) ) {
+			foreach ( $r as $k => $l ) {
+				if (strstr( $l, '»'))
+					$r[ $k ] = str_replace( 'a class', 'a rel="next" class', $l );
+				elseif (strstr( $l, '«'))
+					$r[ $k ] = str_replace( 'a class', 'a rel="prev" class', $l );
+				else
+					continue;
+			}
+		}
+
 		return $r;
 	}
 

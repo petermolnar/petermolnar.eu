@@ -3,12 +3,13 @@
 <section class="content-body">
 	<article class="h-entry singular" id="post-{{ post.id }}" >
 		<header {# post.bgstyle #}>
+			{% if post.title|length %}
 			<h1>
-				<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+				<a href="{{ post.url }}" title="{{ post.title }}">
 					<span class="p-name">{{ post.title }}</span>
 				</a>
 			</h1>
-			{% include 'ameta_author.html' %}
+			{% endif %}
 			{% include 'ameta_webmention.html' %}
 		</header>
 
@@ -29,10 +30,13 @@
 		</div>
 
 		<footer>
-			<br class="clear" />
-			{% include 'list_tag.html' %}
+
 			{% include 'ameta_pubdate.html' %}
-			<br class="clear" />
+
+			{% include 'ameta_author.html' %}
+
+			{% include 'list_tag.html' %}
+			<h6 class="shortlink-title">Short URL</h6>
 			<aside class="shortlink"></p>
 				<p>
 					<span class="u-uid hide">{{ post.uuid }}</span>
@@ -63,7 +67,7 @@
 <aside class="content-note">
 	{% set email = post.author.email %}
 	<hr />
-	<p>Want to leave a comment or get in touch? Reply with your own blog using <a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an <a href="mailto:{{ email }}">email</a>, or poke me on social media.</p>
+	<p>Want to leave a comment or get in touch? Reply with your own blog using <a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an <a href="mailto:{{ post.author.email }}?subject=RE: {{ post.title }}">email</a>, or poke me on social media.</p>
 </aside>
 
 {% include 'partial_footer.html' %}

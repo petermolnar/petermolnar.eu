@@ -1,6 +1,13 @@
-<aside class="author">
-	<p{% if post.format not in site.author_formats %} class="hide"{% endif %}>
-		by <span class="p-author h-card vcard">
+{% if post.singular %}
+<h6 class="author-title {% if post.format not in site.author_formats %}hide{% endif %}">Author</h6>
+{% endif %}
+
+<aside class="author {% if post.format not in site.author_formats %}hide{% endif %}">
+	<p>
+		{% if not post.singular %}
+			by
+		{% endif %}
+		<span class="p-author h-card vcard">
 			<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
 		</span>
 		</p>

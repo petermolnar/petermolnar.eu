@@ -588,6 +588,7 @@ class pmlnr_post extends pmlnr_base {
 			'singular' => is_singular(),
 			'debug' => is_user_logged_in(),
 			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
+			'editurl'  => get_bloginfo('url') . "/wp-admin/post.php?post={$post->ID}&action=edit",
 		);
 
 		$r['author'] = pmlnr_author::template_vars( $post->post_author );

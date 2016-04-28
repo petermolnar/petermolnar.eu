@@ -1,19 +1,18 @@
 {% if post.tags %}
+
+{% if post.singular %}
+<h6 class="tags-title">Tags</h6>
+{% endif %}
+
 <aside class="tags">
 	<nav>
-		<ul class="icon-tag">
+		<ul>
 			{% for tname, turl in post.tags %}
 				<li class="u-tag">
-					<a href="{{ turl }}" class="p-category">{{ tname }}</a>
+					<a href="{{ turl }}" class="p-category">{{ tname }}</a>{# if not loop.last %},{% endif #}
 				</li>
 			{% endfor %}
 		</ul>
 	</nav>
 </aside>
 {% endif %}
-
-{#
-{% if post.debug %}
-<p>{{ post.format }}</p>
-{% endif %}
-#}

@@ -1,11 +1,14 @@
 <article class="h-entry h-note">
 
 	<header>
+		{% if post.title|length %}
 		<h2>
-			<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
+			<a href="{{ post.url }}" title="{{ post.title }}">
 				<span class="p-name">{{ post.title }}</span>
 			</a>
 		</h2>
+		{% endif %}
+		{% include 'ameta_pubdate.html' %}
 		{% include 'ameta_author.html' %}
 		{% include 'ameta_webmention.html' %}
 	</header>
@@ -17,9 +20,7 @@
 
 	<footer>
 		<br class="clear" />
-		{% include 'ameta_comments.html' %}
 		{% include 'list_tag.html' %}
-		{% include 'ameta_pubdate.html' %}
 		<br class="clear">
 	</footer>
 
