@@ -37,7 +37,7 @@
 
 			{% include 'list_tag.html' %}
 			<h6 class="shortlink-title">Short URL</h6>
-			<aside class="shortlink"></p>
+			<aside class="shortlink">
 				<p>
 					<span class="u-uid hide">{{ post.uuid }}</span>
 					<a href="{{ post.shorturl }}">{{ post.shorturl }}</a>
@@ -62,7 +62,7 @@
 	</article>
 </section>
 
-{% include 'list_comments.html' %}
+{# include 'list_comments.html' #}
 
 <aside class="content-note">
 	{% set email = post.author.email %}
