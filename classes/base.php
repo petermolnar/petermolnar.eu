@@ -9,86 +9,25 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function has_reaction ( &$content ) {
-		$pattern = "/---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+((?!---).*))?[\n\r]+---/mi";
+	public static function add_tags ( &$post, &$keywords, $taxonomy = 'post_tag' ) {
 
-		$matches = array();
-		preg_match_all( $pattern, $content, $matches);
+		$keywords = array_unique($keywords);
+		foreach ( $keywords as $tag ) {
+			$tag = trim( $tag );
 
-		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) )
-			return $matches;
+			if ( empty( $tag ) )
+				continue;
 
-		return false;
+			if ( !term_exists( $tag, $taxonomy ))
+				wp_insert_term ( $tag, $taxonomy );
 
-	}
+			if ( !has_term( $tag, $taxonomy, $post ) ) {
+				pmlnr_base::debug ( "appending post #{$post->ID} {$taxonomy} taxonomy with: {$tag}", 5 );
+				wp_set_post_terms( $post->ID, $tag, $taxonomy, true );
+			}
 
-	/**
-	 *
-	 */
-	public static function extract_reaction ( &$content, $parsedown = false ) {
-
-		$matches = static::has_reaction( $content );
-		if ( false == $matches )
-			return false;
-
-		$replace = false;
-		$r = false;
-		$type = false;
-		$rsvp = '';
-
-		$rsvps = array (
-			'no' => __("Sorry, can't make it."),
-			'yes' => __("I'll be there."),
-			'maybe' => __("I'll do my best, but don't count on me for sure."),
-		);
-
-		$replace = $matches[0][0];
-		$type = trim($matches[1][0]);
-		$url = trim($matches[2][0]);
-		$data = trim($matches[3][0]);
-
-		if ( $type == 're' && !empty( $data ) )
-			$rsvp = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
-
-		switch ($type) {
-			case 'like':
-			case 'fav':
-				$cl = 'u-like-of';
-				$prefix = '**URL:** ';
-				break;
-			case 'from':
-				$cl = 'u-repost-of';
-				$prefix = '**FROM:** ';
-				break;
-			case 're':
-				$cl = 'u-in-reply-to';
-				$prefix = '**RE:** ';
-				break;
-			default:
-				$cl = 'u-url .u-like-of';
-				$prefix = '**URL:** ';
-				break;
 		}
 
-		$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
-		$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}\n{$rsvp}";
-
-		if ($parsedown)
-			$r = pmlnr_markdown::parsedown($r);
-
-		return $r;
-	}
-
-	/**
-	 *
-	 */
-	public static function remove_reaction ( &$content ) {
-
-		$matches = static::has_reaction( $content );
-		if ( false == $matches )
-			return $content;
-
-		return str_replace ( $matches[0][0], '', $content );
 	}
 
 	/**
@@ -154,17 +93,6 @@ class pmlnr_base {
 	public static function livedebug( $message) {
 		if ( function_exists('is_user_logged_in') && is_user_logged_in() )
 			var_dump ($message);
-	}
-
-	/**
-	 *
-	 */
-	public static function preg_value ( $string, $pattern, $index = 1 ) {
-		preg_match( $pattern, $string, $results );
-		if ( isset ( $results[ $index ] ) && !empty ( $results [ $index ] ) )
-			return $results [ $index ];
-		else
-			return false;
 	}
 
 	/**
@@ -352,182 +280,107 @@ class pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		//if ( $post->post_status == 'publish' ) {
-			$current = static::get_type($post);
-			//if ($current != false ) {
-				//return $current;
-			//}
-		//}
+		$current = static::get_type( $post );
 
 		$post_length = strlen( $post->post_content );
 		$content = $post->post_content;
 
-		$matches = static::has_reaction( $content );
+		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
+		$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
+		$webmention_rsvp = get_post_meta( $post->ID, 'webmention_data', true );
 
-		if ( ! empty( $matches ) && is_array( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) ) {
-			$replace = $matches[0][0];
-			$type = trim($matches[1][0]);
-			$webmention_url = trim($matches[2][0]);
-			$webmention_rsvp = trim($matches[3][0]);
+		$links = static::extract_urls( $post->post_content );
 
-			switch ($type) {
-				case 'like':
-					$webmention_type = 'u-like-of';
-					break;
-				case 'from':
-					$webmention_type= 'u-repost-of';
-					break;
-				case 're':
-					$webmention_type = 'u-in-reply-to';
-					break;
+		// one single link in the post, so it's most probably an old bookmark
+		if (!empty($links) && count($links) == 1) {
+			$content = trim ( str_replace($links[0], '', $content) );
+
+			if ( empty( $content ) ) {
+				if ( empty ( $webmention_url ) )
+					add_post_meta( $post->ID, 'webmention_url', $links[0], true );
+
+				if ( empty ( $webmention_type ) )
+					add_post_meta( $post->ID, 'webmention_type', 'fav', true );
+
+				$webmention_url = $links[0];
+				$webmention_type = 'fav';
 			}
 
-			$content = trim ( str_replace( $replace, '', $content ) );
-		}
-		else {
-			$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-			$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
-			$webmention_rsvp = get_post_meta( $post->ID, 'webmention_rsvp', true );
-			$single_url = $webmention_url;
-			$links = static::extract_urls($post->post_content);
-
-			// one single link in the post, so it's most probably a bookmark
-			if (!empty($links) && count($links) == 1) {
-				$single_url = $links[0];
-				$content = str_replace($single_url, '', $content);
-				$content = trim($content);
-			}
 		}
 
-		// /m for multiline, so ^ means beginning of line
-		$has_quote = preg_match("/^> /m", $post->post_content);
-
-		// /m for multiline, so ^ means beginning of line
-		$has_code = preg_match("/^```(?:[a-z]+)?/m", $post->post_content);
-
-		$diff = 0;
 		$has_thumbnail = get_post_thumbnail_id( $post->ID );
-		if ( $has_thumbnail ) {
-			$thumbnail_meta = static::get_extended_thumbnail_meta( $has_thumbnail );
-			if (isset($thumbnail_meta['image_meta']['caption']) && !empty($thumbnail_meta['image_meta']['caption'])) {
-				similar_text( $post->post_content, $thumbnail_meta['image_meta']['caption'], $diff);
-			}
-		}
-
+		$has_quote = preg_match("/^> /m", $post->post_content);
+		$has_code = preg_match("/^```(?:[a-z]+)?/m", $post->post_content);
 		$has_youtube = preg_match("/(?:www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]+/", $post->post_content);
-
 		$has_audio = preg_match("/\[audio.*\]/", $post->post_content);
-
-		//$has_cblips = has_category( 'blips', $post );
-		//$has_tblips = has_tag( 'blips', $post );
-
-		//$has_blips = ( $has_cblips != false || $has_tblips != false ) ? true : false;
-
+		$has_webmention = empty( $webmention_url ) ? false : true;
 
 		$taxonomy = 'post_tag';
-		$has_ltc = has_term( 'linux-tech-coding', $taxonomy, $post );
-		$has_j = has_term( 'journal', $taxonomy, $post );
-		$has_p = has_term( 'photo', $taxonomy, $post );
-		$has_longcat = ( $has_ltc != false || $has_j != false ) ? true : false;
+		$tag_it = has_term( 'it', $taxonomy, $post );
+		$tag_journal = has_term( 'journal', $taxonomy, $post );
+		$tag_photo = has_term( 'photo', $taxonomy, $post );
+		$is_long = ( $tag_it != false || $tag_journal != false ) ? true : false;
 
-		$slug = 'article';
-		//$name = __('Article', 'petermolnareu');
+		$type = 'article';
 
-		/**
-		 * Actual discovery
-		 */
-		if ( $has_longcat ) {
-			$slug = 'article';
-			//$name = __('Article', 'petermolnareu');
+		// --- Actual discovery ---
+		if ( $is_long ) {
+			$type = 'article';
 		}
-		elseif ( !empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to' && !empty($webmention_rsvp) ) {
-			$slug = 'rsvp';
-			//$name =  __('Response to event','petermolnareu');
-		}
-		elseif ( (!empty($webmention_url) && !empty($webmention_type) && $webmention_type == 'u-in-reply-to') ) {
-			$slug = 'reply';
-			//$name = __('Reply','petermolnareu');
+		elseif ( ! empty( $webmention_type ) ) {
+			switch ( $webmention_type ) {
+				case 'reply':
+				case 're':
+				case 'u-in-reply-to':
+					$type = 'reply';
+					break;
+				case 'from':
+				case 'repost':
+				case 'u-repost-of':
+					$type = 'repost';
+					break;
+				default:
+					$type = 'bookmark';
+					break;
+			}
 		}
 		elseif ( $has_code ) {
-			$slug = 'article';
-			//$name = __('Article', 'petermolnareu');
+			$type = 'article';
 		}
-		elseif ( !empty($webmention_type) && ($webmention_type == 'u-like-of') ) {
-			$slug = 'bookmark';
-			//$name = __('Favourite','petermolnareu');
+		elseif ( ( $has_thumbnail && static::is_photo( $has_thumbnail ) ) || $tag_photo ) {
+			$type = 'photo';
 		}
-		elseif ( !empty($webmention_type) && ($webmention_type == 'u-repost-of') ) {
-			$slug = 'repost';
-			//$name = __('Repost','petermolnareu');
+		elseif ( $post_length < ARTICLE_MIN_LENGTH ) {
+			$type = 'note';
+
+			if ( $has_thumbnail ) {
+				$type = 'image';
+			}
+			elseif ( $has_youtube ) {
+				$type = 'video';
+			}
+			elseif ( $has_audio ) {
+				$type = 'audio';
+			}
+			elseif ( $has_quote ) {
+				$type = 'quote';
+			}
+
 		}
-		elseif ( ( $has_thumbnail && static::is_photo($has_thumbnail) ) || $has_p ) {
-			$slug = 'photo';
-			//$name =  __('Photo','petermolnareu');
-			/* && $diff > 50 */
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_thumbnail ) {
-			$slug = 'image';
-			//$name = __('Image','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_youtube ) {
-			$slug = 'video';
-			//$name = __('Video','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_audio ) {
-			$slug = 'audio';
-			//$name = __('Audio','petermolnareu');
-		}
-		elseif ( !empty($webmention_url) ) {
-			$slug = 'bookmark';
-			//$name = __('Bookmark','petermolnareu');
-		}
-		elseif ( $post_length < ARTICLE_MIN_LENGTH && $has_quote ) {
-			$slug = 'quote';
-			//$name = __('Quote','petermolnareu');
-		}
-		elseif ( strlen($post->post_title) == 0 || ($post_length < ARTICLE_MIN_LENGTH) ) {
-			$slug = 'note';
-			//$name = __('Note','petermolnareu');
+		elseif ( strlen ($post->post_title ) == 0 ) {
+			$type = 'note';
 		}
 
-		$id = term_exists( $slug, 'category');
+		$id = term_exists( $type, 'category');
 		if ($id !== 0 && $id !== null) {
-			//$current = static::get_type( $post );
-			//static::debug(sprintf('post type refresh for %s: kind is "%s", automatic says "%s"', $post->ID,$current, $slug));
-			if ($current != $slug ) {
-				static::debug(sprintf('post type refresh for %s: category is "%s", automatic says "%s"', $post->ID,$current, $slug));
+			if ($current != $type ) {
+				static::debug(sprintf('post type refresh for %s: category is "%s", automatic says "%s"', $post->ID, $current, $type));
 				wp_set_post_terms( $post->ID, $id, 'category', false );
 			}
 		}
 
-		/*
-		if ( $slug == 'note' && strlen($post->post_title) != 0) {
-			static::post_replace_title($post);
-		}
-		*/
-
-		/*
-		if ( strlen($post->post_title) == 0 ) {
-			$current_slug = $post->post_name;
-			$epoch = get_the_time('U', $post->ID);
-			$url = static::epoch2url($epoch);
-			$fucked = strtolower($url);
-
-			if ( $current_slug == $fucked ) {
-				static::livedebug('phase 2');
-				$reset = $epoch;
-
-					$_post = array(
-						'ID' => $post->ID,
-						'post_name' => $reset,
-					);
-
-				$r = wp_update_post( $_post );
-			}
-		}*/
-
-		wp_cache_set ( $post->ID, $slug, __CLASS__ . __FUNCTION__, static::expire );
-		return $slug;
+		wp_cache_set ( $post->ID, $type, __CLASS__ . __FUNCTION__, static::expire );
+		return $type;
 	}
 
 	/**
@@ -550,9 +403,13 @@ class pmlnr_base {
 			if ( !empty ( $attachment->post_parent ) ) {
 				$parent = get_post( $attachment->post_parent );
 				$meta['parent'] = $parent->ID;
-				$meta['image_meta']['geo_latitude'] = get_post_meta( $parent->ID, 'geo_latitude', true );
-				$meta['image_meta']['geo_longitude'] = get_post_meta( $parent->ID, 'geo_longitude', true );
 			}
+
+			$try = array ( 'geo_latitude', 'geo_longitude', 'geo_altitude' );
+
+			foreach ( $try as $kw )
+				if ( empty ( $meta['image_meta'][ $kw ] ) )
+					$meta['image_meta'][ $kw ] = get_post_meta( $parent->ID, $kw, true );
 
 			$src = wp_get_attachment_image_src ($thid, 'full');
 			$meta['src'] = static::fix_url($src[0]);
@@ -579,18 +436,6 @@ class pmlnr_base {
 			if ( !empty($alt))
 				$meta['image_meta']['alt'] = strip_tags($alt);
 
-
-			/*
-			if ( static::is_photo ($thid ) ) {
-				if ( !isset ( $meta['image_meta']['lens'] ) || strstr ( $meta['image_meta']['lens'], 'Unknown') ) {
-					require_once(ABSPATH . "wp-admin" . '/includes/image.php');
-					$m = wp_read_image_metadata( $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $meta['file'] );
-					static::debug ( " #{$thid} got exif as: " . json_encode($m) );
-					$_meta['image_meta'] = $m;
-					update_post_meta ( $thid, '_wp_attachment_metadata', $_meta );
-				}
-			}
-			*/
 		}
 
 		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, static::expire );
@@ -628,5 +473,35 @@ class pmlnr_base {
 		return $r;
 
 	}
+
+	/**
+	 *
+	 */
+	public static function replace_content ( &$post, &$content ) {
+
+		$post = static::fix_post ( $post );
+
+		if ( false === $post )
+			return false;
+
+		//if ( empty ( $content ) )
+			//return false;
+
+		global $wpdb;
+		$dbname = "{$wpdb->prefix}posts";
+		$req = false;
+
+		static::debug("Updating post content for #{$post->ID}", 5);
+
+		$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $content );
+
+		try {
+			$req = $wpdb->query( $q );
+		}
+		catch (Exception $e) {
+			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
+		}
+	}
+
 
 }

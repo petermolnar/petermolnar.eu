@@ -76,6 +76,14 @@ class pmlnr_markdown extends pmlnr_base {
 		$parsedown->setUrlsLinked(true);
 		$r = $parsedown->text ( $md );
 
+		// match cite
+		//preg_match_all( '/<blockquote>(?:.*?)\s(?:&#8211;|–)(.*?)(:?<\/p>\s?)?<\/blockquote>/s', $r, $matches );
+		preg_match_all( '/<blockquote>(?:.*?)\s(?:\\-|–|&#8211;)(.*?)(?:<\/p>\s?)<\/blockquote>/s', $r, $matches );
+
+		if ( !empty($matches) && isset( $matches[1] ) && isset( $matches[1][0] ) ) {
+			$r = str_replace ( $matches[1][0], "<cite>{$matches[1][0]}</cite>", $r );
+		}
+
 		wp_cache_set ( $hash, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
@@ -284,4 +292,16 @@ class pmlnr_markdown extends pmlnr_base {
 
 		return join( "\n", $raw_toc ) . $str;
 	}
+
+	/**
+	 *
+	 */
+	public static function preg_value ( $string, $pattern, $index = 1 ) {
+		preg_match( $pattern, $string, $results );
+		if ( isset ( $results[ $index ] ) && !empty ( $results [ $index ] ) )
+			return $results [ $index ];
+		else
+			return false;
+	}
+
 }

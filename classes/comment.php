@@ -37,7 +37,7 @@ class pmlnr_comment extends pmlnr_base {
 	/**
 	 *
 	 */
-	public function validate_local ( &$postid, &$target ) {
+	public function validate_local ( $postid, $target ) {
 		static::debug ( $target );
 		$target = strtolower ( $target );
 		$endpoint = static::comment_endpoint();
@@ -99,15 +99,6 @@ class pmlnr_comment extends pmlnr_base {
 			pmlnr_base::debug ( "comment #{$comment_ID} parent is not a comment" );
 			return false;
 		}
-
-		/*
-		if ( empty ( $parent->comment_author_url ) ) {
-			pmlnr_base::debug ( "comment #{$comment_ID} no author url for parent" );
-			return false;
-		}
-
-		return $parent->comment_author_url;
-		*/
 
 		$target = get_comment_meta ( $parent->comment_ID, 'comment_url', true );
 		if ( empty ( $target ) ) {
@@ -181,13 +172,6 @@ class pmlnr_comment extends pmlnr_base {
 			static::debug ( "comment #{$comment_ID} parent is not a comment" );
 			return false;
 		}
-
-		/*
-		if ( empty ( $parent->comment_author_url ) ) {
-			static::debug ( "comment #{$comment_ID} no author url for parent" );
-			return false;
-		}
-		*/
 
 		$target = get_comment_meta ( $parent->comment_ID, 'comment_url', true );
 		if ( empty ( $target ) ) {

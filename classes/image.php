@@ -23,11 +23,12 @@ class pmlnr_image extends pmlnr_base {
 
 		$this->extra_exif = array (
 			'lens' => 'LensID',
+			'geo_latitude' => 'GPSLatitude',
+			'geo_longitude' => 'GPSLongitude',
+			'geo_altitude' => 'GPSAltitude',
 		);
 
 		add_action( 'init', array( &$this, 'init'));
-
-		add_action( 'delete_attachment', array (&$this, 'delete_from_cache'));
 	}
 
 	/**
@@ -51,207 +52,89 @@ class pmlnr_image extends pmlnr_base {
 
 		// insert featured image as adaptive
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
-		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 10 );
+		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 2 );
 		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
 
-		// set higher jpg quality
-		add_filter( 'jpeg_quality', array( &$this, 'jpeg_quality' ) );
-		add_filter( 'wp_editor_set_quality', array( &$this, 'jpeg_quality' ) );
-
-		// sharpen resized images on upload
-		add_filter( 'image_make_intermediate_size',array ( &$this, 'sharpen' ),10);
-
-		// don't strip meta
-		add_filter( 'image_strip_meta', '__return_false', 1 );
+		add_filter( 'wp_resized2cache_imagick',array ( &$this, 'watermark' ),10, 2);
 
 		add_filter ( 'wp_image_editors', array ( &$this, 'wp_image_editors' ));
 	}
 
-	public function wp_image_editors ( $arr ) {
-		return array ( 'WP_Image_Editor_Imagick' );
-	}
-
-	/**
-	 * called on attachment deletion and takes care of removing the moved files
+	/***
 	 *
 	 */
-	public static function delete_from_cache ( $aid = null ) {
-		static::debug( "DELETE is called and aid is: " . $aid, 5 );
-		if ($aid === null)
-			return false;
-
-		$attachment = get_post( $aid );
-
-		if ( static::is_post($attachment)) {
-			$meta = wp_get_attachment_metadata($aid);
-
-			if (isset($meta['sizes']) && !empty($meta['sizes'])) {
-				foreach ( $meta['sizes'] as $size => $data ) {
-					$file = static::cachedir . DIRECTORY_SEPARATOR . $data['file'];
-					if ( isset($data['file']) && is_file($file)) {
-						static::debug( " removing " . $file, 5 );
-						unlink ($file);
-					}
-				}
-			}
-		}
-
-		return $aid;
-	}
-
-	/**
-	 * better jpgs
-	 */
-	public static function jpeg_quality () {
-		$jpeg_quality = (int)92;
-		return $jpeg_quality;
-	}
-
-	/*
-	public static function is_photo_resized( $resized ) {
-
-		if ( empty( $resized ) )
-			return false;
-
-		$path = pathinfo ( $resized );
-		$basefname = $path['filename'];
-		$ext = $path['extension'];
-
-		$pattern = '/^(.*?)-(?:\d+)x(?:\d+)$/i';
-		$replacement = '$1.$2';
-
-		$fname = preg_replace($pattern, $replacement, $basefname);
-		$fname = "{$fname}{$ext}";
-		pmlnr_base::debug('Testing for: ' . $fname, 4);
-
-		global $wpdb;
-		$dbname = "{$wpdb->prefix}postmeta";
-
-
-		try {
-			$thid = $wpdb->get_var( "SELECT `post_id` FROM `{$dbname}` WHERE `meta_key` = '_wp_attached_file' AND `meta_value` = '{$fname}' LIMIT 1");
-		}
-		catch (Exception $e) {
-			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
-		}
-
-		if ( empty( $thid ))
-			return false;
-
-		return static::is_photo( $thid );
-	}
-	*/
-
-	/**
-	 * adaptive sharpen images w imagemagick
-	 */
-	static public function sharpen( $resized ) {
+	public function watermark ( $imagick, $resized ) {
 
 		if (!class_exists('Imagick')) {
 			static::debug('Please install Imagick extension; otherwise this plugin will not work as well as it should.', 4);
-			return;
+			return $imagick;
 		}
 
-		if (!is_dir(static::cachedir)) {
-			if (!mkdir(static::cachedir)) {
-				static::debug('failed to create ' . static::cachedir, 4);
-			}
-		}
+		$watermarkfile = get_template_directory() . DIRECTORY_SEPARATOR . 'watermark.png';
+		if ( ! file_exists ( $watermarkfile ) )
+			return $imagick;
 
-		/*
-		preg_match ( '/(.*)-([0-9]+)x([0-9]+)\.([0-9A-Za-z]{2,4})/', $resized, $details );
 
-		 * 0 => original var
-		 * 1 => full original file path without extension
-		 * 2 => resized size w
-		 * 3 => resized size h
-		 * 4 => extension
-		 */
+		$meta = wp_read_image_metadata ( $resized );
+		$yaml = static::get_yaml();
+		$is_photo = false;
 
-		$size = @getimagesize($resized);
-
-		if ( !$size ) {
-			static::debug("Unable to get size for: {$resized}", 4);
-			return $resized;
-		}
-
-		//$cachedir = WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'cache';
-
-		$fname = basename( $resized );
-		$cached = static::cachedir . DIRECTORY_SEPARATOR . $fname;
-
-		if ( $size[2] == IMAGETYPE_JPEG && class_exists('Imagick')) {
-			static::debug( "adaptive sharpen " . $resized, 6 );
-
-			$watermarkfile = get_template_directory() . DIRECTORY_SEPARATOR . 'watermark.png';
-			$meta = wp_read_image_metadata ( $resized );
-			$yaml = static::get_yaml();
-			$is_photo = false;
-
-			if (isset($meta['copyright']) && !empty($meta['copyright']) ) {
-				foreach ( $yaml['copyright'] as $str ) {
-					if ( stristr($meta['copyright'], $str) ) {
-						$is_photo = true;
-					}
+		if (isset($meta['copyright']) && !empty($meta['copyright']) ) {
+			foreach ( $yaml['copyright'] as $str ) {
+				if ( stristr($meta['copyright'], $str) ) {
+					$is_photo = true;
 				}
 			}
+		}
 
-			if ( isset($meta['camera']) && !empty($meta['camera']) && in_array(trim($meta['camera']), $yaml['cameras'])) {
-				$is_photo = true;
-			}
+		if ( isset($meta['camera']) && !empty($meta['camera']) && in_array(trim($meta['camera']), $yaml['cameras'])) {
+			$is_photo = true;
+		}
 
-			try {
-				$imagick = new Imagick($resized);
-				$imagick->unsharpMaskImage(0,0.5,1,0);
-				$imagick->setImageFormat("jpg");
-				$imagick->setImageCompression(Imagick::COMPRESSION_JPEG);
-				$imagick->setImageCompressionQuality(static::jpeg_quality());
-				$imagick->setInterlaceScheme(Imagick::INTERLACE_PLANE);
+			// only watermark my own images, others should not have this obviously
+		if ( false === $is_photo )
+			return $imagick;
 
-				// only watermark my own images, others should not have this obviously
-				if ( file_exists ( $watermarkfile ) && true === $is_photo ) {
+		static::debug( 'watermark present and it looks like my photo, adding watermark to image ', 5 );
+		$watermark = new Imagick( $watermarkfile );
+		$iWidth = $imagick->getImageWidth();
+		$iHeight = $imagick->getImageHeight();
+		$wWidth = $watermark->getImageWidth();
+		$wHeight = $watermark->getImageHeight();
 
-					static::debug( 'watermark present and it looks like my photo, adding watermark to image ', 5 );
-					$watermark = new Imagick( $watermarkfile );
-					$iWidth = $imagick->getImageWidth();
-					$iHeight = $imagick->getImageHeight();
-					$wWidth = $watermark->getImageWidth();
-					$wHeight = $watermark->getImageHeight();
+		$rotate = ( $iHeight < $iWidth ) ? false : true;
 
-					$nWidth = round($iWidth * 0.16);
-					$nHeight = round($wHeight * ( $nWidth / $wWidth ));
-					$watermark->scaleImage($nWidth, $nHeight);
-
-					$x = round($iWidth - $nWidth) - round( $iWidth * 0.01 );
-					$y = round($iHeight - $nHeight) - round( $iHeight * 0.01 );
-					$imagick->compositeImage($watermark, imagick::COMPOSITE_OVER, $x , $y );
-				}
-
-				$imagick->writeImage($cached);
-				$imagick->clear();
-				$imagick->destroy();
-			}
-			catch (Exception $e) {
-				static::debug( 'something went wrong with imagemagick: ',  $e->getMessage(), 4 );
-				return $resized;
-			}
-
-			static::debug( "removing " . $resized, 5 );
-			unlink ($resized);
-
+		if ( false == $rotate ) {
+			$nWidth = round( $iWidth * 0.16 );
+			$nHeight = round( $wHeight * ( $nWidth / $wWidth ) );
+			$x = round( $iWidth - $nWidth) - round( $iWidth * 0.01 );
+			$y = round( $iHeight - $nHeight) - round( $iHeight * 0.01 );
 		}
 		else {
-			static::debug( "moving " . $cached, 5 );
-			if (copy( $resized, $cached)) {
-				static::debug(  "removing " . $resized, 5 );
-				unlink( $resized );
-			}
-			else {
-				static::debug( "\tmove failed, passing on this", 4 );
-			}
+			$nWidth = round( $iHeight * 0.16 );
+			$nHeight = round( $wHeight * ( $nWidth / $wWidth ) );
+			$x = round( $iWidth - $nHeight ) - round( $iWidth * 0.01 );
+			$y = round( $iHeight - $nWidth ) - round( $iHeight * 0.01 );
 		}
 
-		return $resized;
+		$watermark->scaleImage( $nWidth, $nHeight );
+
+		if ( $rotate ) {
+			$watermark->rotateImage(new ImagickPixel('none'), -90);
+		}
+
+		$imagick->compositeImage($watermark, imagick::COMPOSITE_OVER, $x , $y );
+		$watermark->clear();
+		$watermark->destroy();
+		return $imagick;
+	}
+
+
+	/***
+	 * if imagemagick doesn't work, please break
+	 */
+	public function wp_image_editors ( $arr ) {
+		return array ( 'WP_Image_Editor_Imagick' );
 	}
 
 	/***
@@ -291,8 +174,8 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 		if (!empty($args)) {
-			static::debug('Extracting extra EXIF for ' . $filepath );
 			$cmd = 'exiftool -s -' . join(' -', $args) . ' ' . $filepath;
+			static::debug('Extracting extra EXIF for ' . $filepath . ' with command ' . $cmd );
 
 			exec( $cmd, $exif, $retval);
 
@@ -300,6 +183,11 @@ class pmlnr_image extends pmlnr_base {
 				foreach ( $exif as $cntr => $data ) {
 					$data = explode (' : ', $data );
 					$data = array_map('trim', $data);
+					if ( $data[0] == 'GPSLatitude' || $data[0] == 'GPSLongitude' )
+						$data[1] = static::exif_gps2dec( $data[1] );
+					elseif ( $data[0] == 'GPSAltitude' )
+						$data[1] = static::exif_gps2alt( $data[1] );
+
 					$metaextra[ $rextra[ $data[0] ] ] = $data[1];
 				}
 			}
@@ -482,15 +370,16 @@ class pmlnr_image extends pmlnr_base {
 			return $cached;
 
 		$thid = get_post_thumbnail_id( $post->ID );
-		// this way it will get cached, thumbnail or no thumbnail as well
+
+		// add the image itself; prefer markdown
 		if ( !empty($thid) && !is_feed() ) {
-			$adaptive = $this->adaptive($thid, $post);
-			$src = $src . $adaptive;
+			$meta = static::get_extended_thumbnail_meta( $thid );
+			$adaptive = "![{$meta['image_meta']['title']}]({$meta['src']}){#img-{$thid}}";
+			$src = $src . "\n\n" . $adaptive . "\n";
 		}
 
-		if ( static::is_photo($thid) ) {
-			$src = $src . static::photo_exif( $thid, $post->ID );
-		}
+		// add exif; is_u_photo is checked already
+		$src = $src . static::photo_exif( $thid, $post->ID );
 
 		wp_cache_set ( $post->ID, $src, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -515,20 +404,14 @@ class pmlnr_image extends pmlnr_base {
 			$meta = $meta['image_meta'];
 			$r = array();
 
-			if ( isset($meta['camera']) && !empty($meta['camera'])) {
+			if ( isset($meta['camera']) && !empty($meta['camera']))
 				$r['camera'] = '<i class="icon-camera spacer"></i>'. $meta['camera'];
-				//wp_set_post_terms( $post_id, $meta['camera'] , 'exif_camera' , false );
-			}
 
-			if ( isset($meta['focal_length']) && !empty($meta['focal_length'])) {
+			if ( isset($meta['focal_length']) && !empty($meta['focal_length']))
 				$r['focal_length'] = sprintf (__('<i class="icon-focallength spacer"></i>%smm'), $meta['focal_length'] );
-				//wp_set_post_terms( $post_id, $meta['focal_length'] , 'exif_focal_length' , false );
-			}
 
-			if ( isset($meta['aperture']) && !empty($meta['aperture'])) {
+			if ( isset($meta['aperture']) && !empty($meta['aperture']))
 				$r['aperture'] = sprintf ( __('<i class="icon-aperture spacer"></i>f/%s'), $meta['aperture']);
-				//wp_set_post_terms( $post_id, $meta['aperture'] , 'exif_aperture' , false );
-			}
 
 			if ( isset($meta['shutter_speed']) && !empty($meta['shutter_speed'])) {
 				if ( (1 / $meta['shutter_speed'] ) > 1) {
@@ -545,17 +428,14 @@ class pmlnr_image extends pmlnr_base {
 					$shutter_speed = $meta['shutter_speed'];
 				}
 				$r['shutter_speed'] = sprintf( __('<i class="icon-clock spacer"></i>%s sec'), $shutter_speed);
-				//wp_set_post_terms( $post_id, $shutter_speed , 'exif_shutter_speed' , false );
 			}
 
-			if ( isset($meta['iso']) && !empty($meta['iso'])) {
+			if ( isset($meta['iso']) && !empty($meta['iso']))
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
-				//wp_set_post_terms( $post_id, $meta['iso'] , 'exif_iso' , false );
-			}
 
-			if ( isset($meta['lens']) && !empty($meta['lens'])) {
+			if ( isset($meta['lens']) && !empty($meta['lens']))
 				$r['iso'] = sprintf (__('<i class="icon-lens spacer"></i>%s'), $meta['lens'] );
-			}
+
 
 			$location = '';
 			if ( isset($meta['geo_latitude']) && !empty($meta['geo_latitude']) && isset($meta['geo_longitude']) && !empty($meta['geo_longitude'])) {
@@ -564,9 +444,10 @@ class pmlnr_image extends pmlnr_base {
 				$r['location'] = $location;
 			}
 
+			if ( isset($meta['created_timestamp']) && !empty($meta['created_timestamp']))
+				$r['timestamp'] = sprintf (__('<i class="icon-clock spacer"></i>%s'), date( "r", $meta['created_timestamp'] ) );
+
 			$return = '<aside class="exif"><ul><li>' . join('</li><li>',$r) . '</li></ul></aside>';
-
-
 		}
 
 
@@ -575,5 +456,106 @@ class pmlnr_image extends pmlnr_base {
 
 		return $return;
 	}
+
+	/**
+	 *
+	 */
+	public static function exif_gps2dec ( $string ) {
+		//103 deg 20' 38.33" E
+		preg_match( "/([0-9.]+)\s?+deg\s?+([0-9.]+)'\s?+([0-9.]+)\"\s?+([NEWS])/", trim($string), $matches );
+
+		$dd = $matches[1] + ( ( ( $matches[2] * 60 ) + ( $matches[3] ) ) / 3600 );
+		if ( $matches[4] == "S" || $matches[4] == "W" )
+			$dd = $dd * -1;
+		return round($dd,6);
+	}
+
+	/**
+	 *
+	 */
+	public static function exif_gps2alt ( $string ) {
+		//2062.6 m Above Sea Level
+		preg_match( "/([0-9.]+)\s?+m/", trim($string), $matches );
+
+		$alt = $matches[1];
+		if ( stristr( $string, 'below') )
+			$alt = $alt * -1;
+		return $alt;
+	}
+
+	/**
+	 *
+	 */
+	public static function autotag_by_photo ( $post ) {
+		static::debug ( "autotag triggered");
+		$post = static::fix_post($post);
+
+		if ( false === $post ) {
+			static::debug ( "false post");
+			return false;
+		}
+
+		$thid = get_post_thumbnail_id( $post->ID );
+
+		if ( empty($thid) ) {
+			static::debug ( "not thid");
+			return false;
+		}
+
+		$meta = static::get_extended_thumbnail_meta ( $thid );
+
+		if ( isset( $meta['image_meta'] ) && isset ( $meta['image_meta']['keywords'] ) && !empty( $meta['image_meta']['keywords'] ) ) {
+
+			$keywords = $meta['image_meta']['keywords'];
+
+			// add photo tag
+			$keywords[] = 'photo';
+
+			if ( isset ( $meta['image_meta']['camera'] ) && ! empty ( $meta['image_meta']['camera'] ) ) {
+
+				// add camera
+				$keywords[] = $meta['image_meta']['camera'];
+
+				// add camera manufacturer
+				if ( strstr( $meta['image_meta']['camera'], ' ' ) ) {
+					$manufacturer = ucfirst ( strtolower ( substr ( $meta['image_meta']['camera'], 0, strpos( $meta['image_meta']['camera'], ' ') ) ) ) ;
+					$keywords[] = $manufacturer;
+				}
+
+			}
+
+			static::add_tags ( $post, $keywords );
+
+		}
+
+		// content
+		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
+			static::debug ( "appending post #{$post->ID} content with image caption" );
+			$modcontent = $meta['image_meta']['caption'];
+			static::replace_content ( $post, $modcontent );
+			$post->post_content = $modcontent;
+		}
+
+		// GPS
+		$try = array ( 'geo_latitude', 'geo_longitude', 'geo_altitude' );
+		foreach ( $try as $kw ) {
+			$curr = get_post_meta ( $post->ID, $kw, true );
+			static::debug("Current {$kw} for {$post->ID} is: ${curr}");
+
+			if ( isset ( $meta['image_meta'][ $kw ] ) && !empty( $meta['image_meta'][ $kw ] ) ) {
+				if ( empty ( $curr ) ) {
+					static::debug("Adding {$kw} to {$post->ID} from exif");
+					add_post_meta( $post->ID, $kw, $meta['image_meta'][ $kw ], true );
+				}
+				elseif ( $curr != $meta['image_meta'][ $kw ] ) {
+					static::debug("Updating {$kw} to {$post->ID} from exif");
+					update_post_meta( $post->ID, $kw, $meta['image_meta'][ $kw ], $curr );
+				}
+			}
+		}
+
+	}
+
+
 
 }

@@ -17,7 +17,8 @@ class pmlnr_author extends pmlnr_base {
 	 */
 	public function add_user_meta_fields ($profile_fields) {
 
-		$profile_fields['pgp'] = __('URL to PGP key for the email address above', 'petermolnareu');
+		//$profile_fields['pgp'] = __('URL to PGP key for the email address above', 'petermolnareu');
+		$profile_fields['key'] = __('URL to PGP key for the email address above', 'petermolnareu');
 		$profile_fields['github'] = __('Github username', 'petermolnareu');
 		$profile_fields['mobile'] = __('Mobile phone number', 'petermolnareu');
 		$profile_fields['linkedin'] = __('LinkedIn username', 'petermolnareu');
@@ -54,7 +55,7 @@ class pmlnr_author extends pmlnr_base {
 			//'wechat'   => 'callto://%s+type=wechat',
 			//'qq'   => 'callto://%s+type=qq',
 			'telegram' => 'https://telegram.me/%s',
-			'pgp' => '%s',
+			'key' => '%s',
 		);
 
 		foreach ( $socials as $silo => $pattern ) {

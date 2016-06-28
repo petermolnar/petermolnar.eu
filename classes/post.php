@@ -10,6 +10,130 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
+	public static function autotag_by_hashtags ( $post ) {
+		// hashtag line in content
+		$hashtags = static::has_hashtags( $post->post_content );
+		if ( isset( $hashtags[1] ) && ! empty( $hashtags[1] ) )
+			static::add_tags( $post, $hashtags[1] );
+	}
+
+	/**
+	 *
+	 */
+	public static function has_reaction ( &$content ) {
+
+		//$pattern = "/---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+((?!---).*))?[\n\r]+---/mi";
+
+		//$matches = array();
+		//preg_match_all( $pattern, $content, $matches);
+
+		$pattern = "/^\*\*\*\s+(reply|fav|repost):?\s+((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:\s+(yes|no|maybe))?$/mi";
+
+		$matches = array();
+		preg_match_all( $pattern, $content, $matches);
+
+		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) )
+			return $matches;
+
+		return false;
+
+	}
+
+	/**
+	 *
+	 */
+	public static function make_reaction ( &$post, $format = 'markdown', $reaction = false ) {
+
+		if ( false === $reaction )
+			$reaction = static::has_reaction ( $post->post_content );
+
+		if ( empty( $reaction ) )
+			return false;
+
+		$replace = $reaction[0][0];
+		$type = trim($reaction[1][0]);
+		$url = trim($reaction[2][0]);
+		$rsvp = trim($reaction[3][0]);
+
+
+		if ( empty( $url ) )
+			return false;
+
+		if ( $format != 'markdown' ) {
+			$r = "*** ${type}: {$url}";
+			if ( !empty( $rsvp ) )
+				$r .= " ${rsvp}";
+
+			return $r;
+		}
+		else {
+			$rsvps = array (
+				'no' => __("Sorry, can't make it."),
+				'yes' => __("I'll be there."),
+				'maybe' => __("I'll do my best, but don't count on me for sure."),
+			);
+
+			if ( ( $type == 're' || $type == 'reply' ) && !empty( $data ) )
+				$rsvp_data = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
+
+			switch ($type) {
+				case 'from':
+				case 'repost':
+					$cl = 'u-repost-of';
+					$prefix = '**FROM:** ';
+					break;
+				case 're':
+				case 'reply':
+					$cl = 'u-in-reply-to';
+					$prefix = '**RE:** ';
+					break;
+				default:
+					$cl = 'u-like-of';
+					$prefix = '**URL:** ';
+					break;
+			}
+
+			$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
+			$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}";
+
+			if ( !empty( $rsvp_data ) )
+				$r .= "\n{$rsvp_data}";
+
+			return $r;
+		}
+	}
+
+	/**
+	 *
+	 */
+	public static function remove_reaction ( &$content, $reaction = false ) {
+		if ( false === $reaction )
+			$reaction = static::has_reaction( $content );
+
+		if ( false == $reaction )
+			return $content;
+
+		return trim ( str_replace ( $reaction[0][0], '', $content ) );
+	}
+
+	/**
+	 *
+	 */
+	public static function convert_reaction ( &$post ) {
+
+		$reaction = static::has_reaction( $post->post_content );
+
+		if ( false == $reaction )
+			return $post->post_content;
+
+		$md = static::make_reaction( $post, 'markdown', $reaction );
+
+		return str_replace( $reaction[0][0], $md, $post->post_content );
+	}
+
+	/**
+	 *
+	 */
 	public static function get_the_content( &$post = null, $clean = false ){
 
 		$post = static::fix_post ( $post );
@@ -20,14 +144,8 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID . $clean, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-
-
 		$r = $post->post_content;
-
-		if ( $clean == 'clean')
-			$r = static::remove_reaction ( $r );
-		else
-			$r = static::convert_reaction ( $r );
+		$r = static::convert_reaction ( $post );
 
 		$r = apply_filters('the_content', $r);
 
@@ -68,14 +186,24 @@ class pmlnr_post extends pmlnr_base {
 
 		$r = [];
 
+		// backfill photo tag from format, in case it's forgotten
 		if ( $format == 'photo' && ! has_term ( 'photo', 'post_tag', $post ) )
 			wp_set_object_terms( $post->ID, 'photo', 'post_tag', true );
 
-		$tags = get_the_tags( $post->ID );
-		if ( $tags )
-			foreach( $tags as $tag )
-				$r[ $tag->name ] = get_tag_link( $tag->term_id );
 
+		$taxonomies = array ( 'post_tag', 'category' );
+		$skip = array ('Photo');
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$t = wp_get_post_terms( $post->ID, $taxonomy );
+			if ( $t && is_array ( $t ) ) {
+				foreach( $t as $tax ) {
+					if ( ! in_array ( $tax->name, $skip ) ) {
+						$r[ $tax->name ] = get_term_link( $tax->term_id, $taxonomy );
+					}
+				}
+			}
+		}
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -84,7 +212,7 @@ class pmlnr_post extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function post_get_syndicates ( &$post = null ) {
 		$post = static::fix_post($post);
 
@@ -113,11 +241,11 @@ class pmlnr_post extends pmlnr_base {
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
-	}
+	}*/
 
 	/**
 	 *
-	 */
+	 *
 	public static function post_get_replylist ( &$post = null ) {
 		$post = static::fix_post($post);
 
@@ -147,10 +275,11 @@ class pmlnr_post extends pmlnr_base {
 
 		return $r;
 	}
+	*/
 
 	/**
 	 *
-	 */
+	 *
 	public static function post_get_sharelist ( &$post = null ) {
 		$post = static::fix_post($post);
 
@@ -209,11 +338,12 @@ class pmlnr_post extends pmlnr_base {
 
 		return $share;
 	}
+	*/
 
 
 	/**
 	 *
-	 */
+	 *
 	public static function post_background (&$post = null) {
 		$post = static::fix_post($post);
 
@@ -238,6 +368,7 @@ class pmlnr_post extends pmlnr_base {
 
 		return $r;
 	}
+	*/
 
 	/**
 	 *
@@ -340,10 +471,10 @@ class pmlnr_post extends pmlnr_base {
 
 		$tags = static::post_get_tags_array($post);
 
-		if ( !empty($tags) ) {
-			$tags = array_keys($tags);
-			$og['article:tag'] = join(",", $tags);
-		}
+		//if ( !empty($tags) ) {
+			//$tags = array_keys($tags);
+			//$og['article:tag'] = str_replace ( '"', "'" , join(",", $tags) );
+		//}
 
 		$thid = get_post_thumbnail_id( $post->ID );
 		if ( $thid ) {
@@ -489,64 +620,52 @@ class pmlnr_post extends pmlnr_base {
 	}
 
 
+
+
 	/**
 	 *
-	 */
-	public static function convert_reaction ( &$content ) {
+	 *
+	public static function has_hashtags ( &$content ) {
 
-		$matches = static::has_reaction( $content );
+		$c = explode( "\n", $content );
+
+		$last = false;
+		for ( $i = count($c)-1; $i > 0; $i--) {
+			if ( empty ( trim( $c[ $i ] ) ) ) {
+				continue;
+			}
+			else {
+				$last = $c[ $i ];
+				break;
+			}
+		}
+
+		$pattern = "/\#(.*?)(?:,|$|\z|\n)\s?+/";
+		//$pattern = "/\#(.*?)(?:,|$|\z|\n)\s?+/";
+
+		$matches = array();
+		preg_match_all( $pattern, $last, $matches);
+
+		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) )
+			return $matches;
+
+		return false;
+	}
+	*/
+
+
+	/**
+	 *
+	 *
+	public static function remove_hashtags ( &$content ) {
+
+		$matches = static::has_hashtags( $content );
 		if ( false == $matches )
 			return $content;
 
-		//$replace = $matches[0][0];
-		$reaction = static::extract_reaction ( $content );
-
-		/*
-		$replace = false;
-		$r = false;
-		$type = false;
-		$rsvp = '';
-
-		$rsvps = array (
-			'no' => __("Sorry, can't make it."),
-			'yes' => __("I'll be there."),
-			'maybe' => __("I'll do my best, but don't count on me for sure."),
-		);
-
-		$replace = $matches[0][0];
-		$type = trim($matches[1][0]);
-		$url = trim($matches[2][0]);
-		$data = trim($matches[3][0]);
-
-		if ( $type == 're' && !empty( $data ) )
-			$rsvp = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
-
-		switch ($type) {
-			case 'like':
-			case 'fav':
-				$cl = 'u-like-of';
-				$prefix = '';
-				break;
-			case 'from':
-			case 'repost':
-				$cl = 'u-repost-of';
-				$prefix = '*reposted from:* ';
-				break;
-			case 're':
-				$cl = 'u-in-reply-to';
-				$prefix = '**RE:** ';
-				break;
-			default:
-				$cl = 'u-url';
-				$prefix = '**URL:** ';
-				break;
-		}
-
-		$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
-		$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}\n{$rsvp}";
-		*/
-		return str_replace ( $matches[0][0], $reaction, $content );
+		return str_replace ( join('', $matches[0]), '', $content );
 	}
+	*/
 
 	/**
 	 *
@@ -561,6 +680,7 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID . $prefix, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
+
 		$r = array (
 			'id' => $post->ID,
 			'url' => get_permalink( $post->ID ),
@@ -568,20 +688,20 @@ class pmlnr_post extends pmlnr_base {
 			'shorturl' => wp_get_shortlink( $post->ID ),
 			'thumbnail' => static::post_thumbnail ($post),
 			'content' => static::get_the_content($post, 'clean'),
-			'parsed_content' => static::get_the_content($post),
-			//'raw_content' => $post->post_content,
+			//'parsed_content' => static::get_the_content($post),
 			'excerpt' => static::get_the_excerpt($post),
 			'author_meta' => get_post_meta ( $post->ID, 'author', true),
 			'pubdate_iso' => get_the_time( 'c', $post->ID ),
 			'pubdate_print' => sprintf ('%s %s',
 				get_the_time( get_option('date_format'), $post->ID ),
 				get_the_time( get_option('time_format'), $post->ID ) ),
-			'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
-			'wordstoread' => str_word_count( strip_tags($post->post_content), 0 ),
+			//'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
+			//'wordstoread' => str_word_count( strip_tags($post->post_content), 0 ),
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format($post),
-			'webmention' => static::extract_reaction($post->post_content, true),
-			'syndicates' => static::post_get_syndicates($post),
+			//'webmention' => static::extract_reaction($post->post_content, true),
+			//'webmention' => pmlnr_markdown::parsedown( static::meta_reaction($post) ),
+			//'syndicates' => static::post_get_syndicates($post),
 			'likes' => static::get_comments($post, 'like'),
 			'replies' => static::get_comments($post, 'reply'),
 			'reacji' => static::get_reacji($post),
@@ -590,6 +710,17 @@ class pmlnr_post extends pmlnr_base {
 			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
 			'editurl'  => get_bloginfo('url') . "/wp-admin/post.php?post={$post->ID}&action=edit",
 		);
+
+		// insert webmention back
+		$modcontent = $post->post_content;
+		$has_reaction = static::has_reaction ( $modcontent );
+		$modcontent = static::remove_reaction ( $modcontent, $has_reaction );
+		$reaction = static::make_reaction( $post, '', $has_reaction );
+		$modcontent = trim ( $reaction . "\n\n" . $modcontent );
+		//static::debug ( $modcontent, 5 );
+
+		if ( $modcontent != $post->post_content )
+			static::replace_content ( $post, $modcontent );
 
 		$r['author'] = pmlnr_author::template_vars( $post->post_author );
 

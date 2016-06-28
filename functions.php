@@ -87,6 +87,44 @@ class petermolnareu {
 		// hook for mail sending
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
 		add_action ( 'make_post_syndication', array( 'petermolnareu', 'make_post_syndication' ), 99, 1 );
+
+		add_action("add_meta_boxes", array( 'petermolnareu', 'featured_exif' ));
+
+
+		$url = home_url() . rtrim($_SERVER['REQUEST_URI'], '/');
+		$postid = url_to_postid( $url );
+
+	}
+
+	/**
+	 *
+	 */
+	public static function featured_exif () {
+		add_meta_box(
+			"featured_exif",
+			"Featured image EXIF",
+			array ( 'petermolnareu','featured_exif_data' ),
+			"post",
+			"side",
+			"default",
+			null
+		);
+	}
+
+	/**
+	 *
+	 */
+	public static function featured_exif_data () {
+			$post = pmlnr_base::fix_post($post);
+
+			$thid = get_post_thumbnail_id( $post->ID );
+
+			// this way it will get cached, thumbnail or no thumbnail as well
+			if ( empty($thid) )
+				return false;
+
+			$exif = pmlnr_image::photo_exif( $thid, $post->ID );
+			echo "{$exif}";
 	}
 
 	/**
@@ -131,9 +169,9 @@ class petermolnareu {
 	 * http://matthewhorne.me/add-defer-async-attributes-to-wordpress-scripts/
 	 *
 	 */
-	public static function add_async_attribute($tag, $handle) {
-		return str_replace( ' src', ' async="async" defer="defer" src', $tag );
-	}
+	//public static function add_async_attribute($tag, $handle) {
+		//return str_replace( ' src', ' async="async" defer="defer" src', $tag );
+	//}
 
 	/**
 	 * adds a wrapper div around video iframes to make them responsive
@@ -153,14 +191,9 @@ class petermolnareu {
 		$js_url = "{$base_url}/js";
 		$css_url = "{$base_url}/css";
 
-		// this is moved to inline
-		//wp_register_style( "style", "{$base_url}/style.css" , false );
-		//wp_enqueue_style( "style" );
-
 		// Magnific popup
 		wp_register_style( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/magnific-popup.css" , false );
 		wp_register_script( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
-
 
 		// justified gallery
 		wp_register_style( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
@@ -172,64 +205,7 @@ class petermolnareu {
 		wp_enqueue_style( "prism" );
 		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
 		wp_enqueue_script( "prism" );
-
-
-		//wp_register_script( "indie-config" ,  "{$js_url}/indie-config.js", false, null, true );
-		//wp_enqueue_script( "indie-config" );
-		//wp_register_script( "webactions" ,  "{$js_url}/webactions.js", false, null, true );
-		//wp_enqueue_script( "webactions" );
-
-		// srcset fallback
-		//wp_register_script( "picturefill" , "{$base_url}/lib/picturefill/dist/picturefill.min.js", false, null, true );
-		//wp_enqueue_script( "picturefill" );
-
 	}
-
-	/**
-	 * filter links to webmentions
-	 *
-	 * this is needed because markdown
-	 * and because of the special fields the to be poked webmention
-	 * url is stored in
-	 *
-	public static function webmention_links ( $links, $postid = null ) {
-
-		if (empty($postid))
-			$post = pmlnr_base::fix_post();
-		else
-			$post = get_post ( $postid );
-
-		if (!pmlnr_base::is_post($post))
-			return $links;
-
-		// Find all external links in the source
-		$matches = pmlnr_base::extract_urls($post->post_content);
-
-		if (!empty($matches)) {
-			$links = array_merge($links, $matches);
-		}
-
-		// additional meta content links
-		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		if (!empty($webmention_url)) {
-			array_push($links, $webmention_url);
-		}
-
-		// additional urls from comments
-		$comment_urls = get_post_meta( $post->ID, pmlnr_comment::comment_endpoint(), false );
-		$links = array_merge($links, $comment_urls);
-
-		foreach ($links as $k => $link) {
-			$links[$k] = strtolower($link);
-		}
-
-		$links = array_unique($links);
-
-		pmlnr_base::debug ( "Post {$post->ID} urls for webmentioning: " . join(', ', $links) );
-		pmlnr_base::debug ( debug_backtrace() );
-		return $links;
-	}
-	*/
 
 	/**
 	 *
@@ -240,7 +216,6 @@ class petermolnareu {
 
 		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
 	}
-
 
 	/**
 	 *
@@ -383,10 +358,29 @@ class petermolnareu {
 
 		// -- these will run on anything ---
 		$yaml = pmlnr_base::get_yaml();
+
 		$format = pmlnr_base::post_format ( $post );
 
+		$modcontent = $post->post_content;
+
+		// convert hashtag line to real tags
+		$hashtags = pmlnr_post::has_hashtags ( $post->post_content );
+		pmlnr_base::debug ( $hashtags, 5);
+		if ( ! empty ( $hashtags ) ) {
+			pmlnr_post::autotag_by_hashtags ( $post );
+			$modcontent = pmlnr_post::remove_hashtags( $modcontent );
+		}
+
+		// convert reactions to meta
+		pmlnr_post::parse_reaction ( $post );
+		$modcontent = pmlnr_post::remove_reaction ( $modcontent );
+
+		$modcontent = trim ( $modcontent );
+		if ( $modcontent != $post->post_content )
+			pmlnr_post::replace_content ( $post, $modcontent );
+
 		if ( 'photo' == $format ) {
-			static::autotag_by_photo ( $post );
+			pmlnr_image::autotag_by_photo ( $post );
 		}
 
 		// --- these on already published ones, incl. refresh ---
@@ -404,80 +398,6 @@ class petermolnareu {
 			wp_schedule_single_event( time() + 120, 'posse_to_smtp', $args );
 
 	}
-
-	/**
-	 *
-	 */
-	public static function autotag_by_photo ( $post ) {
-		pmlnr_base::debug ( "autotag triggered");
-		$post = pmlnr_base::fix_post($post);
-
-		if ( false === $post )
-			return false;
-
-		$taxonomy = 'post_tag';
-
-		$thid = get_post_thumbnail_id( $post->ID );
-
-		if ( empty($thid) )
-			return false;
-
-		$meta = pmlnr_base::get_extended_thumbnail_meta ( $thid );
-
-		if ( isset( $meta['image_meta'] ) && isset ( $meta['image_meta']['keywords'] ) && !empty( $meta['image_meta']['keywords'] ) ) {
-
-			$keywords = $meta['image_meta']['keywords'];
-
-			// add photo tag
-			$keywords[] = 'photo';
-
-			if ( isset ( $meta['image_meta']['camera'] ) && ! empty ( $meta['image_meta']['camera'] ) ) {
-
-				// add camera
-				$keywords[] = $meta['image_meta']['camera'];
-
-				// add camera manufacturer
-				if ( strstr( $meta['image_meta']['camera'], ' ' ) ) {
-					$manufacturer = ucfirst ( strtolower ( substr ( $meta['image_meta']['camera'], 0, strpos( $meta['image_meta']['camera'], ' ') ) ) ) ;
-					$keywords[] = $manufacturer;
-				}
-
-			}
-
-			$keywords = array_unique($keywords);
-			foreach ( $keywords as $tag ) {
-				if ( !term_exists( $tag, $taxonomy ))
-					wp_insert_term ( $tag, $taxonomy );
-
-				if ( !has_term( $tag, $taxonomy, $post ) ) {
-					pmlnr_base::debug ( "appending post #{$post->ID} {$taxonomy} taxonomy with: {$tag}");
-					wp_set_post_terms( $post->ID, $tag, $taxonomy, true );
-				}
-			}
-		}
-
-		// content
-		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
-			pmlnr_base::debug ( "appending post #{$post->ID} content with image caption" );
-			global $wpdb;
-			$dbname = "{$wpdb->prefix}posts";
-			$req = false;
-			$modcontent = $meta['image_meta']['caption'];
-
-			pmlnr_base::debug("Updating post content for #{$post->ID}");
-
-			$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $modcontent );
-
-			try {
-				$req = $wpdb->query( $q );
-			}
-			catch (Exception $e) {
-				pmlnr_base::debug('Something went wrong: ' . $e->getMessage());
-			}
-		}
-
-	}
-
 
 	/**
 	 *
@@ -558,18 +478,11 @@ class petermolnareu {
 					Az oldalon: <a href="'. $template_vars['url'] .'">'. $template_vars['url'] .'</a>
 				</p>
 				<p>
-					Ha le akarsz iratkozni, vagy csak simán nem kéred már ezeket a leveleket, <a href="mailto:'. $email . '?subject=túltoltad">szólj</a>szólj, leveszlek.<br />
-					( Nincs harag meg semmi, én is kismillió dologról iratkoztam már le. )
+					Ha le akarsz iratkozni, vagy csak simán nem kéred már ezeket a leveleket, <a href="mailto:'. $email . '?subject=túltoltad">szólj</a>, leveszlek.<br />
+					( Nincs harag, én is kismillió dologról iratkoztam már le. )
 				</p>
 			</body>
 		</html>';
-
-		// add webmention url
-		//$url = get_post_meta ( $post->ID, 'webmention_url', true);
-		//if ( $url )
-		//	$url = '<h2><a href="'.$url.'">'.$url.'</a></h2>';
-		//$content = sprintf ( $content, $url );
-
 
 		// attach image
 		$attachment = false;
@@ -610,57 +523,8 @@ class petermolnareu {
 		return 'text/html';
 	}
 
-
-
-
-
-	/**
-	 * extract the url from the uri and insert it formatted accordingly automatically
-	 *
-	 *
-	public function press_this_add_reaction_url ( $content ) {
-		$ref = array();
-		parse_str ( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_QUERY ), $ref );
-
-		if ( is_array( $ref ) && isset ( $ref['u'] ) && ! empty( $ref['u'] ) ) {
-			$url = $ref['u'];
-			$t = '';
-
-			if ( isset( $ref['type'] ) )
-				$t = $ref['type'];
-
-			switch ( $t ) {
-				case 'fav':
-				case 'like':
-				case 'u-like-of':
-					$type = 'like: ';
-					break;
-				case 'repost':
-				case 'repost':
-					$type = 'from: ';
-					break;
-				case 'reply':
-					$type = 're: ';
-					break;
-				default:
-					$type = '';
-					break;
-			}
-
-			$relation = "---\n{$type}{$url}\n---\n\n";
-
-			$content = $relation . $content;
-
-		}
-
-		return $content;
-	}
-	*/
-
 }
 
 if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {
 	$petermolnareu_theme = new petermolnareu();
 }
-
-
