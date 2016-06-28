@@ -19,30 +19,8 @@ $_query_string = $query_string . '&posts_per_page=42';
 query_posts( $_query_string );
 
 $twigvars['site'] = pmlnr_site::template_vars();
-$header = $petermolnareu_theme->twig->loadTemplate('partial_header.html');
-echo $header->render($twigvars);
 
-
-?>
-<!--
-<style>
-#portfolio {
-    max-width: 90%;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    justify-content: space-around;
-}
-.u-photo {
-    border: 1px solid #7d7d85;
-    max-height: 14em;
-}
-</style>
--->
-
-<section class="content-body" id="portfolio">
-<?php
-
+$elements = array();
 if ( have_posts() ) {
 	while ( have_posts() ) {
 		the_post();
@@ -56,58 +34,21 @@ if ( have_posts() ) {
 		$target = wp_get_attachment_image_src ($thid, 'large');
 		$t = pmlnr_base::fix_url($target[0]);
 
-		$twigvars['post'] = pmlnr_post::template_vars($post);
+		$post = pmlnr_post::template_vars($post);
 
-		$twigvars['post']['tile_target'] = $t;
-		$twigvars['post']['tile_img'] = $s;
-		$twigvars['post']['tile_alt'] = htmlspecialchars(strip_tags($twigvars['post']['content']));
+		$tile = array (
+			'target' => $t,
+			'img' => $s,
+			'alt' => htmlspecialchars(strip_tags($post['content'])),
+			'title' => htmlspecialchars(strip_tags($post['title'])),
+		);
 
-		$twig = $petermolnareu_theme->twig->loadTemplate('element-tile.html');
-		echo $twig->render($twigvars);
+		array_push( $elements, $tile );
+
 	}
+
+	$twigvars['elements'] = $elements;
 }
 
-?>
-</section>
-
-<script>
-
-	jQuery("#portfolio").justifiedGallery({
-		margins: 1,
-		captions: true,
-		rowHeight: <?php echo HEIGHT ?>,
-		//maxRowHeight: "120%",
-		lastRow: "justify",
-		captionSettings: {
-			animationDuration: 500,
-			visibleOpacity: 0.8,
-			nonVisibleOpacity: 0.4
-		},
-		cssAnimation: true,
-	});
-
-
-	jQuery("#portfolio").magnificPopup({
-		delegate: 'a',
-		type: 'image',
-		tLoading: 'Loading image #%curr%...',
-		mainClass: 'mfp-img-mobile',
-		gallery: {
-			enabled: true,
-			navigateByImgClick: true,
-			preload: [0,1] // Will preload 0 - before current, and 1 after the current image
-		},
-		image: {
-			tError: '<a href="%url%">The image #%curr%</a> could not be loaded.',
-			titleSrc: function(item) {
-				return item.el.attr('caption');
-			}
-		}
-	});
-
-</script>
-
-<?php
-
-$header = $petermolnareu_theme->twig->loadTemplate('partial_footer.html');
-echo $header->render($twigvars);
+$twig = $petermolnareu_theme->twig->loadTemplate('partial_gallery.html');
+echo $twig->render($twigvars);
