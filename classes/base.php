@@ -251,26 +251,6 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function extract_wp_images( &$text ) {
-		$matches = array();
-		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $text, $matches);
-
-		return $matches;
-	}
-
-	/**
-	 *
-	 */
-	public static function extract_md_images( &$text ) {
-		$matches = array();
-		preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $text, $matches);
-
-		return $matches;
-	}
-
-	/**
-	 *
-	 */
 	public static function post_format ( &$post ) {
 		$post = static::fix_post($post);
 
@@ -285,9 +265,10 @@ class pmlnr_base {
 		$post_length = strlen( $post->post_content );
 		$content = $post->post_content;
 
-		$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-		$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
-		$webmention_rsvp = get_post_meta( $post->ID, 'webmention_data', true );
+		$reaction = static::has_reaction( $post->post_content );
+		$webmention_url = trim( $reaction[2][0] );
+		$webmention_type = trim( $reaction[1][0] );
+		$webmention_rsvp = trim( $reaction[3][0] );
 
 		$links = static::extract_urls( $post->post_content );
 
@@ -296,11 +277,11 @@ class pmlnr_base {
 			$content = trim ( str_replace($links[0], '', $content) );
 
 			if ( empty( $content ) ) {
-				if ( empty ( $webmention_url ) )
-					add_post_meta( $post->ID, 'webmention_url', $links[0], true );
+				//if ( empty ( $webmention_url ) )
+					//add_post_meta( $post->ID, 'webmention_url', $links[0], true );
 
-				if ( empty ( $webmention_type ) )
-					add_post_meta( $post->ID, 'webmention_type', 'fav', true );
+				//if ( empty ( $webmention_type ) )
+					//add_post_meta( $post->ID, 'webmention_type', 'fav', true );
 
 				$webmention_url = $links[0];
 				$webmention_type = 'fav';
@@ -451,7 +432,7 @@ class pmlnr_base {
 		if ( $cached = wp_cache_get ( __FUNCTION__ , __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$r = yaml_parse_file ( __DIR__ . '/../data.yaml' );
+		$r = parse_ini_file ( __DIR__ . '/../data.ini' );
 
 		wp_cache_set ( __FUNCTION__, $r, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -501,6 +482,91 @@ class pmlnr_base {
 		catch (Exception $e) {
 			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
 		}
+	}
+
+	/**
+	 *
+	 */
+	public static function replace_title ( &$post, &$title ) {
+
+		$post = static::fix_post ( $post );
+
+		if ( false === $post )
+			return false;
+
+		if ( empty ( $title ) )
+			return false;
+
+		global $wpdb;
+		$dbname = "{$wpdb->prefix}posts";
+		$req = false;
+
+		static::debug("Updating post title for #{$post->ID}", 5);
+
+		$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_title`='%s' WHERE `ID`='{$post->ID}'", $title );
+
+		try {
+			$req = $wpdb->query( $q );
+		}
+		catch (Exception $e) {
+			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
+		}
+	}
+
+	/**
+	 *
+	 */
+	public static function has_reaction ( &$content ) {
+
+		$pattern = "/[\*\+]{3}\s+(reply|fav|repost|u-repost-of|u-in-reply-to|u-like-of):?\s+(https?\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:\s+(yes|no|maybe))?/i";
+
+		preg_match_all( $pattern, $content, $matches);
+
+		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) ) {
+			foreach ( $matches[1] as $index => $value ) {
+				if ( $value == 'u-repost-of' )
+					$matches[1][$index] = 'repost';
+				elseif ( $value == 'u-in-reply-to' )
+					$matches[1][$index] = 'reply';
+				elseif ( $value == 'u-like-of' )
+					$matches[1][$index] = 'fav';
+			}
+			return $matches;
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * extract in-content location information
+	 *
+	 * Example:
+	 * `*** loc 29.557872,103.386825@790.5`
+	 *
+	 *
+	 *
+	 */
+	public static function extract_location ( &$content ) {
+		$pattern = "/^[\*\+]{3}\s+loc:?\s+([0-9\.]+),([0-9\.]+)(@[0-9,\.]+)?$/mi";
+		preg_match_all( $pattern, $content, $matches);
+		return $matches;
+	}
+
+
+	/**
+	 * extract in-content hashtag lines
+	 *
+	 * Example:
+	 * `\#this, #is, #a, #line, #of various hashtags`
+	 * `#this, #is, #another line`
+	 *
+	 *
+	 */
+	public static function extract_hashtags ( &$content ) {
+		$pattern = "/\\\?\#(.*?)(?:,|$)(?![\n\r][=-])/mi";
+		preg_match_all( $pattern, $content, $matches);
+		return $matches;
 	}
 
 

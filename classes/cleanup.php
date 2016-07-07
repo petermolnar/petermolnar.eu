@@ -75,23 +75,18 @@ class pmlnr_cleanup extends pmlnr_base {
 				$t = $ref['type'];
 
 			switch ( $t ) {
-				case 'fav':
-				case 'like':
-				case 'u-like-of':
-					$type = 'like: ';
-					break;
 				case 'repost':
-					$type = 'from: ';
+					$type = 'repost';
 					break;
 				case 'reply':
-					$type = 're: ';
+					$type = 'reply';
 					break;
 				default:
-					$type = '';
+					$type = 'fav';
 					break;
 			}
 
-			$relation = "---\n{$type}{$url}\n---\n\n";
+			$relation = "+++ {$type}: {$url}";
 
 		}
 

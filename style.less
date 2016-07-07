@@ -792,11 +792,17 @@ img.left {
 
 
 	.vcard {
+			color: darken ( @bgcolor, 30% );
+
+		.p-nickname:before {
+			content: '@';
+		}
 
 		.fn {
 			font-weight: bold;
 			font-size: 1.3em;
-			margin: 0 0 @padding-large 0;
+			margin: 0 @padding-large @padding-large 0;
+			display:inline-block;
 		}
 
 		img {

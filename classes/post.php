@@ -10,42 +10,29 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function autotag_by_hashtags ( $post ) {
-		// hashtag line in content
-		$hashtags = static::has_hashtags( $post->post_content );
-		if ( isset( $hashtags[1] ) && ! empty( $hashtags[1] ) )
-			static::add_tags( $post, $hashtags[1] );
-	}
-
-	/**
-	 *
-	 */
-	public static function has_reaction ( &$content ) {
-
-		//$pattern = "/---[\n\r]+(?:(.*?):\s+)?+\b((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:[\n\r]+((?!---).*))?[\n\r]+---/mi";
-
-		//$matches = array();
-		//preg_match_all( $pattern, $content, $matches);
-
-		$pattern = "/^\*\*\*\s+(reply|fav|repost):?\s+((?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:\s+(yes|no|maybe))?$/mi";
-
-		$matches = array();
-		preg_match_all( $pattern, $content, $matches);
-
-		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) )
-			return $matches;
-
-		return false;
-
-	}
-
-	/**
-	 *
-	 */
 	public static function make_reaction ( &$post, $format = 'markdown', $reaction = false ) {
 
 		if ( false === $reaction )
 			$reaction = static::has_reaction ( $post->post_content );
+
+		if ( empty( $reaction ) ) {
+			$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
+
+			// content is missing reaction, reinsert it
+			if ( ! empty ( $webmention_url ) ) {
+				$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
+				$webmention_data = get_post_meta( $post->ID, 'webmention_rsvp', true );
+
+				$react = "+++ {$webmention_type}: {$webmention_url}";
+				if ( !empty ($webmention_data) )
+					$react .= " {$webmention_data}";
+
+				$c = $react . "\n\n" . $post->post_content;
+				static::replace_content( $post, $c );
+
+				$reaction = static::has_reaction( $c );
+			}
+		}
 
 		if ( empty( $reaction ) )
 			return false;
@@ -209,166 +196,6 @@ class pmlnr_post extends pmlnr_base {
 
 		return $r;
 	}
-
-	/**
-	 *
-	 *
-	public static function post_get_syndicates ( &$post = null ) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = array();
-		$syndicates = get_post_meta ( $post->ID, 'syndication_urls', true );
-
-		if ( !$syndicates )
-			return $r;
-
-		$syndicates = explode( "\n", $syndicates );
-
-		foreach ($syndicates as $syndicate ) {
-			// example https://(www.)(facebook).(com)/(...)/(post_id)
-			preg_match ( '/^http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\/(.*)\/(.*)$/', $syndicate, $split);
-
-			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3]))
-				$r[$split[2]] = $syndicate;
-		}
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}*/
-
-	/**
-	 *
-	 *
-	public static function post_get_replylist ( &$post = null ) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = [];
-		$syndicates = static::post_get_syndicates();
-
-		if (empty($syndicates))
-			return $reply;
-
-		foreach ($syndicates as $silo => $syndicate ) {
-			if ($silo == 'twitter') {
-				//$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
-				continue;
-			}
-			else {
-				$r[ $silo ] = $syndicate[0];
-			}
-		}
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-	*/
-
-	/**
-	 *
-	 *
-	public static function post_get_sharelist ( &$post = null ) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = [];
-
-		$syndicates = static::post_get_syndicates();
-
-		$url = urlencode( get_permalink( $post ) );
-		$title = urlencode( trim(get_the_title( $post->ID )) );
-		$description = urlencode( $post->post_excerpt );
-
-		$media_url = '';
-		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
-		if ( isset($media[1]) && $media[3] != false )
-			$media_url = urlencode(static::fix_url($thumbnail[0]));
-
-		if (!empty($syndicates)) {
-			foreach ($syndicates as $silo => $syndicate ) {
-				//if ($silo == 'twitter') {
-					//$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
-				//}
-				if ($silo == 'facebook') {
-					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
-				}
-				else {
-					continue;
-				}
-
-				if ($rurl)
-					$r[$silo] = $rurl;
-			}
-		}
-
-		if (!isset($r['facebook']))
-			$r['facebook'] = sprintf ('https://www.facebook.com/share.php?u=%s', $url );
-
-		if (!isset($r['twitter']))
-			$r['twitter'] = sprintf('https://twitter.com/share?url=%s&text=%s', $url, $title );
-
-		$r['googleplus'] = sprintf('https://plus.google.com/share?url=%s', $url );
-
-		$r['tumblr'] = sprintf('http://www.tumblr.com/share/link?url=%s&title=%s&description=%s', $url, $title, $description );
-
-		$r['pinterest'] = sprintf('https://pinterest.com/pin/create/bookmarklet/?media=%s&url=%s&description=%s&is_video=false', $media_url, $url, $title );
-
-		// short url / webmention
-		$r['webmention'] = $url;
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $share;
-	}
-	*/
-
-
-	/**
-	 *
-	 *
-	public static function post_background (&$post = null) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = false;
-
-		if ( ! static::is_u_photo($post) ) {
-
-			$thid = get_post_thumbnail_id( $post->ID );
-			$bgimg = (empty( $thid)) ? array() : wp_get_attachment_image_src( $thid , 'headerbg');
-
-			if ( isset($bgimg[1]) && $bgimg[3] != false )
-				$r = 'class="article-header" style="background-image:url('.$bgimg[0].');"';
-		}
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-	*/
 
 	/**
 	 *
@@ -619,12 +446,9 @@ class pmlnr_post extends pmlnr_base {
 		return $r;
 	}
 
-
-
-
 	/**
 	 *
-	 *
+	 */
 	public static function has_hashtags ( &$content ) {
 
 		$c = explode( "\n", $content );
@@ -651,12 +475,10 @@ class pmlnr_post extends pmlnr_base {
 
 		return false;
 	}
-	*/
-
 
 	/**
 	 *
-	 *
+	 */
 	public static function remove_hashtags ( &$content ) {
 
 		$matches = static::has_hashtags( $content );
@@ -665,7 +487,6 @@ class pmlnr_post extends pmlnr_base {
 
 		return str_replace ( join('', $matches[0]), '', $content );
 	}
-	*/
 
 	/**
 	 *
@@ -680,6 +501,16 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID . $prefix, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
+		// insert webmention back
+		$modcontent = $post->post_content;
+		$has_reaction = static::has_reaction ( $modcontent );
+		$modcontent = static::remove_reaction ( $modcontent, $has_reaction );
+		$reaction = static::make_reaction( $post, '', $has_reaction );
+		$modcontent = trim ( $reaction . "\n\n" . $modcontent );
+		//static::debug ( $modcontent, 5 );
+
+		if ( $modcontent != $post->post_content )
+			static::replace_content ( $post, $modcontent );
 
 		$r = array (
 			'id' => $post->ID,
@@ -702,27 +533,15 @@ class pmlnr_post extends pmlnr_base {
 			//'webmention' => static::extract_reaction($post->post_content, true),
 			//'webmention' => pmlnr_markdown::parsedown( static::meta_reaction($post) ),
 			//'syndicates' => static::post_get_syndicates($post),
-			'likes' => static::get_comments($post, 'like'),
-			'replies' => static::get_comments($post, 'reply'),
-			'reacji' => static::get_reacji($post),
+			//'likes' => static::get_comments($post, 'like'),
+			//'replies' => static::get_comments($post, 'reply'),
+			//'reacji' => static::get_reacji($post),
 			'singular' => is_singular(),
 			'debug' => is_user_logged_in(),
 			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
-			'editurl'  => get_bloginfo('url') . "/wp-admin/post.php?post={$post->ID}&action=edit",
+			//'editurl'  => get_bloginfo('url') . "/wp-admin/post.php?post={$post->ID}&action=edit",
+			'author' => pmlnr_author::template_vars( $post->post_author ),
 		);
-
-		// insert webmention back
-		$modcontent = $post->post_content;
-		$has_reaction = static::has_reaction ( $modcontent );
-		$modcontent = static::remove_reaction ( $modcontent, $has_reaction );
-		$reaction = static::make_reaction( $post, '', $has_reaction );
-		$modcontent = trim ( $reaction . "\n\n" . $modcontent );
-		//static::debug ( $modcontent, 5 );
-
-		if ( $modcontent != $post->post_content )
-			static::replace_content ( $post, $modcontent );
-
-		$r['author'] = pmlnr_author::template_vars( $post->post_author );
 
 		$r = static::prefix_array ( $r, $prefix );
 
@@ -731,4 +550,163 @@ class pmlnr_post extends pmlnr_base {
 		return $r;
 	}
 
+
+	/**
+	 *
+	 *
+	public static function post_get_syndicates ( &$post = null ) {
+		$post = static::fix_post($post);
+
+		if ($post === false)
+			return false;
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = array();
+		$syndicates = get_post_meta ( $post->ID, 'syndication_urls', true );
+
+		if ( !$syndicates )
+			return $r;
+
+		$syndicates = explode( "\n", $syndicates );
+
+		foreach ($syndicates as $syndicate ) {
+			// example https://(www.)(facebook).(com)/(...)/(post_id)
+			preg_match ( '/^http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\/(.*)\/(.*)$/', $syndicate, $split);
+
+			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3]))
+				$r[$split[2]] = $syndicate;
+		}
+
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $r;
+	}*/
+
+	/**
+	 *
+	 *
+	public static function post_get_replylist ( &$post = null ) {
+		$post = static::fix_post($post);
+
+		if ($post === false)
+			return false;
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = [];
+		$syndicates = static::post_get_syndicates();
+
+		if (empty($syndicates))
+			return $reply;
+
+		foreach ($syndicates as $silo => $syndicate ) {
+			if ($silo == 'twitter') {
+				//$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
+				continue;
+			}
+			else {
+				$r[ $silo ] = $syndicate[0];
+			}
+		}
+
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $r;
+	}
+	*/
+
+	/**
+	 *
+	 *
+	public static function post_get_sharelist ( &$post = null ) {
+		$post = static::fix_post($post);
+
+		if ($post === false)
+			return false;
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = [];
+
+		$syndicates = static::post_get_syndicates();
+
+		$url = urlencode( get_permalink( $post ) );
+		$title = urlencode( trim(get_the_title( $post->ID )) );
+		$description = urlencode( $post->post_excerpt );
+
+		$media_url = '';
+		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
+		if ( isset($media[1]) && $media[3] != false )
+			$media_url = urlencode(static::fix_url($thumbnail[0]));
+
+		if (!empty($syndicates)) {
+			foreach ($syndicates as $silo => $syndicate ) {
+				//if ($silo == 'twitter') {
+					//$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
+				//}
+				if ($silo == 'facebook') {
+					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
+				}
+				else {
+					continue;
+				}
+
+				if ($rurl)
+					$r[$silo] = $rurl;
+			}
+		}
+
+		if (!isset($r['facebook']))
+			$r['facebook'] = sprintf ('https://www.facebook.com/share.php?u=%s', $url );
+
+		if (!isset($r['twitter']))
+			$r['twitter'] = sprintf('https://twitter.com/share?url=%s&text=%s', $url, $title );
+
+		$r['googleplus'] = sprintf('https://plus.google.com/share?url=%s', $url );
+
+		$r['tumblr'] = sprintf('http://www.tumblr.com/share/link?url=%s&title=%s&description=%s', $url, $title, $description );
+
+		$r['pinterest'] = sprintf('https://pinterest.com/pin/create/bookmarklet/?media=%s&url=%s&description=%s&is_video=false', $media_url, $url, $title );
+
+		// short url / webmention
+		$r['webmention'] = $url;
+
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $share;
+	}
+	*/
+
+	/**
+	 *
+	 *
+	public static function post_background (&$post = null) {
+		$post = static::fix_post($post);
+
+		if ($post === false)
+			return false;
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$r = false;
+
+		if ( ! static::is_u_photo($post) ) {
+
+			$thid = get_post_thumbnail_id( $post->ID );
+			$bgimg = (empty( $thid)) ? array() : wp_get_attachment_image_src( $thid , 'headerbg');
+
+			if ( isset($bgimg[1]) && $bgimg[3] != false )
+				$r = 'class="article-header" style="background-image:url('.$bgimg[0].');"';
+		}
+
+		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $r;
+	}
+	*/
 }

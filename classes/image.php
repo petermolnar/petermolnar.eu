@@ -26,6 +26,7 @@ class pmlnr_image extends pmlnr_base {
 			'geo_latitude' => 'GPSLatitude',
 			'geo_longitude' => 'GPSLongitude',
 			'geo_altitude' => 'GPSAltitude',
+			'title' => 'Title',
 		);
 
 		add_action( 'init', array( &$this, 'init'));
@@ -434,7 +435,7 @@ class pmlnr_image extends pmlnr_base {
 				$r['iso'] = sprintf (__('<i class="icon-sensitivity spacer"></i>ISO %s'), $meta['iso'] );
 
 			if ( isset($meta['lens']) && !empty($meta['lens']))
-				$r['iso'] = sprintf (__('<i class="icon-lens spacer"></i>%s'), $meta['lens'] );
+				$r['lens'] = sprintf (__('<i class="icon-lens spacer"></i>%s'), $meta['lens'] );
 
 
 			$location = '';
@@ -536,6 +537,13 @@ class pmlnr_image extends pmlnr_base {
 			$post->post_content = $modcontent;
 		}
 
+		// content
+		if ( empty ( $post->post_title ) && ! empty( $meta['image_meta']['title'] ) ) {
+			static::debug ( "appending post #{$post->ID} title with image caption" );
+			static::replace_title ( $post, $meta['image_meta']['title'] );
+			$post->post_title = $meta['image_meta']['title'];
+		}
+
 		// GPS
 		$try = array ( 'geo_latitude', 'geo_longitude', 'geo_altitude' );
 		foreach ( $try as $kw ) {
@@ -556,6 +564,24 @@ class pmlnr_image extends pmlnr_base {
 
 	}
 
+	/**
+	 *
+	 */
+	public static function extract_wp_images( &$text ) {
+		$matches = array();
+		preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $text, $matches);
 
+		return $matches;
+	}
+
+	/**
+	 *
+	 */
+	public static function extract_md_images( &$text ) {
+		$matches = array();
+		preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $text, $matches);
+
+		return $matches;
+	}
 
 }

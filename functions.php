@@ -83,6 +83,7 @@ class petermolnareu {
 
 		// do things on post publish
 		add_action( 'transition_post_status', array( 'petermolnareu', 'on_publish' ), 99, 5 );
+		//add_action( 'update_postmeta', array( 'petermolnareu', 'testing_on_save' ), 99, 5 );
 
 		// hook for mail sending
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
@@ -345,8 +346,20 @@ class petermolnareu {
 
 	/**
 	 *
+	 *
+	public static function testing_on_save(  ) {
+		pmlnr_base::debug ( 'testing_on_save triggered', 5 );
+		pmlnr_base::debug (  func_get_args(), 5 );
+	}
+	*/
+
+
+	/**
+	 *
 	 */
 	public static function on_publish( $new_status, $old_status, $post ) {
+		pmlnr_base::debug ( 'on publish triggered', 5 );
+
 
 		$post = pmlnr_base::fix_post($post);
 
@@ -363,17 +376,12 @@ class petermolnareu {
 
 		$modcontent = $post->post_content;
 
-		// convert hashtag line to real tags
+		// convert hashtag line to real tags and remove it from the content
 		$hashtags = pmlnr_post::has_hashtags ( $post->post_content );
-		pmlnr_base::debug ( $hashtags, 5);
 		if ( ! empty ( $hashtags ) ) {
-			pmlnr_post::autotag_by_hashtags ( $post );
+			pmlnr_base::add_tags( $post, $hashtags[1] );
 			$modcontent = pmlnr_post::remove_hashtags( $modcontent );
 		}
-
-		// convert reactions to meta
-		pmlnr_post::parse_reaction ( $post );
-		$modcontent = pmlnr_post::remove_reaction ( $modcontent );
 
 		$modcontent = trim ( $modcontent );
 		if ( $modcontent != $post->post_content )
@@ -388,8 +396,8 @@ class petermolnareu {
 			return false;
 
 		// --- these only when a post is freshly published ---
-		if ( $new_status == $old_status )
-			return false;
+		//if ( $new_status == $old_status )
+		//	return false;
 
 		$args = array ( 'post_id' => $post->ID );
 		wp_schedule_single_event( time() + 120, 'make_post_syndication', $args );
@@ -433,7 +441,7 @@ class petermolnareu {
 		$format = pmlnr_base::post_format ( $post );
 
 		if ( ! in_array( $format, $yaml['smtp_categories']) ){
-			pmlnr_base::debug( "this post shouldn't send a mail" );
+			pmlnr_base::debug( "this post shouldn't send a mail", 7 );
 			return false;
 		}
 
@@ -449,7 +457,7 @@ class petermolnareu {
 			$sent = array();
 
 		if ( empty (  array_diff( $subscribers, $sent ) ) ) {
-			pmlnr_base::debug( "all sent already!" );
+			pmlnr_base::debug( "all sent already!", 6 );
 			return true;
 		}
 
@@ -472,7 +480,7 @@ class petermolnareu {
 			</head>
 			<body>
 				<h1>'. $template_vars['title'] .'</h1>
-				'. $template_vars['parsed_content'] .'
+				'. $template_vars['content'] .'
 				<hr />
 				<p>
 					Az oldalon: <a href="'. $template_vars['url'] .'">'. $template_vars['url'] .'</a>
