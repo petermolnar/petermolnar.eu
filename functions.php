@@ -377,11 +377,11 @@ class petermolnareu {
 		$modcontent = $post->post_content;
 
 		// convert hashtag line to real tags and remove it from the content
-		$hashtags = pmlnr_post::has_hashtags ( $post->post_content );
-		if ( ! empty ( $hashtags ) ) {
-			pmlnr_base::add_tags( $post, $hashtags[1] );
-			$modcontent = pmlnr_post::remove_hashtags( $modcontent );
-		}
+		//$hashtags = pmlnr_post::has_hashtags ( $post->post_content );
+		//if ( ! empty ( $hashtags ) ) {
+			//pmlnr_base::add_tags( $post, $hashtags[1] );
+			//$modcontent = pmlnr_post::remove_hashtags( $modcontent );
+		//}
 
 		$modcontent = trim ( $modcontent );
 		if ( $modcontent != $post->post_content )
@@ -396,13 +396,14 @@ class petermolnareu {
 			return false;
 
 		// --- these only when a post is freshly published ---
-		//if ( $new_status == $old_status )
-		//	return false;
+		if ( $new_status == $old_status )
+			return false;
 
 		$args = array ( 'post_id' => $post->ID );
 		wp_schedule_single_event( time() + 120, 'make_post_syndication', $args );
 
-		if ( in_array( $format, $yaml['smtp_categories']) )
+		$posse_to_smtp = get_post_meta ( $post->ID, 'posse_to_smtp', true );
+		if ( in_array( $format, $yaml['smtp_categories']) || $posse_to_smtp == "1" )
 			wp_schedule_single_event( time() + 120, 'posse_to_smtp', $args );
 
 	}

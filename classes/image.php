@@ -59,6 +59,79 @@ class pmlnr_image extends pmlnr_base {
 		add_filter( 'wp_resized2cache_imagick',array ( &$this, 'watermark' ),10, 2);
 
 		add_filter ( 'wp_image_editors', array ( &$this, 'wp_image_editors' ));
+
+		add_filter ( 'wp_flatexport_post', array ( &$this, 'flatexport_exif' ), 10, 2 );
+	}
+
+	public function flatexport_exif ( $text, $post ) {
+		if ( ! static::is_post ( $post ) )
+			return $text;
+
+		if (!static::is_post($post))
+			return $src;
+
+		if (!static::is_u_photo($post))
+			return $src;
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$thid = get_post_thumbnail_id( $post->ID );
+		$return = $text;
+
+		if ( !empty($thid) ) {
+			$meta = static::get_extended_thumbnail_meta( $thid );
+			if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
+				$meta = $meta['image_meta'];
+				$r = array();
+
+				if ( isset($meta['camera']) && !empty($meta['camera']))
+					$r['camera'] = $meta['camera'];
+
+				if ( isset($meta['focal_length']) && !empty($meta['focal_length']))
+					$r['focal length'] = sprintf (__('%smm'), $meta['focal_length'] );
+
+				if ( isset($meta['aperture']) && !empty($meta['aperture']))
+					$r['aperture'] = sprintf ( __('f/%s'), $meta['aperture']);
+
+				if ( isset($meta['shutter_speed']) && !empty($meta['shutter_speed'])) {
+					if ( (1 / $meta['shutter_speed'] ) > 1) {
+						$shutter_speed = "1/";
+						if ((number_format((1 / $meta['shutter_speed']), 1)) == 1.3 or
+							number_format((1 / $meta['shutter_speed']), 1) == 1.5 or
+							number_format((1 / $meta['shutter_speed']), 1) == 1.6 or
+							number_format((1 / $meta['shutter_speed']), 1) == 2.5)
+								$shutter_speed .= number_format((1 / $meta['shutter_speed']), 1, '.', '');
+						else
+							$shutter_speed .= number_format((1 / $meta['shutter_speed']), 0, '.', '');
+					}
+					else {
+						$shutter_speed = $meta['shutter_speed'];
+					}
+					$r['shutter speed'] = sprintf( __('%s sec'), $shutter_speed);
+				}
+
+				if ( isset($meta['iso']) && !empty($meta['iso']))
+					$r['ISO'] = $meta['iso'];
+
+				if ( isset($meta['lens']) && !empty($meta['lens']))
+					$r['lens'] =  $meta['lens'];
+			}
+
+			$return .=  "\n\nEXIF\n----\n";
+
+			foreach ( $r as $name => $value ) {
+				$return .= "- {$name}: {$value}\n";
+			}
+
+			$return .= "\n";
+
+		}
+
+		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $return;
+
 	}
 
 	/***
@@ -270,9 +343,9 @@ class pmlnr_image extends pmlnr_base {
 
 		//$target = static::fix_url($target);
 
-		$class="adaptimg";
+		$class="";
 		if ( $post != null && static::is_u_photo($post)) {
-			$class .=" u-photo";
+			$class = "u-photo";
 		}
 
 		if ( is_feed()) {
@@ -287,7 +360,7 @@ class pmlnr_image extends pmlnr_base {
 		}
 		*/
 		else {
-			$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw, 60vw" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			$r = sprintf('<a class="%s" href="%s"><img src="%s" id="img-%s" class="adaptive adaptimg" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw, 60vw" /></a>', $class, $target, $fallback['src'], $thid, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 			//$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="42em" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
@@ -561,6 +634,25 @@ class pmlnr_image extends pmlnr_base {
 				}
 			}
 		}
+
+		// force post to Flickr
+		$snap_flickr = array (
+			array (
+				"doFL" => 1,
+				"msgTFrmt" => "%TITLE%",
+				"msgFrmt" => "Originally posted to: %URL%
+
+%RAWTEXT%",
+				"isAutoImg" => "A",
+				"imgToUse" => "",
+				"do" => 1,
+			)
+		);
+
+		if ( get_post_meta ( $post->ID, 'snapFL', true ) )
+			update_post_meta ( $post->ID, 'snapFL', $snap_flickr );
+		else
+			add_post_meta ( $post->ID, 'snapFL', $snap_flickr, true );
 
 	}
 
