@@ -86,7 +86,7 @@ class pmlnr_cleanup extends pmlnr_base {
 					break;
 			}
 
-			$relation = "+++ {$type}: {$url}";
+			$relation = "*** {$type}: {$url}";
 
 		}
 

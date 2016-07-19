@@ -32,6 +32,43 @@ class pmlnr_image extends pmlnr_base {
 		add_action( 'init', array( &$this, 'init'));
 	}
 
+	public static function ascii_image ( $thid ) {
+		if ( empty( $thid ) )
+			return false;
+
+		static::debug ( "getting  ASCII for $thid", 7);
+		$cached = get_post_meta ( $thid, 'ascii', true );
+
+		if ( $cached )
+			return $cached;
+
+		$src = wp_get_attachment_image_src ( $thid, 'full' );
+
+		if ( empty ( $src ) )
+			return false;
+
+		$wp_upload_dir = wp_upload_dir();
+		$fname = explode( '/', $src[0] );
+		$fname = end( $fname );
+		$path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $fname;
+		$cmd = '/usr/src/img2txt/img2txt.py --targetAspect 0.5 ' . $path;
+
+		static::debug ( "getting  ASCII for {$path}", 5);
+
+		exec( $cmd, $ascii, $retval);
+
+		if ($retval == 0 ) {
+			$ascii = preg_replace ( '/.*?pre>(.*?)[\n\r]<\/.*/ms', '$1', join("\n", $ascii ) );
+
+			add_post_meta ( $thid, 'ascii', $ascii, true);
+		}
+		else {
+			static::debug ( "return code: {$retval}, with message: " . json_encode($ascii), 4);
+		}
+
+		return $ascii;
+	}
+
 	/**
 	 *
 	 */
@@ -60,18 +97,52 @@ class pmlnr_image extends pmlnr_base {
 
 		add_filter ( 'wp_image_editors', array ( &$this, 'wp_image_editors' ));
 
-		add_filter ( 'wp_flatexport_post', array ( &$this, 'flatexport_exif' ), 10, 2 );
+		add_filter ( 'wp_flatexport_post', array ( &$this, 'flatexport_exif' ), 31, 2 );
+		add_filter ( 'wp_flatexport_featured_image', array ( &$this, 'flatexport_featured_image' ), 1, 2 );
 	}
 
+	/**
+	 *
+	 */
+	public function flatexport_featured_image ( $text, $post ) {
+		if ( ! static::is_post ( $post ) )
+			return $text;
+
+		if (!static::is_u_photo($post))
+			return $text;
+
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$thid = get_post_thumbnail_id( $post->ID );
+		$return = $text;
+
+		if ( !empty($thid) ) {
+			//$ascii = static::ascii_image ( $thid );
+			//$return = "\n\n" . trim( $text ) . "\n```asciiphoto\n" . $ascii . "\n```";
+
+			$return = "\n\n" . trim( $text ) . "\n";
+
+		}
+
+		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $return;
+	}
+
+
+	/**
+	 *
+	 */
 	public function flatexport_exif ( $text, $post ) {
 		if ( ! static::is_post ( $post ) )
 			return $text;
 
 		if (!static::is_post($post))
-			return $src;
+			return $text;
 
 		if (!static::is_u_photo($post))
-			return $src;
+			return $text;
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
@@ -124,9 +195,9 @@ class pmlnr_image extends pmlnr_base {
 				$return .= "- {$name}: {$value}\n";
 			}
 
-			$return .= "\n";
-
 		}
+
+		$return = rtrim( $return );
 
 		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
 

@@ -89,12 +89,67 @@ class petermolnareu {
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
 		add_action ( 'make_post_syndication', array( 'petermolnareu', 'make_post_syndication' ), 99, 1 );
 
+		add_action ( 'backfill_post_syndication', array( 'petermolnareu', 'backfill_post_syndication' ), 99, 1 );
+
 		add_action("add_meta_boxes", array( 'petermolnareu', 'featured_exif' ));
 
 
 		$url = home_url() . rtrim($_SERVER['REQUEST_URI'], '/');
 		$postid = url_to_postid( $url );
 
+	}
+	public static function backfill_post_syndication () {
+		$yaml = pmlnr_base::get_yaml();
+		$flickr = $yaml['flickr_photos'];
+
+		pmlnr_base::debug ("Getting lost of photos from Flickr", 6);
+		$flickr = wp_remote_get( $flickr );
+		if ( ! isset( $flickr['body'] ) || empty( $flickr['body'] ) )
+			return false;
+
+		$flickr = unserialize( $flickr['body'] );
+
+		if ( ! isset( $flickr['photos']['photo'] ) || empty( $flickr['photos']['photo'] ) || ! is_array( $flickr['photos']['photo'] ) )
+			return false;
+
+		foreach ( $flickr['photos']['photo'] as $photo ) {
+			if (  ! isset( $photo['description'] ) || empty( $photo['description'] ) || ! isset( $photo['description']['_content'] ) || empty( $photo['description']['_content'] ) )
+				continue;
+
+
+			$urls = pmlnr_base::extract_urls( $photo['description']['_content'] );
+			foreach ( $urls as $url ) {
+				pmlnr_base::debug ("Found URL in Flickr description: {$url}", 5);
+				$url = preg_replace( '/^https?:\/\//i', 'http://', strtolower($url) );
+				$url = str_replace( 'petermolnar.eu', 'petermolnar.net', $url );
+
+				$postid = url_to_postid( $url );
+
+				if ( false != $postid ) {
+					pmlnr_base::debug ("{$url} maps to {$postid}", 5);
+					$flickr_url = "https://www.flickr.com/photos/{$photo['owner']}/{$photo['id']}";
+
+					$syndicated = $s = get_post_meta ( $postid, 'syndication_urls', true );
+					if ( empty( $syndicated) ) {
+						$syndicated = array();
+					}
+					else {
+						$syndicated = explode("\n", $syndicated);
+					}
+
+					foreach ($syndicated as $key => $url ) {
+						$syndicated[$key] = rtrim(trim($url), '/');
+					}
+
+					if ( ! in_array( $flickr_url, $syndicated ) ) {
+						pmlnr_base::debug ("Missing syndication URL for {$postid}: {$flickr_url}, adding it", 5);
+						array_push( $syndicated, $flickr_url );
+						$syndicated = join( "\n", $syndicated );
+						update_post_meta ( $postid, 'syndication_urls', $syndicated, $s );
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -159,10 +214,28 @@ class petermolnareu {
 		// for responsive videos
 		add_filter( 'embed_oembed_html', array ( 'petermolnareu', 'custom_oembed_filter' ), 10, 4 ) ;
 
+		add_filter ( 'url_to_postid', function( $url ) {
+			$r = str_replace( 'petermolnar.eu', 'petermolnar.net', $url );
+			if ( $r != $url ) {
+				pmlnr_base::debug ( "url_to_postid was getting a petermolnar.eu reference: {$url}", 7);
+			}
+			return $r;
+		}, 1, 1);
+
+		//add_filter ( 'home_url', function( $url, $path, $orig_scheme, $blog_id ) {
+			//pmlnr_base::debug ( "home_url: {$url}, {$path}, {$orig_scheme}, {$blog_id}", 5);
+			//return $url;
+		//}, 1, 4);
+
 		//add_filter( 'the_content', array ( 'pmlnr_post', 'convert_reaction' ) );
 
 
 		//add_filter('script_loader_tag', array ( 'petermolnareu', 'add_async_attribute'), 10, 2);
+
+		if (!wp_get_schedule( 'backfill_post_syndication' )) {
+			wp_schedule_event( time(), 'daily', 'backfill_post_syndication' );
+		}
+
 
 	}
 

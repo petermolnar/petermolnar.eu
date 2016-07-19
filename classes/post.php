@@ -23,7 +23,7 @@ class pmlnr_post extends pmlnr_base {
 				$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
 				$webmention_data = get_post_meta( $post->ID, 'webmention_rsvp', true );
 
-				$react = "+++ {$webmention_type}: {$webmention_url}";
+				$react = "*** {$webmention_type}: {$webmention_url}";
 				if ( !empty ($webmention_data) )
 					$react .= " {$webmention_data}";
 
@@ -132,6 +132,11 @@ class pmlnr_post extends pmlnr_base {
 			return $cached;
 
 		$r = $post->post_content;
+
+		//$search = static::has_reaction ( $post->post_content );
+		//if ( strstr ( $search[0][0], '+++') )
+			//static::debug ( var_export($search,true), 5 );
+
 		$r = static::convert_reaction ( $post );
 
 		$r = apply_filters('the_content', $r);
