@@ -1,28 +1,48 @@
-<article class="h-entry h-article">
-
+{% if post.format in site.image_formats %}
+	{% set htype="photo" %}
+{% elseif post.format in site.long_formats %}
+	{% set htype="article" %}
+{% else %}
+	{% set htype="note" %}
+{% endif %}
+<article class="h-entry h-{{ htype }}">
 	<header>
+		{% if post.title|length %}
 		<h2>
-			<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
-				<span class="p-name more">{{ post.title }}</span>
+			<a href="{{ post.url }}" title="{{ post.title }}">
+				<span class="p-name {% if htype == "article" %}more{% endif %}">{{ post.title }}</span>
 			</a>
 		</h2>
+		{% endif %}
+		{% include 'ameta_pubdate.html' %}
 		{% include 'ameta_author.html' %}
-		{% include 'ameta_webmention.html' %}
+		{% if htype != "photo" %}
+			{% include 'ameta_webmention.html' %}
+		{% endif %}
 	</header>
 
-	<div class="e-summary">
-		{% if post.thumbnail %}
-			<img class="article-thumbnail" src="{{ post.thumbnail }}" />
-		{% endif %}
-		{{ post.excerpt }}
-		<br class="clear" />
-	</div>
+	{% if htype == "article" %}
+		<div class="e-summary long">
+			{% if post.thumbnail %}
+				<img class="article-thumbnail" src="{{ post.thumbnail }}" />
+			{% endif %}
+			{{ post.excerpt }}
+			<a class="inline-more" href="{{ post.url }}" title="{{ post.title }}">
+				<span class="more">…</span>
+			</a>
+			<br class="clear" />
+		</div>
+	{% else %}
+		<div class="e-content">
+			{{ post.content }}
+			<br class="clear" />
+		</div>
+	{% endif %}
 
 	<footer>
-			{% include 'ameta_pubdate.html' %}
-			{% include 'ameta_comments.html' %}
-			{% include 'ameta_readtime.html' %}
-			{% include 'list_tag.html' %}
+		<br class="clear" />
+		{% include 'list_tag.html' %}
+		<br class="clear" />
 	</footer>
 
 </article>

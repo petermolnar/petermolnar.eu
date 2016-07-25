@@ -87,7 +87,7 @@ class petermolnareu {
 
 		// hook for mail sending
 		add_action( 'posse_to_smtp', array( 'petermolnareu', 'posse_to_smtp' ), 99, 3 );
-		add_action ( 'make_post_syndication', array( 'petermolnareu', 'make_post_syndication' ), 99, 1 );
+		//add_action ( 'make_post_syndication', array( 'petermolnareu', 'make_post_syndication' ), 99, 1 );
 
 		add_action ( 'backfill_post_syndication', array( 'petermolnareu', 'backfill_post_syndication' ), 99, 1 );
 
@@ -294,120 +294,120 @@ class petermolnareu {
 	/**
 	 *
 	 */
-	public static function make_post_syndication ( $post_id = false ) {
-		$post = get_post ( $post_id );
-		//$post = pmlnr_base::fix_post($post);
+	//public static function make_post_syndication ( $post_id = false ) {
+		//$post = get_post ( $post_id );
+		////$post = pmlnr_base::fix_post($post);
 
-		if ( false === pmlnr_base::is_post( $post ) )
-			return false;
+		//if ( false === pmlnr_base::is_post( $post ) )
+			//return false;
 
-		global $nxs_snapAvNts;
+		//global $nxs_snapAvNts;
 
-		$_syndicated = $_syndicated_original = get_post_meta ( $post->ID, 'syndication_urls', true );
-		if ($_syndicated && strstr($_syndicated, "\n" )) {
-				$_syndicated = explode("\n", $_syndicated);
-				foreach ($_syndicated as $key => $url ) {
-					$_syndicated[$key] = rtrim(trim($url), '/');
-				}
-		}
-		else {
-			$_syndicated = array( $_syndicated );
-		}
+		//$_syndicated = $_syndicated_original = get_post_meta ( $post->ID, 'syndication_urls', true );
+		//if ($_syndicated && strstr($_syndicated, "\n" )) {
+				//$_syndicated = explode("\n", $_syndicated);
+				//foreach ($_syndicated as $key => $url ) {
+					//$_syndicated[$key] = rtrim(trim($url), '/');
+				//}
+		//}
+		//else {
+			//$_syndicated = array( $_syndicated );
+		//}
 
-		$snap = array();
-		$snap_options = get_option('NS_SNAutoPoster');
-		$urlmap = array (
-			'AP' => array(),
-			'BG' => array(),
-			// 'DA' => array(), /* DeviantArt will use postURL */
-			'DI' => array(),
-			'DL' => array(),
-			'FB' => array( 'url' => '%BASE%/posts/%pgID%' ),
-			//'FF' => array(), /* FriendFeed should be using postURL */
-			//'FL' => array(), /* Flickr should be using postURL */
-			'FP' => array(),
-			'GP' => array(),
-			'IP' => array(),
-			'LI' => array( 'url' => '%pgID%' ),
-			'LJ' => array(),
-			'PK' => array(),
-			'PN' => array(),
-			'SC' => array(),
-			'ST' => array(),
-			'SU' => array(),
-			'TR' => array( 'url'=>'%BASE%/post/%pgID%' ), /* even if Tumblr has postURL set as well, it's buggy and missing a */
-			'TW' => array( 'url'=>'%BASE%/status/%pgID%' ),
-			'VB' => array(),
-			'VK' => array(),
-			'WP' => array(),
-			'YT' => array(),
-		);
+		//$snap = array();
+		//$snap_options = get_option('NS_SNAutoPoster');
+		//$urlmap = array (
+			//'AP' => array(),
+			//'BG' => array(),
+			//// 'DA' => array(), /* DeviantArt will use postURL */
+			//'DI' => array(),
+			//'DL' => array(),
+			//'FB' => array( 'url' => '%BASE%/posts/%pgID%' ),
+			////'FF' => array(), /* FriendFeed should be using postURL */
+			////'FL' => array(), /* Flickr should be using postURL */
+			//'FP' => array(),
+			//'GP' => array(),
+			//'IP' => array(),
+			//'LI' => array( 'url' => '%pgID%' ),
+			//'LJ' => array(),
+			//'PK' => array(),
+			//'PN' => array(),
+			//'SC' => array(),
+			//'ST' => array(),
+			//'SU' => array(),
+			//'TR' => array( 'url'=>'%BASE%/post/%pgID%' ), /* even if Tumblr has postURL set as well, it's buggy and missing a */
+			//'TW' => array( 'url'=>'%BASE%/status/%pgID%' ),
+			//'VB' => array(),
+			//'VK' => array(),
+			//'WP' => array(),
+			//'YT' => array(),
+		//);
 
-		if ( $nxs_snapAvNts && is_array($nxs_snapAvNts) && !empty($nxs_snapAvNts)) {
-			foreach ( $nxs_snapAvNts as $key => $serv ) {
-				$mkey = 'snap'. $serv['code'];
-				$urlkey = $serv['lcode'].'URL';
-				$okey = $serv['lcode'];
-				$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
-				if ( !empty( $metas ) && is_array ( $metas ) ) {
-					foreach ( $metas as $cntr => $m ) {
-						$url = false;
+		//if ( $nxs_snapAvNts && is_array($nxs_snapAvNts) && !empty($nxs_snapAvNts)) {
+			//foreach ( $nxs_snapAvNts as $key => $serv ) {
+				//$mkey = 'snap'. $serv['code'];
+				//$urlkey = $serv['lcode'].'URL';
+				//$okey = $serv['lcode'];
+				//$metas = maybe_unserialize(get_post_meta(get_the_ID(), $mkey, true ));
+				//if ( !empty( $metas ) && is_array ( $metas ) ) {
+					//foreach ( $metas as $cntr => $m ) {
+						//$url = false;
 
-						if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 && isset($snap_options[ $okey ][$cntr]) ) {
-							/* postURL entry will only be used if there's no urlmap set for the service above
-							 * this is due to either missing postURL values or buggy entries */
-							if ( isset( $m['postURL'] ) && !empty( $m['postURL'] ) && !isset( $urlmap[ $serv['code'] ] ) ) {
-								$url = $m['postURL'];
+						//if ( isset ( $m['isPosted'] ) && $m['isPosted'] == 1 && isset($snap_options[ $okey ][$cntr]) ) {
+							///* postURL entry will only be used if there's no urlmap set for the service above
+							 //* this is due to either missing postURL values or buggy entries */
+							//if ( isset( $m['postURL'] ) && !empty( $m['postURL'] ) && !isset( $urlmap[ $serv['code'] ] ) ) {
+								//$url = $m['postURL'];
 
-							}
-							else {
-								$base = (isset( $urlmap[ $serv['code'] ]['url'])) ? $urlmap[ $serv['code'] ]['url'] : false;
+							//}
+							//else {
+								//$base = (isset( $urlmap[ $serv['code'] ]['url'])) ? $urlmap[ $serv['code'] ]['url'] : false;
 
-								if ( $base != false ) {
-									/* Facebook exception, why not */
-									if ( $serv['code'] == 'FB' ) {
-										$pos = strpos( $m['pgID'],'_' );
-										$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
-									}
-									else {
-										$pgID = $m['pgID'];
-									}
+								//if ( $base != false ) {
+									///* Facebook exception, why not */
+									//if ( $serv['code'] == 'FB' ) {
+										//$pos = strpos( $m['pgID'],'_' );
+										//$pgID = ( $pos == false ) ? $m['pgID'] : substr( $m['pgID'], $pos + 1 );
+									//}
+									//else {
+										//$pgID = $m['pgID'];
+									//}
 
-									$o = $snap_options[ $okey ][$cntr];
-									$search = array('%BASE%', '%pgID%' );
-									$replace = array ( $o[ $urlkey ], $pgID );
-									$url = str_replace ( $search, $replace, $base );
-								}
-							}
+									//$o = $snap_options[ $okey ][$cntr];
+									//$search = array('%BASE%', '%pgID%' );
+									//$replace = array ( $o[ $urlkey ], $pgID );
+									//$url = str_replace ( $search, $replace, $base );
+								//}
+							//}
 
-							if ( $url != false && !empty($url)) {
-								/* trim all the double slashes, some sites cannot coope with them */
-								$url = preg_replace('~(^|[^:])//+~', '\\1/', $url);
-								$snap[] = $url;
-							}
-						}
-					}
-				}
-			}
-		}
+							//if ( $url != false && !empty($url)) {
+								///* trim all the double slashes, some sites cannot coope with them */
+								//$url = preg_replace('~(^|[^:])//+~', '\\1/', $url);
+								//$snap[] = $url;
+							//}
+						//}
+					//}
+				//}
+			//}
+		//}
 
-		foreach ($snap as $url ) {
-			$url = rtrim($url, '/');
-			if (!in_array($url, $_syndicated)) {
-				array_push($_syndicated, $url);
-			}
-		}
+		//foreach ($snap as $url ) {
+			//$url = rtrim($url, '/');
+			//if (!in_array($url, $_syndicated)) {
+				//array_push($_syndicated, $url);
+			//}
+		//}
 
-		foreach ($_syndicated as $url ) {
-			if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com') && !strstr($url, 'tumblr.com') && !strstr($url, 'twitter.com'))
-				$synds[] = $url;
-		}
+		//foreach ($_syndicated as $url ) {
+			//if (!strstr($url, '500px.com') && !strstr($url, 'instagram.com') && !strstr($url, 'tumblr.com') && !strstr($url, 'twitter.com'))
+				//$synds[] = $url;
+		//}
 
-		$_syndicated = join("\n", $synds);
-		if (!empty($_syndicated))
-			update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
+		//$_syndicated = join("\n", $synds);
+		//if (!empty($_syndicated))
+			//update_post_meta ( $post->ID, 'syndication_urls', $_syndicated, $_syndicated_original );
 
-	}
+	//}
 
 	/**
 	 *
@@ -431,9 +431,6 @@ class petermolnareu {
 	 *
 	 */
 	public static function on_publish( $new_status, $old_status, $post ) {
-		pmlnr_base::debug ( 'on publish triggered', 5 );
-
-
 		$post = pmlnr_base::fix_post($post);
 
 		if ( ! pmlnr_base::is_post( $post ) )
@@ -473,7 +470,7 @@ class petermolnareu {
 			return false;
 
 		$args = array ( 'post_id' => $post->ID );
-		wp_schedule_single_event( time() + 120, 'make_post_syndication', $args );
+		//wp_schedule_single_event( time() + 120, 'make_post_syndication', $args );
 
 		$posse_to_smtp = get_post_meta ( $post->ID, 'posse_to_smtp', true );
 		if ( in_array( $format, $yaml['smtp_categories']) || $posse_to_smtp == "1" )

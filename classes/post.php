@@ -15,6 +15,7 @@ class pmlnr_post extends pmlnr_base {
 		if ( false === $reaction )
 			$reaction = static::has_reaction ( $post->post_content );
 
+		/* this should be obsolete now
 		if ( empty( $reaction ) ) {
 			$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
 
@@ -33,10 +34,72 @@ class pmlnr_post extends pmlnr_base {
 				$reaction = static::has_reaction( $c );
 			}
 		}
+		*/
 
 		if ( empty( $reaction ) )
 			return false;
 
+		$r_all = array();
+
+		foreach ( $reaction[0] as $cntr => $replace ) {
+			//$replace = $reaction[0][0];
+			$type = trim($reaction[1][$cntr]);
+			$url = trim($reaction[2][$cntr]);
+			$rsvp = trim($reaction[3][$cntr]);
+
+			if ( empty( $url ) )
+				continue;
+
+			if ( $format != 'markdown' ) {
+				$r = "*** ${type}: {$url}";
+				if ( !empty( $rsvp ) )
+					$r .= " ${rsvp}";
+
+				array_push( $r_all, $r );
+			}
+			else {
+				$rsvps = array (
+					'no' => __("Sorry, can't make it."),
+					'yes' => __("I'll be there."),
+					'maybe' => __("I'll do my best, but don't count on me for sure."),
+				);
+
+				if ( ( $type == 're' || $type == 'reply' ) && !empty( $data ) )
+					$rsvp_data = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
+
+				switch ($type) {
+					case 'from':
+					case 'repost':
+						$cl = 'u-repost-of';
+						$prefix = '**FROM:** ';
+						break;
+					case 're':
+					case 'reply':
+						$cl = 'u-in-reply-to';
+						$prefix = '**RE:** ';
+						break;
+					default:
+						$cl = 'u-like-of';
+						$prefix = '**URL:** ';
+						break;
+				}
+
+				$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
+				$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}";
+
+				if ( !empty( $rsvp_data ) )
+					$r .= "\n{$rsvp_data}";
+
+				array_push ( $r_all, $r );
+			}
+		}
+
+		$r_all = array_unique( $r_all );
+		sort ( $r_all );
+
+		return join( "\n", $r_all );
+
+		/*
 		$replace = $reaction[0][0];
 		$type = trim($reaction[1][0]);
 		$url = trim($reaction[2][0]);
@@ -88,6 +151,7 @@ class pmlnr_post extends pmlnr_base {
 
 			return $r;
 		}
+		*/
 	}
 
 	/**
@@ -100,7 +164,13 @@ class pmlnr_post extends pmlnr_base {
 		if ( false == $reaction )
 			return $content;
 
-		return trim ( str_replace ( $reaction[0][0], '', $content ) );
+		$r = $content;
+		foreach ( $reaction[0] as $cntr => $replace )  {
+			$pattern = '/(?:^|\s)' . preg_quote($replace, '/' ) . '(:?\s|$|\n|\r)/';
+			$r = preg_replace( $pattern, '', $r );
+		}
+
+		return trim ( $r );
 	}
 
 	/**
@@ -114,8 +184,11 @@ class pmlnr_post extends pmlnr_base {
 			return $post->post_content;
 
 		$md = static::make_reaction( $post, 'markdown', $reaction );
+		$r = static::remove_reaction( $post->post_content, $reaction );
 
-		return str_replace( $reaction[0][0], $md, $post->post_content );
+		$r = $md . "\n\n" . $r;
+
+		return $r;
 	}
 
 	/**
@@ -141,9 +214,56 @@ class pmlnr_post extends pmlnr_base {
 
 		$r = apply_filters('the_content', $r);
 
+		if ( $post->post_type == 'post' )
+			$r = static::toc( $r );
+
 		wp_cache_set ( $post->ID . $clean, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
+	}
+
+	public static function toc ( $content ) {
+		$toc = '';
+		$pattern = "/<h([2-6])(?:\s+id=\"(.*?)\")?>(.*)<\/h[2-6]>/mi";
+		$matches = array();
+		preg_match_all( $pattern, $content, $matches );
+
+		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) && ( count( $matches[0] ) > 2 ) ) {
+			$currd = 2;
+			//$post_base = rtrim( site_url(), '/') . '/' . $post->post_name . '/';
+
+			foreach ( $matches[3] as $cntr => $h ) {
+				$h = strip_tags( $h );
+				$h = preg_replace( "/^[0-9]+\.\s(.*)/", '${1}', $h );
+				$id = $matches[2][$cntr];
+				$depth = $matches[1][$cntr];
+				$l = "<a href=\"#{$id}\">{$h}</a>";
+
+				// just add one more line
+				if ( $depth == $currd ) {
+					// starting the list
+					if ( empty( $toc ) )
+						$toc = "<ol class=\"toc\"><li>{$l}";
+					// normal line
+					else
+						$toc .= "</li><li>{$l}";
+				}
+				// going deeper
+				elseif ( $depth > $currd ) {
+					$toc .= "<ol><li>{$l}";
+				}
+				// leaving the depth
+				else {
+					$toc .= "</ol></li><li>{$l}";
+				}
+				$currd = $depth;
+			}
+
+			// closing any potentially open depths and ending the list
+			$toc .= str_repeat ( '</ol></li>', ($currd - 2)  ) . '</li></ol>';
+		}
+
+		return $toc . $content;
 	}
 
 	/**
@@ -184,7 +304,7 @@ class pmlnr_post extends pmlnr_base {
 
 
 		$taxonomies = array ( 'post_tag', 'category' );
-		$skip = array ('Photo');
+		$skip = array ('Photo'); // Photo category is skipped, the tag will be used; that is lowercase photo
 
 		foreach ( $taxonomies as $taxonomy ) {
 			$t = wp_get_post_terms( $post->ID, $taxonomy );
@@ -506,13 +626,12 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID . $prefix, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		// insert webmention back
+		// formatting webmention
 		$modcontent = $post->post_content;
 		$has_reaction = static::has_reaction ( $modcontent );
 		$modcontent = static::remove_reaction ( $modcontent, $has_reaction );
 		$reaction = static::make_reaction( $post, '', $has_reaction );
 		$modcontent = trim ( $reaction . "\n\n" . $modcontent );
-		//static::debug ( $modcontent, 5 );
 
 		if ( $modcontent != $post->post_content )
 			static::replace_content ( $post, $modcontent );

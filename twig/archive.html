@@ -12,13 +12,7 @@
 	</aside>
 	{% endif %}
 	{% for post in posts %}
-		{% if post.format in site.image_formats %}
-			{% include 'element-photo.html' with {'post':post} %}
-		{% elseif post.format in site.long_formats %}
-			{% include 'element-long.html' with {'post':post} %}
-		{% else %}
-			{% include 'element-short.html' with {'post':post} %}
-		{% endif %}
+		{% include 'element.html' %}
 	{% endfor %}
 </section>
 {% include 'partial_footer.html' %}

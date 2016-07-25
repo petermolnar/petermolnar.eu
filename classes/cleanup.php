@@ -53,7 +53,9 @@ class pmlnr_cleanup extends pmlnr_base {
 		add_filter ('enable_press_this_media_discovery', '__return_false' );
 	}
 
-
+	/**
+	 *
+	 */
 	public function cleanup_press_this_data ( $data ) {
 		if ( isset( $data['s'] ) && ! empty( $data['s'] ))
 			$data['s'] = pmlnr_markdown::html2markdown( $data['s'] );
@@ -61,6 +63,9 @@ class pmlnr_cleanup extends pmlnr_base {
 		return $data;
 	}
 
+	/**
+	 *
+	 */
 	public function cleanup_press_this_suggested ( $default_html, $data ) {
 
 		$ref = array();
@@ -109,6 +114,9 @@ class pmlnr_cleanup extends pmlnr_base {
 	}
 	*/
 
+	/**
+	 *
+	 */
 	public function remove_enqueues () {
 		// cleanup
 		wp_dequeue_style ('wp-mediaelement');
@@ -146,7 +154,7 @@ class pmlnr_cleanup extends pmlnr_base {
 	}
 
 
-		/**
+	/**
 	 * remove hidious quote chars and other exotic things
 	 */
 	public static function _sanitize_content( $content ) {
@@ -160,6 +168,9 @@ class pmlnr_cleanup extends pmlnr_base {
 		return $content;
 	}
 
+	/**
+	 *
+	 */
 	public static function unmimic ( ) {
 
 	/*

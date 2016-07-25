@@ -249,7 +249,7 @@ class pmlnr_markdown extends pmlnr_base {
 	/**
 	 * http://stackoverflow.com/a/34970944/673576
 	 *
-	 */
+	 *
 	public static function markdown_toc( $str ) {
 
 		// ensure using only "\n" as line-break
@@ -290,7 +290,8 @@ class pmlnr_markdown extends pmlnr_base {
 			$raw_toc[] = str_pad( '  ', $item_level ) . '- ' . trim( $item_text );
 		}
 
-		return join( "\n", $raw_toc ) . $str;
+		//return join( "\n", $raw_toc ) . $str;
+		return join( "\n", $raw_toc );
 	}
 
 	/**

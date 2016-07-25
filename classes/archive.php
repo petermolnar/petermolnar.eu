@@ -12,13 +12,13 @@ class pmlnr_archive extends pmlnr_base {
 
 		$r = array();
 
-
-		if ( !is_archive() && !is_home())
+		if ( ! is_archive() && ! is_home() )
 			return $r;
 
 		$curr_url = static::fix_url ( $_SERVER['REQUEST_URI'] );
 
-		if ( $cached = wp_cache_get ( $curr_url . $prefix, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $curr_url . $prefix,
+			__CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$name = get_bloginfo('name');
@@ -47,12 +47,14 @@ class pmlnr_archive extends pmlnr_base {
 			'url' => $curr_url,
 			'feed' => $curr_feed,
 			'description' => $description,
-			'subscribe' => 'https://www.subtome.com/?subs/#/subscribe?' . http_build_query ( $subscribe )
+			'subscribe' => 'https://www.subtome.com/?subs/#/subscribe?'
+				. http_build_query ( $subscribe ),
 		);
 
 		$r = static::prefix_array ( $r, $prefix );
 
-		wp_cache_set ( $curr_url . $prefix, $r, __CLASS__ . __FUNCTION__, static::expire );
+		wp_cache_set ( $curr_url . $prefix, $r,
+			__CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}

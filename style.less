@@ -241,10 +241,11 @@ dt {
 	clear:both;
 	line-height:@line-height;
 	margin:@line-height 0 @padding-normal 0;
+	font-weight: bold;
 }
 
 dd {
-	margin-left:@padding-large;
+	margin-left:@font-size;
 	clear: both;
 }
 
@@ -460,6 +461,13 @@ img.left {
 	background-color: @bglight;
 }
 
+.singular {
+	h2 {
+		border-bottom: 2px solid darken(@bgcolor,60%);
+	}
+
+}
+
 /* --- ARTICLE --- */
 .h-entry {
 
@@ -627,6 +635,7 @@ img.left {
 }
 
 .singular {
+
 	.e-content,
 	footer {
 		margin-top: 2em;

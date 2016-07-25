@@ -32,10 +32,6 @@ $twigvars['posts'] = array();
 if ( have_posts() ) {
 	while ( have_posts() ) {
 		the_post();
-
-		// cleanup
-		//WP_SHORTSLUG::check_shorturl( $post->post_status, $post->post_status, $post );
-
 		$tmpl_vars = pmlnr_post::template_vars( $post );
 		$twigvars['posts'][] = $tmpl_vars;
 	}

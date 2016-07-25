@@ -11,7 +11,10 @@ $is_search = true;
 $twigvars['site'] = pmlnr_site::template_vars();
 $twigvars['site']['is_search'] = true;
 $twigvars['posts'] = array();
-$twigvars['site']['page_title'] = '<h1>' . __( "Displaying results for:" ) . ' "' . get_query_var('s') . '"' . '</h1>';
+$twigvars['site']['page_title'] = sprintf (
+	'<h1>%s %s</h1>',
+	__( "Displaying results for:" ),
+	get_query_var('s') );
 
 	if ( have_posts() ) {
 		while ( have_posts() ) {

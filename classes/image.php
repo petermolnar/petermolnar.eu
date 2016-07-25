@@ -453,6 +453,8 @@ class pmlnr_image extends pmlnr_base {
 
 		// match all wp inserted images
 		$inline_images = static::extract_wp_images( $html );
+
+
 		//preg_match_all("/<img.*wp-image-(\d*)[^\>]*>/", $html, $inline_images);
 
 		if ( !empty ( $inline_images[0]  )) {
@@ -505,11 +507,15 @@ class pmlnr_image extends pmlnr_base {
 	public function insert_featured_image ( $src ) {
 		global $post;
 
+
+
 		if (!static::is_post($post))
 			return $src;
 
 		if (!static::is_u_photo($post))
 			return $src;
+
+
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
@@ -519,8 +525,11 @@ class pmlnr_image extends pmlnr_base {
 		// add the image itself; prefer markdown
 		if ( !empty($thid) && !is_feed() ) {
 			$meta = static::get_extended_thumbnail_meta( $thid );
+
 			$adaptive = "![{$meta['image_meta']['title']}]({$meta['src']}){#img-{$thid}}";
+
 			$src = $src . "\n\n" . $adaptive . "\n";
+
 		}
 
 		// add exif; is_u_photo is checked already
@@ -742,7 +751,7 @@ class pmlnr_image extends pmlnr_base {
 	 */
 	public static function extract_md_images( &$text ) {
 		$matches = array();
-		preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/', $text, $matches);
+		preg_match_all('/\!\[(.*?)\]\((.*?) ?"?(.*?)"?\)\{(.*?)\}/is', $text, $matches);
 
 		return $matches;
 	}

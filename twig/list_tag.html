@@ -8,8 +8,8 @@
 	<nav>
 		<ul>
 			{% for tname, turl in post.tags %}
-				<li class="u-tag">
-					<a href="{{ turl }}" class="p-category">{{ tname }}</a>{# if not loop.last %},{% endif #}
+				<li>
+					<a href="{{ turl }}" class="u-category">{{ tname }}</a>
 				</li>
 			{% endfor %}
 		</ul>

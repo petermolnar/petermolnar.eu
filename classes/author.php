@@ -18,20 +18,34 @@ class pmlnr_author extends pmlnr_base {
 	public function add_user_meta_fields ($profile_fields) {
 
 		//$profile_fields['pgp'] = __('URL to PGP key for the email address above', 'petermolnareu');
-		$profile_fields['key'] = __('URL to PGP key for the email address above', 'petermolnareu');
-		$profile_fields['github'] = __('Github username', 'petermolnareu');
-		$profile_fields['mobile'] = __('Mobile phone number', 'petermolnareu');
-		$profile_fields['linkedin'] = __('LinkedIn username', 'petermolnareu');
-		$profile_fields['flickr'] = __('Flickr username', 'petermolnareu');
-		$profile_fields['tubmlr'] = __('Tumblr blog URL', 'petermolnareu');
-		$profile_fields['500px'] = __('500px username', 'petermolnareu');
-		$profile_fields['instagram'] = __('instagram username', 'petermolnareu');
-		$profile_fields['skype'] = __('skype username', 'petermolnareu');
-		$profile_fields['twitter'] = __('twitter username', 'petermolnareu');
-		$profile_fields['wechat'] = __('wechat username', 'petermolnareu');
-		$profile_fields['icq'] = __('ICQ number', 'petermolnareu');
-		$profile_fields['qq'] = __('QQ number', 'petermolnareu');
-		$profile_fields['telegram'] = __('Telegram handle', 'petermolnareu');
+		$profile_fields['key'] = __( 'URL to PGP key for the email address above',
+			'petermolnareu');
+		$profile_fields['github'] = __('Github username',
+			 'petermolnareu');
+		$profile_fields['mobile'] = __('Mobile phone number',
+			 'petermolnareu');
+		$profile_fields['linkedin'] = __('LinkedIn username',
+			 'petermolnareu');
+		$profile_fields['flickr'] = __('Flickr username',
+			 'petermolnareu');
+		$profile_fields['tubmlr'] = __('Tumblr blog URL',
+			 'petermolnareu');
+		$profile_fields['500px'] = __('500px username',
+			 'petermolnareu');
+		$profile_fields['instagram'] = __('instagram username',
+			 'petermolnareu');
+		$profile_fields['skype'] = __('skype username',
+			 'petermolnareu');
+		$profile_fields['twitter'] = __('twitter username',
+			 'petermolnareu');
+		$profile_fields['wechat'] = __('wechat username',
+			 'petermolnareu');
+		$profile_fields['icq'] = __('ICQ number',
+			 'petermolnareu');
+		$profile_fields['qq'] = __('QQ number',
+			 'petermolnareu');
+		$profile_fields['telegram'] = __('Telegram handle',
+			 'petermolnareu');
 
 		return $profile_fields;
 	}
@@ -66,7 +80,8 @@ class pmlnr_author extends pmlnr_base {
 
 		}
 
-		wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__, static::expire );
+		wp_cache_set ( $author_id, $list, __CLASS__ . __FUNCTION__,
+			static::expire );
 		return $list;
 	}
 
@@ -92,7 +107,10 @@ class pmlnr_author extends pmlnr_base {
 			$avatar = static::fix_url($image[0]);
 		}
 		else {
-			$avatar = sprintf('https://s.gravatar.com/avatar/%s?=64', md5( strtolower( trim( $email ) ) ) );
+			$avatar = sprintf(
+				'https://s.gravatar.com/avatar/%s?=64',
+				md5( strtolower( trim( $email ) ) )
+			);
 		}
 
 		$r = array (
@@ -108,7 +126,8 @@ class pmlnr_author extends pmlnr_base {
 
 		$r = static::prefix_array ( $r, $prefix );
 
-		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__, static::expire );
+		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__,
+			static::expire );
 
 		return $r;
 
