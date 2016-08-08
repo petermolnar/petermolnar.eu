@@ -9,7 +9,7 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function add_tags ( &$post, &$keywords, $taxonomy = 'post_tag' ) {
+	public static function add_tags ( &$post, $keywords, $taxonomy = 'post_tag' ) {
 
 		$keywords = array_unique($keywords);
 		foreach ( $keywords as $tag ) {
@@ -96,22 +96,6 @@ class pmlnr_base {
 	}
 
 	/**
-	 *
-	 */
-	public static function fix_url ( $url, $absolute = true ) {
-		// move to generic scheme
-		$url = str_replace ( array('http://', 'https://'), 'https://', $url );
-
-		$domain = parse_url(get_bloginfo('url'), PHP_URL_HOST);
-		// relative to absolute
-		if ($absolute && !stristr($url, $domain)) {
-			$url = 'https://' . $domain . '/' . ltrim($url, '/');
-		}
-
-		return $url;
-	}
-
-	/**
 	 * do everything we can to find the currently active post
 	 */
 	public static function fix_post ( &$post = null ) {
@@ -161,26 +145,29 @@ class pmlnr_base {
 		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		$return = false;
-
 		$rawmeta = wp_get_attachment_metadata( $thid );
 
 		$yaml = static::get_yaml();
+
+		$return = $camera = $author = false;
 
 		if ( isset( $rawmeta['image_meta'] ) && !empty($rawmeta['image_meta'])) {
 
 			if (isset($rawmeta['image_meta']['copyright']) && !empty($rawmeta['image_meta']['copyright']) ) {
 				foreach ( $yaml['copyright'] as $str ) {
 					if ( stristr($rawmeta['image_meta']['copyright'], $str) ) {
-						return true;
+						$author = true;
 					}
 				}
 			}
 
 			if ( isset($rawmeta['image_meta']['camera']) && !empty($rawmeta['image_meta']['camera']) && in_array(trim($rawmeta['image_meta']['camera']), $yaml['cameras'])) {
-				$return = true;
+				$camera = true;
 			}
 		}
+
+		if ( $camera && $author )
+			$return = true;
 
 		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -242,7 +229,7 @@ class pmlnr_base {
 	 */
 	public static function extract_urls( &$text ) {
 		$matches = array();
-		preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*/i", $text, $matches);
+		preg_match_all("/\b(?:http|https)\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&%\+]*/i", $text, $matches);
 
 		$matches = $matches[0];
 		return $matches;
@@ -266,10 +253,12 @@ class pmlnr_base {
 		$content = $post->post_content;
 
 		$reaction = static::has_reaction( $post->post_content );
-		$webmention_url = trim( $reaction[2][0] );
-		$webmention_type = trim( $reaction[1][0] );
-		$webmention_rsvp = trim( $reaction[3][0] );
+		$reaction_url = trim( $reaction[2][0] );
+		$reaction_type = trim( $reaction[1][0] );
+		$reaction_rsvp = trim( $reaction[3][0] );
+		//static::debug ( $reaction );
 
+		/*
 		$links = static::extract_urls( $post->post_content );
 
 		// one single link in the post, so it's most probably an old bookmark
@@ -286,14 +275,17 @@ class pmlnr_base {
 				$webmention_url = $links[0];
 				$webmention_type = 'fav';
 			}
-
 		}
+		*/
 
 		$has_thumbnail = get_post_thumbnail_id( $post->ID );
 		$has_quote = preg_match("/^> /m", $post->post_content);
 		$has_code = preg_match("/^```(?:[a-z]+)?/m", $post->post_content);
-		$has_youtube = preg_match("/(?:www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]+/", $post->post_content);
-		$has_audio = preg_match("/\[audio.*\]/", $post->post_content);
+
+		if ( preg_match("/(?:www\.)?youtube\.com\/watch\?v=[a-zA-Z0-9_-]+/", $post->post_content) )
+			static::add_tags( $post, array( 'Video' ) );
+
+		//$has_audio = preg_match("/\[audio.*\]/", $post->post_content);
 		$has_webmention = empty( $webmention_url ) ? false : true;
 
 		$taxonomy = 'post_tag';
@@ -303,54 +295,71 @@ class pmlnr_base {
 		$is_long = ( $tag_it != false || $tag_journal != false ) ? true : false;
 
 		$type = 'article';
+		//static::debug ("type discovery for {$post->ID}");
 
 		// --- Actual discovery ---
-		if ( $is_long ) {
+		if ( $is_long  && strlen ($post->post_excerpt ) > 0 ) {
+			//static::debug ("is_long & excerpt");
 			$type = 'article';
 		}
-		elseif ( ! empty( $webmention_type ) ) {
-			switch ( $webmention_type ) {
-				case 'reply':
-				case 're':
-				case 'u-in-reply-to':
-					$type = 'reply';
-					break;
-				case 'from':
-				case 'repost':
-				case 'u-repost-of':
-					$type = 'repost';
-					break;
-				default:
-					$type = 'bookmark';
-					break;
+		elseif ( $is_long  && strlen ($post->post_excerpt ) == 0 ) {
+			//static::debug ("is_long & no excerpt");
+			$type = 'note';
+		}
+		elseif ( !empty( $reaction_type ) ) {
+			if ( $reaction_type == 'reply' ) {
+				//static::debug ("reply");
+				$type = 'reply';
+			}
+			elseif ( $reaction_type == 'repost' && ! $has_thumbnail ) {
+				//static::debug ("repost note");
+				$type = 'note';
+			}
+			elseif ( $reaction_type == 'repost' && $has_thumbnail ) {
+				//static::debug ("repost image");
+				$type = 'image';
+			}
+			elseif ( ! $has_thumbnail ) {
+				//static::debug ("bookmark");
+				$type = 'bookmark';
+			}
+			elseif ( $has_thumbnail ) {
+				//static::debug ("bookmark image");
+				$type = 'image';
 			}
 		}
-		elseif ( $has_code ) {
-			$type = 'article';
-		}
-		elseif ( ( $has_thumbnail && static::is_photo( $has_thumbnail ) ) || $tag_photo ) {
+		//elseif ( $has_code ) {
+			//$type = 'article';
+		//}
+		elseif ( ( $has_thumbnail && static::is_photo( $has_thumbnail ) )
+			|| $tag_photo ) {
+				//static::debug ("photo");
 			$type = 'photo';
 		}
 		elseif ( $post_length < ARTICLE_MIN_LENGTH ) {
+			//static::debug ("note");
 			$type = 'note';
 
 			if ( $has_thumbnail ) {
+				//static::debug ("image");
 				$type = 'image';
 			}
-			elseif ( $has_youtube ) {
-				$type = 'video';
-			}
-			elseif ( $has_audio ) {
-				$type = 'audio';
-			}
-			elseif ( $has_quote ) {
-				$type = 'quote';
-			}
+			//elseif ( $has_youtube ) {
+				//$type = 'video';
+			//}
+			//elseif ( $has_audio ) {
+				//$type = 'audio';
+			//}
+			//elseif ( $has_quote ) {
+				//$type = 'quote';
+			//}
 
 		}
 		elseif ( strlen ($post->post_title ) == 0 ) {
+			//static::debug ("note by no title");
 			$type = 'note';
 		}
+		// else falls under 'article'
 
 		$id = term_exists( $type, 'category');
 		if ($id !== 0 && $id !== null) {
@@ -362,66 +371,6 @@ class pmlnr_base {
 
 		wp_cache_set ( $post->ID, $type, __CLASS__ . __FUNCTION__, static::expire );
 		return $type;
-	}
-
-	/**
-	 *
-	 */
-	public static function get_extended_thumbnail_meta ( &$thid ) {
-		if ( empty ( $thid ) )
-			return false;
-
-		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$attachment = get_post( $thid );
-
-		$meta = array();
-		if ( static::is_post($attachment)) {
-			$meta = $_meta = wp_get_attachment_metadata($thid);
-			$wp_upload_dir = wp_upload_dir();
-
-			if ( !empty ( $attachment->post_parent ) ) {
-				$parent = get_post( $attachment->post_parent );
-				$meta['parent'] = $parent->ID;
-			}
-
-			$try = array ( 'geo_latitude', 'geo_longitude', 'geo_altitude' );
-
-			foreach ( $try as $kw )
-				if ( empty ( $meta['image_meta'][ $kw ] ) )
-					$meta['image_meta'][ $kw ] = get_post_meta( $parent->ID, $kw, true );
-
-			$src = wp_get_attachment_image_src ($thid, 'full');
-			$meta['src'] = static::fix_url($src[0]);
-
-			if (isset($meta['sizes']) && !empty($meta['sizes'])) {
-				foreach ( $meta['sizes'] as $size => $data ) {
-					$src = wp_get_attachment_image_src ($thid, $size);
-					$src = static::fix_url($src[0]);
-					$meta['sizes'][$size]['src'] = $src;
-					$meta['sizes'][$size]['path'] = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $data['file'];
-				}
-			}
-
-			if ( empty($meta['image_meta']['title']))
-				$meta['image_meta']['title'] = esc_attr($attachment->post_title);
-
-			$slug = sanitize_title ( $meta['image_meta']['title'] , $thid );
-			if ( is_numeric( substr( $slug, 0, 1) ) )
-				$slug = 'img-' . $slug;
-			$meta['image_meta']['slug'] = $slug;
-
-			$meta['image_meta']['alt'] = '';
-			$alt = get_post_meta($thid, '_wp_attachment_image_alt', true);
-			if ( !empty($alt))
-				$meta['image_meta']['alt'] = strip_tags($alt);
-
-		}
-
-		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $meta;
 	}
 
 	/**
@@ -438,21 +387,6 @@ class pmlnr_base {
 
 
 		return $r;
-	}
-
-	/**
-	 *
-	 */
-	public static function prefix_array ( &$r, $prefix = '' ) {
-		if (!empty($prefix)) {
-			foreach ($r as $key => $value ) {
-				$r[ $prefix . $key ] = $value;
-				unset($r[$key]);
-			}
-		}
-
-		return $r;
-
 	}
 
 	/**
@@ -475,35 +409,6 @@ class pmlnr_base {
 		static::debug("Updating post content for #{$post->ID}", 5);
 
 		$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $content );
-
-		try {
-			$req = $wpdb->query( $q );
-		}
-		catch (Exception $e) {
-			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
-		}
-	}
-
-	/**
-	 *
-	 */
-	public static function replace_title ( &$post, &$title ) {
-
-		$post = static::fix_post ( $post );
-
-		if ( false === $post )
-			return false;
-
-		if ( empty ( $title ) )
-			return false;
-
-		global $wpdb;
-		$dbname = "{$wpdb->prefix}posts";
-		$req = false;
-
-		static::debug("Updating post title for #{$post->ID}", 5);
-
-		$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_title`='%s' WHERE `ID`='{$post->ID}'", $title );
 
 		try {
 			$req = $wpdb->query( $q );
@@ -546,12 +451,13 @@ class pmlnr_base {
 	 *
 	 *
 	 *
-	 */
+	 *
 	public static function extract_location ( &$content ) {
 		$pattern = "/^[\*\+]{3}\s+loc:?\s+([0-9\.]+),([0-9\.]+)(@[0-9,\.]+)?$/mi";
 		preg_match_all( $pattern, $content, $matches);
 		return $matches;
 	}
+	*/
 
 
 	/**
@@ -562,12 +468,13 @@ class pmlnr_base {
 	 * `#this, #is, #another line`
 	 *
 	 *
-	 */
+	 *
 	public static function extract_hashtags ( &$content ) {
 		$pattern = "/\\\?\#(.*?)(?:,|$)(?![\n\r][=-])/mi";
 		preg_match_all( $pattern, $content, $matches);
 		return $matches;
 	}
+	*/
 
 
 }

@@ -17,6 +17,7 @@ class pmlnr_markdown extends pmlnr_base {
 
 		// markdown
 		//add_filter( 'the_content', array( 'pmlnr_markdown', 'markdown_toc'), 7, 1 );
+
 		add_filter( 'the_content', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 		add_filter( 'the_excerpt', array( 'pmlnr_markdown', 'parsedown'), 8, 1 );
 
@@ -51,6 +52,7 @@ class pmlnr_markdown extends pmlnr_base {
 
 		if (!empty($title)) $title = ' ' . $title;
 		if (!empty($wpid)) $imgid = '#img-' . $wpid;
+		//if (!empty($wpid)) $imgid = '#wp-image-' . $wpid;
 
 
 		$img = sprintf ('![%s](%s%s){%s%s}', $alt, $src, $title, $imgid, $cl);
@@ -89,7 +91,45 @@ class pmlnr_markdown extends pmlnr_base {
 		return $r;
 	}
 
+	/**
+	 * parsedown
+	 *
+	public static function pandoc_md2html ( $md ) {
 
+		if ( empty ( $md ) )
+			return false;
+
+		$hash = sha1($md);
+		if ( $cached = wp_cache_get ( $hash, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$f = tempnam( "/run/shm", "md_" );
+		file_put_contents( $f, $md );
+		$cmd =
+			"/usr/bin/pandoc --no-highlight -p -f markdown -t html -o- {$f}";
+		exec( $cmd, $r, $retval);
+		$r = join( "\n", $r );
+
+		unlink($f);
+
+		// match cite
+		//preg_match_all( '/<blockquote>(?:.*?)\s(?:&#8211;|–)(.*?)(:?<\/p>\s?)?<\/blockquote>/s', $r, $matches );
+		preg_match_all( '/<blockquote>(?:.*?)\s(?:\\-|–|&#8211;)(.*?)(?:<\/p>\s?)<\/blockquote>/s', $r, $matches );
+
+		if ( !empty($matches) && isset( $matches[1] ) && isset( $matches[1][0] ) ) {
+			$r = str_replace ( $matches[1][0], "<cite>{$matches[1][0]}</cite>", $r );
+		}
+
+		wp_cache_set ( $hash, $r, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $r;
+	}
+	*/
+
+
+	/**
+	 *
+	 */
 	public static function html2markdown ( $content ) {
 
 		if (empty($content))

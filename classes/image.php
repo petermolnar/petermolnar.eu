@@ -21,53 +21,46 @@ class pmlnr_image extends pmlnr_base {
 			$this->dpix[$cntr++] = $size;
 		}
 
-		$this->extra_exif = array (
-			'lens' => 'LensID',
-			'geo_latitude' => 'GPSLatitude',
-			'geo_longitude' => 'GPSLongitude',
-			'geo_altitude' => 'GPSAltitude',
-			'title' => 'Title',
-		);
-
 		add_action( 'init', array( &$this, 'init'));
 	}
 
-	public static function ascii_image ( $thid ) {
-		if ( empty( $thid ) )
-			return false;
 
-		static::debug ( "getting  ASCII for $thid", 7);
-		$cached = get_post_meta ( $thid, 'ascii', true );
+	//public static function ascii_image ( $thid ) {
+		//if ( empty( $thid ) )
+			//return false;
 
-		if ( $cached )
-			return $cached;
+		//static::debug ( "getting  ASCII for $thid", 7);
+		//$cached = get_post_meta ( $thid, 'ascii', true );
 
-		$src = wp_get_attachment_image_src ( $thid, 'full' );
+		//if ( $cached )
+			//return $cached;
 
-		if ( empty ( $src ) )
-			return false;
+		//$src = wp_get_attachment_image_src ( $thid, 'full' );
 
-		$wp_upload_dir = wp_upload_dir();
-		$fname = explode( '/', $src[0] );
-		$fname = end( $fname );
-		$path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $fname;
-		$cmd = '/usr/src/img2txt/img2txt.py --targetAspect 0.5 ' . $path;
+		//if ( empty ( $src ) )
+			//return false;
 
-		static::debug ( "getting  ASCII for {$path}", 5);
+		//$wp_upload_dir = wp_upload_dir();
+		//$fname = explode( '/', $src[0] );
+		//$fname = end( $fname );
+		//$path = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $fname;
+		//$cmd = '/usr/src/img2txt/img2txt.py --targetAspect 0.5 ' . $path;
 
-		exec( $cmd, $ascii, $retval);
+		//static::debug ( "getting  ASCII for {$path}", 5);
 
-		if ($retval == 0 ) {
-			$ascii = preg_replace ( '/.*?pre>(.*?)[\n\r]<\/.*/ms', '$1', join("\n", $ascii ) );
+		//exec( $cmd, $ascii, $retval);
 
-			add_post_meta ( $thid, 'ascii', $ascii, true);
-		}
-		else {
-			static::debug ( "return code: {$retval}, with message: " . json_encode($ascii), 4);
-		}
+		//if ($retval == 0 ) {
+			//$ascii = preg_replace ( "/.*?pre>(.*?)[\n\r]<\/.*/ms", '$1', join("\n", $ascii ) );
 
-		return $ascii;
-	}
+			//add_post_meta ( $thid, 'ascii', $ascii, true);
+		//}
+		//else {
+			//static::debug ( "return code: {$retval}, with message: " . json_encode($ascii), 4);
+		//}
+
+		//return $ascii;
+	//}
 
 	/**
 	 *
@@ -86,10 +79,12 @@ class pmlnr_image extends pmlnr_base {
 			add_image_size ( static::prefix . $dpix, $size, $size, false );
 
 		// extract additional images sizes
-		add_filter( 'wp_read_image_metadata', array(&$this, 'read_extra_exif'), 1, 3 );
+		//add_filter( 'wp_read_image_metadata', array(&$this, 'read_extra_exif'), 1, 3 );
 
 		// insert featured image as adaptive
+
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
+
 		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 2 );
 		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
 
@@ -97,13 +92,73 @@ class pmlnr_image extends pmlnr_base {
 
 		add_filter ( 'wp_image_editors', array ( &$this, 'wp_image_editors' ));
 
-		add_filter ( 'wp_flatexport_post', array ( &$this, 'flatexport_exif' ), 31, 2 );
-		add_filter ( 'wp_flatexport_featured_image', array ( &$this, 'flatexport_featured_image' ), 1, 2 );
+		add_filter ( 'wp_flatexport_txt', array ( &$this, 'flatexport_exif' ), 16, 2 );
+		//add_filter ( 'wp_flatexport_featured_image', array ( &$this, 'flatexport_featured_image' ), 1, 2 );
+
+
+		add_filter( 'wp_get_attachment_metadata', array ( &$this, 'extend_attachment_meta' ), 1, 2 );
+
 	}
 
 	/**
 	 *
 	 */
+	public static function extend_attachment_meta ( $meta, $thid ) {
+
+		if ( $cached = wp_cache_get ( $thid, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+
+		$attachment = get_post( $thid );
+
+		if ( false === static::is_post( $attachment ) )
+			return $meta;
+
+		if ( !empty ( $attachment->post_parent ) )
+			$meta['parent'] = $attachment->post_parent;
+
+		$try = array ( 'geo_latitude', 'geo_longitude', 'geo_altitude' );
+		foreach ( $try as $kw )
+			if ( empty ( $meta['image_meta'][ $kw ] ) )
+					$meta['image_meta'][ $kw ] = get_post_meta( $attachment->post_parent, $kw, true );
+
+		$wp_upload_dir = wp_upload_dir();
+		$meta['src'] = site_url ( $wp_upload_dir['baseurl'] . '/' . $meta['file'] );
+
+		if ( isset( $meta['sizes'] ) && ! empty( $meta['sizes'] ) ) {
+			foreach ( $meta['sizes'] as $size => $data ) {
+				$meta['sizes'][$size]['src'] = site_url ( $wp_upload_dir['baseurl'] . '/' . $data['file'] );
+				$meta['sizes'][$size]['path'] = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $data['file'];
+
+				$meta['sizes'][$size]['src_c'] = site_url ( "cache/{$size}/{$meta['file']}" );
+				$meta['sizes'][$size]['path_c'] = WP_CONTENT_DIR . DIRECTORY_SEPARATOR
+					. 'cache' . DIRECTORY_SEPARATOR
+					. $size . DIRECTORY_SEPARATOR
+					. $meta['file'];
+			}
+		}
+
+		if ( empty($meta['image_meta']['title']))
+			$meta['image_meta']['title'] = esc_attr( $attachment->post_title );
+
+		$slug = sanitize_title ( $meta['image_meta']['title'] , $thid );
+		if ( is_numeric( substr( $slug, 0, 1) ) )
+			$slug = 'img-' . $slug;
+		$meta['image_meta']['slug'] = $slug;
+
+		$meta['image_meta']['alt'] = '';
+		$alt = get_post_meta($thid, '_wp_attachment_image_alt', true);
+		if ( !empty($alt))
+			$meta['image_meta']['alt'] = strip_tags( $alt );
+
+		wp_cache_set ( $thid, $meta, __CLASS__ . __FUNCTION__, static::expire );
+
+		return $meta;
+	}
+
+	/**
+	 *
+	 *
 	public function flatexport_featured_image ( $text, $post ) {
 		if ( ! static::is_post ( $post ) )
 			return $text;
@@ -129,7 +184,7 @@ class pmlnr_image extends pmlnr_base {
 
 		return $return;
 	}
-
+	*/
 
 	/**
 	 *
@@ -151,7 +206,8 @@ class pmlnr_image extends pmlnr_base {
 		$return = $text;
 
 		if ( !empty($thid) ) {
-			$meta = static::get_extended_thumbnail_meta( $thid );
+			//$meta = static::get_extended_thumbnail_meta( $thid );
+			$meta = wp_get_attachment_metadata( $thid );
 			if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
 				$meta = $meta['image_meta'];
 				$r = array();
@@ -216,8 +272,10 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 		$watermarkfile = get_template_directory() . DIRECTORY_SEPARATOR . 'watermark.png';
-		if ( ! file_exists ( $watermarkfile ) )
+		if ( ! file_exists ( $watermarkfile ) ) {
+			static::debug( "no watermark file present at {$watermarkfile}", 6);
 			return $imagick;
+		}
 
 
 		$meta = wp_read_image_metadata ( $resized );
@@ -237,8 +295,10 @@ class pmlnr_image extends pmlnr_base {
 		}
 
 			// only watermark my own images, others should not have this obviously
-		if ( false === $is_photo )
+		if ( false === $is_photo ) {
+			static::debug( "this is not a photo of mine", 6);
 			return $imagick;
+		}
 
 		static::debug( 'watermark present and it looks like my photo, adding watermark to image ', 5 );
 		$watermark = new Imagick( $watermarkfile );
@@ -294,56 +354,6 @@ class pmlnr_image extends pmlnr_base {
 	}
 
 	/**
-	 * additional EXIF which only exiftool can read
-	 *
-	 */
-	public function read_extra_exif ( $meta, $filepath ='', $sourceImageType = '' ) {
-
-		if (empty($filepath) || !is_file($filepath) || !is_readable($filepath)) {
-			static::debug ( "{$filepath} doesn't exist" );
-			return $meta;
-		}
-
-		if ( $sourceImageType != IMAGETYPE_JPEG )
-			return $meta;
-
-		$extra = $this->extra_exif;
-		$rextra = array_flip($extra);
-
-		$args = $metaextra = array();
-
-		foreach ($extra as $metaid => $exiftoolID ) {
-			if (!isset($meta[ $metaid ])) {
-				$args[] = $exiftoolID;
-			}
-		}
-
-		if (!empty($args)) {
-			$cmd = 'exiftool -s -' . join(' -', $args) . ' ' . $filepath;
-			static::debug('Extracting extra EXIF for ' . $filepath . ' with command ' . $cmd );
-
-			exec( $cmd, $exif, $retval);
-
-			if ($retval == 0 ) {
-				foreach ( $exif as $cntr => $data ) {
-					$data = explode (' : ', $data );
-					$data = array_map('trim', $data);
-					if ( $data[0] == 'GPSLatitude' || $data[0] == 'GPSLongitude' )
-						$data[1] = static::exif_gps2dec( $data[1] );
-					elseif ( $data[0] == 'GPSAltitude' )
-						$data[1] = static::exif_gps2alt( $data[1] );
-
-					$metaextra[ $rextra[ $data[0] ] ] = $data[1];
-				}
-			}
-		}
-
-		$meta = array_merge($meta, $metaextra);
-
-		return $meta;
-	}
-
-	/**
 	 * adaptive image shortcode function
 	 *
 	 */
@@ -356,7 +366,8 @@ class pmlnr_image extends pmlnr_base {
 		if ($post === false)
 			return false;
 
-		$meta = static::get_extended_thumbnail_meta($thid);
+		//$meta = static::get_extended_thumbnail_meta($thid);
+		$meta = wp_get_attachment_metadata( $thid );
 		if (empty($meta['sizes']))
 			return false;
 
@@ -378,7 +389,8 @@ class pmlnr_image extends pmlnr_base {
 				else
 					continue;
 
-				if ( $t['src'] != $meta['src'] )
+				if ( isset( $t['src']) && isset( $meta['src'] ) &&
+					$t['src'] != $meta['src'] )
 					$fallback = $t;
 			}
 		}
@@ -412,8 +424,6 @@ class pmlnr_image extends pmlnr_base {
 			return false;
 		}
 
-		//$target = static::fix_url($target);
-
 		$class="";
 		if ( $post != null && static::is_u_photo($post)) {
 			$class = "u-photo";
@@ -422,17 +432,8 @@ class pmlnr_image extends pmlnr_base {
 		if ( is_feed()) {
 			$r = sprintf('<img src="%s" title="%s" alt="%s" />', $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'] );
 		}
-		/*
-		elseif (static::is_amp()) {
-			$r = sprintf('
-		<a href="%s">
-			<amp-img src="%s" title="%s" alt="%s" srcset="%s" width="%s" height="%s" />
-		</a>', $target, $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ), $fallback['width'], $fallback['height'] );
-		}
-		*/
 		else {
 			$r = sprintf('<a class="%s" href="%s"><img src="%s" id="img-%s" class="adaptive adaptimg" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw, 60vw" /></a>', $class, $target, $fallback['src'], $thid, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
-			//$r = sprintf('<a href="%s"><img src="%s" id="img-%s" class="adaptive %s" title="%s" alt="%s" srcset="%s" sizes="42em" /></a>', $target, $fallback['src'], $thid, $class, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, static::expire );
@@ -472,11 +473,12 @@ class pmlnr_image extends pmlnr_base {
 		if ( !empty ( $markdown_images[0]  )) {
 			$excludes = array ( '.noadapt', '.alignleft', '.alignright' ,'u-photo', 'avatar' );
 			foreach ( $markdown_images[0] as $cntr=>$imgstr ) {
+				//static::debug ( $markdown_images );
 				$id = false;
 				$adaptify = true;
-				$alt = $markdown_images[1][$cntr];
-				$url = $markdown_images[2][$cntr];
-				$title = $markdown_images[3][$cntr];
+				if ( preg_match( '/.*\.gif$/i', $markdown_images[3][$cntr] ) )
+					continue;
+
 				$meta = explode(' ', $markdown_images[4][$cntr]);
 
 				foreach ( $meta as $val ) {
@@ -505,17 +507,17 @@ class pmlnr_image extends pmlnr_base {
 	 *
 	 */
 	public function insert_featured_image ( $src ) {
-		global $post;
+		$post = static::fix_post();
+		$format = static::post_format( $post );
 
-
-
-		if (!static::is_post($post))
+		if ( $format == 'article' )
 			return $src;
 
-		if (!static::is_u_photo($post))
-			return $src;
+		//if (!static::is_post($post))
+			//return $src;
 
-
+		//if (!)
+			//return $src;
 
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
@@ -523,17 +525,37 @@ class pmlnr_image extends pmlnr_base {
 		$thid = get_post_thumbnail_id( $post->ID );
 
 		// add the image itself; prefer markdown
-		if ( !empty($thid) && !is_feed() ) {
-			$meta = static::get_extended_thumbnail_meta( $thid );
+		if ( !empty($thid) ) {
+			//$meta = static::get_extended_thumbnail_meta( $thid );
+			$meta = wp_get_attachment_metadata( $thid );
+
+			$clean = $src;
 
 			$adaptive = "![{$meta['image_meta']['title']}]({$meta['src']}){#img-{$thid}}";
+			//$clean = str_replace( $adaptive, '', $clean );
+			$out = $clean;
 
-			$src = $src . "\n\n" . $adaptive . "\n";
+			$out .= $adaptive;
 
+			if ( static::is_u_photo($post) ) {
+				$exif = static::photo_exif( $thid, $post->ID );
+				////$clean = str_replace( $exif, '', $clean );
+				////$exif = str_replace( "\n", '', $exif );
+				////$clean = str_replace( $exif, '', $clean );
+
+				$out .= $exif;
+				$out .= '<a href="https://brid.gy/publish/facebook"></a>';
+				$out .= '<a href="https://brid.gy/publish/flickr"></a>';
+			}
+
+
+			if ( $clean != $src )
+				static::replace_content( $post, $clean );
+
+
+			$src = $out;
 		}
 
-		// add exif; is_u_photo is checked already
-		$src = $src . static::photo_exif( $thid, $post->ID );
 
 		wp_cache_set ( $post->ID, $src, __CLASS__ . __FUNCTION__, static::expire );
 
@@ -552,7 +574,8 @@ class pmlnr_image extends pmlnr_base {
 
 		$return = false;
 
-		$meta = static::get_extended_thumbnail_meta($thid);
+		//$meta = static::get_extended_thumbnail_meta($thid);
+		$meta = wp_get_attachment_metadata($thid);
 		if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
 
 			$meta = $meta['image_meta'];
@@ -598,10 +621,10 @@ class pmlnr_image extends pmlnr_base {
 				$r['location'] = $location;
 			}
 
-			if ( isset($meta['created_timestamp']) && !empty($meta['created_timestamp']))
-				$r['timestamp'] = sprintf (__('<i class="icon-clock spacer"></i>%s'), date( "r", $meta['created_timestamp'] ) );
+			//if ( isset($meta['created_timestamp']) && !empty($meta['created_timestamp']))
+				//$r['timestamp'] = sprintf (__('<i class="icon-clock spacer"></i>%s'), date( "r", $meta['created_timestamp'] ) );
 
-			$return = '<aside class="exif"><ul><li>' . join('</li><li>',$r) . '</li></ul></aside>';
+			$return = "<aside class=\"exif\"><ul>\n<li>" . join("</li>\n<li>",$r) . "</li>\n</ul></aside>";
 		}
 
 
@@ -609,131 +632,6 @@ class pmlnr_image extends pmlnr_base {
 		wp_cache_set ( $thid, $return, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $return;
-	}
-
-	/**
-	 *
-	 */
-	public static function exif_gps2dec ( $string ) {
-		//103 deg 20' 38.33" E
-		preg_match( "/([0-9.]+)\s?+deg\s?+([0-9.]+)'\s?+([0-9.]+)\"\s?+([NEWS])/", trim($string), $matches );
-
-		$dd = $matches[1] + ( ( ( $matches[2] * 60 ) + ( $matches[3] ) ) / 3600 );
-		if ( $matches[4] == "S" || $matches[4] == "W" )
-			$dd = $dd * -1;
-		return round($dd,6);
-	}
-
-	/**
-	 *
-	 */
-	public static function exif_gps2alt ( $string ) {
-		//2062.6 m Above Sea Level
-		preg_match( "/([0-9.]+)\s?+m/", trim($string), $matches );
-
-		$alt = $matches[1];
-		if ( stristr( $string, 'below') )
-			$alt = $alt * -1;
-		return $alt;
-	}
-
-	/**
-	 *
-	 */
-	public static function autotag_by_photo ( $post ) {
-		static::debug ( "autotag triggered");
-		$post = static::fix_post($post);
-
-		if ( false === $post ) {
-			static::debug ( "false post");
-			return false;
-		}
-
-		$thid = get_post_thumbnail_id( $post->ID );
-
-		if ( empty($thid) ) {
-			static::debug ( "not thid");
-			return false;
-		}
-
-		$meta = static::get_extended_thumbnail_meta ( $thid );
-
-		if ( isset( $meta['image_meta'] ) && isset ( $meta['image_meta']['keywords'] ) && !empty( $meta['image_meta']['keywords'] ) ) {
-
-			$keywords = $meta['image_meta']['keywords'];
-
-			// add photo tag
-			$keywords[] = 'photo';
-
-			if ( isset ( $meta['image_meta']['camera'] ) && ! empty ( $meta['image_meta']['camera'] ) ) {
-
-				// add camera
-				$keywords[] = $meta['image_meta']['camera'];
-
-				// add camera manufacturer
-				if ( strstr( $meta['image_meta']['camera'], ' ' ) ) {
-					$manufacturer = ucfirst ( strtolower ( substr ( $meta['image_meta']['camera'], 0, strpos( $meta['image_meta']['camera'], ' ') ) ) ) ;
-					$keywords[] = $manufacturer;
-				}
-
-			}
-
-			static::add_tags ( $post, $keywords );
-
-		}
-
-		// content
-		if ( empty ( $post->post_content ) && ! empty( $meta['image_meta']['caption'] ) ) {
-			static::debug ( "appending post #{$post->ID} content with image caption" );
-			$modcontent = $meta['image_meta']['caption'];
-			static::replace_content ( $post, $modcontent );
-			$post->post_content = $modcontent;
-		}
-
-		// content
-		if ( empty ( $post->post_title ) && ! empty( $meta['image_meta']['title'] ) ) {
-			static::debug ( "appending post #{$post->ID} title with image caption" );
-			static::replace_title ( $post, $meta['image_meta']['title'] );
-			$post->post_title = $meta['image_meta']['title'];
-		}
-
-		// GPS
-		$try = array ( 'geo_latitude', 'geo_longitude', 'geo_altitude' );
-		foreach ( $try as $kw ) {
-			$curr = get_post_meta ( $post->ID, $kw, true );
-			static::debug("Current {$kw} for {$post->ID} is: ${curr}");
-
-			if ( isset ( $meta['image_meta'][ $kw ] ) && !empty( $meta['image_meta'][ $kw ] ) ) {
-				if ( empty ( $curr ) ) {
-					static::debug("Adding {$kw} to {$post->ID} from exif");
-					add_post_meta( $post->ID, $kw, $meta['image_meta'][ $kw ], true );
-				}
-				elseif ( $curr != $meta['image_meta'][ $kw ] ) {
-					static::debug("Updating {$kw} to {$post->ID} from exif");
-					update_post_meta( $post->ID, $kw, $meta['image_meta'][ $kw ], $curr );
-				}
-			}
-		}
-
-		// force post to Flickr
-		$snap_flickr = array (
-			array (
-				"doFL" => 1,
-				"msgTFrmt" => "%TITLE%",
-				"msgFrmt" => "Originally posted to: %URL%
-
-%RAWTEXT%",
-				"isAutoImg" => "A",
-				"imgToUse" => "",
-				"do" => 1,
-			)
-		);
-
-		if ( get_post_meta ( $post->ID, 'snapFL', true ) )
-			update_post_meta ( $post->ID, 'snapFL', $snap_flickr );
-		else
-			add_post_meta ( $post->ID, 'snapFL', $snap_flickr, true );
-
 	}
 
 	/**

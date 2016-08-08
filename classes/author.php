@@ -88,7 +88,7 @@ class pmlnr_author extends pmlnr_base {
 	/**
 	 * template variables for twig
 	 */
-	public static function template_vars ( $author_id = 1, $prefix = '' ) {
+	public static function template_vars ( $author_id = 1 ) {
 
 		$r = array();
 
@@ -104,7 +104,7 @@ class pmlnr_author extends pmlnr_base {
 		$thid = get_user_option ( 'metronet_image_id', $author_id );
 		if ( $thid ) {
 			$image = wp_get_attachment_image_src ($thid, 'thumbnail');
-			$avatar = static::fix_url($image[0]);
+			$avatar = site_url($image[0]);
 		}
 		else {
 			$avatar = sprintf(
@@ -123,8 +123,6 @@ class pmlnr_author extends pmlnr_base {
 			'pgp' => get_the_author_meta ( 'pgp' , $author_id ),
 			'handle' => get_the_author_meta( 'nickname', $author_id ),
 		);
-
-		$r = static::prefix_array ( $r, $prefix );
 
 		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__,
 			static::expire );

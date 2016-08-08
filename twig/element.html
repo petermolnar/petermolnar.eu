@@ -1,27 +1,20 @@
-{% if post.format in site.image_formats %}
-	{% set htype="photo" %}
-{% elseif post.format in site.long_formats %}
-	{% set htype="article" %}
-{% else %}
-	{% set htype="note" %}
-{% endif %}
-<article class="h-entry h-{{ htype }}">
+<article class="h-entry h-{{ post.htype }}">
 	<header>
 		{% if post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
-				<span class="p-name {% if htype == "article" %}more{% endif %}">{{ post.title }}</span>
+				<span class="p-name {% if post.htype == "article" %}more{% endif %}">{{ post.title }}</span>
 			</a>
 		</h2>
 		{% endif %}
 		{% include 'ameta_pubdate.html' %}
 		{% include 'ameta_author.html' %}
-		{% if htype != "photo" %}
+		{% if post.htype != "photo" %}
 			{% include 'ameta_webmention.html' %}
 		{% endif %}
 	</header>
 
-	{% if htype == "article" %}
+	{% if post.htype == "article" %}
 		<div class="e-summary long">
 			{% if post.thumbnail %}
 				<img class="article-thumbnail" src="{{ post.thumbnail }}" />

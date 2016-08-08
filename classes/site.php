@@ -89,7 +89,7 @@ class pmlnr_site extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function template_vars ( $prefix = '' ) {
+	public static function template_vars ( ) {
 
 		$terms = $menus = array();
 		$author_id = 1;
@@ -122,7 +122,7 @@ class pmlnr_site extends pmlnr_base {
 		}
 
 		$r = array (
-			'url' => static::fix_url(get_bloginfo('url')),
+			'url' => site_url(),
 			'charset' => get_bloginfo('charset'),
 			'name' => get_bloginfo('name'),
 			'description' => get_bloginfo('description'),
@@ -175,8 +175,6 @@ class pmlnr_site extends pmlnr_base {
 				$r['menu'][ $item->ID ] = $e;
 			}
 		}
-
-		$r = static::prefix_array ( $r, $prefix );
 
 		return $r;
 	}

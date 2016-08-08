@@ -188,7 +188,7 @@ class pmlnr_comment extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function template_vars (&$comment = null, $post = null, $prefix = '' ) {
+	public static function template_vars (&$comment = null, $post = null ) {
 
 		if (!static::is_comment($comment))
 			return false;
@@ -196,7 +196,7 @@ class pmlnr_comment extends pmlnr_base {
 		if (!static::is_post($post))
 			return false;
 
-		if ( $cached = wp_cache_get ( $comment->comment_ID . $prefix, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $comment->comment_ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$time = strtotime($comment->comment_date);
@@ -215,9 +215,7 @@ class pmlnr_comment extends pmlnr_base {
 
 		$r['author'] = pmlnr_author::template_vars( $comment->user_id );
 
-		$r = static::prefix_array ( $r, $prefix );
-
-		wp_cache_set ( $comment->comment_ID . $prefix, $r, __CLASS__ . __FUNCTION__, static::expire );
+		wp_cache_set ( $comment->comment_ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}

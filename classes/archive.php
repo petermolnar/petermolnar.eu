@@ -8,16 +8,16 @@ class pmlnr_archive extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function template_vars ( $prefix = '' ) {
+	public static function template_vars () {
 
 		$r = array();
 
 		if ( ! is_archive() && ! is_home() )
 			return $r;
 
-		$curr_url = static::fix_url ( $_SERVER['REQUEST_URI'] );
+		$curr_url = site_url ( $_SERVER['REQUEST_URI'] );
 
-		if ( $cached = wp_cache_get ( $curr_url . $prefix,
+		if ( $cached = wp_cache_get ( $curr_url,
 			__CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
@@ -51,9 +51,7 @@ class pmlnr_archive extends pmlnr_base {
 				. http_build_query ( $subscribe ),
 		);
 
-		$r = static::prefix_array ( $r, $prefix );
-
-		wp_cache_set ( $curr_url . $prefix, $r,
+		wp_cache_set ( $curr_url, $r,
 			__CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;

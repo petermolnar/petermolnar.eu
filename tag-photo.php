@@ -30,9 +30,9 @@ if ( have_posts() ) {
 
 		$thid = get_post_thumbnail_id( $post->ID );
 		$src = wp_get_attachment_image_src ($thid, 'adaptive_3');
-		$s = pmlnr_base::fix_url($src[0]);
+		$s = site_url($src[0]);
 		$target = wp_get_attachment_image_src ($thid, 'large');
-		$t = pmlnr_base::fix_url($target[0]);
+		$t = site_url($target[0]);
 
 		$post = pmlnr_post::template_vars($post);
 

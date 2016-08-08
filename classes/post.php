@@ -39,6 +39,29 @@ class pmlnr_post extends pmlnr_base {
 		if ( empty( $reaction ) )
 			return false;
 
+		// check for standalone, duplicate, leftover URLs
+		$rurls = array();
+		foreach ( $reaction[0] as $cntr => $replace ) {
+			$ccontent = str_replace( $replace, '', $post->post_content );
+			array_push( $rurls, $reaction[2][$cntr] );
+		}
+		$urls = static::extract_urls( $ccontent );
+		if ( !empty($urls)) {
+			foreach( $urls as $url ) {
+				if ( in_array( $url, $rurls ) )
+					$ccontent = str_replace( $url, '', $ccontent );
+			}
+
+			if ( empty(trim($ccontent)) ) {
+				$newcontent = "";
+				foreach ( $reaction[0] as $cntr => $insert ) {
+					$newcontent .= $insert . "\n";
+				}
+				static::replace_content( $ppost, $newcontent );
+			}
+		}
+
+
 		$r_all = array();
 
 		foreach ( $reaction[0] as $cntr => $replace ) {
@@ -98,60 +121,6 @@ class pmlnr_post extends pmlnr_base {
 		sort ( $r_all );
 
 		return join( "\n", $r_all );
-
-		/*
-		$replace = $reaction[0][0];
-		$type = trim($reaction[1][0]);
-		$url = trim($reaction[2][0]);
-		$rsvp = trim($reaction[3][0]);
-
-
-		if ( empty( $url ) )
-			return false;
-
-		if ( $format != 'markdown' ) {
-			$r = "*** ${type}: {$url}";
-			if ( !empty( $rsvp ) )
-				$r .= " ${rsvp}";
-
-			return $r;
-		}
-		else {
-			$rsvps = array (
-				'no' => __("Sorry, can't make it."),
-				'yes' => __("I'll be there."),
-				'maybe' => __("I'll do my best, but don't count on me for sure."),
-			);
-
-			if ( ( $type == 're' || $type == 'reply' ) && !empty( $data ) )
-				$rsvp_data = '<data class="p-rsvp" value="' . $rsvp .'">'. $rsvps[ $rsvp ] .'</data>';
-
-			switch ($type) {
-				case 'from':
-				case 'repost':
-					$cl = 'u-repost-of';
-					$prefix = '**FROM:** ';
-					break;
-				case 're':
-				case 'reply':
-					$cl = 'u-in-reply-to';
-					$prefix = '**RE:** ';
-					break;
-				default:
-					$cl = 'u-like-of';
-					$prefix = '**URL:** ';
-					break;
-			}
-
-			$title = str_replace ( parse_url( $url, PHP_URL_SCHEME) .'://', '', $url);
-			$r = "\n{$prefix}[{$title}]({$url}){.{$cl}}";
-
-			if ( !empty( $rsvp_data ) )
-				$r .= "\n{$rsvp_data}";
-
-			return $r;
-		}
-		*/
 	}
 
 	/**
@@ -214,7 +183,8 @@ class pmlnr_post extends pmlnr_base {
 
 		$r = apply_filters('the_content', $r);
 
-		if ( $post->post_type == 'post' )
+		$format = static::post_format( $post );
+		if ( $post->post_type == 'post' && $format == 'article' )
 			$r = static::toc( $r );
 
 		wp_cache_set ( $post->ID . $clean, $r, __CLASS__ . __FUNCTION__, static::expire );
@@ -243,7 +213,7 @@ class pmlnr_post extends pmlnr_base {
 				if ( $depth == $currd ) {
 					// starting the list
 					if ( empty( $toc ) )
-						$toc = "<ol class=\"toc\"><li>{$l}";
+						$toc = "<p><strong>Table of contents</strong></p><ol class=\"toc\"><li>{$l}";
 					// normal line
 					else
 						$toc .= "</li><li>{$l}";
@@ -339,48 +309,12 @@ class pmlnr_post extends pmlnr_base {
 		if ( $thid ) {
 			$thumbnail = wp_get_attachment_image_src($thid,'thumbnail');
 			if ( isset($thumbnail[1]) && $thumbnail[3] != false )
-				$r = static::fix_url($thumbnail[0]);
+				$r = site_url($thumbnail[0]);
 		}
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
-	}
-
-	/**
-	 *
-	 */
-	public static function post_replace_title ( &$post, $new_title = '' ) {
-		$post = static::fix_post($post);
-
-		if ($post === false )
-			return false;
-
-		// store the old title, just in case
-		$current_title = $post->post_title;
-		update_post_meta ( $post->ID, '_wp_old_title', $current_title );
-
-		$_post = array(
-			'ID' => $post->ID,
-			'post_title' => sanitize_title($new_title),
-		);
-
-		$r = wp_update_post( $_post, true );
-
-		// something went wrong, log and revert
-		if (is_wp_error($r)) {
-			$errors = $r->get_error_messages();
-			foreach ($errors as $error) {
-				static::debug( $error );
-			}
-
-			$_post = array(
-				'ID' => $post->ID,
-				'post_title' => $current_title,
-			);
-			wp_update_post( $_post );
-			delete_post_meta($post->ID, '_wp_old_title', $current_title );
-		}
 	}
 
 	/**
@@ -432,7 +366,7 @@ class pmlnr_post extends pmlnr_base {
 		if ( $thid ) {
 			$src = wp_get_attachment_image_src( $thid, 'large');
 			if ( !empty($src[0])) {
-				$src = pmlnr_base::fix_url($src[0]);
+				$src = site_url($src[0]);
 				$og['og:image'] = $src;
 				$og['twitter:image:src'] = $src;
 			}
@@ -616,14 +550,14 @@ class pmlnr_post extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function template_vars ( &$post = null, $prefix = '' ) {
+	public static function template_vars ( &$post = null ) {
 		$r = array();
 		$post = static::fix_post($post);
 
 		if ($post === false)
 			return $r;
 
-		if ( $cached = wp_cache_get ( $post->ID . $prefix, __CLASS__ . __FUNCTION__ ) )
+		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		// formatting webmention
@@ -635,6 +569,25 @@ class pmlnr_post extends pmlnr_base {
 
 		if ( $modcontent != $post->post_content )
 			static::replace_content ( $post, $modcontent );
+
+
+		$format = static::post_format($post);
+		if ( in_array( $format, array( 'image', 'photo' ) ) ) {
+			$hentry = 'photo';
+		}
+		elseif ( $format == 'article' ) {
+			$hentry = 'article';
+		}
+		else {
+			$hentry = 'note';
+		}
+
+		if ( in_array( $format, array( 'article','photo','reply' ) ) ) {
+			$show_author = true;
+		}
+		else {
+			$show_author = false;
+		}
 
 		$r = array (
 			'id' => $post->ID,
@@ -653,7 +606,9 @@ class pmlnr_post extends pmlnr_base {
 			//'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
 			//'wordstoread' => str_word_count( strip_tags($post->post_content), 0 ),
 			'tags' => static::post_get_tags_array($post),
-			'format' => static::post_format($post),
+			'format' => $format,
+			'show_author' => $show_author,
+			'htype' => $hentry,
 			//'webmention' => static::extract_reaction($post->post_content, true),
 			//'webmention' => pmlnr_markdown::parsedown( static::meta_reaction($post) ),
 			//'syndicates' => static::post_get_syndicates($post),
@@ -665,172 +620,13 @@ class pmlnr_post extends pmlnr_base {
 			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
 			//'editurl'  => get_bloginfo('url') . "/wp-admin/post.php?post={$post->ID}&action=edit",
 			'author' => pmlnr_author::template_vars( $post->post_author ),
+
+
 		);
 
-		$r = static::prefix_array ( $r, $prefix );
-
-		wp_cache_set ( $post->ID . $prefix, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-
-
-	/**
-	 *
-	 *
-	public static function post_get_syndicates ( &$post = null ) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = array();
-		$syndicates = get_post_meta ( $post->ID, 'syndication_urls', true );
-
-		if ( !$syndicates )
-			return $r;
-
-		$syndicates = explode( "\n", $syndicates );
-
-		foreach ($syndicates as $syndicate ) {
-			// example https://(www.)(facebook).(com)/(...)/(post_id)
-			preg_match ( '/^http[s]?:\/\/(www\.)?([0-9A-Za-z]+)\.([0-9A-Za-z]+)\/(.*)\/(.*)$/', $syndicate, $split);
-
-			if ( !empty($split) && isset($split[2]) && !empty($split[2]) && isset($split[3]) && !empty($split[3]))
-				$r[$split[2]] = $syndicate;
-		}
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}*/
-
-	/**
-	 *
-	 *
-	public static function post_get_replylist ( &$post = null ) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = [];
-		$syndicates = static::post_get_syndicates();
-
-		if (empty($syndicates))
-			return $reply;
-
-		foreach ($syndicates as $silo => $syndicate ) {
-			if ($silo == 'twitter') {
-				//$rurl = sprintf ('https://twitter.com/intent/tweet?in_reply_to=%s',  $syndicate[5]);
-				continue;
-			}
-			else {
-				$r[ $silo ] = $syndicate[0];
-			}
-		}
-
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
-	*/
 
-	/**
-	 *
-	 *
-	public static function post_get_sharelist ( &$post = null ) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = [];
-
-		$syndicates = static::post_get_syndicates();
-
-		$url = urlencode( get_permalink( $post ) );
-		$title = urlencode( trim(get_the_title( $post->ID )) );
-		$description = urlencode( $post->post_excerpt );
-
-		$media_url = '';
-		$media = ( $thid = get_post_thumbnail_id( $post->ID )) ? wp_get_attachment_image_src($thid,'large', true) : false;
-		if ( isset($media[1]) && $media[3] != false )
-			$media_url = urlencode(static::fix_url($thumbnail[0]));
-
-		if (!empty($syndicates)) {
-			foreach ($syndicates as $silo => $syndicate ) {
-				//if ($silo == 'twitter') {
-					//$rurl = sprintf ( 'https://twitter.com/intent/retweet?tweet_id=%s', $syndicate[5]);
-				//}
-				if ($silo == 'facebook') {
-					$rurl = sprintf ( 'https://www.facebook.com/share.php?u=%s', urlencode($syndicate[0]) );
-				}
-				else {
-					continue;
-				}
-
-				if ($rurl)
-					$r[$silo] = $rurl;
-			}
-		}
-
-		if (!isset($r['facebook']))
-			$r['facebook'] = sprintf ('https://www.facebook.com/share.php?u=%s', $url );
-
-		if (!isset($r['twitter']))
-			$r['twitter'] = sprintf('https://twitter.com/share?url=%s&text=%s', $url, $title );
-
-		$r['googleplus'] = sprintf('https://plus.google.com/share?url=%s', $url );
-
-		$r['tumblr'] = sprintf('http://www.tumblr.com/share/link?url=%s&title=%s&description=%s', $url, $title, $description );
-
-		$r['pinterest'] = sprintf('https://pinterest.com/pin/create/bookmarklet/?media=%s&url=%s&description=%s&is_video=false', $media_url, $url, $title );
-
-		// short url / webmention
-		$r['webmention'] = $url;
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $share;
-	}
-	*/
-
-	/**
-	 *
-	 *
-	public static function post_background (&$post = null) {
-		$post = static::fix_post($post);
-
-		if ($post === false)
-			return false;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
-
-		$r = false;
-
-		if ( ! static::is_u_photo($post) ) {
-
-			$thid = get_post_thumbnail_id( $post->ID );
-			$bgimg = (empty( $thid)) ? array() : wp_get_attachment_image_src( $thid , 'headerbg');
-
-			if ( isset($bgimg[1]) && $bgimg[3] != false )
-				$r = 'class="article-header" style="background-image:url('.$bgimg[0].');"';
-		}
-
-		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $r;
-	}
-	*/
 }
