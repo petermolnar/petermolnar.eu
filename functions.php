@@ -1,232 +1,438 @@
 <?php
 
-define('ARTICLE_MIN_LENGTH', 1100);
+namespace PETERMOLNAREU;
 
-$dirname = dirname(__FILE__);
+define('PETERMOLNAREU\CACHE_DIR', \WP_CONTENT_DIR
+	. DIRECTORY_SEPARATOR  .'cache' );
+define('PETERMOLNAREU\TWIG_DIR', CACHE_DIR
+	. DIRECTORY_SEPARATOR  .'twig' );
+define( 'PETERMOLNAREU\menu_header', 'header' );
 
 require __DIR__ . '/vendor/autoload.php';
-Twig_Autoloader::register();
-Twig_Extensions_Autoloader::register();
+\Twig_Autoloader::register();
+\Twig_Extensions_Autoloader::register();
 
-require_once ($dirname . '/classes/base.php');
-require_once ($dirname . '/classes/image.php');
-require_once ($dirname . '/classes/cleanup.php');
-require_once ($dirname . '/classes/markdown.php');
-require_once ($dirname . '/classes/post.php');
-require_once ($dirname . '/classes/author.php');
-require_once ($dirname . '/classes/site.php');
-require_once ($dirname . '/classes/comment.php');
-require_once ($dirname . '/classes/archive.php');
+$classes = array( 'base.php', 'image.php', 'cleanup.php', 'markdown.php',
+	'post.php', 'author.php', 'site.php', 'comment.php', 'archive.php' );
 
-class petermolnareu {
-	const menu_header = 'header';
+foreach ( $classes as $class ) {
+	require_once ( dirname(__FILE__) . DIRECTORY_SEPARATOR . 'classes'
+		.DIRECTORY_SEPARATOR . $class );
+}
 
-	public $twig = null;
-	public $twigloader = null;
-	private $twigcache = WP_CONTENT_DIR . '/cache/twig';
+use \PETERMOLNAREU\CLEANUP;
+//\PETERMOLNAREU\CLEANUP\construct();
 
-	public function __construct () {
-
-		// set up Twig
-		if (!is_dir($this->twigcache))
-			mkdir($this->twigcache);
-
-		$tplDir = dirname(__FILE__) . '/twig';
-		$this->twigloader = new Twig_Loader_Filesystem( $tplDir );
-		$this->twig = new Twig_Environment($this->twigloader, array(
-			'cache' => $this->twigcache,
-			'auto_reload' => true,
-			'autoescape' => false,
-		));
-		$this->twig->addExtension(new Twig_Extensions_Extension_I18n());
-
-		// set up theme class action hooks
-		new pmlnr_image();
-		new pmlnr_cleanup();
-		new pmlnr_markdown();
-		new pmlnr_post();
-		new pmlnr_author();
-		new pmlnr_site();
-		new pmlnr_comment();
-
-		// init all the things!
-		add_action( 'init', array( 'petermolnareu', 'init'));
-
-		// add css & js
-		add_action( 'wp_enqueue_scripts', array('petermolnareu','register_css_js'),10);
-		//add_action( "transition_post_status", array('petermolnareu','generate_sitemap') );
-
-		add_action( 'htmlgen', array('petermolnareu','generate_html' ) );
-	}
-
-	public static function twig () {
-
-		// set up Twig
-		if (!is_dir($this->twigcache))
-			mkdir($this->twigcache);
-
-		$tplDir = dirname(__FILE__) . '/twig';
-		$this->twigloader = new Twig_Loader_Filesystem( $tplDir );
-		$twig = new Twig_Environment($this->twigloader, array(
-			'cache' => $this->twigcache,
-			'auto_reload' => true,
-			'autoescape' => false,
-		));
-		//$twig->addExtension(new Twig_Extensions_Extension_I18n());
-
-		return $twig;
-	}
-
-	/**
-	 *
-	 */
-	public static function init () {
-
-		// required WP Theme magic
-		add_theme_support( 'post-thumbnails' );
-		add_theme_support( 'menus' );
-		add_theme_support( 'html5', array( 'search-form' ) );
-		add_theme_support( 'title-tag' );
-		add_theme_support( 'custom-logo' );
-
-		// add main menus
-		register_nav_menus( array(
-			static::menu_header => __( static::menu_header , 'petermolnareu' ),
-		) );
-
-		// replace default <title></title>
-		add_filter('wp_title', array('petermolnareu', 'nice_title',),10,1);
-
-		// I want to upload svg
-		add_filter('upload_mimes',
-			function ( $mimes ) {
-				$mimes['svg'] = 'image/svg+xml';
-				return $mimes;
-			},10, 1 );
-
-		// fix any incoming .eu request
-		add_filter ( 'url_to_postid',
-			function( $url ) {
-				return str_replace( 'petermolnar.eu', 'petermolnar.net', $url );
-			}, 1, 1 );
-
-		// disable photo2content if it's not a photo
-		add_filter ( 'wp_photo2content_enabled',
-			function( $enabled, $new_status, $old_status, $post  ) {
-				if ( 'post' != $post->post_type )
-					return false;
-
-				$format = pmlnr_base::post_format ( $post );
-				if ( 'photo' != $format )
-					return false;
-
-				if ( function_exists( 'send_webmention' ) )
-					send_webmention( get_permalink( $post->ID ), 'https://brid.gy/publish/webmention' );
-
-				return $enabled;
-
-			}, 1, 4 );
+new \pmlnr_image();
+//new \pmlnr_cleanup();
+new \pmlnr_markdown();
+new \pmlnr_post();
+new \pmlnr_author();
+new \pmlnr_site();
+new \pmlnr_comment();
 
 
-		if (!wp_get_schedule( 'htmlgen' ))
-			wp_schedule_event ( time(), 'daily', 'htmlgen' );
+\register_activation_hook( __FILE__ , '\PETERMOLNAREU\theme_activate' );
+//\register_deactivation_hook( __FILE__ , '\PETERMOLNAREU\plugin_deactivate' );
 
-	}
+// init all the things!
+\add_action( 'init', 'PETERMOLNAREU\init' );
 
-	/**
-	 * register & queue css & js
-	 *
-	 */
-	public static function register_css_js () {
-		$base_url = get_bloginfo("template_directory");
-		$js_url = "{$base_url}/js";
-		$css_url = "{$base_url}/css";
+// add css & js
+\add_action( 'wp_enqueue_scripts','PETERMOLNAREU\register_css_js', 10 );
 
-		// Magnific popup
-		wp_register_style( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/magnific-popup.css" , false );
-		wp_register_script( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
+// HTML generator
+\add_action( 'htmlgen', 'PETERMOLNAREU\generate_html' );
 
-		// justified gallery
-		wp_register_style( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
+//
+\add_action( 'transition_post_status', 'PETERMOLNAREU\autobridgy', 99, 3 );
 
-		wp_register_script( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
 
-		// syntax highlight
-		wp_register_style( "prism", "{$css_url }/prism.css", false, null );
-		wp_enqueue_style( "prism" );
-		wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
-		wp_enqueue_script( "prism" );
-	}
+/**
+ *
+ */
+function autobridgy ( $new_status = null, $old_status = null,
+	$post = null ) {
 
-	/**
-	 *
-	 */
-	public static function nice_title ( $title ) {
-		if (is_home() || empty($title))
-			return get_bloginfo('name');
+	if ( $new_status == null || $old_status == null || $post == null )
+		return false;
 
-		return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
-	}
+	$post = \pmlnr_base::fix_post( $post );
+	if ( false === $post )
+		return false;
 
-	/*
-	public static function generate_sitemap ($new_status = null , $old_status = null, $post = null ) {
+	if ( 'publish' != $new_status )
+		return false;
 
-		if (  null === $new_status || null === $old_status || null === $post )
-			return;
+	maybe_send_bridgy( $post );
+}
 
-		global $wpdb;
+/**
+ *
+ */
+function maybe_send_bridgy( $post = null ) {
 
-		$posts = $wpdb->get_results( "SELECT post_name FROM $wpdb->posts WHERE post_status = 'publish' AND post_password = '' ORDER BY post_type DESC, post_modified DESC" );
-		$urls = array();
+	$post = \pmlnr_base::fix_post( $post );
+	if ( false === $post )
+		return false;
 
-		foreach ( $posts as $post ) {
-			array_push ( $urls, site_url( $post->post_name ) );
+	$bridgy_endpoints = \pmlnr_post::bridgy_to ( $post );
+
+	if ( empty( $bridgy_endpoints ) )
+		return false;
+
+	$syndications = \get_post_meta ( $post->ID, 'syndication_urls', true );
+	if ( empty( $syndications ) )
+		$syndications = array();
+	else
+		$syndications = explode ( "\n", $syndications );
+
+	foreach ( $bridgy_endpoints as $endpoint ) {
+
+		foreach ( $syndications as $syndication ) {
+			if ( stristr( $syndication, $endpoint ) ) {
+				continue;
+			}
 		}
 
-		file_put_contents( __DIR__ . DIRECTORY_SEPARATOR . 'sitemap.txt', join ("\n", $urls ) );
-	}
-	*/
+		$args = array (
+			'body' => 'source=' . urlencode( get_permalink( $post->ID ) )
+				. '&target=' . urlencode( "https://brid.gy/publish/{$endpoint}" ),
+			'timeout' => 10,
+		);
 
-	public static function generate_html () {
-		global $wpdb;
-		global $post;
-		global $petermolnareu_theme;
+		\pmlnr_base::debug ( $args );
 
-		$_p = $post;
-		$posts = $wpdb->get_results( "SELECT ID FROM $wpdb->posts WHERE post_status = 'publish' AND post_password = '' ORDER BY post_type DESC, post_date DESC" );
 
-		foreach ( $posts as $_post ) {
-			$post = get_post( $_post->ID );
-			setup_postdata( $post );
-			//$url = get_permalink( $_post->ID );
-			//$pubdate = get_the_time( 'U', $post->ID );
-
-			$twigvars = array (
-				'site' => pmlnr_site::template_vars(),
-				'post' => pmlnr_post::template_vars( $post )
-			);
-
-			$folder = \WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'html';
-
-			if ( ! is_dir( $folder ) )
-				mkdir( $folder );
-
-			$htmlfile = $folder. DIRECTORY_SEPARATOR . $post->post_name . '.html';
-
-			$tmpl = 'singular.html';
-			if (is_page())
-				$tmpl = 'page.html';
-
-			$twig = $this->twig->loadTemplate( $tmpl );
-			file_put_contents( $htmlfile, $twig->render($twigvars) );
+		$r = \wp_remote_post ( 'https://brid.gy/publish/webmention', $args );
+		if ( \is_wp_error( $r  ) ) {
+			\pmlnr_base::debug( "sending bridgy failed: "
+				. $r->get_error_message(), 4);
+			continue;
 		}
 
-		setup_postdata( $_p );
-		return;
+		if ( ! isset( $r['response'] )
+			|| ! isset( $r['response']['code'] ) || 201 != $r['response']['code'] ) {
+				\pmlnr_base::debug( "sending bridgy failed, it returned "
+					. str_replace( '#012', '', json_encode( $r ) ), 4);
+				continue;
+			}
+
+		$r = json_decode( $r['body'], true );
+		if ( !isset( $r['url'] ) ) {
+			\pmlnr_base::debug( "brid.gy return URL was empty", 4 );
+			continue;
+		}
+
+		\pmlnr_base::debug ( "Bridgy responded: {$url}" );
+		array_push( $syndications, $r['url'] );
+	}
+
+	$syndications = array_unique( $syndications );
+	return \update_post_meta( $post->ID, 'syndication_urls', join( "\n", $syndications ) );
+}
+
+/**
+ *
+ */
+function theme_activate () {
+
+	if ( version_compare( phpversion(), 5.4, '<' ) ) {
+		die( 'The minimum PHP version required for this plugin is 5.3' );
 	}
 
 }
 
-if ( !isset( $petermolnareu_theme ) || empty ( $petermolnareu_theme ) ) {
-	$petermolnareu_theme = new petermolnareu();
+/**
+ *
+ */
+function twig ( $template, $vars ) {
+
+	$d = array ( CACHE_DIR, TWIG_DIR );
+	foreach ( $d as $dir ) {
+		if ( ! is_dir( $dir ) )
+			mkdir( $dir );
+	}
+
+	$tplDir = dirname( __FILE__ ) . '/twig';
+	$twigloader = new \Twig_Loader_Filesystem( $tplDir );
+	$twig = new \Twig_Environment( $twigloader, array(
+		'cache' => TWIG_DIR,
+		'auto_reload' => true,
+		'autoescape' => false,
+	));
+
+	$twig = $twig->loadTemplate( $template );
+	$twig = $twig->render( $vars );
+
+	//if ( class_exists('\tidy') ) {
+		//$config = array(
+			//'indent'         => 2,
+			////'output-xhtml'   => true,
+			//'wrap'           => false
+		//);
+
+		//// Tidy
+		//$tidy = new \tidy;
+		//$tidy->parseString($twig, $config, 'utf8');
+		//$tidy->cleanRepair();
+		//$twig = (string)$tidy;
+	//}
+
+	return $twig;
+}
+
+/**
+ *
+ */
+function init () {
+
+	// required WP Theme magic
+	\add_theme_support( 'post-thumbnails' );
+	\add_theme_support( 'menus' );
+	\add_theme_support( 'html5', array( 'search-form' ) );
+	\add_theme_support( 'title-tag' );
+	\add_theme_support( 'custom-logo' );
+
+	// add main menus
+	\register_nav_menus( array(
+		menu_header => __( menu_header , 'petermolnareu' ),
+	) );
+
+	// replace default <title></title>
+	\add_filter( 'wp_title', '\PETERMOLNAREU\nice_title', 10, 1 );
+
+	\add_filter('upload_mimes',
+		function ( $mimes ) {
+			$mimes['svg'] = 'image/svg+xml';
+			return $mimes;
+		},10, 1 );
+
+	// fix any incoming .eu request
+	\add_filter ( 'url_to_postid',
+		function( $url ) {
+			return str_replace( 'petermolnar.eu', 'petermolnar.net', $url );
+		}, 1, 1 );
+
+	// disable photo2content if it's not a photo
+	\add_filter ( 'wp_photo2content_enabled',
+		function( $enabled, $new_status, $old_status, $post  ) {
+			if ( 'post' != $post->post_type )
+				return false;
+
+			$format = \pmlnr_base::post_format ( $post );
+			if ( 'photo' != $format )
+				return false;
+
+			if ( function_exists( '\send_webmention' ) )
+				\send_webmention( \get_permalink( $post->ID ), 'https://brid.gy/publish/webmention' );
+
+			return $enabled;
+
+		}, 1, 4 );
+
+	// htmlgen
+	if (! \wp_get_schedule( 'htmlgen' ))
+		\wp_schedule_event ( time(), 'daily', 'htmlgen' );
+
+}
+
+/**
+ * register & queue css & js
+ *
+ */
+function register_css_js () {
+	$base_url = \get_bloginfo( "template_directory" );
+	$js_url = "{$base_url}/js";
+	$css_url = "{$base_url}/css";
+
+	\wp_register_style( 'style', "{$base_url}/style.css", false, "17.0" );
+	\wp_enqueue_style( "style" );
+	\wp_register_style( 'print', "{$base_url}/print.css", false, "2.0", "print" );
+	\wp_enqueue_style( "print" );
+
+	// Magnific popup
+	\wp_register_style( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/magnific-popup.css" , false );
+	\wp_register_script( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
+
+	// justified gallery
+	\wp_register_style( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
+
+	\wp_register_script( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
+
+	 //syntax highlight
+	\wp_register_style( "prism", "{$css_url }/prism.css", false, null );
+	\wp_enqueue_style( "prism" );
+	\wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
+	\wp_enqueue_script( "prism" );
+}
+
+/**
+ *
+ */
+function nice_title ( $title ) {
+	if ( \is_home() || empty($title))
+		return \get_bloginfo('name');
+
+	return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
+}
+
+/**
+ *
+ */
+function generate_html () {
+	global $post;
+	global $query_string;
+
+	$_p = $post;
+
+	$folder = \WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'html';
+
+	if ( ! is_dir( $folder ) )
+		mkdir( $folder );
+
+
+	 //I don't understand why - yet -, but WP refuses to fill in wp_header() and
+	 //such when the query is not explicitly for the post, with the post ID,
+	 //so I'm going to nest this by querying each post one by one
+
+	global $wpdb;
+
+	$postids = $wpdb->get_results( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_password = '' ORDER BY post_type DESC, post_date DESC" );
+
+	$exclude = [ 'attachment', 'revision', 'nav_menu_item' ];
+	foreach ( $postids as $p ) {
+		$pid = $p->ID;
+		if ( in_array( \get_post_type( $pid ), $exclude ) )
+			continue;
+
+		$posts = query_posts($query_string . "&p={$pid}" );
+		if ( \have_posts() ) {
+			while ( \have_posts() ) {
+				\the_post();
+				$twigvars = array (
+					'site' => \pmlnr_site::template_vars(),
+					'post' => \pmlnr_post::template_vars( $post )
+				);
+
+				$htmlfile = $folder. DIRECTORY_SEPARATOR . $post->post_name . '.html';
+				\pmlnr_base::debug( "Exporting {$post->ID} to {$htmlfile}" );
+
+				$tmpl = 'singular.html';
+				if ( \is_page() )
+					$tmpl = 'page.html';
+
+				$twig = twig( $tmpl, $twigvars );
+
+				file_put_contents( $htmlfile, $twig );
+				touch ( $htmlfile, get_the_time( 'U', $post ) );
+			}
+			\wp_reset_postdata();
+		}
+		wp_reset_query();
+	}
+
+
+	// CSS and JS is still not added :(
+
+	$per_page = \get_option('posts_per_page');
+	$include = [ 'category', 'post_tag' ];
+	$taxonomies = \get_taxonomies( array (), 'objects' );
+
+	foreach ( $taxonomies as $taxonomy ) {
+		if ( ! in_array( $taxonomy->name, $include ) )
+			continue;
+
+		if ( ! isset( $taxonomy->rewrite )
+			|| ! isset( $taxonomy->rewrite['slug'] )
+			|| empty( $taxonomy->rewrite['slug'] )
+		)
+			$fragment = $taxonomy->name;
+		else
+			$fragment = $taxonomy->rewrite['slug'];
+
+		$terms = \get_terms( $taxonomy->name );
+
+		foreach ( $terms as $term ) {
+
+			// getting max size for pagination
+			$args = array(
+				'posts_per_page' => -1,
+				'tax_query' => array(
+					array(
+						'taxonomy' => $taxonomy->name,
+						'field' => 'slug',
+						'terms' => $term->slug,
+					)
+				)
+			);
+			$postslist = get_posts( $args );
+			$num = sizeof ( $postslist );
+			$pages = (int) ceil( (int)$num / (int)$per_page );
+
+			$q = $query_string;
+			switch ( $term->taxonomy ) {
+				case 'post_tag':
+					$q .= "&tag_id={$term->term_id}";
+					break;
+				case 'category':
+					$q .= "&cat={$term->term_id}";
+					break;
+				default:
+					continue;
+			}
+			$q .= "&posts_per_page={$per_page}";
+
+			for( $i = 0; $i<= $pages; $i++ ) {
+
+				if ( $i > 0 ) {
+					$p = $i+1;
+					$q .= "&paged={$p}";
+					$static = "/{$fragment}/{$term->slug}/page/{$p}";
+				}
+				else {
+					$static = "/{$fragment}/{$term->slug}";
+				}
+
+				$subdirs = explode( '/', $static );
+				$subdirpath = $folder;
+				foreach ( $subdirs as $c => $subdir ) {
+					$subdirpath = rtrim( $subdirpath, DIRECTORY_SEPARATOR );
+					$subdirpath .= DIRECTORY_SEPARATOR . trim( $subdir, '/' ) ;
+					if ( ! is_dir( $subdirpath ) ) {
+						mkdir ( $subdirpath );
+					}
+				}
+
+				$twigvars = array();
+				$twigposts = array();
+				$posts = query_posts( $q );
+				$t = 0;
+
+				if ( \have_posts() ) {
+					while ( \have_posts() ) {
+						$twigvars = array (
+							'site' => \pmlnr_site::template_vars(),
+							'archive' => \pmlnr_archive::template_vars(),
+						);
+
+						\the_post();
+						$pt = get_the_time( 'U', $post );
+						if ( $pt > $t )
+							$t = $pt;
+						array_push( $twigposts, \pmlnr_post::template_vars() );
+						\wp_reset_postdata();
+					}
+				}
+
+				$twigvars['posts'] = $twigposts;
+				$twig = twig( 'archive.html', $twigvars );
+				$path = $subdirpath . DIRECTORY_SEPARATOR . 'index.html';
+				file_put_contents( $path, $twig );
+				touch ( $path, $t );
+				\pmlnr_base::debug( "Exporting {$term->slug} ({$fragment}), page {$i} to {$path}" );
+				wp_reset_query();
+			}
+		}
+	}
 }

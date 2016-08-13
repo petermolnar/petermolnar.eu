@@ -12,5 +12,4 @@ $tmpl = 'singular.html';
 if (is_page())
 	$tmpl = 'page.html';
 
-$twig = $petermolnareu_theme->twig->loadTemplate( $tmpl );
-echo $twig->render($twigvars);
+echo PETERMOLNAREU\twig( $tmpl, $twigvars );

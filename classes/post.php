@@ -7,6 +7,60 @@ class pmlnr_post extends pmlnr_base {
 		add_action('wp_head',array(&$this, 'post_graphmeta'));
 	}
 
+	public static function insert_bridgy_urls ( $content, $post ) {
+		$where = static::bridgy_to( $post );
+
+		foreach ( $where as $endpoint ) {
+			$content .= "\n" . '<a href="https://brid.gy/publish/'
+				. $endpoint .'"></a>';
+		}
+
+		return $content;
+	}
+
+	/**
+	 *
+	 */
+	public static function bridgy_to( &$post ) {
+		$bridgy_urls = array();
+
+		$post = static::fix_post( $post );
+
+		if ( false === $post )
+			return $bridgy_urls;
+
+		$format = pmlnr_base::post_format( $post );
+
+		if ( in_array( $format, array( 'photo' ) ) ) {
+			array_push( $bridgy_urls, 'facebook' );
+			array_push( $bridgy_urls, 'flickr' );
+		}
+
+		$bridgy = array (
+			'flickr',
+			'twitter'
+		);
+
+		$reaction = pmlnr_base::has_reaction( $post->post_content );
+
+		if ( empty( $reaction[0] ) )
+			return $bridgy_urls;
+
+		foreach ( $reaction[0] as $cntr => $replace ) {
+			$url = trim($reaction[2][$cntr]);
+			if ( empty( $url ) )
+				continue;
+
+			foreach ( $bridgy as $endpoint ) {
+				if ( stristr( $url, $endpoint ) ) {
+					array_push( $bridgy_urls, $endpoint );
+				}
+			}
+		}
+
+		return array_unique ( $bridgy_urls );
+	}
+
 	/**
 	 *
 	 */
@@ -14,6 +68,9 @@ class pmlnr_post extends pmlnr_base {
 
 		if ( false === $reaction )
 			$reaction = static::has_reaction ( $post->post_content );
+
+		if ( empty( $reaction ) )
+			return false;
 
 		/* this should be obsolete now
 		if ( empty( $reaction ) ) {
@@ -34,10 +91,6 @@ class pmlnr_post extends pmlnr_base {
 				$reaction = static::has_reaction( $c );
 			}
 		}
-		*/
-
-		if ( empty( $reaction ) )
-			return false;
 
 		// check for standalone, duplicate, leftover URLs
 		$rurls = array();
@@ -60,6 +113,7 @@ class pmlnr_post extends pmlnr_base {
 				static::replace_content( $ppost, $newcontent );
 			}
 		}
+		*/
 
 
 		$r_all = array();
@@ -175,23 +229,34 @@ class pmlnr_post extends pmlnr_base {
 
 		$r = $post->post_content;
 
-		//$search = static::has_reaction ( $post->post_content );
-		//if ( strstr ( $search[0][0], '+++') )
-			//static::debug ( var_export($search,true), 5 );
+		$fixedcontent = static::post_content_fixes( $post );
+
+		//$has_reaction = static::has_reaction ( $modcontent );
+		//$modcontent = static::remove_reaction ( $modcontent, $has_reaction );
+		//$reaction = static::make_reaction( $post, '', $has_reaction );
+		//$modcontent = trim ( $reaction . "\n\n" . $modcontent );
+
+		if ( $fixedcontent != $post->post_content ) {
+			static::replace_content ( $post, $fixedcontent );
+		}
+
 
 		$r = static::convert_reaction ( $post );
-
 		$r = apply_filters('the_content', $r);
+		$r = static::insert_bridgy_urls ( $r, $post );
 
-		$format = static::post_format( $post );
-		if ( $post->post_type == 'post' && $format == 'article' )
-			$r = static::toc( $r );
+		//$format = static::post_format( $post );
+		//if ( $post->post_type == 'post' && $format == 'article' )
+			//$r = static::toc( $r );
 
 		wp_cache_set ( $post->ID . $clean, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
 
+	/**
+	 *
+	 */
 	public static function toc ( $content ) {
 		$toc = '';
 		$pattern = "/<h([2-6])(?:\s+id=\"(.*?)\")?>(.*)<\/h[2-6]>/mi";
@@ -230,7 +295,7 @@ class pmlnr_post extends pmlnr_base {
 			}
 
 			// closing any potentially open depths and ending the list
-			$toc .= str_repeat ( '</ol></li>', ($currd - 2)  ) . '</li></ol>';
+			$toc .= str_repeat ( '</ol></li>', ($currd - 1)  ) . '</li></ol>';
 		}
 
 		return $toc . $content;
@@ -547,6 +612,155 @@ class pmlnr_post extends pmlnr_base {
 		return str_replace ( join('', $matches[0]), '', $content );
 	}
 
+
+	/**
+	 *
+	 *
+	 */
+	public static function post_content_fixes ( $post ) {
+		$content = $post->post_content;
+
+		$content = static::post_content_fix_dl ( $content, $post );
+		$content = static::post_content_fix_emstrong ( $content, $post );
+		$content = static::post_content_url2footnote ( $content, $post );
+		// skip the ones that are inside a code block...
+		//$content = static::post_content_setext_headers ( $content, $post );
+
+		return $content;
+	}
+
+	public static function post_content_fix_emstrong ( $content, $post ) {
+
+		// these regexes are borrowed from https://github.com/erusev/parsedown
+		$invalid = array (
+			'strong' => array(
+				'__' => '/__((?:\\\\_|[^_]|_[^_]*_)+?)__(?!_)/us',
+			),
+			'em' => array (
+				'*' => '/[*]((?:\\\\\*|[^*]|[*][*][^*]+?[*][*])+?)[*](?![*])/s',
+			)
+		);
+
+		$replace_map = array (
+			'*' => '_',
+			'__' => '**',
+		);
+
+
+		foreach ( $invalid as $what => $regexes ) {
+			$m = array();
+			foreach ( $regexes as $key => $regex ) {
+				preg_match_all( $regex, $content, $m );
+				if ( empty( $m ) || ! isset( $m[0] ) || empty( $m[0] ) )
+					continue;
+
+				foreach ( array_keys ( $m[1] ) as $cntr ) {
+					$content = str_replace (
+						$m[0][$cntr],
+						$replace_map[ $key ] . $m[1][$cntr] . $replace_map[ $key ],
+						$content
+					);
+				}
+
+			}
+		}
+
+		return $content;
+	}
+
+	/**
+	 *
+	 *
+	 */
+	public static function post_content_fix_dl ( $content, $post ) {
+		preg_match_all( '/^.*\n(:\s+).*$/mi', $content, $m );
+
+		if ( empty( $m ) || ! isset( $m[0] ) || empty( $m[0] ) )
+			return $content;
+
+		foreach ( $m[0] as $i => $match ) {
+			$match = str_replace( $m[1][$i], ':    ', $match );
+			$content = str_replace( $m[0][$i], $match, $content );
+		}
+
+		return $content;
+	}
+
+	/**
+	 * find markdown links and replace them with footnote versions
+	 *
+	 */
+	public static function post_content_url2footnote ( $content, $post ) {
+
+		//
+		$pattern = "/[\s*_\/]+(\[([^\s].*?)\]\((.*?)(\s?+[\\\"\'].*?[\\\"\'])?\))/";
+		preg_match_all( $pattern, $content, $m );
+		// [1] -> array of []()
+		// [2] -> array of []
+		// [3] -> array of ()
+		// [4] -> (maybe) "" titles
+		if ( ! empty( $m ) && isset( $m[0] ) && ! empty( $m[0] ) ) {
+			foreach ( $m[1] as $cntr => $match ) {
+				$name = trim( $m[2][$cntr] );
+				$url = trim( $m[3][$cntr] );
+				if ( ! strstr( $url, 'http') )
+					$url = \site_url( $url );
+
+				$title = "";
+
+				if ( isset( $m[4][$cntr] ) && !empty( $m[4][$cntr] ) )
+					$title = " {$m[4][$cntr]}";
+
+				$refid = $cntr+1;
+
+				$footnotes[] = "[{$refid}]: {$url}{$title}";
+				$content = str_replace (
+					$match,
+					"[" . trim( $m[2][$cntr] ) . "][". $refid ."]" ,
+					$content
+				);
+			}
+
+			$content = $content . "\n\n" . join( "\n", $footnotes );
+		}
+
+		return $content;
+	}
+
+
+	/**
+	 * find all second level markdown headers and replace them with
+	 * underlined version
+	 *
+	 */
+	public static function post_content_setext_headers ( $content, $post ) {
+
+		$map = array (
+			1 => "=", // asciidoc, restuctured text, and markdown compatible
+			2 => "-", // asciidoc, restuctured text, and markdown compatible
+			//3 => "~", // asciidoc only
+			//4 => "^", // asciidoc only
+			//5 => "+", // asciidoc only
+		);
+
+		preg_match_all( "/^([#]+)\s?+(.*)$/m", $content, $m );
+
+		if ( ! empty( $m ) && isset( $m[0] ) && ! empty( $m[0] ) ) {
+			foreach ( $m[0] as $cntr => $match ) {
+				$depth = strlen( trim( $m[1][$cntr] ) );
+
+				if ( $depth > 2 )
+					continue;
+
+				$title = trim( $m[2][$cntr] );
+				$u = str_repeat( $map[ $depth ], mb_strlen( $title ) );
+				$content = str_replace ( $match, "{$title}\n{$u}", $content );
+			}
+		}
+
+		return $content;
+	}
+
 	/**
 	 *
 	 */
@@ -560,34 +774,6 @@ class pmlnr_post extends pmlnr_base {
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
-		// formatting webmention
-		$modcontent = $post->post_content;
-		$has_reaction = static::has_reaction ( $modcontent );
-		$modcontent = static::remove_reaction ( $modcontent, $has_reaction );
-		$reaction = static::make_reaction( $post, '', $has_reaction );
-		$modcontent = trim ( $reaction . "\n\n" . $modcontent );
-
-		if ( $modcontent != $post->post_content )
-			static::replace_content ( $post, $modcontent );
-
-
-		$format = static::post_format($post);
-		if ( in_array( $format, array( 'image', 'photo' ) ) ) {
-			$hentry = 'photo';
-		}
-		elseif ( $format == 'article' ) {
-			$hentry = 'article';
-		}
-		else {
-			$hentry = 'note';
-		}
-
-		if ( in_array( $format, array( 'article','photo','reply' ) ) ) {
-			$show_author = true;
-		}
-		else {
-			$show_author = false;
-		}
 
 		$r = array (
 			'id' => $post->ID,
@@ -596,37 +782,19 @@ class pmlnr_post extends pmlnr_base {
 			'shorturl' => wp_get_shortlink( $post->ID ),
 			'thumbnail' => static::post_thumbnail ($post),
 			'content' => static::get_the_content($post, 'clean'),
-			//'parsed_content' => static::get_the_content($post),
 			'excerpt' => static::get_the_excerpt($post),
-			'author_meta' => get_post_meta ( $post->ID, 'author', true),
-			'pubdate_iso' => get_the_time( 'c', $post->ID ),
-			'pubdate_print' => sprintf ('%s %s',
-				get_the_time( get_option('date_format'), $post->ID ),
-				get_the_time( get_option('time_format'), $post->ID ) ),
-			//'minstoread' => ceil( str_word_count( strip_tags($post->post_content), 0 ) / 300 ),
-			//'wordstoread' => str_word_count( strip_tags($post->post_content), 0 ),
+			'published' => strtotime( $post->post_date_gmt ),
+			'modified' => strtotime( $post->post_modified_gmt ),
 			'tags' => static::post_get_tags_array($post),
-			'format' => $format,
-			'show_author' => $show_author,
-			'htype' => $hentry,
-			//'webmention' => static::extract_reaction($post->post_content, true),
-			//'webmention' => pmlnr_markdown::parsedown( static::meta_reaction($post) ),
-			//'syndicates' => static::post_get_syndicates($post),
-			//'likes' => static::get_comments($post, 'like'),
-			//'replies' => static::get_comments($post, 'reply'),
-			//'reacji' => static::get_reacji($post),
+			'format' => static::post_format( $post ),
+			//'show_author' => $show_author,
 			'singular' => is_singular(),
-			'debug' => is_user_logged_in(),
 			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
-			//'editurl'  => get_bloginfo('url') . "/wp-admin/post.php?post={$post->ID}&action=edit",
 			'author' => pmlnr_author::template_vars( $post->post_author ),
-
-
 		);
 
 		wp_cache_set ( $post->ID, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
-
 }

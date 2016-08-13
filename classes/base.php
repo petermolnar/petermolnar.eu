@@ -1,5 +1,7 @@
 <?php
 
+define('ARTICLE_MIN_LENGTH', 1100);
+
 class pmlnr_base {
 	const expire = 10;
 
@@ -288,11 +290,23 @@ class pmlnr_base {
 		//$has_audio = preg_match("/\[audio.*\]/", $post->post_content);
 		$has_webmention = empty( $webmention_url ) ? false : true;
 
-		$taxonomy = 'post_tag';
-		$tag_it = has_term( 'it', $taxonomy, $post );
-		$tag_journal = has_term( 'journal', $taxonomy, $post );
+		$is_long = false;
+		$longforms = [
+			'post_tag' => [
+				'it',
+				'journal'
+			],
+		];
+
+		foreach ( $longforms as $taxonomy => $terms ) {
+			foreach ( $terms as $term ) {
+				if ( has_term( $term, $taxonomy, $post ) ) {
+					$is_long = true;
+				}
+			}
+		}
+
 		$tag_photo = has_term( 'photo', $taxonomy, $post );
-		$is_long = ( $tag_it != false || $tag_journal != false ) ? true : false;
 
 		$type = 'article';
 		//static::debug ("type discovery for {$post->ID}");

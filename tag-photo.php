@@ -50,5 +50,4 @@ if ( have_posts() ) {
 	$twigvars['elements'] = $elements;
 }
 
-$twig = $petermolnareu_theme->twig->loadTemplate('partial_gallery.html');
-echo $twig->render($twigvars);
+echo PETERMOLNAREU\twig( 'partial_gallery.html', $twigvars );

@@ -21,34 +21,42 @@ class pmlnr_archive extends pmlnr_base {
 			__CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
+		global $wp_query;
+
+		$paged = 1;
+		if ( isset( $wp_query->query_vars['paged'] )
+			&& $wp_query->query_vars['paged'] > 1
+		)
+			$paged = $wp_query->query_vars['paged'];
+
+		$perpage = 10;
+		if ( isset( $wp_query->query_vars['posts_per_page'] ) )
+			$perpage = $wp_query->query_vars['posts_per_page'];
+
+		$total = 1;
+		if ( isset( $wp_query->max_num_pages ) )
+			$total = $wp_query->max_num_pages;
+
 		$name = get_bloginfo('name');
 		$taxonomy = $description = false;
-
 		if ( is_archive() ) {
-			global $wp_query;
 			$term = $wp_query->get_queried_object();
 			$name = $term->name;
 			$taxonomy = $term->taxonomy;
 			$description = pmlnr_markdown::parsedown( $term->description );
 		}
 
-		$curr_feed = rtrim( $curr_url, '/' ) . '/feed';
-
-		$subscribe = array (
-			'resource' => $curr_url,
-			'feeds' => $curr_feed,
-			'suggestedUrl' => 'http://blogtrottr.com/?subscribe={feed}',
-			'suggestedName' => 'Blogtrottr',
-		);
+		$feed = rtrim( $url, '/' ) . '/feed';
 
 		$r = array (
 			'name' => $name,
 			'taxonomy' => $taxonomy,
-			'url' => $curr_url,
-			'feed' => $curr_feed,
+			'url' => $url,
+			'feed' => $feed,
 			'description' => $description,
-			'subscribe' => 'https://www.subtome.com/?subs/#/subscribe?'
-				. http_build_query ( $subscribe ),
+			'paged' => $paged,
+			'total' => $total,
+			'perpage' => $perpage,
 		);
 
 		wp_cache_set ( $curr_url, $r,

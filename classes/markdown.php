@@ -93,7 +93,7 @@ class pmlnr_markdown extends pmlnr_base {
 
 	/**
 	 * parsedown
-	 *
+	 */
 	public static function pandoc_md2html ( $md ) {
 
 		if ( empty ( $md ) )
@@ -105,27 +105,61 @@ class pmlnr_markdown extends pmlnr_base {
 
 		$f = tempnam( "/run/shm", "md_" );
 		file_put_contents( $f, $md );
+		$extras = array (
+			'backtick_code_blocks',
+			'auto_identifiers',
+			'fenced_code_attributes',
+			'definition_lists',
+			'grid_tables',
+			'pipe_tables',
+			'strikeout',
+			'superscript',
+			'subscript',
+			'markdown_in_html_blocks',
+			'shortcut_reference_links',
+			'autolink_bare_uris',
+			'raw_html',
+		);
+
 		$cmd =
-			"/usr/bin/pandoc --no-highlight -p -f markdown -t html -o- {$f}";
+			"/usr/bin/pandoc -p -f markdown+". join( "+", $extras )
+			. " -t html -o- {$f}";
 		exec( $cmd, $r, $retval);
 		$r = join( "\n", $r );
 
 		unlink($f);
 
-		// match cite
-		//preg_match_all( '/<blockquote>(?:.*?)\s(?:&#8211;|–)(.*?)(:?<\/p>\s?)?<\/blockquote>/s', $r, $matches );
-		preg_match_all( '/<blockquote>(?:.*?)\s(?:\\-|–|&#8211;)(.*?)(?:<\/p>\s?)<\/blockquote>/s', $r, $matches );
+		wp_cache_set ( $hash, $r, __CLASS__ . __FUNCTION__, static::expire );
 
-		if ( !empty($matches) && isset( $matches[1] ) && isset( $matches[1][0] ) ) {
-			$r = str_replace ( $matches[1][0], "<cite>{$matches[1][0]}</cite>", $r );
-		}
+		return $r;
+	}
+
+
+	/**
+	 *
+	 */
+	public static function pandoc_html2md ( $html ) {
+
+		if ( empty ( $html ) )
+			return false;
+
+		$hash = sha1( $html );
+		if ( $cached = wp_cache_get ( $hash, __CLASS__ . __FUNCTION__ ) )
+			return $cached;
+
+		$f = tempnam( "/run/shm", "html_" );
+		file_put_contents( $f, $html );
+		$cmd =
+			"/usr/bin/pandoc --no-highlight -p -f html -t markdown_phpextra -o- {$f}";
+		exec( $cmd, $r, $retval);
+		$r = join( "\n", $r );
+
+		unlink($f);
 
 		wp_cache_set ( $hash, $r, __CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}
-	*/
-
 
 	/**
 	 *

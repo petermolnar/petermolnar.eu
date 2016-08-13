@@ -1,5 +1,7 @@
 <?php
 
+//include_once( dirname (__FILE__) . DIRECTORY_SEPARATOR . 'functions-ng.php');
+
 global $wp;
 
 $endpoint = pmlnr_comment::comment_endpoint();
@@ -17,9 +19,10 @@ if ( array_key_exists( $endpoint, $wp->query_vars ) ) {
 				'post' => pmlnr_comment::template_vars( $comment, $post )
 			);
 
+			echo PETERMOLNAREU\twig( 'comment.html', $twigvars );
 			//$twigvars = pmlnr_comment::template_vars( $comment );
-			$twig = $petermolnareu_theme->twig->loadTemplate('comment.html');
-			echo $twig->render($twigvars);
+			//$twig = $petermolnareu_theme->twig->loadTemplate();
+			//echo $twig->render($twigvars);
 			exit;
 		}
 	}
@@ -37,5 +40,4 @@ if ( have_posts() ) {
 	}
 }
 
-$twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
-echo $twig->render($twigvars);
+echo PETERMOLNAREU\twig( 'archive.html', $twigvars );

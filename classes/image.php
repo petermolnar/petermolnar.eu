@@ -92,7 +92,7 @@ class pmlnr_image extends pmlnr_base {
 
 		add_filter ( 'wp_image_editors', array ( &$this, 'wp_image_editors' ));
 
-		add_filter ( 'wp_flatexport_txt', array ( &$this, 'flatexport_exif' ), 16, 2 );
+		//add_filter ( 'wp_flatexport_txt', array ( &$this, 'flatexport_exif' ), 16, 2 );
 		//add_filter ( 'wp_flatexport_featured_image', array ( &$this, 'flatexport_featured_image' ), 1, 2 );
 
 
@@ -112,6 +112,9 @@ class pmlnr_image extends pmlnr_base {
 		$attachment = get_post( $thid );
 
 		if ( false === static::is_post( $attachment ) )
+			return $meta;
+
+		if ( !isset( $meta['file'] ) || empty( $meta['file'] ) )
 			return $meta;
 
 		if ( !empty ( $attachment->post_parent ) )
@@ -196,61 +199,63 @@ class pmlnr_image extends pmlnr_base {
 		if (!static::is_post($post))
 			return $text;
 
-		if (!static::is_u_photo($post))
-			return $text;
-
 		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
 			return $cached;
 
 		$thid = get_post_thumbnail_id( $post->ID );
+		if ( empty($thid) )
+			return $text;
+
+		if (!static::is_photo($thid))
+			return $text;
+
+		$meta = wp_get_attachment_metadata( $thid );
+		if ( !isset($meta['image_meta']) || empty($meta['image_meta']))
+			return $text;
+
 		$return = $text;
 
-		if ( !empty($thid) ) {
-			//$meta = static::get_extended_thumbnail_meta( $thid );
-			$meta = wp_get_attachment_metadata( $thid );
-			if ( isset($meta['image_meta']) && !empty($meta['image_meta'])) {
-				$meta = $meta['image_meta'];
-				$r = array();
+		$meta = wp_get_attachment_metadata( $thid );
 
-				if ( isset($meta['camera']) && !empty($meta['camera']))
-					$r['camera'] = $meta['camera'];
+		$meta = $meta['image_meta'];
+		$r = array();
 
-				if ( isset($meta['focal_length']) && !empty($meta['focal_length']))
-					$r['focal length'] = sprintf (__('%smm'), $meta['focal_length'] );
+		if ( isset($meta['camera']) && !empty($meta['camera']))
+			$r['camera'] = $meta['camera'];
 
-				if ( isset($meta['aperture']) && !empty($meta['aperture']))
-					$r['aperture'] = sprintf ( __('f/%s'), $meta['aperture']);
+		if ( isset($meta['focal_length']) && !empty($meta['focal_length']))
+			$r['focal length'] = sprintf (__('%smm'), $meta['focal_length'] );
 
-				if ( isset($meta['shutter_speed']) && !empty($meta['shutter_speed'])) {
-					if ( (1 / $meta['shutter_speed'] ) > 1) {
-						$shutter_speed = "1/";
-						if ((number_format((1 / $meta['shutter_speed']), 1)) == 1.3 or
-							number_format((1 / $meta['shutter_speed']), 1) == 1.5 or
-							number_format((1 / $meta['shutter_speed']), 1) == 1.6 or
-							number_format((1 / $meta['shutter_speed']), 1) == 2.5)
-								$shutter_speed .= number_format((1 / $meta['shutter_speed']), 1, '.', '');
-						else
-							$shutter_speed .= number_format((1 / $meta['shutter_speed']), 0, '.', '');
-					}
-					else {
-						$shutter_speed = $meta['shutter_speed'];
-					}
-					$r['shutter speed'] = sprintf( __('%s sec'), $shutter_speed);
-				}
+		if ( isset($meta['aperture']) && !empty($meta['aperture']))
+			$r['aperture'] = sprintf ( __('f/%s'), $meta['aperture']);
 
-				if ( isset($meta['iso']) && !empty($meta['iso']))
-					$r['ISO'] = $meta['iso'];
-
-				if ( isset($meta['lens']) && !empty($meta['lens']))
-					$r['lens'] =  $meta['lens'];
+		if ( isset($meta['shutter_speed']) && !empty($meta['shutter_speed'])) {
+			if ( (1 / $meta['shutter_speed'] ) > 1) {
+				$shutter_speed = "1/";
+				if ((number_format((1 / $meta['shutter_speed']), 1)) == 1.3 or
+					number_format((1 / $meta['shutter_speed']), 1) == 1.5 or
+					number_format((1 / $meta['shutter_speed']), 1) == 1.6 or
+					number_format((1 / $meta['shutter_speed']), 1) == 2.5)
+						$shutter_speed .= number_format((1 / $meta['shutter_speed']), 1, '.', '');
+				else
+					$shutter_speed .= number_format((1 / $meta['shutter_speed']), 0, '.', '');
 			}
-
-			$return .=  "\n\nEXIF\n----\n";
-
-			foreach ( $r as $name => $value ) {
-				$return .= "- {$name}: {$value}\n";
+			else {
+				$shutter_speed = $meta['shutter_speed'];
 			}
+			$r['shutter speed'] = sprintf( __('%s sec'), $shutter_speed);
+		}
 
+		if ( isset($meta['iso']) && !empty($meta['iso']))
+			$r['ISO'] = $meta['iso'];
+
+		if ( isset($meta['lens']) && !empty($meta['lens']))
+			$r['lens'] =  $meta['lens'];
+
+		$return .=  "\n\nEXIF\n----\n";
+
+		foreach ( $r as $name => $value ) {
+			$return .= "- {$name}: {$value}\n";
 		}
 
 		$return = rtrim( $return );
@@ -532,26 +537,24 @@ class pmlnr_image extends pmlnr_base {
 			$clean = $src;
 
 			$adaptive = "![{$meta['image_meta']['title']}]({$meta['src']}){#img-{$thid}}";
-			//$clean = str_replace( $adaptive, '', $clean );
+			$clean = str_replace( $adaptive, '', $clean );
 			$out = $clean;
 
 			$out .= $adaptive;
 
 			if ( static::is_u_photo($post) ) {
 				$exif = static::photo_exif( $thid, $post->ID );
-				////$clean = str_replace( $exif, '', $clean );
-				////$exif = str_replace( "\n", '', $exif );
-				////$clean = str_replace( $exif, '', $clean );
+				$clean = str_replace( $exif, '', $clean );
+				$exif = str_replace( "\n", '', $exif );
+				$clean = str_replace( $exif, '', $clean );
 
 				$out .= $exif;
-				$out .= '<a href="https://brid.gy/publish/facebook"></a>';
-				$out .= '<a href="https://brid.gy/publish/flickr"></a>';
+				//$out .= '<a href="https://brid.gy/publish/facebook"></a>';
+				//$out .= '<a href="https://brid.gy/publish/flickr"></a>';
 			}
-
 
 			if ( $clean != $src )
 				static::replace_content( $post, $clean );
-
 
 			$src = $out;
 		}

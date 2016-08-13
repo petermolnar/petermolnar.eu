@@ -1,20 +1,28 @@
-<article class="h-entry h-{{ post.htype }}">
+{% if ( ( post.format == 'photo' ) or ( post.format == 'image')) %}
+{%	set hentry = 'photo' %}
+{% elseif ( post.format == 'article' ) %}
+{%	set hentry = 'article' %}
+{% else %}
+{%	set hentry = 'note' %}
+{% endif %}
+
+<article class="h-entry h-{{ hentry }}">
 	<header>
 		{% if post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
-				<span class="p-name {% if post.htype == "article" %}more{% endif %}">{{ post.title }}</span>
+				<span class="p-name {% if post.format == "article" %}more{% endif %}">{{ post.title }}</span>
 			</a>
 		</h2>
 		{% endif %}
 		{% include 'ameta_pubdate.html' %}
 		{% include 'ameta_author.html' %}
-		{% if post.htype != "photo" %}
+		{% if post.format != "photo" %}
 			{% include 'ameta_webmention.html' %}
 		{% endif %}
 	</header>
 
-	{% if post.htype == "article" %}
+	{% if post.format == "article" %}
 		<div class="e-summary long">
 			{% if post.thumbnail %}
 				<img class="article-thumbnail" src="{{ post.thumbnail }}" />

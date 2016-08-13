@@ -55,7 +55,10 @@ class pmlnr_site extends pmlnr_base {
 	 */
 	public static function get_the_pagination() {
 		global $wp_query;
-		$wp_query->query_vars['paged'] > 1 ? $current = $wp_query->query_vars['paged'] : $current = 1;
+
+		$current = 1;
+		if ( isset( $wp_query->query_vars['paged'] ) && $wp_query->query_vars['paged'] > 1 )
+			$current = $wp_query->query_vars['paged'];
 
 		$pargs = array(
 			'format' => 'page/%#%',
@@ -126,29 +129,18 @@ class pmlnr_site extends pmlnr_base {
 			'charset' => get_bloginfo('charset'),
 			'name' => get_bloginfo('name'),
 			'description' => get_bloginfo('description'),
-			'language' => get_bloginfo('language'),
-			'content_dir' => WP_CONTENT_DIR,
-			'content_url' => WP_CONTENT_URL,
-			'theme_url' => get_bloginfo('stylesheet_directory'),
+			'theme_url' => rtrim( get_bloginfo('stylesheet_directory'), '/'),
 			'pingback_url' => get_bloginfo('pingback_url'),
 			'rss_url' => get_bloginfo('rss2_url'),
 			'favicon' => get_bloginfo('template_directory') . '/images/favicon.png',
-			'user_lang' => isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : '',
 			'author' => pmlnr_author::template_vars( $author_id ),
 			'header' => static::get_the_header(),
 			'footer' => static::get_the_footer(),
 			'pagination' => static::get_the_pagination(),
-			'author_formats' => array('article','photo','reply'),
-			'image_formats' => array('image', 'photo'),
-			'long_formats' => array('article'),
-			'css' => static::get_css(),
-			'printcss' => static::get_css( 'print' ),
-			'atitle' => $atitle,
-			'is_user_logged_in' => is_user_logged_in(),
 		);
 
 		// menu vars
-		$menu_name = petermolnareu::menu_header;
+		$menu_name = \PETERMOLNAREU\menu_header;
 		if ( ( $locations = get_nav_menu_locations() ) && isset( $locations[ $menu_name ] ) ) {
 
 			$menu = wp_get_nav_menu_object( $locations[ $menu_name ] );

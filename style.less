@@ -5,7 +5,7 @@ Description:	petermolnar.eu template for Wordpress
 Author:				Peter Molnar
 Author URI:		http://petermolnar.eu/
 Licence:			GPLv3
-Version:			16.0
+Version:			17.0
 */
 
 /* --- LESS variables & methods --- */
@@ -299,12 +299,12 @@ table {
 
 @font-face {
 	font-family: 'petermolnar';
-	src: url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot?89917930');
+	src: url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot?89917930');
 	src: local('petermolnar'),
-		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot#iefix') format('embedded-opentype'),
-		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.woff') format('woff'),
-		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.ttf') format('truetype'),
-		 url('/wp-content/themes/petermolnar.eu/fonts/petermolnar.svg#petermolnar') format('svg');
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot#iefix') format('embedded-opentype'),
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.woff') format('woff'),
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.ttf') format('truetype'),
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.svg#petermolnar') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -988,4 +988,54 @@ ul.page-numbers {
 	content: '»';
 	margin-right: @padding-normal;
 	text-decoration:none;
+}
+
+
+/* Based on kate's own default colors for Haskell *
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode, table.sourceCode pre
+   { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; }
+td.lineNumbers { text-align: right; background-color: #EBEBEB; color: black; padding-right: 5px; padding-left: 5px; }
+td.sourceCode { padding-left: 5px; }
+*/
+
+code.sourceCode span.kw { font-weight: bold; }
+code.sourceCode span.dt { color: #800000; }
+code.sourceCode span.dv { color: #0000FF; }
+code.sourceCode span.bn { color: #0000FF; }
+code.sourceCode span.fl { color: #800080; }
+code.sourceCode span.ch { color: #FF00FF; }
+code.sourceCode span.st { color: #DD0000; }
+code.sourceCode span.co { color: #808080; font-style: italic; }
+code.sourceCode span.ot { }
+code.sourceCode span.al { color: green; font-weight: bold; }
+code.sourceCode span.fu { color: #000080; }
+code.sourceCode span.re { }
+code.sourceCode span.er { color: red; font-weight: bold; }
+
+
+pre.sourceCode {
+	margin-top: -0.3em;
+	overflow: auto;
+	border-top: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
+}
+
+code.sourceCode {
+	font-family: "Inconsolata", monospace;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	font-size: 0.95em;
+	line-height: 1.2em;
+
+	-moz-tab-size: 2;
+	-o-tab-size: 2;
+	tab-size: 2;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
 }

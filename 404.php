@@ -8,5 +8,4 @@
 		'site' => pmlnr_site::template_vars(),
 	);
 
-	$tmpl = $petermolnareu_theme->twig->loadTemplate('404.html');
-	echo $tmpl->render($twigvars);
+	echo PETERMOLNAREU\twig( '404.html', $twigvars );

@@ -26,5 +26,4 @@ $twigvars['site']['page_title'] = sprintf (
 		}
 	}
 
-$twig = $petermolnareu_theme->twig->loadTemplate('archive.html');
-echo $twig->render($twigvars);
+echo PETERMOLNAREU\twig( 'archive.html', $twigvars );
