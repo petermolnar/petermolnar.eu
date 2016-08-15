@@ -455,10 +455,21 @@ img.left {
 	margin: @font-size auto @font-size auto;
 }
 
+aside.author {
+	display: none;
+	visibility: hidden;
+}
+
+
 .h-article,
 .h-photo,
 .singular {
 	background-color: @bglight;
+
+	aside.author {
+		display: inline-block;
+		visibility: visible;
+	}
 }
 
 .singular {
@@ -892,40 +903,42 @@ img.left {
 }
 
 /* --- PAGINATION --- */
-.wp-paginate,
-ul.page-numbers {
-	clear:both;
-	display:block;
-	margin: 0;
-	text-align: center;
-	font-size: 1.2em;
-	padding: @padding-large 0 @padding-large 0;
+nav.pagination {
+	text-align:center;
+	display: block;
+	ul {
+		clear:both;
+		display:block;
+		margin: 0;
+		text-align: center;
+		font-size: 1.2em;
+		padding: @padding-large 0 @padding-large 0;
 
-	li {
-		display:inline;
-		padding: @padding-normal;
-	}
+		li {
+			display:inline;
+			padding: @padding-normal;
+		}
 
-	.current,
-	a,
-	span {
-		padding: @padding-normal @padding-large @padding-normal @padding-large;
-	}
+		.current,
+		a,
+		span {
+			padding: @padding-normal @padding-large @padding-normal @padding-large;
+		}
 
-	a {
-		border:none;
-		background-color: @bglight;
-		border: 1px solid darken(@bgcolor,10%);
+		a {
+			border:none;
+			background-color: @bglight;
+			border: 1px solid darken(@bgcolor,10%);
 
-		&:hover {
-			border: 1px solid darken(@bgcolor,40%);
+			&:hover {
+				border: 1px solid darken(@bgcolor,40%);
+			}
+		}
+
+		.current {
+			color: lighten(@color,30%);
 		}
 	}
-
-	.current {
-		color: lighten(@color,30%);
-	}
-
 }
 
 /* --- ICONS --- */

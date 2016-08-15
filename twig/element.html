@@ -8,6 +8,7 @@
 
 <article class="h-entry h-{{ hentry }}">
 	<header>
+
 		{% if post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
@@ -15,11 +16,22 @@
 			</a>
 		</h2>
 		{% endif %}
-		{% include 'ameta_pubdate.html' %}
-		{% include 'ameta_author.html' %}
-		{% if post.format != "photo" %}
-			{% include 'ameta_webmention.html' %}
-		{% endif %}
+
+		<aside class="pubdate">
+			<a class="u-url" rel="bookmark" title="{{ post.title }}" href="{{ post.url }}">
+				<time class="dt-published" datetime="{{ post.published|date("c") }}">{{ post.published|date("Y-m-d H:i") }}</time>
+			</a>
+		</aside>
+
+		<aside class="author">
+			<p>by
+				<span class="p-author h-card vcard">
+					<img class="photo avatar u-photo u-avatar hide" src="{{ post.author.avatar }}" alt="Photo of {{ post.author.name }}" />
+					<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
+				</span>
+				</p>
+		</aside>
+
 	</header>
 
 	{% if post.format == "article" %}
@@ -41,9 +53,19 @@
 	{% endif %}
 
 	<footer>
-		<br class="clear" />
-		{% include 'list_tag.html' %}
-		<br class="clear" />
+{% if post.tags %}
+		<aside class="tags">
+			<nav>
+				<ul>
+					{% for tname, turl in post.tags %}
+						<li>
+							<a href="{{ turl }}" class="u-category">{{ tname }}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</nav>
+		</aside>
+{% endif %}
 	</footer>
 
 </article>

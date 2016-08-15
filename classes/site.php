@@ -125,7 +125,8 @@ class pmlnr_site extends pmlnr_base {
 		}
 
 		$r = array (
-			'url' => site_url(),
+			'url' => rtrim( site_url() , '/' ),
+			'domain' => parse_url( site_url(), PHP_URL_HOST ),
 			'charset' => get_bloginfo('charset'),
 			'name' => get_bloginfo('name'),
 			'description' => get_bloginfo('description'),
@@ -133,40 +134,11 @@ class pmlnr_site extends pmlnr_base {
 			'pingback_url' => get_bloginfo('pingback_url'),
 			'rss_url' => get_bloginfo('rss2_url'),
 			'favicon' => get_bloginfo('template_directory') . '/images/favicon.png',
-			'author' => pmlnr_author::template_vars( $author_id ),
+			'author' => pmlnr_author::template_vars( 1 ),
 			'header' => static::get_the_header(),
 			'footer' => static::get_the_footer(),
 			'pagination' => static::get_the_pagination(),
 		);
-
-		// menu vars
-		$menu_name = \PETERMOLNAREU\menu_header;
-		if ( ( $locations = get_nav_menu_locations() ) && isset( $locations[ $menu_name ] ) ) {
-
-			$menu = wp_get_nav_menu_object( $locations[ $menu_name ] );
-			$items = wp_get_nav_menu_items($menu->term_id);
-
-			foreach ( (array) $items as $key => $item ) {
-
-				$active = false;
-
-				$_url = parse_url($item->url);
-				$_siteurl = parse_url($r['url']);
-
-				if ( in_array( $item->object_id, $terms) )
-					$active = true;
-				elseif ( is_home() && ($_url['path'] == '/' || empty($_url['path'])) && $_url['host'] == $_siteurl['host'])
-					$active = true;
-
-				$e = array (
-					'title' => $item->title,
-					'url' => $item->url,
-					'active' => $active,
-				);
-
-				$r['menu'][ $item->ID ] = $e;
-			}
-		}
 
 		return $r;
 	}

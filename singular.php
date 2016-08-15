@@ -7,6 +7,8 @@ $twigvars = array (
 	'post' => pmlnr_post::template_vars( $post )
 );
 
+$twigvars['post']['singular'] = true;
+
 $tmpl = 'singular.html';
 
 if (is_page())

@@ -1,10 +1,9 @@
-{% include 'partial_header.html' %}
+
+
 <section class="content-body" id="main-content">
 	<article class="h-entry" id="post-{{ post.id }}" >
 		<header>
-				{% include 'ameta_author.html' %}
 				<a class="u-url" href="{{ post.url }}"></a>
-				{% include 'ameta_webmention.html' %}
 		</header>
 
 		<div class="e-content">
@@ -12,9 +11,6 @@
 		</div>
 
 		<footer>
-			{% include 'ameta_pubdate.html' %}
-			<br class="cl" />
 		</footer>
 	</article>
 </section>
-{% include 'partial_footer.html' %}

@@ -1,10 +1,17 @@
-{% include 'partial_header.html' %}
+{% include 'block_header_open.html' %}
+{% include 'block_header_singular.html' %}
+{% if post.title %}
+<title>{{ post.title }} | {{ site.domain }}</title>
+{% else %}
+<title>{{ post.name }} | {{ site.domain }}</title>
+{% endif %}
+{% include 'block_header_close.html' %}
+
+
 <section class="content-body">
 	<article class="h-entry singular">
 		<header {{ post.bgstyle }}>
 			<div class="content-inner hide">
-				{% include 'ameta_pubdate.html' %}
-				{% include 'ameta_author.html' %}
 				<h1>
 					<a class="u-url" href="{{ post.url }}" rel="bookmark" title="{{ post.title }}">
 						<span class="p-name">{{ post.title }}</span>
@@ -22,4 +29,5 @@
 
 	</article>
 </section>
-{% include 'partial_footer.html' %}
+
+{% include 'block_footer.html' %}

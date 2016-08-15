@@ -1,0 +1,25 @@
+</head>
+
+<header class="content-header" id="main-header">
+	<nav class="content-navigation">
+		<ul>
+			<li>
+				<a title="home" href="{{ site.url }}" class="icon-home{% if ( post is null ) and ( taxonomy.taxonomy == '' ) %} active{% endif %}">home</a>
+			</li>
+			<li>
+				<a title="photos" href="{{ site.url }}/category/photo/" class="icon-photos{% if ( post.format ==  'photo' ) or ( taxonomy.name|lower == 'photo' ) %} active{% endif %}">photos</a>
+			</li>
+			<li>
+				<a title="journal" href="{{ site.url }}/tag/journal/" class="icon-journal{% if ( 'journal' in post.tags|keys ) or ( taxonomy.name|lower == 'journal' ) %} active{% endif %}">journal</a>
+			</li>
+			<li>
+				<a title="code" href="{{ site.url }}/tag/it/" class="icon-code{% if ( 'IT' in post.tags|keys ) or ( taxonomy.name|lower == 'it' ) %} active{% endif %}">code</a>
+			</li>
+			<li>
+				<a title="contact" href="{{ site.url }}/about/" class="icon-contact{% if post.title|lower == 'about' %} active{% endif %}">contact</a>
+			</li>
+		</ul>
+	</nav>
+
+	{% include 'block_search.html' %}
+</header>

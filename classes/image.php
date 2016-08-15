@@ -95,6 +95,8 @@ class pmlnr_image extends pmlnr_base {
 		//add_filter ( 'wp_flatexport_txt', array ( &$this, 'flatexport_exif' ), 16, 2 );
 		//add_filter ( 'wp_flatexport_featured_image', array ( &$this, 'flatexport_featured_image' ), 1, 2 );
 
+		//add_filter ( 'wp_flatexport_frontmatter', array ( &$this, 'flatexport_frontmatter' ), 1, 2 );
+
 
 		add_filter( 'wp_get_attachment_metadata', array ( &$this, 'extend_attachment_meta' ), 1, 2 );
 
@@ -192,30 +194,24 @@ class pmlnr_image extends pmlnr_base {
 	/**
 	 *
 	 */
-	public function flatexport_exif ( $text, $post ) {
+	public function flatexport_frontmatter ( $frontmatter, $post ) {
 		if ( ! static::is_post ( $post ) )
-			return $text;
+			return $frontmatter;
 
 		if (!static::is_post($post))
-			return $text;
-
-		if ( $cached = wp_cache_get ( $post->ID, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
+			return $frontmatter;
 
 		$thid = get_post_thumbnail_id( $post->ID );
 		if ( empty($thid) )
-			return $text;
+			return $frontmatter;
 
 		if (!static::is_photo($thid))
-			return $text;
+			return $frontmatter;
 
 		$meta = wp_get_attachment_metadata( $thid );
 		if ( !isset($meta['image_meta']) || empty($meta['image_meta']))
-			return $text;
+			return $frontmatter;
 
-		$return = $text;
-
-		$meta = wp_get_attachment_metadata( $thid );
 
 		$meta = $meta['image_meta'];
 		$r = array();
@@ -252,17 +248,10 @@ class pmlnr_image extends pmlnr_base {
 		if ( isset($meta['lens']) && !empty($meta['lens']))
 			$r['lens'] =  $meta['lens'];
 
-		$return .=  "\n\nEXIF\n----\n";
+		if ( !empty( $r ) )
+			$frontmatter['EXIF'] = $r;
 
-		foreach ( $r as $name => $value ) {
-			$return .= "- {$name}: {$value}\n";
-		}
-
-		$return = rtrim( $return );
-
-		wp_cache_set ( $post->ID, $return, __CLASS__ . __FUNCTION__, static::expire );
-
-		return $return;
+		return $frontmatter;
 
 	}
 

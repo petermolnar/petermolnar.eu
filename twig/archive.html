@@ -1,18 +1,31 @@
-{% include 'partial_header.html' %}
+{% include 'block_header_open.html' %}
+<title>{{ taxonomy.name }} | {{ site.domain }}</title>
+{% include 'block_header_close.html' %}
+
+
 <section class="content-body h-feed">
-	{% if archive.name %}
-	<h1 class="p-name hide">{{ archive.name }}</h1>
+	{% if taxonomy.name %}
+	<h1 class="p-name hide">{{ taxonomy.name }}</h1>
 	{% endif %}
-	{% if archive.description %}
-	<aside class="p-summary">{{ archive.description }}</aside>
+	{% if taxonomy.description %}
+	<aside class="p-summary">{{ taxonomy.description }}</aside>
 	{% endif %}
-	{% if archive.feed %}
+	{% if taxonomy.feed %}
 	<aside class="follow">
-		<a class="icon-subscribe" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" value="Subscribe" data-subtome-resource="{{ archive.url }}" data-subtome-feeds="{{ archive.feed }}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" href="https://www.subtome.com/?subs/#/subscribe?resource={{ archive.url|url_encode }}&feeds={{ archive.feed|url_encode }}&suggestedUrl={{ 'http://blogtrottr.com/?subscribe={feed}'|url_encode }}&suggestedName=Blogtrottr" title="subscribe to {{ archive.url }}">follow{% if archive.name %} "{{ archive.name }}"{% endif%}</a>
+		<a class="icon-subscribe" onclick="(function(btn){var z=document.createElement('script');document.subtomeBtn=btn;z.src='https://www.subtome.com/load.js';document.body.appendChild(z);})(this)" value="Subscribe" data-subtome-resource="{{ taxonomy.url }}" data-subtome-feeds="{{ taxonomy.feed }}" data-subtome-suggested-service-name="Blogtrottr" data-subtome-suggested-service-url="http://blogtrottr.com/?subscribe={feed}" href="https://www.subtome.com/?subs/#/subscribe?resource={{ taxonomy.url|url_encode }}&feeds={{ taxonomy.feed|url_encode }}&suggestedUrl={{ 'http://blogtrottr.com/?subscribe={feed}'|url_encode }}&suggestedName=Blogtrottr" title="subscribe to {{ taxonomy.url }}">follow{% if taxonomy.name %} "{{ taxonomy.name }}"{% endif%}</a>
 	</aside>
 	{% endif %}
 	{% for post in posts %}
 		{% include 'element.html' %}
 	{% endfor %}
 </section>
-{% include 'partial_footer.html' %}
+
+{% if taxonomy.total > 1 %}
+{% include 'block_pagination.html' with {
+	total: taxonomy.total,
+	base_url: taxonomy.pagination_base,
+	current: taxonomy.paged,
+} only %}
+{% endif %}
+
+{% include 'block_footer.html' %}

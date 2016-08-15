@@ -8,20 +8,22 @@ class pmlnr_archive extends pmlnr_base {
 	/**
 	 *
 	 */
-	public static function template_vars () {
+	public static function template_vars ( $qstr = false ) {
 
 		$r = array();
 
 		if ( ! is_archive() && ! is_home() )
 			return $r;
 
-		$curr_url = site_url ( $_SERVER['REQUEST_URI'] );
+		$url = site_url ( $_SERVER['REQUEST_URI'] );
 
-		if ( $cached = wp_cache_get ( $curr_url,
-			__CLASS__ . __FUNCTION__ ) )
-			return $cached;
 
 		global $wp_query;
+		global $query_string;
+
+		if ( false !== $qstr ) {
+			query_posts( $qstr );
+		}
 
 		$paged = 1;
 		if ( isset( $wp_query->query_vars['paged'] )
@@ -43,24 +45,24 @@ class pmlnr_archive extends pmlnr_base {
 			$term = $wp_query->get_queried_object();
 			$name = $term->name;
 			$taxonomy = $term->taxonomy;
-			$description = pmlnr_markdown::parsedown( $term->description );
+			$description = "";
+			//$term->description;
 		}
 
 		$feed = rtrim( $url, '/' ) . '/feed';
+		$base_url = preg_replace( '/\/page\/[0-9]+\/?$/', '', $url );
 
 		$r = array (
 			'name' => $name,
 			'taxonomy' => $taxonomy,
 			'url' => $url,
+			'pagination_base' => $base_url,
 			'feed' => $feed,
 			'description' => $description,
 			'paged' => $paged,
 			'total' => $total,
 			'perpage' => $perpage,
 		);
-
-		wp_cache_set ( $curr_url, $r,
-			__CLASS__ . __FUNCTION__, static::expire );
 
 		return $r;
 	}

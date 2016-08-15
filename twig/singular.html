@@ -1,4 +1,31 @@
-{% include 'partial_header.html' %}
+{% include 'block_header_open.html' %}
+{% if post.title %}
+	<title>{{ post.title }} | {{ site.domain }}</title>
+{% else %}
+	<title>{{ post.name }} | {{ site.domain }}</title>
+{% endif %}
+	<link rel="canonical" href="{{ post.url }}" />
+	<link rel="shortlink" href="{{post.shorturl }}" />
+	<meta name="article:published_time" content="{{ post.published|date("c") }}" />
+{% if post.modified %}
+	<meta name="article:modified_time" content="{{ post.modified|date("c") }}" />
+{%endif%}
+	<meta property="og:description" content="{{ post.excerpt }}" />
+	<meta property="og:locale" content="{{ post.locale|default('en') }}" />
+	<meta property="og:site_name" content="Peter Molnar" />
+	<meta property="og:title" content="{{ post.title }}" />
+	<meta property="og:type" content="{{ post.format }}" />
+{% if post.modified %}
+	<meta name="og:updated_time" content="{{ post.modified|date("c") }}" />
+{%endif%}
+	<meta property="og:url" content="{{ post.shorturl }}" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:description" content="{{ post.excerpt }}" />
+{% if post.author.twitter %}
+	<meta name="twitter:site" content="@{{ post.author.twitter }}" />
+{% endif %}
+	<meta name="twitter:title" content="{{ post.title }}" />
+{% include 'block_header_close.html' %}
 
 <section class="content-body">
 	<article class="h-entry singular" id="post-{{ post.id }}" >
@@ -10,7 +37,6 @@
 				</a>
 			</h1>
 			{% endif %}
-			{% include 'ameta_webmention.html' %}
 		</header>
 
 		{% if post.excerpt|length > 0 %}
@@ -30,12 +56,32 @@
 		</div>
 
 		<footer>
+			<aside class="pubdate">
+				<h6 class="pubdate-title">Published</h6>
+					<a class="u-url" rel="bookmark" title="{{ post.title }}" href="{{ post.url }}">
+						<time class="dt-published" datetime="{{ post.published|date("c") }}">{{ post.published|date("Y-m-d H:i") }}</time>
+					</a>
+			</aside>
 
-			{% include 'ameta_pubdate.html' %}
+			<aside class="author">
+				<h6 class="author-title">Author</h6>
+				<p class="p-author h-card vcard">
+					<img class="photo avatar u-photo u-avatar hide" src="{{ post.author.avatar }}" alt="Photo of {{ post.author.name }}" />
+					<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
+				</p>
+			</aside>
 
-			{% include 'ameta_author.html' %}
+{% if post.tags %}
+			<aside class="tags">
+				<h6 class="tags-title">Tags</h6>
+				<nav><ul>
+					{% for tname, turl in post.tags %}<li>
+						<a href="{{ turl }}" class="u-category">{{ tname }}</a>
+					</li>{% endfor %}
+				</ul></nav>
+			</aside>
+{% endif %}
 
-			{% include 'list_tag.html' %}
 			<h6 class="shortlink-title">Short URL</h6>
 			<aside class="shortlink">
 				<p>
@@ -47,12 +93,10 @@
 	</article>
 </section>
 
-{# include 'list_comments.html' #}
-
 <aside class="content-note">
 	{% set email = post.author.email %}
 	<hr />
 	<p>Want to leave a comment or get in touch? Reply with your own blog using <a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an <a href="mailto:{{ post.author.email }}?subject=RE: {{ post.title }}">email</a>, or poke me on social media.</p>
 </aside>
 
-{% include 'partial_footer.html' %}
+{% include 'block_footer.html' %}

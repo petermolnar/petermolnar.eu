@@ -72,50 +72,6 @@ class pmlnr_post extends pmlnr_base {
 		if ( empty( $reaction ) )
 			return false;
 
-		/* this should be obsolete now
-		if ( empty( $reaction ) ) {
-			$webmention_url = get_post_meta( $post->ID, 'webmention_url', true );
-
-			// content is missing reaction, reinsert it
-			if ( ! empty ( $webmention_url ) ) {
-				$webmention_type = get_post_meta( $post->ID, 'webmention_type', true );
-				$webmention_data = get_post_meta( $post->ID, 'webmention_rsvp', true );
-
-				$react = "*** {$webmention_type}: {$webmention_url}";
-				if ( !empty ($webmention_data) )
-					$react .= " {$webmention_data}";
-
-				$c = $react . "\n\n" . $post->post_content;
-				static::replace_content( $post, $c );
-
-				$reaction = static::has_reaction( $c );
-			}
-		}
-
-		// check for standalone, duplicate, leftover URLs
-		$rurls = array();
-		foreach ( $reaction[0] as $cntr => $replace ) {
-			$ccontent = str_replace( $replace, '', $post->post_content );
-			array_push( $rurls, $reaction[2][$cntr] );
-		}
-		$urls = static::extract_urls( $ccontent );
-		if ( !empty($urls)) {
-			foreach( $urls as $url ) {
-				if ( in_array( $url, $rurls ) )
-					$ccontent = str_replace( $url, '', $ccontent );
-			}
-
-			if ( empty(trim($ccontent)) ) {
-				$newcontent = "";
-				foreach ( $reaction[0] as $cntr => $insert ) {
-					$newcontent .= $insert . "\n";
-				}
-				static::replace_content( $ppost, $newcontent );
-			}
-		}
-		*/
-
-
 		$r_all = array();
 
 		foreach ( $reaction[0] as $cntr => $replace ) {
@@ -622,6 +578,7 @@ class pmlnr_post extends pmlnr_base {
 
 		$content = static::post_content_fix_dl ( $content, $post );
 		$content = static::post_content_fix_emstrong ( $content, $post );
+		$content = static::post_content_absolute_images ( $content, $post );
 		$content = static::post_content_url2footnote ( $content, $post );
 		// skip the ones that are inside a code block...
 		//$content = static::post_content_setext_headers ( $content, $post );
@@ -729,6 +686,37 @@ class pmlnr_post extends pmlnr_base {
 
 
 	/**
+	 *
+	 */
+	public static function post_content_absolute_images ( $content, $post ) {
+
+
+		$urlparts = parse_url( \site_url() );
+		$domain = $urlparts ['host'];
+		$wp_upload_dir = \wp_upload_dir();
+		$uploadurl = str_replace(
+			'/',
+			"\\/",
+			trim( str_replace(
+				\site_url(),
+				'',
+				$wp_upload_dir['url']
+			), '/')
+		);
+
+		$p = "/\((\/?{$uploadurl}\/.*?\.[a-zA-Z]{2,4})\)/i";
+		preg_match_all( $p, $content, $images );
+		if ( empty ( $images[1] ))
+			return $content;
+
+		foreach ( $images[1] as $imgstr ) {
+			$fname = site_url( $imgstr );
+			$content = str_replace ( $imgstr, $fname, $content );
+		}
+		return $content;
+	}
+
+	/**
 	 * find all second level markdown headers and replace them with
 	 * underlined version
 	 *
@@ -788,7 +776,7 @@ class pmlnr_post extends pmlnr_base {
 			'tags' => static::post_get_tags_array($post),
 			'format' => static::post_format( $post ),
 			//'show_author' => $show_author,
-			'singular' => is_singular(),
+			//'singular' => is_singular(),
 			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
 			'author' => pmlnr_author::template_vars( $post->post_author ),
 		);

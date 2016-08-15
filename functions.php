@@ -21,11 +21,12 @@ foreach ( $classes as $class ) {
 }
 
 use \PETERMOLNAREU\CLEANUP;
+use \PETERMOLNAREU\MARKDOWN;
 //\PETERMOLNAREU\CLEANUP\construct();
 
 new \pmlnr_image();
 //new \pmlnr_cleanup();
-new \pmlnr_markdown();
+//new \pmlnr_markdown();
 new \pmlnr_post();
 new \pmlnr_author();
 new \pmlnr_site();
@@ -246,25 +247,27 @@ function register_css_js () {
 	$js_url = "{$base_url}/js";
 	$css_url = "{$base_url}/css";
 
-	\wp_register_style( 'style', "{$base_url}/style.css", false, "17.0" );
-	\wp_enqueue_style( "style" );
-	\wp_register_style( 'print', "{$base_url}/print.css", false, "2.0", "print" );
-	\wp_enqueue_style( "print" );
+	wp_enqueue_script ('jquery');
+
+	//\wp_register_style( 'style', "{$base_url}/style.css", false, "17.0" );
+	//\wp_enqueue_style( "style" );
+	//\wp_register_style( 'print', "{$base_url}/print.css", false, "2.0", "print" );
+	//\wp_enqueue_style( "print" );
 
 	// Magnific popup
-	\wp_register_style( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/magnific-popup.css" , false );
-	\wp_register_script( "magnific-popup", "{$base_url}/lib/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
+	//\wp_register_style( "magnific-popup", "{$base_url}/vendor/dimsemenov/Magnific-Popup/dist/magnific-popup.css" , false );
+	//\wp_register_script( "magnific-popup", "{$base_url}/vendor/dimsemenov/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
 
 	// justified gallery
-	\wp_register_style( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
+	//\wp_register_style( "Justified-Gallery", "{$base_url}/vendor/miromannino/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
 
-	\wp_register_script( "Justified-Gallery", "{$base_url}/lib/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
+	//\wp_register_script( "Justified-Gallery", "{$base_url}/vendor/miromannino/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
 
 	 //syntax highlight
-	\wp_register_style( "prism", "{$css_url }/prism.css", false, null );
-	\wp_enqueue_style( "prism" );
-	\wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
-	\wp_enqueue_script( "prism" );
+	//\wp_register_style( "prism", "{$css_url }/prism.css", false, null );
+	//\wp_enqueue_style( "prism" );
+	//\wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
+	//\wp_enqueue_script( "prism" );
 }
 
 /**
