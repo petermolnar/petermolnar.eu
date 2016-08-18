@@ -85,7 +85,7 @@ class pmlnr_image extends pmlnr_base {
 
 		add_filter( 'the_content', array( &$this, 'adaptify'), 7 );
 
-		add_filter( 'the_content', array( &$this, 'insert_featured_image'), 2 );
+		//add_filter( 'the_content', array( &$this, 'insert_featured_image'), 2 );
 		add_filter( 'image_size_names_choose', array( &$this, 'extend_image_sizes') );
 
 		add_filter( 'wp_resized2cache_imagick',array ( &$this, 'watermark' ),10, 2);
@@ -423,6 +423,8 @@ class pmlnr_image extends pmlnr_base {
 			$class = "u-photo";
 		}
 
+		// TODO: link $fallback['src'] to cache/original image name
+
 		if ( is_feed()) {
 			$r = sprintf('<img src="%s" title="%s" alt="%s" />', $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'] );
 		}
@@ -525,22 +527,22 @@ class pmlnr_image extends pmlnr_base {
 
 			$clean = $src;
 
-			$adaptive = "![{$meta['image_meta']['title']}]({$meta['src']}){#img-{$thid}}";
+			$adaptive = "\n\n![{$meta['image_meta']['title']}]({$meta['src']}){#img-{$thid}}";
 			$clean = str_replace( $adaptive, '', $clean );
 			$out = $clean;
 
 			$out .= $adaptive;
 
-			if ( static::is_u_photo($post) ) {
-				$exif = static::photo_exif( $thid, $post->ID );
-				$clean = str_replace( $exif, '', $clean );
-				$exif = str_replace( "\n", '', $exif );
-				$clean = str_replace( $exif, '', $clean );
+			//if ( static::is_u_photo($post) ) {
+				//$exif = static::photo_exif( $thid, $post->ID );
+				//$clean = str_replace( $exif, '', $clean );
+				//$exif = str_replace( "\n", '', $exif );
+				//$clean = str_replace( $exif, '', $clean );
 
-				$out .= $exif;
-				//$out .= '<a href="https://brid.gy/publish/facebook"></a>';
-				//$out .= '<a href="https://brid.gy/publish/flickr"></a>';
-			}
+				//$out .= "\n\n". $exif;
+				////$out .= '<a href="https://brid.gy/publish/facebook"></a>';
+				////$out .= '<a href="https://brid.gy/publish/flickr"></a>';
+			//}
 
 			if ( $clean != $src )
 				static::replace_content( $post, $clean );
@@ -625,6 +627,42 @@ class pmlnr_image extends pmlnr_base {
 
 		return $return;
 	}
+
+	/**
+	 *
+	 */
+	public static function twig_exif ( $postid ) {
+		$meta = array();
+		$thid = get_post_thumbnail_id( $postid );
+		if ( ! $thid )
+			return $meta;
+
+		$m = wp_get_attachment_metadata($thid);
+		if ( isset($m['image_meta']) && !empty($m['image_meta'])) {
+			$meta = $m['image_meta'];
+		}
+
+		if ( isset($meta['shutter_speed'])
+				 && !empty($meta['shutter_speed'])
+				 && ( 1 / $meta['shutter_speed'] ) > 1
+		) {
+			$shutter_speed = "1/";
+			if ( (number_format((1 / $meta['shutter_speed']), 1)) == 1.3 or
+					  number_format((1 / $meta['shutter_speed']), 1) == 1.5 or
+					  number_format((1 / $meta['shutter_speed']), 1) == 1.6 or
+					  number_format((1 / $meta['shutter_speed']), 1) == 2.5
+					) {
+						$shutter_speed .= number_format((1 / $meta['shutter_speed']), 1, '.', '');
+			}
+			else {
+				$shutter_speed .= number_format((1 / $meta['shutter_speed']), 0, '.', '');
+			}
+			$meta['shutter_speed'] = $shutter_speed;
+		}
+
+		return $meta;
+	}
+
 
 	/**
 	 *

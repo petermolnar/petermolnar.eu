@@ -512,6 +512,13 @@ aside.author {
 			padding: 0;
 		}
 
+		p {
+			code {
+				background-color: darken(@bgcolor,5%);
+				padding: 0.2em 0.3em;
+			}
+		}
+
 	}
 
 	.article-thumbnail {
@@ -530,12 +537,25 @@ aside.author {
 	}
 
 	.author {
+		.avatar {
+			display: none;
+			visibility: hidden;
+		}
+
 		img {
 			padding: 0;
 			margin: 0;
 			width: 1em;
 			height: 1em;
 		}
+	}
+
+	.old-warning {
+		border: 0px none;
+		padding: @font-size;
+		font-size: 90%;
+		font-weight: bold;
+		color: #aaaa22;
 	}
 
 	footer,
@@ -1041,7 +1061,6 @@ code.sourceCode {
 	word-spacing: normal;
 	word-break: normal;
 	font-size: 0.95em;
-	line-height: 1.2em;
 
 	-moz-tab-size: 2;
 	-o-tab-size: 2;

@@ -1,30 +1,43 @@
 {% include 'block_header_open.html' %}
-{% if post.title %}
-	<title>{{ post.title }} | {{ site.domain }}</title>
-{% else %}
-	<title>{{ post.name }} | {{ site.domain }}</title>
-{% endif %}
+	<link rel="http://webmention.org/"
+		href="https://petermolnar.net/?wp-webmention-again=endpoint" />
+	<link rel="webmention"
+		href="https://petermolnar.net/?wp-webmention-again=endpoint" />
+
+	{% if post.title %}
+		<title>{{ post.title }} | {{ site.domain }}</title>
+	{% else %}
+		<title>{{ post.name }} | {{ site.domain }}</title>
+	{% endif %}
+
 	<link rel="canonical" href="{{ post.url }}" />
 	<link rel="shortlink" href="{{post.shorturl }}" />
-	<meta name="article:published_time" content="{{ post.published|date("c") }}" />
-{% if post.modified %}
-	<meta name="article:modified_time" content="{{ post.modified|date("c") }}" />
-{%endif%}
-	<meta property="og:description" content="{{ post.excerpt }}" />
+	<meta name="article:published_time"
+		content="{{ post.published|date("c") }}" />
+
+	{% if post.modified %}
+		<meta name="article:modified_time"
+			content="{{ post.modified|date("c") }}" />
+	{%endif%}
+
+	<meta property="og:description" content="{{ post.excerpt|striptags }}" />
 	<meta property="og:locale" content="{{ post.locale|default('en') }}" />
 	<meta property="og:site_name" content="Peter Molnar" />
 	<meta property="og:title" content="{{ post.title }}" />
 	<meta property="og:type" content="{{ post.format }}" />
-{% if post.modified %}
-	<meta name="og:updated_time" content="{{ post.modified|date("c") }}" />
-{%endif%}
+
+	{% if post.modified %}
+		<meta name="og:updated_time" content="{{ post.modified|date("c") }}" />
+	{%endif%}
+
 	<meta property="og:url" content="{{ post.shorturl }}" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:description" content="{{ post.excerpt }}" />
-{% if post.author.twitter %}
-	<meta name="twitter:site" content="@{{ post.author.twitter }}" />
-{% endif %}
-	<meta name="twitter:title" content="{{ post.title }}" />
+	<meta name="twitter:description" content="{{ post.excerpt|striptags }}" />
+
+	{% if post.author.twitter %}
+		<meta name="twitter:site" content="@{{ post.author.twitter }}" />
+	{% endif %}
+		<meta name="twitter:title" content="{{ post.title }}" />
 {% include 'block_header_close.html' %}
 
 <section class="content-body">
@@ -37,6 +50,14 @@
 				</a>
 			</h1>
 			{% endif %}
+
+			{# set days_since_published =  ( ( "now"|date('U') - post.published|date('U') ) / 86400 ) #}
+			{% set years_since_published =  ( "now"|date('Y') - post.published|date('Y') ) %}
+
+			{% if ( post.tags.IT is defined ) and ( years_since_published > 2 ) %}
+			<h2 class="old-warning">WARNING: this entry was published in {{ post.published|date('Y') }}.<br />It might be outdated.</h2>
+			{%endif%}
+
 		</header>
 
 		{% if post.excerpt|length > 0 %}
@@ -51,41 +72,76 @@
 
 		<div class="e-content">
 			<div class="content-inner">
+				{% if post.reactions %}
+					{% include 'block_reaction.html' with post.reactions %}
+				{% endif %}
+
 				{{ post.content }}
+
+				{% if ( post.exif ) and ( post.format == 'photo' ) %}
+					{% include 'block_exif.html' with post.exif  %}
+				{% endif %}
+
+				{% if post.format == 'photo' %}
+					{% set flickr = 'yes' %}
+					{% set facebook = 'yes' %}
+
+					{% if post.syndications %}
+						{% for syndication in post.syndications %}
+							{% if syndication matches '{flickr\.com}' %}
+								{% set flickr = 'no' %}
+							{% elseif reaction.url matches '{facebook\.com}' %}
+								{% set facebook = 'no' %}
+							{% endif %}
+						{% endfor %}
+					{% endif %}
+
+					{% if flickr == 'yes' %}
+					<a href="https://brid.gy/publish/flickr"></a>
+					{% endif %}
+					<a href="https://brid.gy/publish/facebook"></a>
+				{% endif %}
 			</div>
 		</div>
 
 		<footer>
 			<aside class="pubdate">
 				<h6 class="pubdate-title">Published</h6>
-					<a class="u-url" rel="bookmark" title="{{ post.title }}" href="{{ post.url }}">
-						<time class="dt-published" datetime="{{ post.published|date("c") }}">{{ post.published|date("Y-m-d H:i") }}</time>
+					<a class="u-url" rel="bookmark" title="{{ post.title }}"
+						href="{{ post.url }}">
+						<time class="dt-published"
+							datetime="{{ post.published|date("c") }}">
+							{{ post.published|date("Y-m-d H:i") }}
+						</time>
 					</a>
 			</aside>
 
 			<aside class="author">
 				<h6 class="author-title">Author</h6>
 				<p class="p-author h-card vcard">
-					<img class="photo avatar u-photo u-avatar hide" src="{{ post.author.avatar }}" alt="Photo of {{ post.author.name }}" />
-					<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
+					<img class="photo avatar u-photo u-avatar"
+						src="{{ post.author.avatar }}"
+						alt="Photo of {{ post.author.name }}" />
+					<a class="fn p-name url u-url" href="{{ post.author.url }}">
+						{{ post.author.name }}
+					</a>
 				</p>
 			</aside>
 
-{% if post.tags %}
-			<aside class="tags">
-				<h6 class="tags-title">Tags</h6>
-				<nav><ul>
-					{% for tname, turl in post.tags %}<li>
-						<a href="{{ turl }}" class="u-category">{{ tname }}</a>
-					</li>{% endfor %}
-				</ul></nav>
-			</aside>
-{% endif %}
+			{% if post.tags %}
+				<aside class="tags">
+					<h6 class="tags-title">Tags</h6>
+					<nav><ul>
+						{% for tname, turl in post.tags %}<li>
+							<a href="{{ turl }}" class="u-category">{{ tname }}</a>
+						</li>{% endfor %}
+					</ul></nav>
+				</aside>
+			{% endif %}
 
 			<h6 class="shortlink-title">Short URL</h6>
 			<aside class="shortlink">
 				<p>
-					<span class="u-uid hide">{{ post.uuid }}</span>
 					<a href="{{ post.shorturl }}">{{ post.shorturl }}</a>
 				</p>
 			</aside>
@@ -96,7 +152,11 @@
 <aside class="content-note">
 	{% set email = post.author.email %}
 	<hr />
-	<p>Want to leave a comment or get in touch? Reply with your own blog using <a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an <a href="mailto:{{ post.author.email }}?subject=RE: {{ post.title }}">email</a>, or poke me on social media.</p>
+	<p>Want to leave a comment or get in touch? Reply with your own blog using
+		<a href="http://indiewebcamp.com/webmention">Webmentions</a>, send an
+		<a href="mailto:{{ post.author.email }}?subject=RE: {{ post.title }}"
+		>email</a>, or poke me on social media.
+	</p>
 </aside>
 
 {% include 'block_footer.html' %}

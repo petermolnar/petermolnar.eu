@@ -406,7 +406,12 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function replace_content ( &$post, &$content ) {
+	public static function replace_content ( &$post, &$content, $noop = false ) {
+
+		if ( $noop ) {
+			static::debug("Would have updated post content for #{$post->ID}", 5);
+			return;
+		}
 
 		$post = static::fix_post ( $post );
 

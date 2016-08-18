@@ -1,0 +1,43 @@
+<aside class="exif">
+	<ul>
+{% if post.exif.camera %}
+		<li>
+			<i class="icon-camera spacer"></i>{{ post.exif.camera }}
+		</li>
+{% endif %}
+{% if post.exif.aperture %}
+		<li>
+			<i class="icon-aperture spacer"></i>f/{{ post.exif.aperture }}
+		</li>
+{% endif %}
+{% if post.exif.shutter_speed %}
+		<li>
+			<i class="icon-clock spacer"></i>{{ post.exif.shutter_speed }} sec
+		</li>
+{% endif %}
+{% if post.exif.focal_length %}
+		<li>
+			<i class="icon-focallength spacer"></i>{{ post.exif.focal_length }} mm
+		</li>
+{% endif %}
+{% if post.exif.iso %}
+		<li>
+			<i class="icon-sensitivity spacer"></i>ISO {{ post.exif.iso }}
+		</li>
+{% endif %}
+{% if post.exif.lens %}
+		<li>
+			<i class="icon- spacer"></i>{{ post.exif.lens }}
+		</li>
+{% endif %}
+{% if (post.exif.geo_latitude) and (post.exif.geo_longitude) %}
+		<li>
+			<i class="icon-location spacer"></i>
+			<a class="h-geo geo p-location" href="http://maps.google.com/?q={{ post.exif.geo_latitude}},{{ post.exif.geo_longitude }}">
+				<span class="p-latitude">{{ post.exif.geo_latitude }}</span>
+				<span class="p-longitude">{{ post.exif.geo_longitude }}</span>
+			</a>
+		</li>
+{% endif %}
+	</ul>
+</aside>

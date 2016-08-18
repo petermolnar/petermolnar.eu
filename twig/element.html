@@ -1,9 +1,9 @@
 {% if ( ( post.format == 'photo' ) or ( post.format == 'image')) %}
-{%	set hentry = 'photo' %}
+	{% set hentry = 'photo' %}
 {% elseif ( post.format == 'article' ) %}
-{%	set hentry = 'article' %}
+	{% set hentry = 'article' %}
 {% else %}
-{%	set hentry = 'note' %}
+	{% set hentry = 'note' %}
 {% endif %}
 
 <article class="h-entry h-{{ hentry }}">
@@ -12,22 +12,31 @@
 		{% if post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
-				<span class="p-name {% if post.format == "article" %}more{% endif %}">{{ post.title }}</span>
+				<span class="p-name {% if post.format == "article" %}more{% endif %}">
+					{{ post.title }}
+				</span>
 			</a>
 		</h2>
 		{% endif %}
 
 		<aside class="pubdate">
-			<a class="u-url" rel="bookmark" title="{{ post.title }}" href="{{ post.url }}">
-				<time class="dt-published" datetime="{{ post.published|date("c") }}">{{ post.published|date("Y-m-d H:i") }}</time>
+			<a class="u-url" rel="bookmark" title="{{ post.title }}"
+				href="{{ post.url }}">
+				<time class="dt-published" datetime="{{ post.published|date("c") }}">
+					{{ post.published|date("Y-m-d H:i") }}
+				</time>
 			</a>
 		</aside>
 
 		<aside class="author">
 			<p>by
 				<span class="p-author h-card vcard">
-					<img class="photo avatar u-photo u-avatar hide" src="{{ post.author.avatar }}" alt="Photo of {{ post.author.name }}" />
-					<a class="fn p-name url u-url" href="{{ post.author.url }}">{{ post.author.name }}</a>
+					<img class="photo avatar u-photo u-avatar"
+						src="{{ post.author.avatar }}"
+						alt="Photo of {{ post.author.name }}" />
+					<a class="fn p-name url u-url" href="{{ post.author.url }}">
+						{{ post.author.name }}
+					</a>
 				</span>
 				</p>
 		</aside>
@@ -47,25 +56,34 @@
 		</div>
 	{% else %}
 		<div class="e-content">
+			{% if post.reactions %}
+				{% include 'block_reaction.html' with post.reactions %}
+			{% endif %}
+
 			{{ post.content }}
+
+			{% if ( post.exif ) and ( post.format == 'photo' ) %}
+				{% include 'block_exif.html' with post.exif  %}
+			{% endif %}
+
 			<br class="clear" />
 		</div>
 	{% endif %}
 
 	<footer>
-{% if post.tags %}
-		<aside class="tags">
-			<nav>
-				<ul>
-					{% for tname, turl in post.tags %}
-						<li>
-							<a href="{{ turl }}" class="u-category">{{ tname }}</a>
-						</li>
-					{% endfor %}
-				</ul>
-			</nav>
-		</aside>
-{% endif %}
+		{% if post.tags %}
+			<aside class="tags">
+				<nav>
+					<ul>
+						{% for tname, turl in post.tags %}
+							<li>
+								<a href="{{ turl }}" class="u-category">{{ tname }}</a>
+							</li>
+						{% endfor %}
+					</ul>
+				</nav>
+			</aside>
+		{% endif %}
 	</footer>
 
 </article>

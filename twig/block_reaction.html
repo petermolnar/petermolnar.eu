@@ -1,0 +1,23 @@
+{% for reaction in post.reactions %}
+
+<p>
+	{% if reaction.type == 'fav' %}
+		<strong>URL:</strong>
+		{% set class = 'u-like-of' %}
+	{% elseif reaction.type == 'reply' %}
+		<strong>RE:</strong>
+		{% set class = 'u-in-reply-to' %}
+	{% elseif reaction.type == 'repost' %}
+		<strong>FROM:</strong>
+		{% set class = 'u-repost-of' %}
+	{% endif %}
+	<a href="{{ reaction.url }}" class="{{ class }}">{{ reaction.url }}</a>
+
+	{% if reaction.url matches '{^https?:\/\/(www\.)?twitter\.com}' %}
+		<a href="https://brid.gy/publish/twitter"></a>
+	{% elseif reaction.url matches '{^https?:\/\/(www\.)?flickr\.com}' %}
+		<a href="https://brid.gy/publish/flickr"></a>
+	{% endif %}
+</p>
+
+{% endfor %}

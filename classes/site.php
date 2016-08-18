@@ -8,7 +8,7 @@ class pmlnr_site extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function get_the_header() {
 
 		ob_start();
@@ -23,7 +23,7 @@ class pmlnr_site extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function get_the_footer() {
 
 		ob_start();
@@ -37,22 +37,18 @@ class pmlnr_site extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function get_css( $file = 'style' ) {
 
 		$base = get_stylesheet_directory();
-		//if ( is_user_logged_in() )
-			//$r = '/* test CSS */' . file_get_contents( get_stylesheet_directory() . '/style_.css' );
-		//else
 		$r = file_get_contents( "{$base}/{$file}.css" );
-		//$r .= file_get_contents( "{$base}/css/prism.min.css" );
 
 		return $r;
 	}
 
 	/**
 	 *
-	 */
+	 *
 	public static function get_the_pagination() {
 		global $wp_query;
 
@@ -135,9 +131,6 @@ class pmlnr_site extends pmlnr_base {
 			'rss_url' => get_bloginfo('rss2_url'),
 			'favicon' => get_bloginfo('template_directory') . '/images/favicon.png',
 			'author' => pmlnr_author::template_vars( 1 ),
-			'header' => static::get_the_header(),
-			'footer' => static::get_the_footer(),
-			'pagination' => static::get_the_pagination(),
 		);
 
 		return $r;

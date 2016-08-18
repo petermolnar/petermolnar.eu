@@ -41,6 +41,7 @@ class pmlnr_archive extends pmlnr_base {
 
 		$name = get_bloginfo('name');
 		$taxonomy = $description = false;
+
 		if ( is_archive() ) {
 			$term = $wp_query->get_queried_object();
 			$name = $term->name;

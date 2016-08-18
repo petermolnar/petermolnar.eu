@@ -101,6 +101,8 @@ function pandoc_md2html ( $md ) {
 		'shortcut_reference_links',
 		'autolink_bare_uris',
 		'raw_html',
+		'link_attributes',
+		'header_attributes',
 	);
 
 	$cmd =

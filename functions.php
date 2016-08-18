@@ -25,8 +25,6 @@ use \PETERMOLNAREU\MARKDOWN;
 //\PETERMOLNAREU\CLEANUP\construct();
 
 new \pmlnr_image();
-//new \pmlnr_cleanup();
-//new \pmlnr_markdown();
 new \pmlnr_post();
 new \pmlnr_author();
 new \pmlnr_site();
@@ -39,19 +37,16 @@ new \pmlnr_comment();
 // init all the things!
 \add_action( 'init', 'PETERMOLNAREU\init' );
 
-// add css & js
-\add_action( 'wp_enqueue_scripts','PETERMOLNAREU\register_css_js', 10 );
-
 // HTML generator
-\add_action( 'htmlgen', 'PETERMOLNAREU\generate_html' );
+//\add_action( 'htmlgen', 'PETERMOLNAREU\generate_html' );
 
 //
-\add_action( 'transition_post_status', 'PETERMOLNAREU\autobridgy', 99, 3 );
+//\add_action( 'transition_post_status', 'PETERMOLNAREU\autobridgy', 99, 3 );
 
 
 /**
  *
- */
+ *
 function autobridgy ( $new_status = null, $old_status = null,
 	$post = null ) {
 
@@ -70,7 +65,7 @@ function autobridgy ( $new_status = null, $old_status = null,
 
 /**
  *
- */
+ *
 function maybe_send_bridgy( $post = null ) {
 
 	$post = \pmlnr_base::fix_post( $post );
@@ -166,20 +161,6 @@ function twig ( $template, $vars ) {
 	$twig = $twig->loadTemplate( $template );
 	$twig = $twig->render( $vars );
 
-	//if ( class_exists('\tidy') ) {
-		//$config = array(
-			//'indent'         => 2,
-			////'output-xhtml'   => true,
-			//'wrap'           => false
-		//);
-
-		//// Tidy
-		//$tidy = new \tidy;
-		//$tidy->parseString($twig, $config, 'utf8');
-		//$tidy->cleanRepair();
-		//$twig = (string)$tidy;
-	//}
-
 	return $twig;
 }
 
@@ -188,20 +169,10 @@ function twig ( $template, $vars ) {
  */
 function init () {
 
-	// required WP Theme magic
 	\add_theme_support( 'post-thumbnails' );
-	\add_theme_support( 'menus' );
 	\add_theme_support( 'html5', array( 'search-form' ) );
 	\add_theme_support( 'title-tag' );
 	\add_theme_support( 'custom-logo' );
-
-	// add main menus
-	\register_nav_menus( array(
-		menu_header => __( menu_header , 'petermolnareu' ),
-	) );
-
-	// replace default <title></title>
-	\add_filter( 'wp_title', '\PETERMOLNAREU\nice_title', 10, 1 );
 
 	\add_filter('upload_mimes',
 		function ( $mimes ) {
@@ -233,51 +204,9 @@ function init () {
 		}, 1, 4 );
 
 	// htmlgen
-	if (! \wp_get_schedule( 'htmlgen' ))
-		\wp_schedule_event ( time(), 'daily', 'htmlgen' );
+	//if (! \wp_get_schedule( 'htmlgen' ))
+		//\wp_schedule_event ( time(), 'daily', 'htmlgen' );
 
-}
-
-/**
- * register & queue css & js
- *
- */
-function register_css_js () {
-	$base_url = \get_bloginfo( "template_directory" );
-	$js_url = "{$base_url}/js";
-	$css_url = "{$base_url}/css";
-
-	wp_enqueue_script ('jquery');
-
-	//\wp_register_style( 'style', "{$base_url}/style.css", false, "17.0" );
-	//\wp_enqueue_style( "style" );
-	//\wp_register_style( 'print', "{$base_url}/print.css", false, "2.0", "print" );
-	//\wp_enqueue_style( "print" );
-
-	// Magnific popup
-	//\wp_register_style( "magnific-popup", "{$base_url}/vendor/dimsemenov/Magnific-Popup/dist/magnific-popup.css" , false );
-	//\wp_register_script( "magnific-popup", "{$base_url}/vendor/dimsemenov/Magnific-Popup/dist/jquery.magnific-popup.min.js" , array("jquery"), null, false );
-
-	// justified gallery
-	//\wp_register_style( "Justified-Gallery", "{$base_url}/vendor/miromannino/Justified-Gallery/dist/css/justifiedGallery.min.css" , false );
-
-	//\wp_register_script( "Justified-Gallery", "{$base_url}/vendor/miromannino/Justified-Gallery/dist/js/jquery.justifiedGallery.min.js" , array("jquery"), null, false );
-
-	 //syntax highlight
-	//\wp_register_style( "prism", "{$css_url }/prism.css", false, null );
-	//\wp_enqueue_style( "prism" );
-	//\wp_register_script( "prism" ,  "{$js_url}/prism.js", false, null, true );
-	//\wp_enqueue_script( "prism" );
-}
-
-/**
- *
- */
-function nice_title ( $title ) {
-	if ( \is_home() || empty($title))
-		return \get_bloginfo('name');
-
-	return trim( str_replace ( array ('&raquo;', '»' ), array ('',''), $title ) );
 }
 
 /**
@@ -294,11 +223,6 @@ function generate_html () {
 	if ( ! is_dir( $folder ) )
 		mkdir( $folder );
 
-
-	 //I don't understand why - yet -, but WP refuses to fill in wp_header() and
-	 //such when the query is not explicitly for the post, with the post ID,
-	 //so I'm going to nest this by querying each post one by one
-
 	global $wpdb;
 
 	$postids = $wpdb->get_results( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_password = '' ORDER BY post_type DESC, post_date DESC" );
@@ -309,7 +233,7 @@ function generate_html () {
 		if ( in_array( \get_post_type( $pid ), $exclude ) )
 			continue;
 
-		$posts = query_posts($query_string . "&p={$pid}" );
+		$posts = query_posts( "p={$pid}" );
 		if ( \have_posts() ) {
 			while ( \have_posts() ) {
 				\the_post();
@@ -334,7 +258,7 @@ function generate_html () {
 		}
 		wp_reset_query();
 	}
-
+	/*
 
 	// CSS and JS is still not added :(
 
@@ -416,7 +340,7 @@ function generate_html () {
 					while ( \have_posts() ) {
 						$twigvars = array (
 							'site' => \pmlnr_site::template_vars(),
-							'archive' => \pmlnr_archive::template_vars(),
+							'archive' => \pmlnr_archive::template_vars( $q ),
 						);
 
 						\the_post();
@@ -438,4 +362,5 @@ function generate_html () {
 			}
 		}
 	}
+	*/
 }

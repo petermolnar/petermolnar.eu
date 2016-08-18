@@ -31,8 +31,6 @@
 		"php": ">=5.4.0",
         "twig/extensions": "^1.3",
         "twig/twig": "^1.23",
-	      "erusev/parsedown": "^1.6",
-        "erusev/parsedown-extra": "^0.7.1",
 				"miromannino/Justified-Gallery": "^3.6.2",
 				"dimsemenov/Magnific-Popup": "^1.1.0"
     },
