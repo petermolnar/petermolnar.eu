@@ -5,6 +5,26 @@ class pmlnr_post extends pmlnr_base {
 	public function __construct () {
 	}
 
+	public static function twig_c_exif ( $path ) {
+		if ( ! defined( 'WP_EXTRAEXIF\CACHEDIR' ) )
+			return false;
+
+		$path = realpath( $path );
+
+		$hash = md5 ( $path );
+		$cached = WP_EXTRAEXIF\CACHEDIR . $hash;
+
+		if ( ! is_file( $cached ) ) {
+			WP_EXTRAEXIF\exif_cache( $path );
+		}
+
+		if ( ! is_file( $cached ) ) {
+			return false;
+		}
+
+		return json_decode( file_get_contents( $cached ), true );
+	}
+
 	/**
 	 *
 	 */
@@ -198,7 +218,7 @@ class pmlnr_post extends pmlnr_base {
 				. pathinfo( $path['path'], PATHINFO_EXTENSION );
 
 			$fpath = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $fname;
-			$texif = pmlnr_image::twig_c_exif( $fpath );
+			$texif = static::twig_c_exif( $fpath );
 			$r['exif'] = $texif;
 		}
 
