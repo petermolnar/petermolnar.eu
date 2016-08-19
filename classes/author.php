@@ -113,7 +113,7 @@ class pmlnr_author extends pmlnr_base {
 		}
 
 		$r = array (
-			'id' => $author_id,
+			//'id' => $author_id,
 			'name' =>  get_the_author_meta ( 'display_name' , $author_id ),
 			'email' =>  $email,
 			'avatar' => $avatar,

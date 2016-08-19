@@ -88,6 +88,35 @@ class pmlnr_post extends pmlnr_base {
 		return $r;
 	}
 
+	public static function post_reactions ( $post ) {
+
+		$reactions = array();
+		$reaction = pmlnr_base::has_reaction( $post->post_content );
+
+		if ( ! empty( $reaction[0] ) ) {
+			foreach ( $reaction[0] as $cntr => $replace ) {
+				$url = trim($reaction[2][$cntr]);
+				if ( empty( $url ) )
+					continue;
+
+				$react = [
+					'url' => $url,
+					'type' => trim( $reaction[1][$cntr] ),
+				];
+
+				if ( ! empty( trim( $reaction[3][$cntr] ) ) )
+					$react['rsvp'] = trim( $reaction[3][$cntr] );
+
+				array_push( $reactions, $react );
+			}
+		}
+
+		if ( empty( $reactions) )
+			return false;
+		else
+			return $reactions;
+	}
+
 	/**
 	 *
 	 */
@@ -118,48 +147,73 @@ class pmlnr_post extends pmlnr_base {
 		if ($post === false)
 			return $r;
 
-		$r = array (
-			'id' => $post->ID,
-			'url' => get_permalink( $post->ID ),
-			'title' => trim(get_the_title( $post->ID )),
-			'shorturl' => wp_get_shortlink( $post->ID ),
-			'thumbnail' => static::post_thumbnail ($post),
-			'content' => static::get_the_content($post, 'clean'),
-			'excerpt' => static::get_the_excerpt($post),
-			'published' => strtotime( $post->post_date_gmt ),
-			'modified' => strtotime( $post->post_modified_gmt ),
-			'tags' => static::post_get_tags_array($post),
-			'format' => static::post_format( $post ),
-			//'show_author' => $show_author,
-			//'singular' => is_singular(),
-			'uuid' => hash ( 'md5', (int)$post->ID + (int) get_post_time('U', true, $post->ID ) ),
-			'author' => pmlnr_author::template_vars( $post->post_author ),
-			'exif' => pmlnr_image::twig_exif( $post->ID ),
-			'syndications' => explode( "\n", get_post_meta( $post->ID, 'syndication_urls', true ) ),
-		);
-
-		$reactions = array();
-		$reaction = pmlnr_base::has_reaction( $post->post_content );
-
-		if ( ! empty( $reaction[0] ) ) {
-			foreach ( $reaction[0] as $cntr => $replace ) {
-				$url = trim($reaction[2][$cntr]);
-				if ( empty( $url ) )
-					continue;
-
-				$react = [
-					'url' => $url,
-					'type' => trim( $reaction[1][$cntr] ),
-				];
-
-				if ( ! empty( trim( $reaction[3][$cntr] ) ) )
-					$react['rsvp'] = trim( $reaction[3][$cntr] );
-
-				array_push( $reactions, $react );
+		/**/
+		$syndications = explode( "\n", get_post_meta( $post->ID, 'syndication_urls', true ) );
+		$o = count( $syndications );
+		if ( ! empty( $syndications ) ) {
+			foreach ( $syndications as $c => $url  ) {
+				if ( preg_match( '/flickr.*petermolnareu/', $url )) {
+					unset ( $syndications[ $c ] );
+				}
+				else {
+					$syndications[ $c ] = trim( $syndications[ $c ] );
+				}
+			}
+			if ( !empty( $syndications ) && count( $syndications ) != $o ) {
+				static::debug ( join( "\n", $syndications ) );
+				update_post_meta ( $post->ID, 'syndication_urls', join( "\n", $syndications ) );
 			}
 		}
+		/**/
 
-		if ( ! empty( $reactions ) )
+		$r = array (
+			//'id' => $post->ID,
+			'title' => trim(get_the_title( $post->ID )),
+			'url' => get_permalink( $post->ID ),
+			'shorturl' => wp_get_shortlink( $post->ID ),
+			'published' => strtotime( $post->post_date_gmt ),
+			'tags' => static::post_get_tags_array($post),
+			'format' => static::post_format( $post ),
+			'author' => pmlnr_author::template_vars( $post->post_author ),
+			'syndications' => explode( "\n",
+				get_post_meta( $post->ID, 'syndication_urls', true ) ),
+
+			'content' => static::get_the_content($post, 'clean'),
+
+		);
+
+		// updated
+		$published = \get_the_time( 'U', $post->ID );
+		$modified = \get_the_modified_time( 'U', $post->ID );
+		if ( $published != $modified && $modified > $published )
+			$r['updated'] = date( 'Y-m-d H:i:s P', $modified );
+
+		// look for embedded images; if there's only one, try to get the exif for it
+		preg_match_all( '/\!\[([^\]]+)\]\(([^\)]+)\)(?:\{([^\}]+)\})?/i',
+			$post->post_content, $img );
+		if ( count( $img[0] ) == 1 ) {
+			$wp_upload_dir = wp_upload_dir();
+			$path = parse_url( $img[2][0] );
+			$fname = pathinfo( $path['path'], PATHINFO_FILENAME ) . '.'
+				. pathinfo( $path['path'], PATHINFO_EXTENSION );
+
+			$fpath = $wp_upload_dir['basedir'] . DIRECTORY_SEPARATOR . $fname;
+			$texif = pmlnr_image::twig_c_exif( $fpath );
+			$r['exif'] = $texif;
+		}
+
+		// thumbnail
+		if ( has_post_thumbnail ( $post->ID ) ) {
+			$r['thumbnail'] = static::post_thumbnail ($post);
+			//$r['exif'] = pmlnr_image::twig_exif( $post->ID );
+		}
+
+		// excerpt
+		if ( ! empty( $post->post_excerpt ) )
+			$r['excerpt'] = static::get_the_excerpt($post);
+
+		// reactions
+		if ( $reactions = static::post_reactions( $post ) )
 			$r['reactions'] = $reactions;
 
 		return $r;

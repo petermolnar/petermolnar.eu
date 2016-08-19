@@ -163,6 +163,29 @@ class pmlnr_image extends pmlnr_base {
 
 	/**
 	 *
+	 */
+	public static function twig_c_exif ( $path ) {
+		if ( ! defined( 'WP_EXTRAEXIF\CACHEDIR' ) )
+			return false;
+
+		$path = realpath( $path );
+
+		$hash = md5 ( $path );
+		$cached = WP_EXTRAEXIF\CACHEDIR . $hash;
+
+		if ( ! is_file( $cached ) ) {
+			WP_EXTRAEXIF\exif_cache( $path );
+		}
+
+		if ( ! is_file( $cached ) ) {
+			return false;
+		}
+
+		return json_decode( file_get_contents( $cached ), true );
+	}
+
+	/**
+	 *
 	 *
 	public function flatexport_featured_image ( $text, $post ) {
 		if ( ! static::is_post ( $post ) )
@@ -193,7 +216,7 @@ class pmlnr_image extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public function flatexport_frontmatter ( $frontmatter, $post ) {
 		if ( ! static::is_post ( $post ) )
 			return $frontmatter;
@@ -254,6 +277,7 @@ class pmlnr_image extends pmlnr_base {
 		return $frontmatter;
 
 	}
+	*/
 
 	/***
 	 *
@@ -429,7 +453,7 @@ class pmlnr_image extends pmlnr_base {
 			$r = sprintf('<img src="%s" title="%s" alt="%s" />', $fallback['src'], $meta['image_meta']['title'], $meta['image_meta']['alt'] );
 		}
 		else {
-			$r = sprintf('<a class="%s" href="%s"><img src="%s" id="img-%s" class="adaptive adaptimg" title="%s" alt="%s" srcset="%s" sizes="(max-width: 42em) 100vw, 60vw" /></a>', $class, $target, $fallback['src'], $thid, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
+			$r = sprintf('<a class="%s" href="%s"><img src="%s" id="img-%s" class="adaptive adaptimg" title="%s" alt="%s" srcset="%s" /></a>', $class, $target, $fallback['src'], $thid, $meta['image_meta']['title'], $meta['image_meta']['alt'], join ( ', ', $srcset ) );
 		}
 
 		wp_cache_set ( $thid, $r, __CLASS__ . __FUNCTION__, static::expire );
@@ -501,7 +525,7 @@ class pmlnr_image extends pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public function insert_featured_image ( $src ) {
 		$post = static::fix_post();
 		$format = static::post_format( $post );
@@ -555,10 +579,11 @@ class pmlnr_image extends pmlnr_base {
 
 		return $src;
 	}
+	*/
 
 	/**
 	 *
-	 */
+	 *
 	public static function photo_exif ( &$thid, $post_id ) {
 		if (empty($thid))
 			return false;
@@ -627,10 +652,11 @@ class pmlnr_image extends pmlnr_base {
 
 		return $return;
 	}
+	*/
 
 	/**
 	 *
-	 */
+	 *
 	public static function twig_exif ( $postid ) {
 		$meta = array();
 		$thid = get_post_thumbnail_id( $postid );
@@ -662,6 +688,7 @@ class pmlnr_image extends pmlnr_base {
 
 		return $meta;
 	}
+	*/
 
 
 	/**

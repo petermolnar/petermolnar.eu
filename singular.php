@@ -9,6 +9,8 @@ $twigvars = array (
 
 $twigvars['post']['singular'] = true;
 
+$twigvars['meta'] = json_encode ( $twigvars['post'], JSON_PRETTY_PRINT );
+
 $tmpl = 'singular.html';
 
 if (is_page())
