@@ -13,7 +13,7 @@ require __DIR__ . '/vendor/autoload.php';
 \Twig_Extensions_Autoloader::register();
 
 $classes = array( 'base.php', 'cleanup.php', 'markdown.php',
-	'post.php', 'author.php', 'site.php', 'comment.php', 'archive.php',
+	'post.php', 'author.php', 'site.php', 'archive.php',
 	'image.php' );
 
 foreach ( $classes as $class ) {
@@ -28,7 +28,7 @@ use \PETERMOLNAR\IMAGE;
 new \pmlnr_post();
 new \pmlnr_author();
 new \pmlnr_site();
-new \pmlnr_comment();
+//new \pmlnr_comment();
 
 
 \register_activation_hook( __FILE__ , '\PETERMOLNAR\theme_activate' );
