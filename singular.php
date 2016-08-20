@@ -16,4 +16,4 @@ $tmpl = 'singular.html';
 if (is_page())
 	$tmpl = 'page.html';
 
-echo PETERMOLNAREU\twig( $tmpl, $twigvars );
+echo PETERMOLNAR\twig( $tmpl, $twigvars );

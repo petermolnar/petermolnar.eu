@@ -54,12 +54,6 @@
 
 </script>
 
-{% if taxonomy.total > 1 %}
-{% include 'block_pagination.html' with {
-	total: taxonomy.total,
-	base_url: taxonomy.pagination_base,
-	current: taxonomy.paged,
-} only %}
-{% endif %}
+{% include 'block_pagination.html' %}
 
 {% include 'block_footer.html' %}

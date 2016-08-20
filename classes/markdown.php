@@ -1,18 +1,18 @@
 <?php
 
-namespace PETERMOLNAREU\MARKDOWN;
+namespace PETERMOLNAR\MARKDOWN;
 
-define ( 'PETERMOLNAREU\MARKDOWN\CACHE', \WP_CONTENT_DIR . DIRECTORY_SEPARATOR
+define ( 'PETERMOLNAR\MARKDOWN\CACHE', \WP_CONTENT_DIR . DIRECTORY_SEPARATOR
 	. 'cache' . DIRECTORY_SEPARATOR . 'pandoc' . DIRECTORY_SEPARATOR );
 
-\add_action( 'init', 'PETERMOLNAREU\MARKDOWN\init' );
+\add_action( 'init', 'PETERMOLNAR\MARKDOWN\init' );
 
 	/* init function, should be used in the theme init loop */
 function init (  ) {
 
-	add_filter( 'image_send_to_editor', 'PETERMOLNAREU\MARKDOWN\media_string_html2md', 10 );
-	add_filter( 'the_content', 'PETERMOLNAREU\MARKDOWN\pandoc_md2html', 8, 1 );
-	add_filter( 'the_excerpt', 'PETERMOLNAREU\MARKDOWN\pandoc_md2html', 8, 1 );
+	add_filter( 'image_send_to_editor', 'PETERMOLNAR\MARKDOWN\media_string_html2md', 10 );
+	add_filter( 'the_content', 'PETERMOLNAR\MARKDOWN\pandoc_md2html', 8, 1 );
+	add_filter( 'the_excerpt', 'PETERMOLNAR\MARKDOWN\pandoc_md2html', 8, 1 );
 
 }
 

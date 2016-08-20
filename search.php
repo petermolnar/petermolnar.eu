@@ -26,4 +26,4 @@ $twigvars['site']['page_title'] = sprintf (
 		}
 	}
 
-echo PETERMOLNAREU\twig( 'archive.html', $twigvars );
+echo PETERMOLNAR\twig( 'archive.html', $twigvars );

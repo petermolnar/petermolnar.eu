@@ -29,68 +29,6 @@
 	{% endfor %}
 </section>
 
-{% if taxonomy.total > 1 %}
-
-	{# based on: http://dev.dbl-a.com/symfony-2-0/symfony2-and-twig-pagination/ #}
-	<nav class="pagination">
-		<ul>
-	{# display prevous if the taxonomy.paged is not the first #}
-	{% if taxonomy.paged > 1 %}
-	{% set prev = taxonomy.paged - 1 %}
-			<li>
-				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ prev }}">«</a>
-			</li>
-			<li>
-				<a href="{{ taxonomy.pagination_base }}">1</a>
-			</li>
-	{% endif %}
-
-	{% if taxonomy.paged - 4 > 0 %}
-			<li>
-				<span class="page-numbers dots">…</span>
-			</li>
-	{% endif %}
-
-	{% for i in range( taxonomy.paged - 2, taxonomy.paged -1 ) if ( i > 1 ) %}
-			<li>
-				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ i }}">{{ i }}</a>
-			</li>
-	{% endfor %}
-
-			<li>
-				<span class="page-numbers taxonomy.paged">{{ taxonomy.paged }}</span>
-			</li>
-
-	{% for i in range( taxonomy.paged + 1, taxonomy.paged  + 2 ) if ( i <= taxonomy.total -1 ) %}
-			<li>
-				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ i }}">{{ i }}</a>
-			</li>
-	{% endfor %}
-
-	{% if taxonomy.paged  + 3 < taxonomy.total %}
-			<li>
-				<span class="page-numbers dots">…</span>
-			</li>
-	{% endif %}
-
-
-	{% if taxonomy.paged != taxonomy.total %}
-			<li>
-				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ taxonomy.total }}">{{ taxonomy.total }}</a>
-			</li>
-	{% endif %}
-
-
-			{# display next if the taxonomy.paged is not the last #}
-	{% if taxonomy.paged < taxonomy.total %}
-	{% set next = taxonomy.paged + 1 %}
-			<li>
-				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ next }}">»</a>
-			</li>
-	{% endif %}
-		</ul>
-	</nav>
-
-{% endif %}
+{% include 'block_pagination.html' %}
 
 {% include 'block_footer.html' %}

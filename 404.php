@@ -8,4 +8,4 @@
 		'site' => pmlnr_site::template_vars(),
 	);
 
-	echo PETERMOLNAREU\twig( '404.html', $twigvars );
+	echo PETERMOLNAR\twig( '404.html', $twigvars );

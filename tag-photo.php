@@ -29,4 +29,4 @@ if ( have_posts() ) {
 	}
 }
 
-echo PETERMOLNAREU\twig( 'gallery.html', $twigvars );
+echo PETERMOLNAR\twig( 'gallery.html', $twigvars );

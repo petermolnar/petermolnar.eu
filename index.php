@@ -19,7 +19,7 @@ if ( array_key_exists( $endpoint, $wp->query_vars ) ) {
 				'post' => pmlnr_comment::template_vars( $comment, $post )
 			);
 
-			echo PETERMOLNAREU\twig( 'comment.html', $twigvars );
+			echo PETERMOLNAR\twig( 'comment.html', $twigvars );
 			//$twigvars = pmlnr_comment::template_vars( $comment );
 			//$twig = $petermolnareu_theme->twig->loadTemplate();
 			//echo $twig->render($twigvars);
@@ -41,4 +41,4 @@ if ( have_posts() ) {
 	}
 }
 
-echo PETERMOLNAREU\twig( 'archive.html', $twigvars );
+echo PETERMOLNAR\twig( 'archive.html', $twigvars );

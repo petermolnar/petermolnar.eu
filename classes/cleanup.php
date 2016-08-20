@@ -1,9 +1,9 @@
 <?php
 
-namespace PETERMOLNAREU\CLEANUP;
+namespace PETERMOLNAR\CLEANUP;
 
-\add_action( 'init', 'PETERMOLNAREU\CLEANUP\init' );
-\add_action( 'wp_enqueue_scripts', 'PETERMOLNAREU\CLEANUP\remove_enqueues', 10 );
+\add_action( 'init', 'PETERMOLNAR\CLEANUP\init' );
+\add_action( 'wp_enqueue_scripts', 'PETERMOLNAR\CLEANUP\remove_enqueues', 10 );
 
 // cleanup
 \remove_action('wp_head', 'rsd_link');
@@ -65,19 +65,19 @@ function init (  ) {
 	\remove_filter( 'the_content', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
 
 	// remove too special chars
-	\add_filter( 'content_save_pre' , 'PETERMOLNAREU\CLEANUP\_sanitize_content', 10, 1);
+	\add_filter( 'content_save_pre' , 'PETERMOLNAR\CLEANUP\_sanitize_content', 10, 1);
 
 	// press this magic
-	//\add_filter( 'press_this_data', 'PETERMOLNAREU\CLEANUP\cleanup_press_this_data', 9, 1 );
-	\add_filter( 'press_this_suggested_html', 'PETERMOLNAREU\CLEANUP\cleanup_press_this_suggested', 2, 2 );
+	//\add_filter( 'press_this_data', 'PETERMOLNAR\CLEANUP\cleanup_press_this_data', 9, 1 );
+	\add_filter( 'press_this_suggested_html', 'PETERMOLNAR\CLEANUP\cleanup_press_this_suggested', 2, 2 );
 	\add_filter ('enable_press_this_media_discovery', '__return_false' );
 
-	//\add_filter( 'the_content' , 'PETERMOLNAREU\CLEANUP\_sanitize_content' );
-	//\add_filter( 'the_excerpt' , 'PETERMOLNAREU\CLEANUP\_sanitize_content' );
-	//\add_filter( 'the_title' , 'PETERMOLNAREU\CLEANUP\_sanitize_content' );
+	//\add_filter( 'the_content' , 'PETERMOLNAR\CLEANUP\_sanitize_content' );
+	//\add_filter( 'the_excerpt' , 'PETERMOLNAR\CLEANUP\_sanitize_content' );
+	//\add_filter( 'the_title' , 'PETERMOLNAR\CLEANUP\_sanitize_content' );
 
 	\remove_filter('sanitize_title', 'sanitize_title_with_dashes');
-	\add_filter('sanitize_title', 'PETERMOLNAREU\CLEANUP\sanitize_title_with_dashes', 1, 3);
+	\add_filter('sanitize_title', 'PETERMOLNAR\CLEANUP\sanitize_title_with_dashes', 1, 3);
 }
 
 /**
@@ -204,7 +204,7 @@ function remove_enqueues () {
 
 /**
  * remove hidious quote chars and other exotic things
- */
+ *
 function sanitize_content( $content ) {
 	$search = array( '”', '“', '’', '–' );
 	$replace = array ( '"', '"', "'", '-' );
@@ -212,7 +212,7 @@ function sanitize_content( $content ) {
 	$content = str_replace( $search, $replace, $content );
 	return $content;
 }
-
+*/
 
 /**
  * remove hidious quote chars and other exotic things

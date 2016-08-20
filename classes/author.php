@@ -21,12 +21,11 @@ class pmlnr_author extends pmlnr_base {
 			'petermolnareu');
 		$profile_fields['github'] = __('Github username',
 			 'petermolnareu');
-		//$profile_fields['mobile'] = __('Mobile phone number',
-			 //'petermolnareu');
-		//$profile_fields['linkedin'] = __('LinkedIn username',
-			 //'petermolnareu');
 		$profile_fields['flickr'] = __('Flickr username',
 			 'petermolnareu');
+		$profile_fields['twitter'] = __('twitter username',
+			 'petermolnareu');
+
 		//$profile_fields['tubmlr'] = __('Tumblr blog URL',
 			 //'petermolnareu');
 		//$profile_fields['500px'] = __('500px username',
@@ -35,8 +34,6 @@ class pmlnr_author extends pmlnr_base {
 			 //'petermolnareu');
 		//$profile_fields['skype'] = __('skype username',
 			 //'petermolnareu');
-		$profile_fields['twitter'] = __('twitter username',
-			 'petermolnareu');
 		//$profile_fields['wechat'] = __('wechat username',
 			 //'petermolnareu');
 		//$profile_fields['icq'] = __('ICQ number',
@@ -45,6 +42,11 @@ class pmlnr_author extends pmlnr_base {
 			 //'petermolnareu');
 		//$profile_fields['telegram'] = __('Telegram handle',
 			 //'petermolnareu');
+		//$profile_fields['mobile'] = __('Mobile phone number',
+			 //'petermolnareu');
+		//$profile_fields['linkedin'] = __('LinkedIn username',
+			 //'petermolnareu');
+
 
 		return $profile_fields;
 	}
@@ -61,14 +63,16 @@ class pmlnr_author extends pmlnr_base {
 
 		$socials = array (
 			'github'   => 'https://github.com/%s',
-			//'twitter'  => 'https://twitter.com/%s',
 			'flickr'   => 'https://www.flickr.com/people/%s',
+			'telegram' => 'https://telegram.me/%s',
+			'key' => '%s',
+
 			//'linkedin'   => 'https://www.linkedin.com/in/%s',
 			//'skype'   => 'callto://%s+type=skype',
 			//'wechat'   => 'callto://%s+type=wechat',
 			//'qq'   => 'callto://%s+type=qq',
-			'telegram' => 'https://telegram.me/%s',
-			'key' => '%s',
+			//'twitter'  => 'https://twitter.com/%s',
+
 		);
 
 		foreach ( $socials as $silo => $pattern ) {
@@ -91,8 +95,8 @@ class pmlnr_author extends pmlnr_base {
 
 		$r = array();
 
-		if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
-			return $cached;
+		//if ( $cached = wp_cache_get ( $author_id, __CLASS__ . __FUNCTION__ ) )
+			//return $cached;
 
 		$email = get_the_author_meta ( 'user_email' , $author_id );
 
@@ -123,8 +127,8 @@ class pmlnr_author extends pmlnr_base {
 			'handle' => get_the_author_meta( 'nickname', $author_id ),
 		);
 
-		wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__,
-			static::expire );
+		//wp_cache_set ( $author_id, $r, __CLASS__ . __FUNCTION__,
+			//static::expire );
 
 		return $r;
 
