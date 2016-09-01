@@ -37,6 +37,26 @@ class pmlnr_post extends pmlnr_base {
 		$r = $post->post_content;
 
 		$r = static::remove_reaction ( $r );
+
+		// un-absoluzite images
+		$mdimages = \PETERMOLNAR\IMAGE\md_images( $r );
+		$s = rtrim ( site_url(), '/' ) . '/';
+		foreach ( $mdimages[0] as $c => $match ) {
+			if ( empty ( $mdimages[2][$c] ) ) {
+				continue;
+			}
+
+
+			if ( strstr( $mdimages[2][$c], $s )) {
+
+				$swap = str_replace( $s, '/', $match );
+				$r = str_replace( $match, $swap, $r );
+				//\PETERMOLNAR\debug( $swap );
+
+			}
+
+		}
+
 		$r = apply_filters('the_content', $r);
 
 		return $r;
@@ -48,7 +68,27 @@ class pmlnr_post extends pmlnr_base {
 	public static function get_the_excerpt( &$post = null ){
 		$post = static::fix_post($post);
 
-		$r = apply_filters('the_excerpt', $post->post_excerpt);
+		$r = $post->post_excerpt;
+
+		$images = PETERMOLNAR\IMAGE\md_images( $post->post_excerpt );
+
+		$thid = get_post_thumbnail_id( $post->ID );
+
+		if ( empty( $images[0] ) && $thid ) {
+			$thumbnail = wp_get_attachment_image_src( $thid, 'thumbnail' );
+			if ( isset($thumbnail[1]) && $thumbnail[3] != false ) {
+				$thumbnail = site_url( $thumbnail[0] );
+				$thumbnail = "![{$post->post_title}]({$thumbnail}){.alignleft}";
+				$r = $thumbnail . ' ' . $r;
+			}
+		}
+
+		$r = preg_replace( '/(\{\.alignleft\})([0-9A-Za-z])/', '\\1 \\2', $r );
+
+		if ( $r != $post->post_excerpt )
+			static::replace_content( $post, $r, 'excerpt' );
+
+		$r = apply_filters( 'the_excerpt', $r );
 
 		return $r;
 	}
@@ -62,7 +102,7 @@ class pmlnr_post extends pmlnr_base {
 		if ($post === false)
 			return false;
 
-		$format = static::post_format( $post );
+		$format = \PETERMOLNAR\post_format_ng( $post );
 
 		$r = [];
 
@@ -173,12 +213,13 @@ class pmlnr_post extends pmlnr_base {
 			'shorturl' => wp_get_shortlink( $post->ID ),
 			'published' => strtotime( $post->post_date_gmt ),
 			'tags' => static::post_get_tags_array($post),
-			'format' => static::post_format( $post ),
+			'format' => \PETERMOLNAR\post_format_ng ( $post ),
 			'author' => pmlnr_author::template_vars( $post->post_author ),
 			'syndications' => explode( "\n",
 				get_post_meta( $post->ID, 'syndication_urls', true ) ),
 
 			'content' => static::get_the_content($post, 'clean'),
+			//'type' => static::post_format_ng( $post ),
 
 		);
 
@@ -205,6 +246,7 @@ class pmlnr_post extends pmlnr_base {
 
 		// thumbnail
 		if ( has_post_thumbnail ( $post->ID ) ) {
+			//$r['thumbnail'] = static::post_thumbnail ($post);
 			$r['thumbnail'] = static::post_thumbnail ($post);
 			//$r['exif'] = pmlnr_image::twig_exif( $post->ID );
 		}

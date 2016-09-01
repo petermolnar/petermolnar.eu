@@ -1,9 +1,11 @@
-{% if ( ( post.format == 'photo' ) or ( post.format == 'image')) %}
+{% if ( ( post.format == 'photo' ) ) %}
 	{% set hentry = 'photo' %}
-{% elseif ( post.format == 'article' ) %}
+{% elseif ( ( post.format == 'article' ) or (post.format == 'journal' ) ) %}
 	{% set hentry = 'article' %}
-{% else %}
+{% elseif ( ( post.format == 'note' ) or ( post.format == 'reply' ) ) %}
 	{% set hentry = 'note' %}
+{% else %}
+	{% set hentry = 'status' %}
 {% endif %}
 
 <article class="h-entry h-{{ hentry }}">
@@ -12,7 +14,7 @@
 		{% if post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
-				<span class="p-name {% if post.format == "article" %}more{% endif %}">
+				<span class="p-name {% if hentry == 'article' %}more{% endif %}">
 					{{ post.title }}
 				</span>
 			</a>
@@ -43,11 +45,8 @@
 
 	</header>
 
-	{% if post.format == "article" %}
+	{% if hentry == "article" %}
 		<div class="e-summary long">
-			{% if post.thumbnail %}
-				<img class="article-thumbnail" src="{{ post.thumbnail }}" />
-			{% endif %}
 			{{ post.excerpt }}
 			<a class="inline-more" href="{{ post.url }}" title="{{ post.title }}">
 				<span class="more">…</span>
@@ -70,6 +69,7 @@
 		</div>
 	{% endif %}
 
+	{#
 	<footer>
 		{% if post.tags %}
 			<aside class="tags">
@@ -85,5 +85,6 @@
 			</aside>
 		{% endif %}
 	</footer>
+	#}
 
 </article>

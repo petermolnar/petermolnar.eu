@@ -62,9 +62,6 @@
 
 		{% if post.excerpt|length > 0 %}
 		<div class="e-summary">
-			{% if post.thumbnail %}
-				<img class="article-thumbnail" src="{{ post.thumbnail }}" />
-			{% endif %}
 			{{ post.excerpt }}
 			<br class="clear" />
 		</div>
@@ -91,7 +88,7 @@
 						{% for syndication in post.syndications %}
 							{% if syndication matches '{flickr\.com}' %}
 								{% set flickr = 'no' %}
-							{% elseif reaction.url matches '{facebook\.com}' %}
+							{% elseif syndication matches '{facebook\.com}' %}
 								{% set facebook = 'no' %}
 							{% endif %}
 						{% endfor %}
@@ -100,7 +97,10 @@
 					{% if flickr == 'yes' %}
 					<a href="https://brid.gy/publish/flickr"></a>
 					{% endif %}
+					{% if facebook == 'yes' %}
 					<a href="https://brid.gy/publish/facebook"></a>
+					{% endif %}
+
 				{% endif %}
 
 			</div>
@@ -159,10 +159,6 @@
 		<a href="mailto:{{ post.author.email }}?subject=RE: {{ post.title }}"
 		>email</a>, or poke me on social media.
 	</p>
-</aside>
-
-<aside class="frontmatter hide">
-	{{ meta }}
 </aside>
 
 {% include 'block_footer.html' %}

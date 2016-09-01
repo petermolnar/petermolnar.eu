@@ -20,7 +20,7 @@
 			</li>
 	{% endif %}
 
-	{% for i in range( taxonomy.paged - 2, taxonomy.paged -1 ) if ( i > 1 ) %}
+	{% for i in range( taxonomy.paged - 1, taxonomy.paged -1 ) if ( i > 1 ) %}
 			<li>
 				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ i }}">{{ i }}</a>
 			</li>
@@ -30,7 +30,7 @@
 				<span class="page-numbers taxonomy.paged">{{ taxonomy.paged }}</span>
 			</li>
 
-	{% for i in range( taxonomy.paged + 1, taxonomy.paged  + 2 ) if ( i <= taxonomy.total -1 ) %}
+	{% for i in range( taxonomy.paged + 1, taxonomy.paged  + 1 ) if ( i <= taxonomy.total -1 ) %}
 			<li>
 				<a href="{{ taxonomy.pagination_base ~ '/page/' ~ i }}">{{ i }}</a>
 			</li>

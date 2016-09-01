@@ -10,10 +10,21 @@
 				<a title="photos" href="{{ site.url }}/category/photo/" class="icon-photos{% if ( post.format ==  'photo' ) or ( taxonomy.name|lower == 'photo' ) %} active{% endif %}">photos</a>
 			</li>
 			<li>
-				<a title="journal" href="{{ site.url }}/tag/journal/" class="icon-journal{% if ( 'journal' in post.tags|keys ) or ( taxonomy.name|lower == 'journal' ) %} active{% endif %}">journal</a>
+				<a title="journal" href="{{ site.url }}/category/journal/" class="icon-journal{% if ( 'journal' in post.tags|keys ) or ( taxonomy.name|lower == 'journal' ) %} active{% endif %}">journal</a>
 			</li>
 			<li>
-				<a title="code" href="{{ site.url }}/tag/it/" class="icon-code{% if ( 'IT' in post.tags|keys ) or ( taxonomy.name|lower == 'it' ) %} active{% endif %}">code</a>
+				<a title="IT" href="{{ site.url }}/category/article/" class="icon-code{% if ( 'IT' in post.tags|keys ) or ( ( taxonomy.name|lower == 'article' ) or ( taxonomy.name|lower == 'it' ) ) %} active{% endif %}">IT</a>
+			</li>
+			<li>
+				<a title="notes" href="{{ site.url }}/category/note/" class="icon-note{% if ( 'Note' in post.tags|keys ) or ( taxonomy.name|lower == 'note' ) %} active{% endif %}">notes</a>
+			</li>
+			{#
+			<li>
+				<a title="replies" href="{{ site.url }}/category/reply/" class="icon-reply{% if ( 'Reply' in post.tags|keys ) or ( taxonomy.name|lower == 'reply' ) %} active{% endif %}">re:</a>
+			</li>
+			#}
+			<li>
+				<a title="bookmarks" href="{{ site.url }}/category/bookmark/" class="icon-bookmark{% if ( 'Bookmark' in post.tags|keys ) or ( taxonomy.name|lower == 'bookmark' ) %} active{% endif %}">bookmarks</a>
 			</li>
 			<li>
 				<a title="contact" href="{{ site.url }}/about/" class="icon-contact{% if post.title|lower == 'about' %} active{% endif %}">contact</a>

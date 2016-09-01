@@ -2,6 +2,10 @@
 
 namespace PETERMOLNAR;
 
+if ( stripos( \get_option('siteurl'), 'https://') === 0) {
+	$_SERVER['HTTPS'] = 'on';
+}
+
 define('PETERMOLNAR\CACHE_DIR', \WP_CONTENT_DIR
 	. DIRECTORY_SEPARATOR  .'cache' );
 define('PETERMOLNAR\TWIG_DIR', CACHE_DIR
@@ -30,22 +34,10 @@ new \pmlnr_author();
 new \pmlnr_site();
 //new \pmlnr_comment();
 
-
-\register_activation_hook( __FILE__ , '\PETERMOLNAR\theme_activate' );
-
 // init all the things!
-\add_action( 'init', 'PETERMOLNAR\init' );
+\add_action( 'init', '\PETERMOLNAR\init' );
 
-/**
- *
- */
-function theme_activate () {
-
-	if ( version_compare( phpversion(), 5.4, '<' ) ) {
-		die( 'The minimum PHP version required for this plugin is 5.3' );
-	}
-
-}
+\add_action( 'static_generator', '\PETERMOLNAR\static_generator' );
 
 /**
  *
@@ -101,16 +93,20 @@ function init () {
 			if ( 'post' != $post->post_type )
 				return false;
 
-			$format = \pmlnr_base::post_format ( $post );
+			$format = post_format_ng ( $post );
 			if ( 'photo' != $format )
 				return false;
 
-			if ( function_exists( '\send_webmention' ) )
-				\send_webmention( \get_permalink( $post->ID ), 'https://brid.gy/publish/webmention' );
+			//if ( function_exists( '\send_webmention' ) )
+				//\send_webmention( \get_permalink( $post->ID ), 'https://brid.gy/publish/webmention' );
 
 			return $enabled;
 
 		}, 1, 4 );
+
+	if (!wp_get_schedule( 'static_generator' ))
+		wp_schedule_event ( time(), 'daily', 'static_generator' );
+
 
 }
 
@@ -169,4 +165,144 @@ function debug( $message, $level = LOG_NOTICE ) {
 		$parent = $caller['class'] . '::' . $parent;
 
 	return error_log( "{$parent}: {$message}" );
+}
+
+/**
+ *
+ */
+function extract_reaction ( &$content ) {
+
+	$pattern = "/[\*\+]{3}\s+(reply|fav|repost):?\s+(https?\:\/\/?[a-zA-Z0-9\.\/\?\:@\-_=#]+\.[a-zA-Z0-9\.\/\?\:@\-_=#&]*)(?:\s+(yes|no|maybe))?/i";
+
+	preg_match_all( $pattern, $content, $matches);
+	//debug( $matches );
+
+	if ( empty( $matches[0] ) )
+		return false;
+
+	return $matches;
+}
+
+/**
+ *
+ */
+function post_format_ng ( $post ) {
+
+	$reaction = extract_reaction( $post->post_content );
+	$reaction_type = false;
+	if ( $reaction && isset( $reaction[1][0] )
+		&& ! empty( $reaction[1][0] ) ) {
+		$reaction_type = trim( $reaction[1][0] );
+	}
+
+	$images = IMAGE\md_images( $post->post_content );
+	$is_photo = false;
+	if ( count( $images[0]) == 1 ) {
+		$is_photo = IMAGE\is_photo( $images[2][0] );
+	}
+
+	$is_it = \has_term( 'it', 'post_tag', $post );
+	$is_journal = \has_term( 'journal', 'post_tag', $post );
+	//$is_journal = \has_term( 'journal', 'post_tag', $post );
+
+	$type = 'note';
+
+	if ( $is_it ) {
+		$type = 'article';
+	}
+	if ( $is_journal && strlen( $post->post_excerpt ) > 0 ) {
+		$type = 'journal';
+	}
+	elseif ( !empty( $reaction_type ) && $reaction_type == 'reply' ) {
+		$type = 'note';
+	}
+	elseif ( ! empty( $reaction_type ) ) {
+		$type = 'bookmark';
+	}
+	elseif ( $is_photo ) {
+		$type = 'photo';
+	}
+
+	$taxonomy = 'category';
+	$id = \term_exists( $type, $taxonomy );
+	if ($id === 0 || $id === null) {
+		\wp_insert_term ( $type, $taxonomy );
+	}
+
+	$id = \term_exists( $type, $taxonomy );
+	if ($id !== 0 && $id !== null) {
+		$current = \pmlnr_base::get_type( $post );
+		if ($current != $type ) {
+			debug(
+				"post type refresh for {$post->post_title} ({$post->ID}): is set to {$type}" );
+			wp_set_post_terms( $post->ID, $id, 'category', false );
+		}
+	}
+
+	return $type;
+}
+
+function static_generator() {
+	global $post;
+	global $query_string;
+
+	$folder = \WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'html';
+	if ( ! is_dir( $folder ) )
+		mkdir( $folder );
+
+	global $wpdb;
+	$postids = $wpdb->get_results( "
+		SELECT ID FROM {$wpdb->posts}
+		WHERE post_status = 'publish' AND post_password = ''
+		ORDER BY post_type DESC, post_date DESC"
+	);
+
+	$include = [ 'post', 'page' ];
+	foreach ( $postids as $p ) {
+		$pid = $p->ID;
+		debug ( "trying to query {$pid}");
+		if ( ! in_array( \get_post_type( $pid ), $include ) )
+			continue;
+
+		$query_string = "p={$pid}";
+		query_posts( $query_string );
+
+		\the_post();
+		$tmpl = 'singular.html';
+
+		if ( !is_object( $post ) ) {
+			$query_string = "page_id={$pid}";
+			query_posts( $query_string );
+			\the_post();
+			$tmpl = 'page.html';
+		}
+
+		$htmlfile = $folder. DIRECTORY_SEPARATOR . $post->post_name . '.html';
+		$timestamp_post_pub = get_the_time( 'U', $post );
+		$timestamp_post_mod = get_the_modified_time( 'U', $post );
+
+		$timestamp_post = ( $timestamp_post_mod > $timestamp_post_pub )
+			? $timestamp_post_mod
+			: $timestamp_post_pub;
+
+		if ( file_exists( $htmlfile ) ) {
+			$timestamp_html = get_the_time( 'U', $post );
+			if ( $timestamp_html == $timestamp_post ) {
+				continue;
+			}
+		}
+
+		$twigvars = array (
+			'site' => \pmlnr_site::template_vars(),
+			'post' => \pmlnr_post::template_vars( $post )
+		);
+
+
+		$twig = twig( $tmpl, $twigvars );
+		debug( "Exporting {$post->post_name} ({$post->ID}) to {$htmlfile}" );
+		file_put_contents( $htmlfile, $twig );
+		touch ( $htmlfile, get_the_time( 'U', $post ) );
+
+		\wp_reset_postdata();
+	}
 }

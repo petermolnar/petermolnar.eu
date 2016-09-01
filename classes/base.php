@@ -185,7 +185,7 @@ class pmlnr_base {
 		if ($post === false )
 			return false;
 
-		$format = static::post_format($post);
+		$format = \PETERMOLNAR\post_format_ng($post);
 
 		if ( in_array($format, array('article')))
 			return false;
@@ -239,7 +239,7 @@ class pmlnr_base {
 
 	/**
 	 *
-	 */
+	 *
 	public static function post_format ( &$post ) {
 		$post = static::fix_post($post);
 
@@ -260,25 +260,6 @@ class pmlnr_base {
 		$reaction_rsvp = trim( $reaction[3][0] );
 		//static::debug ( $reaction );
 
-		/*
-		$links = static::extract_urls( $post->post_content );
-
-		// one single link in the post, so it's most probably an old bookmark
-		if (!empty($links) && count($links) == 1) {
-			$content = trim ( str_replace($links[0], '', $content) );
-
-			if ( empty( $content ) ) {
-				//if ( empty ( $webmention_url ) )
-					//add_post_meta( $post->ID, 'webmention_url', $links[0], true );
-
-				//if ( empty ( $webmention_type ) )
-					//add_post_meta( $post->ID, 'webmention_type', 'fav', true );
-
-				$webmention_url = $links[0];
-				$webmention_type = 'fav';
-			}
-		}
-		*/
 
 		$has_thumbnail = get_post_thumbnail_id( $post->ID );
 		$has_quote = preg_match("/^> /m", $post->post_content);
@@ -319,6 +300,23 @@ class pmlnr_base {
 		elseif ( $is_long  && strlen ($post->post_excerpt ) == 0 ) {
 			//static::debug ("is_long & no excerpt");
 			$type = 'note';
+
+			// remove featured image from content, that was added by mistake
+			//$content = $post->post_content;
+			//$images = PETERMOLNAR\IMAGE\md_images( $post->post_content );
+			//$thid = get_post_thumbnail_id( $post->ID );
+
+			//if ( !empty( $images[0] ) && $thid ) {
+				//foreach ( $images[0] as $cntr => $pattern ) {
+					//if ( preg_match( "/{$test}/", $images[4][$cntr] ) ) {
+						//static::debug ( "{$test} matched ");
+						//$content = trim( str_replace(
+							//$images[0][$cntr], '', $post->post_content ) );
+					//}
+				//}
+				//if ( $content != $post->post_content )
+					//static::replace_content( $post, $content, 'content' );
+			//}
 		}
 		elseif ( !empty( $reaction_type ) ) {
 			if ( $reaction_type == 'reply' ) {
@@ -386,6 +384,7 @@ class pmlnr_base {
 		wp_cache_set ( $post->ID, $type, __CLASS__ . __FUNCTION__, static::expire );
 		return $type;
 	}
+	*/
 
 	/**
 	 * non-git safe data
@@ -406,13 +405,7 @@ class pmlnr_base {
 	/**
 	 *
 	 */
-	public static function replace_content ( &$post, &$content, $noop = false ) {
-
-		if ( $noop ) {
-			static::debug("Would have updated post content for #{$post->ID}", 5);
-			return;
-		}
-
+	public static function replace_content ( &$post, &$content, $mode = 'content' ) {
 		$post = static::fix_post ( $post );
 
 		if ( false === $post )
@@ -425,9 +418,9 @@ class pmlnr_base {
 		$dbname = "{$wpdb->prefix}posts";
 		$req = false;
 
-		static::debug("Updating post content for #{$post->ID}", 5);
+		static::debug("Updating post {$mode} for #{$post->ID}", 5);
 
-		$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_content`='%s' WHERE `ID`='{$post->ID}'", $content );
+		$q = $wpdb->prepare( "UPDATE `{$dbname}` SET `post_{$mode}`='%s' WHERE `ID`='{$post->ID}'", $content );
 
 		try {
 			$req = $wpdb->query( $q );
@@ -436,6 +429,7 @@ class pmlnr_base {
 			pmlnr_base::debug('Something went wrong: ' . $e->getMessage(), 4);
 		}
 	}
+
 
 	/**
 	 *
@@ -494,6 +488,5 @@ class pmlnr_base {
 		return $matches;
 	}
 	*/
-
 
 }
