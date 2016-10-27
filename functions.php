@@ -104,8 +104,8 @@ function init () {
 
 		}, 1, 4 );
 
-	if (!wp_get_schedule( 'static_generator' ))
-		wp_schedule_event ( time(), 'daily', 'static_generator' );
+	//if (!wp_get_schedule( 'static_generator' ))
+		//wp_schedule_event ( time(), 'daily', 'static_generator' );
 
 
 }

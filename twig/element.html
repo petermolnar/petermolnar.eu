@@ -11,7 +11,9 @@
 <article class="h-entry h-{{ hentry }}">
 	<header>
 
-		{% if post.title|length %}
+		{% if post.reactions %}
+			<h2 class="reaction">{% include 'block_reaction.html' with post.reactions %}</h2>
+		{% elseif post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
 				<span class="p-name {% if hentry == 'article' %}more{% endif %}">
@@ -55,9 +57,6 @@
 		</div>
 	{% else %}
 		<div class="e-content">
-			{% if post.reactions %}
-				{% include 'block_reaction.html' with post.reactions %}
-			{% endif %}
 
 			{{ post.content }}
 

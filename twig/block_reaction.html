@@ -1,23 +1,38 @@
-{% for reaction in post.reactions %}
+{% if post.bookmark %}
+	{% for reaction in post.bookmark %}
+		{% if post.title|length %}
+			<span class="p-name">{{ post.title }}</span><br />
+			<strong>URL:</strong>
+			<a href="{{ reaction }}" class="{{ class }}">{{ reaction }}</a>
+		{% else %}
+			<span class="p-name">
+				<strong>URL:</strong>
+				<a href="{{ reaction }}" class="{{ class }}">{{ reaction }}</a>
+			</span>
+		{% endif %}
+	{% endfor %}
+{% endif %}
 
-<p>
-	{% if reaction.type == 'fav' %}
-		<strong>URL:</strong>
-		{% set class = 'u-like-of' %}
-	{% elseif reaction.type == 'reply' %}
-		<strong>RE:</strong>
-		{% set class = 'u-in-reply-to' %}
-	{% elseif reaction.type == 'repost' %}
-		<strong>FROM:</strong>
-		{% set class = 'u-repost-of' %}
-	{% endif %}
-	<a href="{{ reaction.url }}" class="{{ class }}">{{ reaction.url }}</a>
+{% if post.reply %}
+	{% for reaction in post.reply %}
+		<span class="p-name">
+			<strong>RE:</strong>
+			<a href="{{ reaction }}" class="u-in-reply-to">{{ reaction }}</a>
+		</span>
+	{% endfor %}
+{% endif %}
 
-	{% if reaction.url matches '{^https?:\/\/(www\.)?twitter\.com}' %}
-		<a href="https://brid.gy/publish/twitter"></a>
-	{% elseif reaction.url matches '{^https?:\/\/(www\.)?flickr\.com}' %}
-		<a href="https://brid.gy/publish/flickr"></a>
-	{% endif %}
-</p>
-
-{% endfor %}
+{% if post.repost %}
+	{% for reaction in post.repost %}
+		{% if post.title|length %}
+			<span class="p-name">{{ post.title }}</span><br />
+			<strong>FROM:</strong>
+			<a href="{{ reaction }}" class="u-repost-of">{{ reaction }}</a>
+		{% else %}
+			<span class="p-name">
+				<strong>FROM:</strong>
+				<a href="{{ reaction }}" class="u-repost-of">{{ reaction }}</a>
+			</span>
+		{% endif %}
+	{% endfor %}
+{% endif %}

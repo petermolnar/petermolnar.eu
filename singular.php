@@ -4,7 +4,7 @@ the_post();
 global $petermolnareu_theme;
 $twigvars = array (
 	'site' => pmlnr_site::template_vars(),
-	'post' => pmlnr_post::template_vars( $post )
+	'post' => pmlnr_post::static_template_vars( $post )
 );
 
 $twigvars['post']['singular'] = true;

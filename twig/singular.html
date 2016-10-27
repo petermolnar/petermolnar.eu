@@ -1,8 +1,4 @@
 {% include 'block_header_open.html' %}
-	<link rel="http://webmention.org/"
-		href="https://petermolnar.net/?wp-webmention-again=endpoint" />
-	<link rel="webmention"
-		href="https://petermolnar.net/?wp-webmention-again=endpoint" />
 
 	{% if post.title %}
 		<title>{{ post.title }} | {{ site.domain }}</title>
@@ -43,7 +39,11 @@
 <section class="content-body">
 	<article class="h-entry singular">
 		<header {# post.bgstyle #}>
-			{% if post.title|length %}
+
+
+			{% if post.reactions %}
+				<h1 class="reaction">{% include 'block_reaction.html' with post.reactions %}</h1>
+			{% elseif post.title|length %}
 			<h1>
 				<a href="{{ post.url }}" title="{{ post.title }}">
 					<span class="p-name">{{ post.title }}</span>
@@ -69,10 +69,6 @@
 
 		<div class="e-content">
 			<div class="content-inner">
-				{% if post.reactions %}
-					{% include 'block_reaction.html' with post.reactions %}
-				{% endif %}
-
 				{{ post.content }}
 
 				{% if ( post.exif ) and ( post.format == 'photo' ) %}
@@ -80,28 +76,28 @@
 				{% endif %}
 
 
-				{% if post.format == 'photo' %}
-					{% set flickr = 'yes' %}
-					{% set facebook = 'yes' %}
+					{% if post.format == 'photo' %}
+						{% set flickr = 'yes' %}
+						{% set facebook = 'no' %}
 
-					{% if post.syndications %}
-						{% for syndication in post.syndications %}
-							{% if syndication matches '{flickr\.com}' %}
-								{% set flickr = 'no' %}
-							{% elseif syndication matches '{facebook\.com}' %}
-								{% set facebook = 'no' %}
-							{% endif %}
-						{% endfor %}
-					{% endif %}
+						{% if post.syndications %}
+							{% for syndication in post.syndications %}
+								{% if syndication matches '{flickr\.com}' %}
+									{% set flickr = 'no' %}
+								{% elseif syndication matches '{facebook\.com}' %}
+									{% set facebook = 'no' %}
+								{% endif %}
+							{% endfor %}
+						{% endif %}
 
-					{% if flickr == 'yes' %}
-					<a href="https://brid.gy/publish/flickr"></a>
-					{% endif %}
-					{% if facebook == 'yes' %}
-					<a href="https://brid.gy/publish/facebook"></a>
-					{% endif %}
+						{% if flickr == 'yes' %}
+						<a href="https://brid.gy/publish/flickr"></a>
+						{% endif %}
+						{% if facebook == 'yes' %}
+						<a href="https://brid.gy/publish/facebook"></a>
+						{% endif %}
 
-				{% endif %}
+					{% endif %}
 
 			</div>
 		</div>

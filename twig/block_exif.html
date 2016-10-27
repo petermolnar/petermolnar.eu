@@ -17,7 +17,7 @@
 {% endif %}
 {% if post.exif.focal_length %}
 		<li>
-			<i class="icon-focallength spacer"></i>{{ post.exif.focal_length }} mm
+			<i class="icon-focallength spacer"></i>{{ post.exif.focal_length }}{% if not post.exif.focal_length matches '/mm/' %} mm{% endif %}
 		</li>
 {% endif %}
 {% if post.exif.iso %}

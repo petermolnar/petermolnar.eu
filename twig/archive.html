@@ -1,6 +1,15 @@
 {% include 'block_header_open.html' %}
 	<title>{{ taxonomy.name }} | {{ site.domain }}</title>
+
+{% if taxonomy.feed %}
+	<link rel="alternate" type="application/rss+xml" title="{{ site.name }} / {{ taxonomy.name }} RSS Feed" href="{{ taxonomy.feed }}" />
+{% else %}
+	<link rel="alternate" type="application/rss+xml" title="{{ site.name }} RSS Feed" href="{{ site.rss_url }}" />
+{% endif %}
+
+
 {% include 'block_header_close.html' %}
+
 
 <section class="content-body h-feed">
 	{% if taxonomy.name %}

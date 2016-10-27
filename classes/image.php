@@ -200,25 +200,11 @@ function is_photo ( $jpg ) {
 	)
 		return false;
 
-	//if ( ! isset( $exif['camera'] )
-		//|| empty( $exif['camera'] )
-	//)
-		//return false;
+	$author = false;
 
-	//if ( ! isset( $config['cameras'] )
-		//|| empty( $config['cameras'] )
-	//)
-		//return false;
-
-	if ( ! isset( $config['copyright'] )
-		|| empty( $config['copyright'] )
-	)
-		return false;
-
-	$camera = $author = false;
-
-	if ( in_array( trim( $exif['camera'] ), $config['cameras'] ) )
-		$camera = true;
+	// Gimp edited images don't have camera :(
+	//if ( isset( $exif['camera'] && in_array( trim( $exif['camera'] ), $config['cameras'] ) )
+		//$camera = true;
 
 	foreach ( $config['copyright'] as $copy ) {
 		if ( stristr( $exif['copyright'], $copy ) ) {
