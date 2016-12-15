@@ -5,19 +5,20 @@
 				<p class="p-author h-card vcard">
 					<img class="photo avatar u-photo u-avatar" src="{{ site.author.avatar }}" alt="Photo of {{ site.author.name }}" />
 					<a class="fn p-name url u-url u-uid" href="{{ site.author.url }}">{{ site.author.name }}</a><span class="p-nickname">{{ site.author.handle }}</span>
-					<a rel="me" class="u-email email i-mail" href="mailto:{{ site.author.email }}" title="{{ site.author.name }} email address">{{ site.author.email }}</a>
+					<a rel="me" class="u-email email icon-email" href="mailto:{{ site.author.email }}" title="{{ site.author.name }} email address">{{ site.author.email }}</a>
 {% for silo, url in site.author.socials %}
-						<a rel="me" class="u-{{ silo }} x-{{ silo }} i-{{ silo }} url u-url" href="{{ url }}" title="{{ author.name }} @ {{ silo }}">{{ silo }}</a>
+						<a rel="me" class="u-{{ silo }} icon-{{ silo }} url u-url" href="{{ url }}" title="{{ author.name }} @ {{ silo }}">{{ silo }}</a>
 {% endfor %}
+					<a rel="me" class="u-gpg gpg icon-lock" href="pgp.asc" title="Public GPG key for {{ site.author.email }}">GPG</a>
 				</p>
 			</nav>
 			<nav class="content-footnotes">
 				<ul>
 					<li>
-						<a rel="license" href="/licence" title="Licence" class="i-copyright">copyright notes</a>
+						<a rel="license" href="/licence" title="Licence" class="icon-copyright">copyright notes</a>
 					</li>
 					<li>
-						<a class="i-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
+						<a class="icon-rss" title="RSS feed" href="{{ site.rss_url }}">RSS</a>
 					</li>
 				</ul>
 				{% include 'partial_search.html' %}
@@ -25,6 +26,24 @@
 
 		</div>
 	</footer>
+
+	<script>
+		var h2s = document.querySelectorAll("h2");
+		document.body.addEventListener('keydown', function (e) {
+			var keyCode = e.keyCode;
+			var currentAnchor = location.hash;
+			if( keyCode == 37 ) { // left
+				console.log( h2s );
+
+				//location.hash = "#image" + num;
+			}
+			else if( keyCode == 39 ) { //right
+				console.log( h2s );
+				//if(num <= imagecount) num += 1;
+				//location.hash = "#image" + num;
+			}
+		});
+	</script>
 
 	</body>
 </html>

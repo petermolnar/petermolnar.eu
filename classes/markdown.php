@@ -78,6 +78,7 @@ function pandoc_md2html ( $md ) {
 		'raw_html',
 		'link_attributes',
 		'header_attributes',
+		'footnotes',
 	);
 
 	$cmd =
@@ -119,6 +120,7 @@ function pandoc_html2md ( $html ) {
 		'shortcut_reference_links',
 		'autolink_bare_uris',
 		'raw_html',
+		'footnotes',
 	);
 
 	$cmd =

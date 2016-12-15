@@ -234,6 +234,13 @@ function adaptive ( $img, $alt = '', $title = '', $class = '' ) {
 	$target = site_url( \WP_RESIZED2CACHE\CACHENAME
 		. "/{$file['filename']}.{$file['extension']}" );
 
+	$sim = 0;
+	similar_text ( strtolower( $file['filename'] ) , strtolower( $alt ), $sim );
+	$caption = '';
+	if ( $sim < 90 ) {
+		$caption = $alt;
+	}
+
 	$test = \WP_RESIZED2CACHE\CACHE
 		. "{$file['filename']}_z.{$file['extension']}";
 	// small files, don't make them responsive
@@ -268,15 +275,22 @@ function adaptive ( $img, $alt = '', $title = '', $class = '' ) {
 		$r = "<img src=\"{$default}\" title=\"{$title}\" alt=\"{$alt}\" />";
 	}
 	else {
-		$r = "<a class=\"{$class}\" href=\"{$target}\">
+		$r = "<p class=\"photo\"><a class=\"adaptive {$class}\" href=\"{$target}\">
 				<img
 					src=\"{$default}\"
-					class=\"adaptive adaptimg\"
+					class=\"adaptimg\"
 					title=\"{$title}\"
 					alt=\"{$alt}\"
 					srcset=\"{$srcset}\" />
-			</a>";
+				</a>";
+
+		if ( $caption )
+			$r .= "<span class=\"caption\">{$caption}</span>";
+
+		$r .= '</p>';
 	}
+
+
 
 	return $r;
 }

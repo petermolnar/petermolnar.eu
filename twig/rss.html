@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<rss version="2.0"
+		xmlns:content="http://purl.org/rss/1.0/modules/content/"
+		xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+		xmlns:dc="http://purl.org/dc/elements/1.1/"
+		xmlns:atom="http://www.w3.org/2005/Atom"
+		xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+		xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>{{ site.title }}</title>
+	<atom:link href="{{ site.url }}/feed" rel="self" type="application/rss+xml" />
+	<link>{{ site.url }}</link>
+	<description>{{ site.description }}</description>
+	<lastBuildDate>{{ |date("%a, %d %b %Y %T %z") }}</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>daily</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+	<atom:link rel="hub" href="http://pubsubhubbub.superfeedr.com"/>
+	<atom:link rel="hub" href="https://switchboard.p3k.io/"/>
+
+{% for post in posts %}
+	<item>
+		<title>
+{% if post.title %}
+			{{ post.title }}
+{% else %}
+			{{ post.name }}
+{% endif%}
+		</title>
+		<link>{{ post.url }}</link>
+		<pubDate>{{ |date("%a, %d %b %Y %T %z") }}</pubDate>
+		<dc:creator><![CDATA[{{ post.author.name }}]]></dc:creator>
+		<guid isPermaLink="true">{{ post.url }}</guid>
+		<description><![CDATA[{{  }}]]></description>
+		<content:encoded><![CDATA[{{ }}]]></content:encoded>
+{% if post.tags %}{% for tname, turl in post.tags %}
+				<category domain="{{ turl }}"><![CDATA[{{ tname }}]]></category>
+{% endfor %}{% endif %}
+	</item>
+{% endfor %}
+</channel>
+</rss>

@@ -54,7 +54,7 @@
 			{# set days_since_published =  ( ( "now"|date('U') - post.published|date('U') ) / 86400 ) #}
 			{% set years_since_published =  ( "now"|date('Y') - post.published|date('Y') ) %}
 
-			{% if ( post.tags.IT is defined ) and ( years_since_published > 2 ) %}
+			{% if ( post.tags.IT is defined ) and ( years_since_published >= 2 ) %}
 			<h2 class="old-warning">WARNING: this entry was published in {{ post.published|date('Y') }}.<br />It might be outdated.</h2>
 			{%endif%}
 
@@ -140,6 +140,7 @@
 			<h6 class="shortlink-title">Short URL</h6>
 			<aside class="shortlink">
 				<p>
+					<img class="alignleft qr" src="{{ post.qr }}" />
 					<a href="{{ post.shorturl }}">{{ post.shorturl }}</a>
 				</p>
 			</aside>

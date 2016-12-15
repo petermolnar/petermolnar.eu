@@ -1,0 +1,170 @@
+
+@font-size: 1em;
+@padding-normal: 0.3em;
+
+
+@font-face {
+	font-family: 'petermolnar';
+	src: url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot?89917930');
+	src: url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.eot#iefix') format('embedded-opentype'),
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.woff') format('woff'),
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.ttf') format('truetype'),
+		 url('https://petermolnar.net/wp-content/themes/petermolnar.eu/fonts/petermolnar.svg#petermolnar') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
+	font-style: normal;
+	font-weight: normal;
+	speak: none;
+	display: inline-block;
+	text-decoration: inherit;
+	text-align: center;
+
+	font-variant: normal;
+	text-transform: none;
+
+	line-height: @font-size;
+	width: @font-size;
+
+	font-family: "petermolnar";
+	text-decoration: none;
+	padding-right: @padding-normal;
+}
+
+
+.icon-aperture:before {
+	content: "\29be";
+}
+.icon-home:before {
+	content: "\224b";
+}
+.icon-contact:before {
+	content: "\25ad";
+}
+.icon-photo:before {
+	content: "\2395";
+}
+.icon-camera:before {
+	content: "\26f6";
+}
+.icon-journal:before {
+	content: "\2615";
+}
+.icon-note:before {
+	content: "\2254";
+}
+.icon-location:before {
+	content: "\2757";
+}
+.icon-clock:before {
+	content: "\231a";
+}
+.icon-reply:before {
+	content: "\27a6";
+}
+.icon-lock:before {
+	content: "\26bf";
+}
+.icon-link:before {
+	content: "\221e";
+}
+.icon-subscribe:before {
+	content: "\2b2d";
+}
+.icon-bookmark:before {
+	content: "\238e";
+}
+.icon-sensitivity:before {
+	content: "\263c";
+}
+.icon-repost:before {
+	content: "\27f3";
+}
+.icon-focallength:before {
+	content: "\2194";
+}
+.icon-lens:before {
+	content: "\2299";
+}
+.icon-article:before {
+	content: "\2328";
+}
+.icon-email:before {
+	content: "\2709";
+}
+.icon-telegram:before {
+	content: "\2708";
+}
+.icon-flickr:before {
+	content: "\2687";
+}
+.icon-github:before {
+	content: "\24a2";
+}
+.icon-rss:before {
+	content: "\25a5";
+}
+.icon-copyright:before {
+	content: "\00A9";
+}
+
+
+/* Based on kate's own default colors for Haskell *
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode, table.sourceCode pre
+   { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; }
+td.lineNumbers { text-align: right; background-color: #EBEBEB; color: black; padding-right: 5px; padding-left: 5px; }
+td.sourceCode { padding-left: 5px; }
+*/
+
+pre {
+	font-family: "Inconsolata", monospace;
+	font-size: 0.9em;
+	margin: @padding-normal 0 @padding-normal 0;
+	padding: @padding-normal;
+	overflow: auto;
+}
+
+code.sourceCode span.kw { font-weight: bold; }
+code.sourceCode span.dt { color: #800000; }
+code.sourceCode span.dv { color: #0000FF; }
+code.sourceCode span.bn { color: #0000FF; }
+code.sourceCode span.fl { color: #800080; }
+code.sourceCode span.ch { color: #FF00FF; }
+code.sourceCode span.st { color: #DD0000; }
+code.sourceCode span.co { color: #808080; font-style: italic; }
+code.sourceCode span.ot { }
+code.sourceCode span.al { color: green; font-weight: bold; }
+code.sourceCode span.fu { color: #000080; }
+code.sourceCode span.re { }
+code.sourceCode span.er { color: red; font-weight: bold; }
+
+
+pre.sourceCode {
+	margin-top: -0.3em;
+	overflow: auto;
+	border-top: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
+}
+
+code.sourceCode {
+	font-family: "Inconsolata", monospace;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	font-size: 0.95em;
+
+	-moz-tab-size: 2;
+	-o-tab-size: 2;
+	tab-size: 2;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}

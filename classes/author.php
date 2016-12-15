@@ -17,8 +17,8 @@ class pmlnr_author extends pmlnr_base {
 	 */
 	public function add_user_meta_fields ($profile_fields) {
 
-		$profile_fields['key'] = __( 'URL to PGP key for the email address above',
-			'petermolnareu');
+		//$profile_fields['key'] = __( 'URL to PGP key for the email address above',
+			//'petermolnareu');
 		$profile_fields['github'] = __('Github username',
 			 'petermolnareu');
 		$profile_fields['flickr'] = __('Flickr username',
@@ -65,7 +65,7 @@ class pmlnr_author extends pmlnr_base {
 			'github'   => 'https://github.com/%s',
 			'flickr'   => 'https://www.flickr.com/people/%s',
 			'telegram' => 'https://telegram.me/%s',
-			'key' => '%s',
+			//'key' => '%s',
 
 			//'linkedin'   => 'https://www.linkedin.com/in/%s',
 			//'skype'   => 'callto://%s+type=skype',

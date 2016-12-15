@@ -16,14 +16,14 @@
 		{% elseif post.title|length %}
 		<h2>
 			<a href="{{ post.url }}" title="{{ post.title }}">
-				<span class="p-name {% if hentry == 'article' %}more{% endif %}">
+				<span class="p-name">
 					{{ post.title }}
 				</span>
 			</a>
 		</h2>
 		{% endif %}
 
-		<aside class="pubdate">
+		<aside class="pubdate{% if post.bookmark or post.repost %} hide{% endif %}">
 			<a class="u-url" rel="bookmark" title="{{ post.title }}"
 				href="{{ post.url }}">
 				<time class="dt-published" datetime="{{ post.published|date("c") }}">
@@ -32,7 +32,7 @@
 			</a>
 		</aside>
 
-		<aside class="author">
+		<aside class="author{% if post.bookmark or post.repost %} hide{% endif %}">
 			<p>by
 				<span class="p-author h-card vcard">
 					<img class="photo avatar u-photo u-avatar"
@@ -49,10 +49,14 @@
 
 	{% if hentry == "article" %}
 		<div class="e-summary long">
-			{{ post.excerpt }}
-			<a class="inline-more" href="{{ post.url }}" title="{{ post.title }}">
-				<span class="more">…</span>
-			</a>
+			{%if post.thumbnail %}
+				<img src="{{ post.thumbnail }}" alt="{{ post.title }}" class="alignleft" />
+			{% else %}
+				<span class="icon-{{ post.format }}"></span>
+			{% endif %} {{ post.excerpt }}
+			<span class="more">
+				<a href="{{ post.url }}" title="{{ post.title }}"></a>
+			</span>
 			<br class="clear" />
 		</div>
 	{% else %}

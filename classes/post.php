@@ -5,6 +5,56 @@ class pmlnr_post extends pmlnr_base {
 	public function __construct () {
 	}
 
+	public static function bookmark_screenshot ( $url ) {
+		if ( empty ( $url ) ) {
+			return false;
+		}
+
+		$hash = md5( $url );
+		$cache = \WP_CONTENT_DIR . DIRECTORY_SEPARATOR
+		. 'cache' . DIRECTORY_SEPARATOR . 'bookmarks' . DIRECTORY_SEPARATOR;
+
+		if ( ! is_dir( $cache ) ) {
+			mkdir ( $cache );
+		}
+
+		$cache = $cache . $hash . '.jpg';
+
+		if ( is_file( $cache ) ) {
+			return $cache;
+		}
+
+		$cmd = "/usr/bin/xvfb-run -- wkhtmltoimage -f jpg --height 768 --width 1024 {$url} {$cache}";
+		exec( $cmd, $r, $retval);
+		return $cache;
+	}
+
+	public static function qr ( $text ) {
+
+		if ( empty ( $text ) ) {
+			return false;
+		}
+
+		$hash = md5( $text );
+		$type = 'svg';
+		$cache = \WP_CONTENT_DIR . DIRECTORY_SEPARATOR
+		. 'cache' . DIRECTORY_SEPARATOR . 'qr' . DIRECTORY_SEPARATOR;
+
+		if ( ! is_dir( $cache ) ) {
+			mkdir ( $cache );
+		}
+
+		$cache = $cache . $hash . '.' . $type;
+
+		if ( is_file( $cache ) ) {
+			return $cache;
+		}
+
+		$cmd = "/usr/bin/qrencode -m 0 -l L -t {$type} -o {$cache} \"{$text}\"";
+		exec( $cmd, $r, $retval);
+		return $cache;
+	}
+
 	/**
 	 *
 	 */
@@ -35,6 +85,17 @@ class pmlnr_post extends pmlnr_base {
 			return false;
 
 		$r = $post->post_content;
+
+
+		// convert links to footnotes
+		preg_match_all( '/\[([^\]]+)\]\[([[:digit:]]+)\]/', $r, $links );
+		if ( count($links[0]) ) {
+			foreach( $links[0] as $index => $replace ) {
+				$r = str_replace( $links[0][$index], $links[1][$index] . "[^" . $links[2][$index] . "]" , $r );
+				$r = str_replace( "[" . $links[2][$index] . "]: ", "[^" . $links[2][$index] . "]: ", $r );
+			}
+		}
+
 
 		// un-absoluzite images
 		$mdimages = \PETERMOLNAR\IMAGE\md_images( $r );
@@ -252,8 +313,9 @@ class pmlnr_post extends pmlnr_base {
 
 			'content' => static::get_the_content($post, 'clean'),
 			//'type' => static::post_format_ng( $post ),
-
 		);
+
+		$r['qr'] = str_replace ( \WP_CONTENT_DIR, \WP_CONTENT_URL, static::qr( $r['url'] ) );
 
 		// updated
 		$published = \get_the_time( 'U', $post->ID );
@@ -276,16 +338,16 @@ class pmlnr_post extends pmlnr_base {
 			$r['exif'] = $texif;
 		}
 
+		// excerpt
+		if ( ! empty( $post->post_excerpt ) )
+			$r['excerpt'] = static::get_the_excerpt($post);
+
 		// thumbnail
 		if ( has_post_thumbnail ( $post->ID ) ) {
 			//$r['thumbnail'] = static::post_thumbnail ($post);
 			$r['thumbnail'] = static::post_thumbnail ($post);
 			//$r['exif'] = pmlnr_image::twig_exif( $post->ID );
 		}
-
-		// excerpt
-		if ( ! empty( $post->post_excerpt ) )
-			$r['excerpt'] = static::get_the_excerpt($post);
 
 		// reactions
 		if ( $reactions = static::post_reactions( $post ) ) {
@@ -303,6 +365,11 @@ class pmlnr_post extends pmlnr_base {
 						$r[ 'reply' ][] = $reaction['url'];
 				}
 			}
+
+			//if ( count( $r[ 'bookmark' ] == 1 )) {
+				//$r['bookmark_screenshot'] = static::bookmark_screenshot( $r[ 'bookmark' ][0] );
+			//}
+
 			//foreach ( [ 'bookmark-of', 'in-reply-to', 'repost-of'] as $type ) {
 				//if ( isset( $r[ $type ]) && count( $r[ $type ] ) == 1 ) {
 					//$r[ $type ] = array_pop( $r[ $type ] );
@@ -325,7 +392,7 @@ class pmlnr_post extends pmlnr_base {
 
 
 		$static = \WP_FLATEXPORT\post_filename( $post );
-		static::debug ( $static );
+		//static::debug ( $static );
 		return static::template_vars( $post );
 
 		//if ( ! file_exists( $static ) )
